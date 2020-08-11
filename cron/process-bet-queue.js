@@ -1,3 +1,4 @@
+import { logger } from 'sc-common';
 import { PlaceBetConsumer } from '../event-consumers/index.js';
 
 export default class ProcessBetQueue {
@@ -10,24 +11,28 @@ export default class ProcessBetQueue {
         this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer();
     }
 
-    async start(storage) {
-        setTimeout(async () => {
-            await proceedQueue(storage);
-            setTimeout(proceed, this.processTimeOut);
+    start(storage) {
+        let self = this;
+
+        setTimeout(function proceed() {
+            if (storage) {
+                Object.values(storage.gameData.usersData).forEach((userInGame) => {
+                    if (!userInGame.betProcessing && userInGame.betQueue && userInGame.betQueue.length > 0) {
+                        const { user, payload, gameData } = userInGame.betQueue.shift();
+                        userInGame.betProcessing = true;
+                        self.placeBetConsumer
+                            .proceedBet(user, payload, gameData, userInGame)
+                            .then(() => {
+                                userInGame.betProcessing = false;
+                            })
+                            .catch((error) => {
+                                logger.logError(error);
+                            });
+                    }
+                });
+            }
+
+            setTimeout(proceed, self.processTimeOut);
         }, this.processTimeOut);
-    }
-
-    async proceedQueue(storage) {
-        if (storage) {
-            Object.values(storage.gameData.usersData).forEach(async (userInGame) => {
-                if (!userInGame.betProcessing && userInGame.betQueue && userInGame.betQueue.length > 0) {
-                    const { user, payload, gameData, userData } = userInGame.betQueue.shift();
-
-                    userInGame.betProcessing = true;
-                    await this.placeBetConsumer.proceedBet(user, payload, gameData, userData);
-                    userInGame.betProcessing = false;
-                }
-            });
-        }
     }
 }

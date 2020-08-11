@@ -5,7 +5,7 @@ import http from 'http';
 import morgan from 'morgan';
 import { init as initApis } from 'sc-base-apis';
 import { gameConfigs, init as initBaseDatabase } from 'sc-base-database';
-import { logger } from 'sc-common';
+import { logger, middlewares } from 'sc-common';
 import socketIo from 'socket.io';
 import * as Bot from './bot/index.js';
 import ProcessBetQueue from './cron/process-bet-queue.js';
@@ -38,7 +38,6 @@ export default class BaseGameStartup {
         await initBaseDatabase(this.appConfigs.database);
         await Bot.resetInRoom(this.appConfigs.gameName);
         initApis(this.appConfigs.apiSettings);
-        middlewares.processErrorHandler.handle(httpServer, process);
     };
 
     /**
@@ -83,6 +82,8 @@ export default class BaseGameStartup {
             console.log('Express server started and running!');
             await this.start();
         });
+
+        middlewares.processErrorHandler.handle(httpServer, process);
     }
 
     async start() {
@@ -102,14 +103,14 @@ export default class BaseGameStartup {
     }
 
     /**
-     * @param {express.Express} app
+     * @param {socketIo.Socket} socketClient
      */
-    initSocketRouter(app) {
+    initSocketRouter(socketClient) {
     }
 
     /**
-     * @param {express.Express} app
+     * @param {socketIo.Socket} socketClient
      */
-    initAdminSocketRouter(app) {
+    initAdminSocketRouter(socketClient) {
     }
 }
