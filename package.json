@@ -1,7 +1,7 @@
 {
     "name": "sc-game-base",
-    "version": "1.12.1",
-    "description": "Enable CORS for socket.io",
+    "version": "1.12.3-beta.1",
+    "description": "SC Game base for game services",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
