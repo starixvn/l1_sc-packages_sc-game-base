@@ -35,9 +35,18 @@ export default class BaseUserSignInConsumer {
                     UID: user._id.toString(),
                     profile: { name: userInfo.name },
                     session: session,
+                    socketClient
                 };
 
-                storage.loggedUsers[socketClient.id] = _.extend(storage.loggedUsers[socketClient.id], userData);
+                // Clean up old user data
+                _.values(storage.loggedUsers).forEach((loggedUser) => {
+                    if (loggedUser.UID === userData.UID && loggedUser.socketClient && !loggedUser.socketClient.connected) {
+                        delete storage.loggedUsers[loggedUser.socketClient.id];
+                    }
+                });
+
+                // Store new user data
+                storage.loggedUsers[socketClient.id] = { ...userData };
 
                 if (this.gameType === GameTypes.RoomGame) {
                     socketClient.emit('message', { toGame: this.gameName });
