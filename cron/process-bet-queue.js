@@ -18,10 +18,10 @@ export default class ProcessBetQueue {
             if (storage) {
                 Object.values(storage.gameData.usersData).forEach((userInGame) => {
                     if (!userInGame.betProcessing && userInGame.betQueue && userInGame.betQueue.length > 0) {
-                        const { user, payload, gameData } = userInGame.betQueue.shift();
+                        const { user, payload } = userInGame.betQueue.shift();
                         userInGame.betProcessing = true;
                         self.placeBetConsumer
-                            .proceedBet(user, payload, gameData, userInGame)
+                            .proceedBet(user, payload, userInGame)
                             .then(() => {
                                 userInGame.betProcessing = false;
                             })
