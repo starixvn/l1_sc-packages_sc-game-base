@@ -1,4 +1,4 @@
-import BaseEventPublisher from './base-publisher.js';
+import BaseEventPublisher from "./base-publisher.js";
 
 export default class RunningRoundInfoPublisher extends BaseEventPublisher {
     publish(gameData) {

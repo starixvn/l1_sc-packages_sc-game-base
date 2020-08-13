@@ -1,14 +1,13 @@
-import bodyParser from 'body-parser';
-import express from 'express';
-import helmet from 'helmet';
-import http from 'http';
-import morgan from 'morgan';
-import { init as initApis } from 'sc-base-apis';
-import { gameConfigs, init as initBaseDatabase } from 'sc-base-database';
-import { logger, middlewares } from 'sc-common';
-import socketIo from 'socket.io';
-import * as Bot from './bot/index.js';
-import ProcessBetQueue from './cron/process-bet-queue.js';
+import bodyParser from "body-parser";
+import helmet from "helmet";
+import http from "http";
+import morgan from "morgan";
+import socketIo from "socket.io";
+import { init as initApis } from "sc-base-apis";
+import { gameConfigs, init as initBaseDatabase } from "sc-base-database";
+import { logger, middlewares } from "sc-common";
+import * as Bot from "./bot";
+import ProcessBetQueue from "./cron/process-bet-queue.js";
 
 export default class BaseGameStartup {
     constructor(gameName, appConfigs, storage, startCron, processBetQueue) {
@@ -18,8 +17,7 @@ export default class BaseGameStartup {
         this.storage = storage;
         this.startCron = startCron;
         this.processBetQueue = processBetQueue ?? new ProcessBetQueue();
-        this.socketOptions = this.appConfigs.socketOptions
-            ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 };
+        this.socketOptions = this.appConfigs.socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 };
     }
 
     /**
@@ -28,7 +26,7 @@ export default class BaseGameStartup {
     async configureServices(app) {
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: false }));
-        app.use(morgan('combined'));
+        app.use(morgan("combined"));
         app.use(helmet());
 
         if (this.appConfigs.enabledLogs) {
@@ -38,7 +36,7 @@ export default class BaseGameStartup {
         await initBaseDatabase(this.appConfigs.database);
         await Bot.resetInRoom(this.appConfigs.gameName);
         initApis(this.appConfigs.apiSettings);
-    };
+    }
 
     /**
      * @param {express.Express} app
@@ -50,18 +48,18 @@ export default class BaseGameStartup {
             pingTimeout: this.socketOptions.pingTimeout,
         });
 
-        app.set('port', process.env.PORT || this.hostingPort);
-        app.get('/', function (req, res, next) {
-            res.send('Hello');
+        app.set("port", process.env.PORT || this.hostingPort);
+        app.get("/", function (req, res, next) {
+            res.send("Hello");
         });
 
         this.initHttpRouter(app);
 
-        socketServer.of(`/user/${this.gameName}`).on('connection', (socketClient) => {
+        socketServer.of(`/user/${this.gameName}`).on("connection", (socketClient) => {
             this.initSocketRouter(socketClient);
         });
 
-        socketServer.of(`/admin/${this.gameName}`).on('connection', (socketClient) => {
+        socketServer.of(`/admin/${this.gameName}`).on("connection", (socketClient) => {
             this.initAdminSocketRouter(socketClient);
         });
 
@@ -78,8 +76,8 @@ export default class BaseGameStartup {
             }
         });
 
-        httpServer.listen(app.get('port'), async () => {
-            console.log('Express server started and running!');
+        httpServer.listen(app.get("port"), async () => {
+            console.log("Express server started and running!");
             await this.start();
         });
 
@@ -94,23 +92,20 @@ export default class BaseGameStartup {
         } catch (error) {
             logger.logError(error);
         }
-    };
+    }
 
     /**
      * @param {express.Express} app
      */
-    initHttpRouter(app) {
-    }
+    initHttpRouter(app) {}
 
     /**
      * @param {socketIo.Socket} socketClient
      */
-    initSocketRouter(socketClient) {
-    }
+    initSocketRouter(socketClient) {}
 
     /**
      * @param {socketIo.Socket} socketClient
      */
-    initAdminSocketRouter(socketClient) {
-    }
+    initAdminSocketRouter(socketClient) {}
 }

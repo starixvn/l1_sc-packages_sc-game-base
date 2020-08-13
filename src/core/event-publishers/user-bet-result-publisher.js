@@ -1,4 +1,4 @@
-import BaseEventPublisher from './base-publisher.js';
+import BaseEventPublisher from "./base-publisher.js";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
     publish({ bet, betResult }) {

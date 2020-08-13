@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 export default class BaseEventPublisher {
     constructor(storage, gameName) {
         this.storage = storage;
@@ -7,14 +5,15 @@ export default class BaseEventPublisher {
     }
 
     publishToAllUsers(payload) {
-        const socketUsers = _.values(this.storage.loggedUsers).map((user) => user.socketClient);
+        const socketUsers = Object.values(this.storage.loggedUsers).map((user) => user.socketClient);
+
         socketUsers.forEach((socket) => {
             socket && socket.emit(this.gameName, payload);
         });
     }
 
     publishToAllUsersExcept(userId, payload) {
-        const socketUsers = _.values(this.storage.loggedUsers)
+        const socketUsers = Object.values(this.storage.loggedUsers)
             .filter((user) => user.UID !== userId)
             .map((user) => user.socketClient);
 
@@ -24,8 +23,8 @@ export default class BaseEventPublisher {
     }
 
     publishToUser(userId, payload, path = this.gameName) {
-        const user = _.values(this.storage.loggedUsers).find(
-            (user) => user.UID === userId && user.socketClient && user.socketClient.connected
+        const user = Object.values(this.storage.loggedUsers).find(
+            (loggedUser) => loggedUser.UID === userId && loggedUser.socketClient && loggedUser.socketClient.connected
         );
 
         if (user && user.socketClient) {
@@ -34,9 +33,10 @@ export default class BaseEventPublisher {
     }
 
     publishToAllAdmins(payload) {
-        const socketAdmins = _.values(this.storage.loggedAdmins).map((admin) => admin.socketClient);
+        const socketAdmins = Object.values(this.storage.loggedAdmins).map((admin) => admin.socketClient);
+
         socketAdmins.forEach((socket) => {
-            socket && socket.emit('message', { [this.gameName]: payload });
+            socket && socket.emit("message", { [this.gameName]: payload });
         });
     }
 }

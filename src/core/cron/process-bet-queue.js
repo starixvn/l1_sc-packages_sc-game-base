@@ -1,5 +1,5 @@
-import { logger } from 'sc-common';
-import { PlaceBetConsumer } from '../event-consumers/index.js';
+import { logger } from "sc-common";
+import { PlaceBetConsumer } from "./../../event-consumers";
 
 export default class ProcessBetQueue {
     processTimeOut = 50;
@@ -19,15 +19,12 @@ export default class ProcessBetQueue {
                 Object.values(storage.gameData.usersData).forEach((userInGame) => {
                     if (!userInGame.betProcessing && userInGame.betQueue && userInGame.betQueue.length > 0) {
                         const { user, payload } = userInGame.betQueue.shift();
+
                         userInGame.betProcessing = true;
                         self.placeBetConsumer
                             .proceedBet(user, payload, userInGame)
-                            .then(() => {
-                                userInGame.betProcessing = false;
-                            })
-                            .catch((error) => {
-                                logger.logError(error);
-                            });
+                            .then(() => (userInGame.betProcessing = false))
+                            .catch(logger.logError);
                     }
                 });
             }

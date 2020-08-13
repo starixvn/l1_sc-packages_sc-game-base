@@ -1,10 +1,10 @@
-import BaseEventPublisher from './base-publisher.js';
+import BaseEventPublisher from "./base-publisher.js";
 
 export default class GameStatusPublisher extends BaseEventPublisher {
     publishDisableGameStatus(gameConfigs) {
-        const disabledMessage = gameConfigs === null ? '' : gameConfigs.disabled_message;
-
+        const disabledMessage = gameConfigs?.disabled_message ?? "";
         const payload = { um: true, um_message: disabledMessage };
+
         this.publishToAllUsers(payload);
         this.publishToAllAdmins(payload);
     }

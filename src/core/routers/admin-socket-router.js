@@ -1,5 +1,5 @@
-import { AdminAuthenticationConsumer } from '../event-consumers/index.js';
-import { logger } from 'sc-common';
+import { logger } from "sc-common";
+import { AdminAuthenticationConsumer } from "./../event-consumers";
 
 export default class BaseAdminSocketRouter {
     /**
@@ -16,18 +16,13 @@ export default class BaseAdminSocketRouter {
         this.storage = storage;
         this.socketClient = socketClient;
         this.adminSecretKey = adminSecretKey;
-        this.socketClient.on('message', this.handleMessage.bind(this));
+        this.socketClient.on("message", this.handleMessage.bind(this));
     }
 
     async handleMessage(payload) {
         try {
             if (payload.authentication) {
-                this.adminAuthenticationConsumer.consume(
-                    this.socketClient,
-                    this.storage,
-                    payload.authentication.jwt,
-                    this.adminSecretKey
-                );
+                this.adminAuthenticationConsumer.consume(this.socketClient, this.storage, payload.authentication.jwt, this.adminSecretKey);
             }
         } catch (err) {
             logger.log(err);
