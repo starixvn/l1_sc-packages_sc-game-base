@@ -1,12 +1,12 @@
 {
     "name": "sc-game-base",
-    "version": "1.12.1",
-    "description": "Enable CORS for socket.io",
+    "version": "1.12.3",
+    "description": "SC Game base for game services",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "reg": "npm set registry http://npm.lumigame.com",
-        "verpath": "npm version patch",
+        "verpatch": "npm version patch",
         "verminor": "npm version minor",
         "pub": "npm publish --registry http://npm.lumigame.com",
         "pubbeta": "npm publish --registry http://npm.lumigame.com --tag beta",
