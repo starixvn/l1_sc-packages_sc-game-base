@@ -1,12 +1,11 @@
-import express from 'express';
-import BaseStartup from './startup.js';
+import express from "express";
+import BaseStartup from "./startup.js";
 
 export default class BaseGameApp {
     /**
      * @param {BaseStartup} startup
      */
-    constructor(gameName, storage, appConfigs, startup,
-    ) {
+    constructor(appConfigs, storage, startup) {
         this.startup = startup ?? new BaseStartup(gameName, appConfigs, storage);
     }
 
@@ -15,5 +14,5 @@ export default class BaseGameApp {
 
         await this.startup.configureServices(app);
         await this.startup.startServer(app);
-    };
+    }
 }

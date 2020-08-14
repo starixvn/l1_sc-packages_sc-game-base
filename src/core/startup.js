@@ -8,16 +8,17 @@ import { gameConfigs, init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
 import * as Bot from "./bot";
 import ProcessBetQueue from "./cron/process-bet-queue.js";
+import GameDefinition from "./game-definition.js";
 
 export default class BaseGameStartup {
-    constructor(gameName, appConfigs, storage, startCron, processBetQueue) {
-        this.gameName = gameName;
+    /**
+     * @param {GameDefinition} gameDefinition
+     */
+    constructor(appConfigs, storage, gameDefinition) {
         this.appConfigs = appConfigs;
-        this.hostingPort = appConfigs.hostingPort;
         this.storage = storage;
-        this.startCron = startCron;
+        this.gameDefinition = gameDefinition;
         this.processBetQueue = processBetQueue ?? new ProcessBetQueue();
-        this.socketOptions = this.appConfigs.socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 };
     }
 
     /**
@@ -43,23 +44,22 @@ export default class BaseGameStartup {
      */
     async startServer(app) {
         const httpServer = http.createServer(app);
-        const socketServer = socketIo(httpServer, {
-            pingInterval: this.socketOptions.pingInterval,
-            pingTimeout: this.socketOptions.pingTimeout,
-        });
+        const { gameName, hostingPort, socketOptions } = this.appConfigs;
 
-        app.set("port", process.env.PORT || this.hostingPort);
+        const socketServer = socketIo(httpServer, socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 });
+
+        app.set("port", process.env.PORT || hostingPort);
         app.get("/", function (req, res, next) {
             res.send("Hello");
         });
 
         this.initHttpRouter(app);
 
-        socketServer.of(`/user/${this.gameName}`).on("connection", (socketClient) => {
+        socketServer.of(`/user/${gameName}`).on("connection", (socketClient) => {
             this.initSocketRouter(socketClient);
         });
 
-        socketServer.of(`/admin/${this.gameName}`).on("connection", (socketClient) => {
+        socketServer.of(`/admin/${gameName}`).on("connection", (socketClient) => {
             this.initAdminSocketRouter(socketClient);
         });
 
@@ -87,12 +87,19 @@ export default class BaseGameStartup {
     async start() {
         try {
             this.storage.gameConfigs = await gameConfigs.findOne({ name: this.appConfigs.gameName });
-            this.processBetQueue.start(this.storage);
-            this.startCron();
+            this.startProcessBetQueue();
+            this.startGameCron();
         } catch (error) {
             logger.logError(error);
         }
     }
+
+    startProcessBetQueue() {
+        const processBetQueue = new ProcessBetQueue();
+        processBetQueue.start();
+    }
+
+    startGameCron() {}
 
     /**
      * @param {express.Express} app
