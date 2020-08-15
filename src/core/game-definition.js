@@ -8,7 +8,7 @@ export default class GameDefinition {
     constructor(
         { id = 0, name = "", durations = {}, choices = [], defaultBetTracks = {} },
         generateResult,
-        settlementRule,
+        settle,
         roundRepository,
         betLogRepository
     ) {
@@ -20,7 +20,7 @@ export default class GameDefinition {
         this.defaultBetTracks = () => ({ ...defaultBetTracks });
         this.defaultTotalBets = () => ({ ...defaultBetTracks });
         this.generateResult = generateResult;
-        this.settlementRule = settlementRule;
+        this.settle = settle;
         this.roundRepository = roundRepository;
         this.betLogRepository = betLogRepository;
     }
