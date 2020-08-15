@@ -3,7 +3,7 @@ import { helpers, logger } from 'sc-common';
 import { BaseEventPublisher } from "../../core/event-publishers/base-publisher";
 
 export default class PlaceBetConsumer {
-    constructor(definition, storage, placeBetPublisher, choiceMapper) {
+    constructor(placeBetPublisher, choiceMapper) {
         this.placeBetPublisher = placeBetPublisher ?? new BaseEventPublisher(storage, definition.name);
         this.choiceMapper = choiceMapper;
     }
