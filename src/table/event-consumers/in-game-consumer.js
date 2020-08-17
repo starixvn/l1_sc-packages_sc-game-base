@@ -1,18 +1,18 @@
 import sortBy from "lodash.sortby";
 import * as apis from "sc-base-apis";
-import BaseEventPublisher from "../../core/event-publishers/base-publisher.js";
+import { TableBaseEventPublisher } from "./../event-publishers/table-base-publisher";
 import TableGameDefinition from "../table-game-definition.js";
 import { userInfos } from "sc-base-database";
 
 export default class InGameConsumer {
     /**
      * @param {TableGameDefinition} definition
-     * @param {BaseEventPublisher} publisher
+     * @param {TableBaseEventPublisher} publisher
      */
     constructor(definition, gameData, publisher = null) {
         this.definition = definition;
         this.gameData = gameData;
-        this.publisher = publisher ?? new BaseEventPublisher(definition.name, gameData);
+        this.publisher = publisher ?? new TableBaseEventPublisher(definition.name, gameData);
     }
 
     async checkInGame(socketClient) {
