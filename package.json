@@ -2,7 +2,7 @@
     "name": "sc-game-base",
     "version": "1.13.0-beta.0",
     "description": "SC Game base for game services",
-    "main": "index.js",
+    "main": "./src/index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "reg": "npm set registry http://npm.lumigame.com",
