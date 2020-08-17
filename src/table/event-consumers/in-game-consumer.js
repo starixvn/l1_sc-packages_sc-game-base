@@ -97,17 +97,7 @@ export default class InGameConsumer {
             .exec();
     }
 
-    convertToSettlementResult(roundResult) {
-        const totalReds = Object.values(roundResult).filter((value) => value === true).length;
-        return settlementRuleEntries.reduce((result, [choice, rule]) => {
-            result[choice] = rule(totalReds);
-            return result;
-        }, {});
-    }
+    convertSettlementResult(roundResult) {}
 
-    convertResult(round) {
-        const result = { red1: round.red1, red2: round.red2, red3: round.red3, red4: round.red4 };
-
-        return result;
-    }
+    convertResult(round) {}
 }
