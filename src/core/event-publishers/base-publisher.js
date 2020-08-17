@@ -39,4 +39,14 @@ export default class BaseEventPublisher {
             socket && socket.emit("message", { [this.gameName]: payload });
         });
     }
+
+    publishMessageBackToLobby(userId) {
+        const user = Object.values(this.storage.loggedUsers).find(
+            (loggedUser) => loggedUser.UID === userId && loggedUser.socketClient && loggedUser.socketClient.connected
+        );
+
+        if (user && user.socketClient) {
+            user.socketClient.emit("message", { toGame: "MainGame" });
+        }
+    }
 }

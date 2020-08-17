@@ -1,9 +1,9 @@
-import { apiPlaceBet } from "sc-base-apis";
+import { placeBet as placeBetApi} from "sc-base-apis" ;
 import { helpers, logger } from 'sc-common';
 import { BaseEventPublisher } from "../../core/event-publishers/base-publisher";
 
 export default class PlaceBetConsumer {
-    constructor(placeBetPublisher, choiceMapper) {
+    constructor(placeBetPublisher, choiceMapper, storage, definition) {
         this.placeBetPublisher = placeBetPublisher ?? new BaseEventPublisher(storage, definition.name);
         this.choiceMapper = choiceMapper;
     }
@@ -97,7 +97,7 @@ export default class PlaceBetConsumer {
             freeBet: freeBet,
         };
 
-        const apiResult = await apiPlaceBet({ id: player.UID, session: player.session }, betInfo);
+        const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
             await handleSuccessBet(definition, player, gameData, apiResult.response.red, betChoice, amount);
