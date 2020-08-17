@@ -113,14 +113,14 @@ export default class PlaceBetConsumer {
         const existingBet = await definition.betRepository.findOne(existingBetFilter).exec();
 
         if (definition.betLogRepository) {
-            await insertBetLog(definition.betLogRepository, player, gameData, betChoice, amount);
+            await insertBetLog(definition.betLogRepository, player, gameData.roundId, betChoice, amount);
         }
 
         if (existingBet) {
             existingBet[betChoice] += amount;
             await existingBet.save();
         } else {
-            const configs = ConfigHelper.getConfigs(definition.configName);
+            const configs = gameData.gameConfigs;
             const newBet = {
                 uid: player.UID,
                 name: player.profile.name,
@@ -158,11 +158,11 @@ export default class PlaceBetConsumer {
         }
     }
 
-    async insertBetLog(betLogRepository, player, gameData, betChoice, amount) {
+    async insertBetLog(betLogRepository, player, roundId, betChoice, amount) {
         const newBetLog = {
             uid: player.UID,
             name: player.profile.name,
-            phien: gameData.roundId,
+            phien: roundId,
             time: new Date(),
             choice: betChoice,
             amount,
