@@ -1,32 +1,40 @@
 import sortBy from "lodash.sortby";
 import * as apis from "sc-base-apis";
-import { logger } from "sc-common";
+import BaseEventPublisher from "../../core/event-publishers/base-publisher.js";
+import TableGameDefinition from "../table-game-definition.js";
+import { userInfos } from "sc-base-database";
 
 export default class InGameConsumer {
-    constructor(publisher, storage, definition) {
-        this.publisher = publisher ?? new BaseEventPublisher(storage, definition.name);
+    /**
+     * @param {TableGameDefinition} definition
+     * @param {BaseEventPublisher} publisher
+     */
+    constructor(definition, gameData, publisher = null) {
+        this.definition = definition;
+        this.gameData = gameData;
+        this.publisher = publisher ?? new BaseEventPublisher(definition.name, gameData);
     }
 
-    async checkInGame(definition, socketClient, gameData) {
-        const realPlayer = gameData.realPlayers[socketClient.id];
+    async checkInGame(socketClient) {
+        const realPlayer = this.gameData.realPlayers[socketClient.id];
         if (realPlayer) {
-            await inGame(definition, realPlayer, gameData);
+            await this.inGame(realPlayer);
         } else {
             this.publisher.publishMessageBackToLobby(realPlayer.UID);
         }
     }
 
-    async inGame(definition, realPlayer, gameData) {
+    async inGame(realPlayer) {
         const maxNumberOfRounds = 100;
-        const { minbet, maxbet, choices_maxbet, odds } = gameData.gameConfigs;
-        const { remainingTime, totalBets } = gameData;
+        const { minbet, maxbet, choices_maxbet, odds } = this.gameData.gameConfigs;
+        const { remainingTime, totalBets } = this.gameData;
         const gameConfigs = { minbet, maxbet, choices_maxbet, odds };
 
         await apis.getBalance(realPlayer, true);
 
         const [roundHistory, user] = await Promise.all([
-            getRounds(definition.roundRepository, maxNumberOfRounds),
-            getUserInfo(definition.userRepository, realPlayer.UID),
+            this.getRounds(this.definition.roundRepository, maxNumberOfRounds),
+            this.getUserInfo(realPlayer.UID),
         ]);
         const { betTracks: ownBets } = gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
 
@@ -38,7 +46,7 @@ export default class InGameConsumer {
             type: user.type,
         };
 
-        const playerArr = Object.values(gameData.players);
+        const playerArr = Object.values(this.gameData.players);
         const sorted = sortBy(playerArr, "type");
 
         const players = {};
@@ -48,8 +56,8 @@ export default class InGameConsumer {
 
         delete players[realPlayer.UID];
 
-        if (!gameData.players[player.id]) {
-            gameData.players[player.id] = player;
+        if (!this.gameData.players[player.id]) {
+            this.gameData.players[player.id] = player;
         }
 
         const inGameData = {
@@ -61,34 +69,29 @@ export default class InGameConsumer {
             players,
         };
 
-        realPlayer.socketClient.emit(definition.name, inGameData);
+        realPlayer.socketClient.emit(this.definition.name, inGameData);
 
-        publisher.publishToAllUsersExcept(realPlayer.UID, { player });
+        this.publisher.publishToAllUsersExcept(realPlayer.UID, { player });
     }
 
     async getRounds(roundRepository, limit, projections) {
-        try {
-            const rounds = await roundRepository
-                .find({}, projections, { sort: { _id: -1 }, limit: limit })
-                .lean()
-                .exec();
+        const rounds = await roundRepository
+            .find({}, projections, { sort: { _id: -1 }, limit: limit })
+            .lean()
+            .exec();
 
-            return rounds.map((round) => {
+        return rounds.map((round) => {
                 const result = round.result ? convertResult() : round.result;
-                return {
-                    roundId: round.id,
+            return {
+                roundId: round.id,
                     result: result,
-                    settlementResult: round.settlementResult ? convertToSettlementResult(result) : round.settlementResult,
-                };
-            });
-        } catch (er) {
-            console.log(er);
-            logger.logError(er);
-        }
+                settlementResult: round.settlementResult,
+            };
+        });
     }
 
-    async getUserInfo(userRepository, uid) {
-        return await userRepository
+    async getUserInfo(uid) {
+        return await userInfos
             .findOne(
                 { id: uid },
                 { UID: true, name: true, avatarId: true, red: true, joinedOn: true, security: true, currency: true, type: true }

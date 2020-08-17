@@ -11,7 +11,7 @@ export default class BaseUserSignInConsumer {
     /**
      * @param {SocketIO.Socket} socketClient
      */
-    async consume(socketClient, storage, payload) {
+    async consume(socketClient, gameData, payload) {
         if (!payload) {
             this.publishUnauthorizedMessage(socketClient);
 
@@ -39,14 +39,14 @@ export default class BaseUserSignInConsumer {
                 session.characterName = userInfo.name;
 
                 // Clean up old user data
-                Object.values(storage.loggedUsers).forEach((loggedUser) => {
-                    if (loggedUser.UID === userData.UID && loggedUser.socketClient && !loggedUser.socketClient.connected) {
-                        delete storage.loggedUsers[loggedUser.socketClient.id];
+                Object.values(gameData.realPlayers).forEach((player) => {
+                    if (player.UID === userData.UID && player.socketClient && !player.socketClient.connected) {
+                        delete gameData.realPlayers[player.socketClient.id];
                     }
                 });
 
                 // Store new user data
-                storage.loggedUsers[socketClient.id] = { ...userData };
+                gameData.realPlayers[socketClient.id] = { ...userData };
 
                 if (this.gameType === GameTypes.RoomGame) {
                     socketClient.emit("message", { toGame: this.gameName });
