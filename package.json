@@ -8,6 +8,7 @@
         "reg": "npm set registry http://npm.lumigame.com",
         "verpatch": "npm version patch",
         "verminor": "npm version minor",
+        "betaver": "npm version preminor --preid beta",
         "pub": "npm publish --registry http://npm.lumigame.com",
         "pubbeta": "npm publish --registry http://npm.lumigame.com --tag beta",
         "unpublish": "npm unpublish --force sc-base-database"

@@ -2,7 +2,7 @@ export default class BaseUserDisconnectConsumer {
     /**
      * @param {SocketIO.Socket} socketClient
      */
-    consume(socketClient, storage) {
-        delete storage.loggedUsers[socketClient.id];
+    consume(socketClient, gameData) {
+        delete gameData.realPlayers[socketClient.id];
     }
 }
