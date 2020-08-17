@@ -77,7 +77,7 @@ export default class BaseGameCron {
     }
 
     resetForNewRound() {
-        this.gameData.inGame = {};
+        this.gameData.ingame = {};
         this.gameData.totalBets = this.gameDefinition.defaultTotalBets();
     }
 }

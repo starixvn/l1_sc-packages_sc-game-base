@@ -81,11 +81,11 @@ export default class InGameConsumer {
             .exec();
 
         return rounds.map((round) => {
-                const result = round.result ? convertResult() : round.result;
+            const result = round.result ?? this.convertResult(round);
             return {
                 roundId: round.id,
-                    result: result,
-                settlementResult: round.settlementResult,
+                result: result,
+                settlementResult: round.settlementResult ?? this.convertSettlementResult(result),
             };
         });
     }
