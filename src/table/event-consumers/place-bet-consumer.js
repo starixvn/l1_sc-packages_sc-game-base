@@ -1,10 +1,11 @@
-import { placeBet as placeBetApi} from "sc-base-apis" ;
-import { helpers, logger } from 'sc-common';
+import { placeBet as placeBetApi } from "sc-base-apis";
+import { helpers, logger } from "sc-common";
 import { BaseEventPublisher } from "../../core/event-publishers/base-publisher";
 
-export default class PlaceBetConsumer {
-    constructor(placeBetPublisher, choiceMapper, storage, definition) {
-        this.placeBetPublisher = placeBetPublisher ?? new BaseEventPublisher(storage, definition.name);
+export default class PlaceBetConsumer {  
+
+    constructor(placeBetPublisher, choiceMapper, gameData, definition) {
+        this.placeBetPublisher = placeBetPublisher ?? new BaseEventPublisher(gameData, definition.name);
         this.choiceMapper = choiceMapper;
     }
 
@@ -49,7 +50,7 @@ export default class PlaceBetConsumer {
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
-            placeBetPublisher.publishGameFailedBet(player.UID, {[gameName]: { notice: failedCriterion.notice }});
+            placeBetPublisher.publishGameFailedBet(player.UID, { [gameName]: { notice: failedCriterion.notice } });
 
             return false;
         }
@@ -57,8 +58,7 @@ export default class PlaceBetConsumer {
         return true;
     }
 
-    async placeBet(definition, player, payload, storage) {
-        const gameData = storage.gameData;
+    async placeBet(definition, player, payload, gameData) {
         const amount = payload.amount >> 0;
         const betChoice = payload.betChoice;
 
