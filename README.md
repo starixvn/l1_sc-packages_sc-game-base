@@ -1,4 +1,5 @@
-# Game Base 
+# Game Base
+
 Support base implementations for SC game services. You can overide the base classes if needed for your detail business
 
 - **app / startup** : Inititialize app service, register middlewares in startup like Database, Logger, ...
@@ -15,6 +16,5 @@ npm install sc-game-base --save-dev
 ```
 
 ## Architecture
+
 ![](https://i.ibb.co/r5y42hZ/Game-Server-Flow-Chart-Page-1.png)
-
-

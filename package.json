@@ -14,8 +14,8 @@
         "unpublish": "npm unpublish --force sc-base-database"
     },
     "author": {
-        "email": "harrison.nguyen@luminetsoft.com",
-        "name": "harrison.nguyen"
+        "email": "pentagon@luminetsoft.com",
+        "name": "pentagon"
     },
     "type": "module",
     "license": "ISC",
