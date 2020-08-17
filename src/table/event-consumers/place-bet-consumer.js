@@ -1,29 +1,36 @@
 import { placeBet as placeBetApi } from "sc-base-apis";
 import { helpers, logger } from "sc-common";
 import { BaseEventPublisher } from "../../core/event-publishers/base-publisher";
+import TableGameDefinition from "../table-game-definition.js";
 
 export default class PlaceBetConsumer {  
+
+    /**
+     * @param {TableGameDefinition} definition
+     * @param {BaseEventPublisher} publisher
+     */
 
     constructor(placeBetPublisher, choiceMapper, gameData, definition) {
         this.placeBetPublisher = placeBetPublisher ?? new BaseEventPublisher(gameData, definition.name);
         this.choiceMapper = choiceMapper;
+        this.definition = definition;
     }
 
-    validateBetRequest(definition, gameData, player, betChoice, amount) {
+    validateBetRequest(gameData, player, betChoice, amount) {
         if (!amount || !betChoice) {
             return false;
         }
 
-        const gameName = definition.name;
+        const gameName = this.definition.name;
         const configs = gameData.gameConfigs;
         const { betTracks } = gameData.ingame[player.profile.name] || { betTracks: {} };
-        const totalAmount = definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
+        const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
         const maxBetPerChoice = configs.choices_maxbet[betChoice] || 0;
 
         const defaultCriteria = [
             {
                 failure:
-                    gameData.remainingTime < definition.durations.lockingBet || gameData.remainingTime >= definition.durations.placingBets,
+                    gameData.remainingTime < this.definition.durations.lockingBet || gameData.remainingTime >= this.definition.durations.placingBets,
                 notice: helpers.noticeHelper.placeBetNextRound,
             },
             {
@@ -44,13 +51,13 @@ export default class PlaceBetConsumer {
             },
         ];
 
-        const criteria = definition.additionalValidationCriteria
-            ? definition.additionalValidationCriteria.concat(defaultCriteria)
+        const criteria = this.definition.additionalValidationCriteria
+            ? this.definition.additionalValidationCriteria.concat(defaultCriteria)
             : defaultCriteria;
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
-            placeBetPublisher.publishGameFailedBet(player.UID, { [gameName]: { notice: failedCriterion.notice } });
+            this.placeBetPublisher.publishGameFailedBet(player.UID, { [gameName]: { notice: failedCriterion.notice } });
 
             return false;
         }
@@ -58,11 +65,12 @@ export default class PlaceBetConsumer {
         return true;
     }
 
-    async placeBet(definition, player, payload, gameData) {
+    async placeBet(player, payload, gameData) {
         const amount = payload.amount >> 0;
         const betChoice = payload.betChoice;
+        const freeBet = payload.freeBet;
 
-        if (!validateBetRequest(definition, gameData, player, betChoice, amount)) {
+        if (!this.validateBetRequest(gameData, player, betChoice, amount)) {
             return;
         }
 
@@ -71,24 +79,24 @@ export default class PlaceBetConsumer {
         if (!gameData.ingame[name]) {
             const newPlayer = {
                 name: player.profile.name,
-                betTracks: definition.defaultBetTracks(),
+                betTracks: this.definition.defaultBetTracks(),
             };
 
-            if (definition.queueingBet) {
+            if (this.definition.queueingBet) {
                 newPlayer.betQueue = [];
             }
 
             gameData.ingame[name] = newPlayer;
         }
 
-        if (definition.queueingBet) {
-            gameData.ingame[name].betQueue.push({ player, betChoice, amount });
+        if (this.definition.queueingBet) {
+            gameData.ingame[name].betQueue.push({ player, betChoice, amount, freeBet });
         } else {
-            await proceedBet(definition, player, betChoice, amount, gameData, payload.freeBet).catch(logger.logError);
+            await this.proceedBet(player, betChoice, amount, gameData, freeBet).catch(logger.logError);
         }
     }
 
-    async proceedBet(definition, player, betChoice, amount, gameData, freeBet) {
+    async proceedBet(player, betChoice, amount, gameData, freeBet) {
         const betInfo = {
             cuoc: amount,
             gameId: appConfigs.gameId,
@@ -100,20 +108,20 @@ export default class PlaceBetConsumer {
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
-            await handleSuccessBet(definition, player, gameData, apiResult.response.red, betChoice, amount);
+            await this.handleSuccessBet(player, gameData, apiResult.response.red, betChoice, amount);
         } else {
             const notice = apiResult.response.inSufficientBalance ? helpers.noticeHelper.notEnoughMoney : apiResult.response;
 
-            await handleFailedBet(player, gameData, betChoice, amount, notice);
+            await this.handleFailedBet(player, gameData, betChoice, amount, notice);
         }
     }
 
-    async handleSuccessBet(definition, player, gameData, red, betChoice, amount) {
+    async handleSuccessBet(player, gameData, red, betChoice, amount) {
         const existingBetFilter = { uid: player.UID, phien: gameData.roundId };
-        const existingBet = await definition.betRepository.findOne(existingBetFilter).exec();
+        const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
-        if (definition.betLogRepository) {
-            await insertBetLog(definition.betLogRepository, player, gameData.roundId, betChoice, amount);
+        if (this.definition.betLogRepository) {
+            await this.insertBetLog(this.definition.betLogRepository, player, gameData.roundId, betChoice, amount);
         }
 
         if (existingBet) {
@@ -135,15 +143,15 @@ export default class PlaceBetConsumer {
                 newBet.siteId = player.session.siteId;
             }
 
-            await definition.betRepository.updateOne(
+            await this.definition.betRepository.updateOne(
                 existingBetFilter,
                 { $inc: existingBetIncrement, $setOnInsert: newBet },
                 { upsert: true, setDefaultsOnInsert: true }
             );
         }
 
-        adjustBetTracks(gameData, player.profile.name, betChoice, amount);
-        notifyPlacingBetResult(definition.name, player, gameData, red, betChoice, amount);
+        this.adjustBetTracks(gameData, player.profile.name, betChoice, amount);
+        this.notifyPlacingBetResult(this.definition.name, player, gameData, red, betChoice, amount);
     }
 
     handleFailedBet(player, gameData, betChoice, betAmount, notice) {
@@ -210,14 +218,14 @@ export default class PlaceBetConsumer {
         return successMessage;
     }
 
-    dequeueBets(definition, gameData) {
+    dequeueBets(gameData) {
         if (gameData.ingame) {
             Object.values(gameData.ingame).forEach((playerInGame) => {
                 if (!playerInGame.betProcessing && playerInGame.betQueue && playerInGame.betQueue.length > 0) {
-                    const { player, betChoice, amount } = playerInGame.betQueue.shift();
+                    const { player, betChoice, amount, freeBet } = playerInGame.betQueue.shift();
 
                     playerInGame.betProcessing = true;
-                    proceedBet(definition, player, betChoice, amount)
+                    this.proceedBet(player, betChoice, amount, gameData, freeBet)
                         .then(() => (playerInGame.betProcessing = false))
                         .catch(logger.logError);
                 }
@@ -225,10 +233,10 @@ export default class PlaceBetConsumer {
         }
     }
 
-    proceedBetQueue(definition, gameData) {
+    proceedBetQueue(gameData) {
         const dequeueInterval = 50;
         const keepDequeuingBets = () => {
-            dequeueBets(definition, gameData);
+            this.dequeueBets(gameData);
             setTimeout(keepDequeuingBets, dequeueInterval);
         };
 
