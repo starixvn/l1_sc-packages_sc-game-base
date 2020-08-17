@@ -30,13 +30,13 @@ export default class SettleGameRoundConsumer {
                 time: newRound.time,
             };
 
-            gameData.roundId = finish.roundId + 1;
+            this.gameData.roundId = finish.roundId + 1;
 
-            await settleBets(this.gameData, finish);
+            await settleBets(finish);
         }
     }
 
-    async settleBets(gameData, { result, settlementResult, roundId, time }) {}
+    async settleBets({ result, settlementResult, roundId, time }) {}
 
     calculateBetResult(settlementResult, bet, odds) {
         const betResult = Object.entries(settlementResult).reduce(
@@ -71,16 +71,16 @@ export default class SettleGameRoundConsumer {
         return betResult;
     }
 
-    notifyBetResult(gameData, bet, betResult) {
+    notifyBetResult(bet, betResult) {
         const status = { winningByChoices: betResult.winningByChoices };
 
         if (betResult.totalWin > 0) {
             status.win = true;
             status.bet = betResult.totalWin;
-            gameData.winningPlayers[bet.uid] = status;
+            this.gameData.winningPlayers[bet.uid] = status;
 
-            if (gameData.players[bet.uid]) {
-                gameData.players[bet.uid].red += betResult.totalWin;
+            if (this.gameData.players[bet.uid]) {
+                this.gameData.players[bet.uid].red += betResult.totalWin;
                 //updateBotBalance(bet.uid, gameData.usersAndBots[bet.uid].red);
             }
         } else {

@@ -29,55 +29,55 @@ export default class BaseGameCron {
             this.gameData.roundId = lastRound.id + 1;
         }
 
-        new cron.CronJob("* * * * * *", () => proceed(this.gameData).catch(logger.logError), null, true);
+        new cron.CronJob("* * * * * *", () => proceed().catch(logger.logError), null, true);
     }
 
-    async proceed(gameData) {
+    async proceed() {
         const { durations } = this.gameDefinition;
 
-        if (gameData.remainingTime == durations.wholeRound) {
-            this.checkGameStatus(gameData);
+        if (this.gameData.remainingTime == durations.wholeRound) {
+            this.checkGameStatus();
         }
 
-        if (!gameData.disabled) {
-            gameData.remainingTime--;
+        if (!this.gameData.disabled) {
+            this.gameData.remainingTime--;
         }
 
-        if (gameData.remainingTime === durations.placingBets) {
+        if (this.gameData.remainingTime === durations.placingBets) {
             this.resetForNewRound();
             // definition.bot && (await definition.bot.reset());
         }
 
-        if (gameData.remainingTime < 0) {
-            gameData.remainingTime = durations.wholeRound;
+        if (this.gameData.remainingTime < 0) {
+            this.gameData.remainingTime = durations.wholeRound;
             await this.settleGameRoundConsumer.settleRound(gameData);
-        } else if (gameData.remainingTime < durations.placingBets) {
+        } else if (this.gameData.remainingTime < durations.placingBets) {
             // definition.bot && definition.bot.run(gameData);
             this.runningRoundInfoPublisher.publish(gameData);
         }
     }
 
-    async checkGameStatus(gameData) {
-        const { name: gameName, configName: gameConfigName, durations } = this.gameDefinition;
-        const gameConfig = await gameConfig.findOne({ name: gameConfigName }).lean().exec();
-        const previouslyDisabled = gameData.disabled;
+    async checkGameStatus() {
+        const { name: gameName, configName, durations } = this.gameDefinition;
+        const configs = await gameConfigs.findOne({ name: configName }).lean().exec();
+        const previouslyDisabled = this.gameData.disabled;
 
-        gameData.gameConfigs = gameConfig;
-        gameData.disabled = !gameConfigs || !gameConfigs.enabled;
+        this.gameData.gameConfigs = configs;
+        this.gameData.disabled = !configs || !configs.enabled;
 
         if (gameData.disabled) {
             gameData.remainingTime = durations.wholeRound;
-            this.gameStatusPublisher.publishDisableGameStatus(gameConfig);
-            await gameConfigs.updateOne({ name: gameName }, { disabledround: gameData.roundId });
+            this.gameStatusPublisher.publishDisableGameStatus(configs);
+            await configs.updateOne({ name: gameName }, { disabledround: gameData.roundId });
         } else if (previouslyDisabled) {
-            this.gameStatusPublisher.publishPreviousDisableGameStatus({ gameData, gameConfig });
+            this.gameStatusPublisher.publishPreviousDisableGameStatus({ gameData: this.gameData, gameConfigs: configs });
         } else {
-            this.gameStatusPublisher.publishStartGame(gameData);
+            this.gameStatusPublisher.publishStartGame(this.gameData);
         }
     }
 
-    resetForNewRound(gameData) {
-        gameData.inGame = {};
-        gameData.totalBets = this.gameDefinition.defaultTotalBets();
+    resetForNewRound() {
+        this.gameData.inGame = {};
+        this.gameData.totalBets = this.gameDefinition.defaultTotalBets();
     }
 }
