@@ -28,7 +28,7 @@ export default class InGameConsumer {
             getRounds(definition.roundRepository, maxNumberOfRounds),
             getUserInfo(definition.userRepository, realPlayer.UID),
         ]);
-        const { betTracks: ownBets } = gameData.usersData[realPlayer.UID] || { betTracks: {} };
+        const { betTracks: ownBets } = gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
 
         const player = {
             id: realPlayer.UID,
