@@ -9,16 +9,17 @@ import { logger, middlewares } from "sc-common";
 import * as Bot from "./bot";
 import ProcessBetQueue from "./cron/process-bet-queue.js";
 import GameDefinition from "./game-definition.js";
+import BaseGameCron from "./cron/game-cron";
 
 export default class BaseGameStartup {
     /**
      * @param {GameDefinition} gameDefinition
+     * * @param {BaseGameCron} gameCron
      */
-    constructor(appConfigs, storage, gameDefinition) {
+    constructor(appConfigs, gameData, gameCron) {
         this.appConfigs = appConfigs;
-        this.storage = storage;
-        this.gameDefinition = gameDefinition;
-        this.processBetQueue = processBetQueue ?? new ProcessBetQueue();
+        this.gameData = gameData;
+        this.gameCron = gameCron;
     }
 
     /**
@@ -86,9 +87,9 @@ export default class BaseGameStartup {
 
     async start() {
         try {
-            this.storage.gameConfigs = await gameConfigs.findOne({ name: this.appConfigs.gameName });
+            this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.appConfigs.gameName });
             this.startProcessBetQueue();
-            this.startGameCron();
+            this.gameCron.start();
         } catch (error) {
             logger.logError(error);
         }
@@ -98,8 +99,6 @@ export default class BaseGameStartup {
         const processBetQueue = new ProcessBetQueue();
         processBetQueue.start();
     }
-
-    startGameCron() {}
 
     /**
      * @param {express.Express} app
