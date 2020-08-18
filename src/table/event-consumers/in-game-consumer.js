@@ -1,5 +1,5 @@
 import sortBy from "lodash.sortby";
-import * as apis from "sc-base-apis";
+import { getBalance } from "sc-base-apis";
 import { TableBasePublisher } from "./../event-publishers";
 import TableGameDefinition from "../table-game-definition";
 import TableGameData from "../table-game-data.js";
@@ -32,7 +32,7 @@ export default class InGameConsumer {
         const { remainingTime, totalBets, chips } = this.gameData;
         const gameConfigs = { minbet, maxbet, choices_maxbet, odds };
 
-        await apis.getBalance(realPlayer, true);
+        await getBalance(realPlayer, true);
 
         const [roundHistory, user] = await Promise.all([
             this.getRounds(this.definition.roundRepository, maxNumberOfRounds),
