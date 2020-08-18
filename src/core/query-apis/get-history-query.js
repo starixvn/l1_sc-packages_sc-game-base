@@ -1,4 +1,4 @@
-import GameDefinition from "../game-definition";
+import GameDefinition from "../game-definition.js";
 
 export default class GetHistoryQuery {
     /**
