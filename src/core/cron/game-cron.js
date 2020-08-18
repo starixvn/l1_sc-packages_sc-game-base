@@ -2,9 +2,8 @@ import GameDefinition from "../game-definition.js";
 import cron from "cron";
 import { logger } from "sc-common";
 import { gameConfigs } from "sc-base-database";
-import GameStatusPublisher from "../event-publishers/game-status-publisher.js";
-import RunningRoundInfoPublisher from "../event-publishers/running-round-info-publisher.js";
-import SettleGameRoundConsumer from "../event-consumers/settle-game-round-consumer.js";
+import { GameStatusPublisher, RunningRoundInfoPublisher } from "../event-publishers";
+import { SettleGameRoundConsumer } from "../event-consumers";
 
 export default class BaseGameCron {
     /**
@@ -65,10 +64,10 @@ export default class BaseGameCron {
         this.gameData.gameConfigs = configs;
         this.gameData.disabled = !configs || !configs.enabled;
 
-        if (gameData.disabled) {
-            gameData.remainingTime = durations.wholeRound;
+        if (this.gameData.disabled) {
+            this.gameData.remainingTime = durations.wholeRound;
             this.gameStatusPublisher.publishDisableGameStatus(configs);
-            await configs.updateOne({ name: gameName }, { disabledround: gameData.roundId });
+            await configs.updateOne({ name: gameName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
             this.gameStatusPublisher.publishPreviousDisableGameStatus({ gameData: this.gameData, gameConfigs: configs });
         } else {

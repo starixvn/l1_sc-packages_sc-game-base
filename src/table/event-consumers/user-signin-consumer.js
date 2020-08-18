@@ -6,12 +6,12 @@ export default class TableUserSignInConsumer extends BaseUserSignInConsumer {
     /**
      * @param {SocketIO.Socket} socketClient
      */
-    async consume(gameData, socketClient, payload) {
+    async consume(socketClient, gameData, payload) {
         const configs = await gameConfigs.findOne({ name: this.definition.configName });
         gameData.gameConfigs = configs;
 
         if (configs && configs.enabled) {
-            await super.consume(gameData, socketClient, storage, payload);
+            await super.consume(socketClient, gameData, payload);
         } else {
             let umMessage = helpers.noticeHelper.underMaintenance;
 
@@ -24,8 +24,8 @@ export default class TableUserSignInConsumer extends BaseUserSignInConsumer {
         }
     }
 
-    handleSignInSuccess(gameData, socketClient, userSession, userInfo) {
-        super.handleSignInSuccess(gameData, userSession, userInfo);
+    handleSignInSuccess(socketClient, gameData, user, userInfo, userSession) {
+        super.handleSignInSuccess(socketClient, gameData, user, userInfo, userSession);
 
         socketClient.emit("message", { toGame: this.definition.name });
     }

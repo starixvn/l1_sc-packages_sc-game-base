@@ -12,7 +12,7 @@ export default class BaseUserSignInConsumer {
     /**
      * @param {SocketIO.Socket} socketClient
      */
-    async consume(gameData, socketClient, payload) {
+    async consume(socketClient, gameData, payload) {
         if (!payload) {
             this.publishUnauthorizedMessage(socketClient);
 
@@ -28,7 +28,7 @@ export default class BaseUserSignInConsumer {
             userSession.username === payload.username &&
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
-            this.handleSignInSuccess(gameData, userSession, userInfo);
+            this.handleSignInSuccess(socketClient, gameData, user, userInfo, userSession);
         } else {
             this.publishUnauthorizedMessage(socketClient);
         }
@@ -38,7 +38,7 @@ export default class BaseUserSignInConsumer {
         socketClient.emit("message", { unauthorized: true });
     }
 
-    handleSignInSuccess(gameData, socketClient, userSession, userInfo) {
+    handleSignInSuccess(socketClient, gameData, user, userInfo, userSession) {
         const session = userSession;
         const userData = {
             UID: user._id.toString(),
