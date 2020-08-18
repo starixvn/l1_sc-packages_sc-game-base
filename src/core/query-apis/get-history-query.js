@@ -28,6 +28,7 @@ export default class GetHistoryQuery {
             __v: false,
             __archive: false,
         };
+
         const bets = await this.definition.betRepository
             .find(filter, betProjection, { sort: { _id: -1 }, skip: numberOfSkippedBets, limit: pageSize })
             .lean()
@@ -42,9 +43,20 @@ export default class GetHistoryQuery {
                         .lean()
                         .exec();
 
-                    const betLogDetails = await this.getHitory(player, repo);
+                    const result = round.result ?? this.convertResult(round);
 
-                    return { ...bet, result: round.result, settlementResult: round.settlementResult, betLogDetails };
+                    if (this.definition.betLogDetails) {
+                        const betLogDetails = await this.getHitory(player, this.definition.betLogDetails);
+
+                        return {
+                            ...bet,
+                            result: result,
+                            settlementResult: round.settlementResult ?? this.convertSettlementResult(result),
+                            betLogDetails,
+                        };
+                    }
+
+                    return { ...bet, result: result, settlementResult: round.settlementResult ?? this.convertSettlementResult(result) };
                 })
             );
         }
@@ -64,4 +76,8 @@ export default class GetHistoryQuery {
     async getTotal(filter, repository) {
         return await repository.countDocuments(filter).exec();
     }
+
+    convertSettlementResult(roundResult) {}
+
+    convertResult(round) {}
 }
