@@ -16,7 +16,8 @@ export default class GetHistoryQuery {
 
         const filter = { uid: player.UID, thanhtoan: true };
         const numberOfSkippedBets = (page - 1) * pageSize;
-        const total = await this.definition.betRepository.countDocuments(filter).exec();
+        const repo = this.definition.betLogRepository ? this.definition.betLogRepository : this.definition.betRepository;
+        const total = await this.getTotal(filter, repo);
         const betProjection = {
             _id: false,
             uid: false,
@@ -41,7 +42,6 @@ export default class GetHistoryQuery {
                         .lean()
                         .exec();
 
-                    const repo = this.definition.betLogRepository ? this.definition.betLogRepository : this.definition.betRepository;
                     const betLogDetails = await this.getHitory(player, repo);
 
                     return { ...bet, result: round.result, settlementResult: round.settlementResult, betLogDetails };
@@ -59,5 +59,9 @@ export default class GetHistoryQuery {
             .exec();
 
         return betLogDetails;
+    }
+
+    async getTotal(filter, repository) {
+        return await repository.countDocuments(filter).exec();
     }
 }
