@@ -1,12 +1,14 @@
 import express from "express";
 import BaseStartup from "./startup.js";
+import { GameDefinition } from "./index.js";
 
 export default class BaseGameApp {
     /**
+     * @param {GameDefinition} definition
      * @param {BaseStartup} startup
      */
-    constructor(appConfigs, storage, startup) {
-        this.startup = startup ?? new BaseStartup(gameName, appConfigs, storage);
+    constructor(appConfigs, definition, gameData, startup) {
+        this.startup = startup ?? new BaseStartup(appConfigs, definition, gameData);
     }
 
     async run() {
