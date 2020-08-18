@@ -29,7 +29,7 @@ export default class BaseGameCron {
             this.gameData.roundId = lastRound.id + 1;
         }
 
-        new cron.CronJob("* * * * * *", () => proceed().catch(logger.logError), null, true);
+        new cron.CronJob("* * * * * *", () => this.proceed().catch(logger.logError), null, true);
     }
 
     async proceed() {

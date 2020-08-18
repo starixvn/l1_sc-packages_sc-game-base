@@ -1,6 +1,6 @@
-import { BaseEventPublisher } from "../../core/event-publishers/base-publisher";
+import { BasePublisher } from "../../core/event-publishers";
 
-export default class TableBaseEventPublisher extends BaseEventPublisher {
+export default class TableBaseEventPublisher extends BasePublisher {
     constructor(gameName, gameData) {
         super(gameName, gameData);
     }

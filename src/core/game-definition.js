@@ -1,11 +1,4 @@
-import { Model } from "mongoose";
-
 export default class GameDefinition {
-    /**
-     * @param {Model<Document,{}>} roundRepository
-     * @param {Model<Document,{}>} betLogRepository
-     * @param {Model<Document,{}>} betRepository
-     */
     constructor(
         { id = 0, name = "", durations = {}, choices = [], defaultBetTracks = {} },
         generateResult,

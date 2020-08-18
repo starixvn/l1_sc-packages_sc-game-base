@@ -1,17 +1,16 @@
 import { placeBet as placeBetApi } from "sc-base-apis";
 import { helpers, logger } from "sc-common";
-import { BaseEventPublisher } from "../../core/event-publishers/base-publisher";
+import { BasePublisher } from "../../core/event-publishers/index.js";
 import TableGameDefinition from "../table-game-definition.js";
 
-export default class PlaceBetConsumer {  
-
+export default class PlaceBetConsumer {
     /**
      * @param {TableGameDefinition} definition
-     * @param {BaseEventPublisher} publisher
+     * @param {BasePublisher} publisher
      */
 
     constructor(placeBetPublisher, choiceMapper, gameData, definition) {
-        this.placeBetPublisher = placeBetPublisher ?? new BaseEventPublisher(gameData, definition.name);
+        this.placeBetPublisher = placeBetPublisher ?? new BasePublisher(gameData, definition.name);
         this.choiceMapper = choiceMapper;
         this.definition = definition;
     }
@@ -30,7 +29,8 @@ export default class PlaceBetConsumer {
         const defaultCriteria = [
             {
                 failure:
-                    gameData.remainingTime < this.definition.durations.lockingBet || gameData.remainingTime >= this.definition.durations.placingBets,
+                    gameData.remainingTime < this.definition.durations.lockingBet ||
+                    gameData.remainingTime >= this.definition.durations.placingBets,
                 notice: helpers.noticeHelper.placeBetNextRound,
             },
             {
