@@ -2,12 +2,14 @@ import sortBy from "lodash.sortby";
 import * as apis from "sc-base-apis";
 import { TableBasePublisher } from "./../event-publishers";
 import TableGameDefinition from "../table-game-definition";
+import TableGameData from "../table-game-data.js";
 import { userInfos } from "sc-base-database";
 
 export default class InGameConsumer {
     /**
      * @param {TableGameDefinition} definition
      * @param {TableBaseEventPublisher} publisher
+     * @param {TableGameData} gameData
      */
     constructor(definition, gameData, publisher = null) {
         this.definition = definition;
@@ -27,7 +29,7 @@ export default class InGameConsumer {
     async inGame(realPlayer) {
         const maxNumberOfRounds = 100;
         const { minbet, maxbet, choices_maxbet, odds } = this.gameData.gameConfigs;
-        const { remainingTime, totalBets } = this.gameData;
+        const { remainingTime, totalBets, chips } = this.gameData;
         const gameConfigs = { minbet, maxbet, choices_maxbet, odds };
 
         await apis.getBalance(realPlayer, true);
@@ -67,6 +69,7 @@ export default class InGameConsumer {
             ownBets,
             totalBets,
             players,
+            chips,
         };
 
         realPlayer.socketClient.emit(this.definition.name, inGameData);

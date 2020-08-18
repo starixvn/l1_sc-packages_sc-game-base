@@ -2,11 +2,13 @@ import { placeBet as placeBetApi } from "sc-base-apis";
 import { helpers, logger } from "sc-common";
 import { BasePublisher } from "../../core/event-publishers/index.js";
 import TableGameDefinition from "../table-game-definition.js";
+import TableGameData from "../table-game-data.js";
 
 export default class PlaceBetConsumer {
     /**
      * @param {TableGameDefinition} definition
      * @param {BasePublisher} publisher
+     * @param {TableGameData} gameData
      */
 
     constructor(placeBetPublisher, choiceMapper, gameData, definition) {
@@ -192,6 +194,7 @@ export default class PlaceBetConsumer {
 
     generatePlacingBetResult(gameName, gameData, player, userBalance, betChoice, betAmount) {
         gameData.totalBets[betChoice] += betAmount;
+        gameData.chips[betChoice][amount] += 1;
 
         if (gameData.players[player.UID]) {
             gameData.players[player.UID].red = userBalance;
