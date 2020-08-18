@@ -1,4 +1,4 @@
-import { BaseGameApp } from "../core";
+import { BaseGameApp } from "../core/index.js";
 import TableStartup from "./startup.js";
 
 export default class TableGameApp extends BaseGameApp {
