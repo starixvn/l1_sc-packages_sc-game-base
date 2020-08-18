@@ -4,5 +4,6 @@ export default class BaseGameData {
         this.remainingTime = 0;
         this.totalBets = {};
         this.gameConfigs = {};
+        this.ingame = {};
     }
 }

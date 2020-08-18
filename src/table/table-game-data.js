@@ -7,6 +7,5 @@ export default class TableGameData extends BaseGameData {
         this.chips = {};
         this.realPlayers = {};
         this.players = {};
-        this.ingame = {};
     }
 }
