@@ -79,21 +79,14 @@ export default class PlaceBetConsumer {
         if (!gameData.ingame[name]) {
             const newPlayer = {
                 name: player.profile.name,
-                betTracks: this.definition.defaultBetTracks(),
+                betTracks: {},
             };
 
-            if (this.definition.queueingBet) {
-                newPlayer.betQueue = [];
-            }
-
+            newPlayer.betQueue = [];
             gameData.ingame[name] = newPlayer;
         }
 
-        if (this.definition.queueingBet) {
-            gameData.ingame[name].betQueue.push({ player, betChoice, amount, freeBet });
-        } else {
-            await this.proceedBet(player, betChoice, amount, gameData, freeBet).catch(logger.logError);
-        }
+        gameData.ingame[name].betQueue.push({ player, betChoice, amount, freeBet });
     }
 
     async proceedBet(player, betChoice, amount, gameData, freeBet) {
