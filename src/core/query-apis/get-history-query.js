@@ -1,5 +1,4 @@
 import GameDefinition from "../game-definition";
-import { logger } from "sc-common";
 
 export default class GetHistoryQuery {
     /**
@@ -10,7 +9,11 @@ export default class GetHistoryQuery {
         this.definition = definition;
     }
 
-    async queryHistory(player, page, pageSize) {
+    async queryHistory(player, page, pageSize = 8) {
+        if (page < 1 || !player) {
+            return;
+        }
+
         const filter = { uid: player.UID, thanhtoan: true };
         const numberOfSkippedBets = (page - 1) * pageSize;
         const total = await this.definition.betRepository.countDocuments(filter).exec();
@@ -37,20 +40,24 @@ export default class GetHistoryQuery {
                         .findOne({ id: bet.phien }, { _id: false, result: true, settlementResult: true })
                         .lean()
                         .exec();
-                    const betLogDetails = await this.definition.betLogRepository
-                        .find(
-                            { phien: bet.phien, uid: player.UID },
-                            { _id: false, time: true, choice: true, amount: true },
-                            { sort: { _id: -1 } }
-                        )
-                        .lean()
-                        .exec();
+
+                    const repo = this.definition.betLogRepository ? this.definition.betLogRepository : this.definition.betRepository;
+                    const betLogDetails = await this.getHitory(player, repo);
 
                     return { ...bet, result: round.result, settlementResult: round.settlementResult, betLogDetails };
                 })
             );
         }
 
-        player.red({ [this.definition.name]: { history: { betLogs, page, pageSize, total } } });
+        return { history: { betLogs, page, pageSize, total } };
+    }
+
+    async getHitory(player, repository) {
+        const betLogDetails = await repository
+            .find({ phien: bet.phien, uid: player.UID }, { _id: false, time: true, choice: true, amount: true }, { sort: { _id: -1 } })
+            .lean()
+            .exec();
+
+        return betLogDetails;
     }
 }
