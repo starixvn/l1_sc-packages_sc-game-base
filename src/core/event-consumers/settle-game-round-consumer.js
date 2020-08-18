@@ -42,7 +42,8 @@ export default class SettleGameRoundConsumer {
         const betResult = Object.entries(settlementResult).reduce(
             (result, [choice, win]) => {
                 const betAmount = bet[choice];
-                const winAmount = win ? betAmount * (odds[choice] || 1) : 0;
+                let winAmount = win ? betAmount * (odds[choice] || 1) : 0;
+                winAmount = bet.freeBet ? winAmount - betAmount : winAmount;
 
                 result.totalBetAmount += betAmount;
                 result.totalWin += winAmount;
@@ -107,6 +108,7 @@ export default class SettleGameRoundConsumer {
         };
         const settlementInfo = {
             redPlay: betResult.totalBetAmount,
+            freeBet: bet.freeBet,
         };
 
         if (betResult.totalWin > 0) {
