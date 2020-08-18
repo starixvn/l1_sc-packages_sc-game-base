@@ -6,4 +6,4 @@ import * as Routers from "./routers/index.js";
 import * as BaseEventConsumers from "./event-consumers/index.js";
 import * as BaseEventPublishers from "./event-publishers/index.js";
 
-export { BaseStartup, BaseGameApp, GameDefinition, Cron, Routers, BaseEventPublishers, BaseEventConsumers, ProcessBetQueue };
+export { BaseStartup, BaseGameApp, GameDefinition, Cron, Routers, BaseEventPublishers, BaseEventConsumers };
