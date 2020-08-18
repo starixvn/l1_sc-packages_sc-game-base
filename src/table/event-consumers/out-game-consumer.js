@@ -1,6 +1,8 @@
+import { BaseEventPublishers, BaseEventConsumers } from "./../../core/index.js";
+
 export default class OutGameConsumer extends BaseEventConsumers.BaseUserDisconnectConsumer {
-    constructor(publisher, storage, definition) {
-        this.publisher = publisher ?? new BaseEventPublisher(storage, definition.name);
+    constructor(definition, gameData, publisher = null) {
+        this.publisher = publisher ?? new BaseEventPublishers.BasePublisher(definition.name, gameData);
     }
 
     outGame(socketClient, gameData) {
@@ -12,5 +14,5 @@ export default class OutGameConsumer extends BaseEventConsumers.BaseUserDisconne
         }
 
         super.consume(socketClient, storage);
-    } 
+    }
 }

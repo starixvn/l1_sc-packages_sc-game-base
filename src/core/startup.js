@@ -10,14 +10,17 @@ import * as Bot from "./bot";
 import ProcessBetQueue from "./cron/process-bet-queue.js";
 import GameDefinition from "./game-definition.js";
 import BaseGameCron from "./cron/game-cron";
+import { SocketRouter } from "..cor";
+import BaseAdminSocketRouter from "./routers/admin-socket-router";
 
 export default class BaseGameStartup {
     /**
-     * @param {GameDefinition} gameDefinition
+     * @param {GameDefinition} definition
      * * @param {BaseGameCron} gameCron
      */
-    constructor(appConfigs, gameData, gameCron) {
+    constructor(appConfigs, definition, gameData, gameCron) {
         this.appConfigs = appConfigs;
+        this.definition = definition;
         this.gameData = gameData;
         this.gameCron = gameCron;
     }

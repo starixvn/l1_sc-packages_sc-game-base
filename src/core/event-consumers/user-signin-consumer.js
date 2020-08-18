@@ -1,10 +1,12 @@
 import { userInfos, users, userSessions } from "sc-base-database";
-import { logger } from "sc-common";
-import { GameTypes } from "./../../constants";
+import GameDefinition from "../game-definition.js";
 
 export default class BaseUserSignInConsumer {
-    constructor(gameName) {
-        this.gameName = gameName;
+    /**
+     * @param {GameDefinition} definition
+     */
+    constructor(definition) {
+        this.definition = definition;
     }
 
     /**
@@ -17,22 +19,18 @@ export default class BaseUserSignInConsumer {
             return;
         }
 
-        try {
-            const user = await users.findOne({ "local.username": payload.username });
-            const userInfo = await userInfos.findOne({ id: user._id.toString() });
-            const userSession = await userSessions.findOne({ sessionId: payload.ss });
+        const user = await users.findOne({ "local.username": payload.username });
+        const userInfo = await userInfos.findOne({ id: user._id.toString() });
+        const userSession = await userSessions.findOne({ sessionId: payload.ss });
 
-            if (
-                userSession &&
-                userSession.username === payload.username &&
-                userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
-            ) {
-                this.handleSignInSuccess(gameData, userSession, userInfo);
-            } else {
-                this.publishUnauthorizedMessage(socketClient);
-            }
-        } catch (error) {
-            logger.logError(error);
+        if (
+            userSession &&
+            userSession.username === payload.username &&
+            userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
+        ) {
+            this.handleSignInSuccess(gameData, userSession, userInfo);
+        } else {
+            this.publishUnauthorizedMessage(socketClient);
         }
     }
 

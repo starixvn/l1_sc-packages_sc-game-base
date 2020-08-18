@@ -11,7 +11,7 @@ export default class BaseSocketRouter {
     constructor(definition, gameData, userSignInConsumer, userDisconnectConsumer) {
         this.definition = definition;
         this.gameData = gameData;
-        this.userSignInConsumer = userSignInConsumer ?? new BaseUserSignInConsumer(definition.name);
+        this.userSignInConsumer = userSignInConsumer ?? new BaseUserSignInConsumer(definition);
         this.userDisconnectConsumer = userDisconnectConsumer ?? new BaseUserDisconnectConsumer();
     }
 
