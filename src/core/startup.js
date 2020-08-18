@@ -6,10 +6,10 @@ import socketIo from "socket.io";
 import { init as initApis } from "sc-base-apis";
 import { gameConfigs, init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
-import * as Bot from "./bot";
+import * as Bot from "./bot/index.js";
 import ProcessBetQueue from "./cron/process-bet-queue.js";
 import GameDefinition from "./game-definition.js";
-import BaseGameCron from "./cron/game-cron";
+import BaseGameCron from "./cron/game-cron.js";
 
 export default class BaseGameStartup {
     /**
