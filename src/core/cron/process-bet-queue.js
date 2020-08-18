@@ -1,5 +1,5 @@
 import { logger } from "sc-common";
-import { PlaceBetConsumer } from "./../../event-consumers";
+import { PlaceBetConsumer } from "../event-consumers/place-bet-consumer.js";
 
 export default class ProcessBetQueue {
     processTimeOut = 50;
