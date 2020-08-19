@@ -1,6 +1,8 @@
 import { logger } from "sc-common";
-import { BaseUserDisconnectConsumer, BaseUserSignInConsumer } from "./../event-consumers";
+
 import GameDefinition from "../game-definition.js";
+import { HistoryQuery } from "../query-apis";
+import { BaseUserDisconnectConsumer, BaseUserSignInConsumer } from "./../event-consumers";
 
 export default class BaseSocketRouter {
     /**
@@ -13,6 +15,7 @@ export default class BaseSocketRouter {
         this.gameData = gameData;
         this.userSignInConsumer = userSignInConsumer ?? new BaseUserSignInConsumer();
         this.userDisconnectConsumer = userDisconnectConsumer ?? new BaseUserDisconnectConsumer();
+        this.historyQuery = new HistoryQuery(definition);
     }
 
     /**
@@ -36,7 +39,14 @@ export default class BaseSocketRouter {
         }
     }
 
-    async handleGetHistory(payload) {}
+    async handleGetHistory(payload) {
+        try {
+            const history = this.historyQuery.queryHistory(this.gameData.realPlayers[this.socketClient.id], payload.page);
+            this.socketClient.emit(this.definition.name, history);
+        } catch (err) {
+            logger.logError(err);
+        }
+    }
 
     async handleDisconnect() {
         try {

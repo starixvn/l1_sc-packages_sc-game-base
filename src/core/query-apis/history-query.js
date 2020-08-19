@@ -1,10 +1,9 @@
-import GameDefinition from "../game-definition.js";
+import GameDefinition from "../game-definition";
 
-export default class GetHistoryQuery {
+export default class HistoryQuery {
     /**
      * @param {GameDefinition} definition
      */
-
     constructor(definition) {
         this.definition = definition;
     }
@@ -16,8 +15,7 @@ export default class GetHistoryQuery {
 
         const filter = { uid: player.UID, thanhtoan: true };
         const numberOfSkippedBets = (page - 1) * pageSize;
-        const repo = this.definition.betLogRepository ? this.definition.betLogRepository : this.definition.betRepository;
-        const total = await this.getTotal(filter, repo);
+        const total = await this.definition.betRepository.countDocuments(filter).exec();
         const betProjection = {
             _id: false,
             uid: false,
@@ -46,7 +44,7 @@ export default class GetHistoryQuery {
                     const result = round.result ?? this.convertResult(round);
 
                     if (this.definition.betLogDetails) {
-                        const betLogDetails = await this.getHitory(player, this.definition.betLogDetails);
+                        const betLogDetails = await this.getBetLogDetails(player);
 
                         return {
                             ...bet,
@@ -64,17 +62,13 @@ export default class GetHistoryQuery {
         return { history: { betLogs, page, pageSize, total } };
     }
 
-    async getHitory(player, repository) {
-        const betLogDetails = await repository
+    async getBetLogDetails(player) {
+        const betLogDetails = await this.definition.betLogRepository
             .find({ phien: bet.phien, uid: player.UID }, { _id: false, time: true, choice: true, amount: true }, { sort: { _id: -1 } })
             .lean()
             .exec();
 
         return betLogDetails;
-    }
-
-    async getTotal(filter, repository) {
-        return await repository.countDocuments(filter).exec();
     }
 
     convertSettlementResult(roundResult) {}
