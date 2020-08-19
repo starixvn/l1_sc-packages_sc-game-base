@@ -1,4 +1,4 @@
-import { BaseEventPublishers, BaseEventConsumers } from "./../../core/index.js";
+import { BaseEventConsumers, BaseEventPublishers } from "./../../core/index.js";
 
 export default class OutGameConsumer extends BaseEventConsumers.BaseUserDisconnectConsumer {
     constructor(definition, gameData, publisher = null) {
@@ -11,7 +11,7 @@ export default class OutGameConsumer extends BaseEventConsumers.BaseUserDisconne
 
         if (realPlayer) {
             delete gameData.players[realPlayer.UID];
-            publisher.publishToAllUsers({ outgame: { playerId: realPlayer.UID } });
+            this.publisher.publishToAllUsers({ outgame: { playerId: realPlayer.UID } });
         }
 
         super.consume(socketClient, storage);
