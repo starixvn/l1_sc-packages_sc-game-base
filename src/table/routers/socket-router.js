@@ -14,7 +14,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
             userSignInConsumer ?? new UserSignInConsumer(definition),
             userDisconnectConsumer ?? new OutGameConsumer(definition, gameData)
         );
-        this.inGameConsumer = inGameConsumer ?? new InGameConsumer(definition, gameData);
+        this.inGameConsumer = inGameConsumer ?? new InGameConsumer();
     }
 
     /**
@@ -27,7 +27,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
 
     async handleInGame() {
         try {
-            this.inGameConsumer.checkInGame(this.socketClient);
+            this.inGameConsumer.inGame(this.socketClient, this.definition, this.gameData);
         } catch (err) {
             logger.logError(err);
         }

@@ -1,44 +1,36 @@
 import sortBy from "lodash.sortby";
 import { getBalance } from "sc-base-apis";
-import { TableBasePublisher } from "./../event-publishers";
-import TableGameDefinition from "../table-game-definition";
+
 import TableGameData from "../table-game-data.js";
 import { userInfos } from "sc-base-database";
 
+import TableGameDefinition from "../table-game-definition";
+
 export default class InGameConsumer {
     /**
+     * @param {SocketIO.Client} socketClient
      * @param {TableGameDefinition} definition
-     * @param {TableBaseEventPublisher} publisher
      * @param {TableGameData} gameData
      */
-    constructor(definition, gameData, publisher = null) {
-        this.definition = definition;
-        this.gameData = gameData;
-        this.publisher = publisher ?? new TableBasePublisher(definition.name, gameData);
-    }
+    async inGame(socketClient, definition, gameData) {
+        const realPlayer = gameData.realPlayers[socketClient.id];
 
-    async checkInGame(socketClient) {
-        const realPlayer = this.gameData.realPlayers[socketClient.id];
-        if (realPlayer) {
-            await this.inGame(realPlayer);
-        } else {
-            this.publisher.publishMessageBackToLobby(realPlayer.UID);
+        if (!realPlayer) {
+            return;
         }
-    }
 
-    async inGame(realPlayer) {
         const maxNumberOfRounds = 100;
-        const { minbet, maxbet, choices_maxbet, odds } = this.gameData.gameConfigs;
-        const { remainingTime, totalBets, chips } = this.gameData;
+        const { minbet, maxbet, choices_maxbet, odds } = gameData.gameConfigs;
+        const { remainingTime, totalBets, chips } = gameData;
         const gameConfigs = { minbet, maxbet, choices_maxbet, odds };
 
         await getBalance(realPlayer, true);
 
         const [roundHistory, user] = await Promise.all([
-            this.getRounds(this.definition.roundRepository, maxNumberOfRounds),
+            this.getRounds(definition.roundRepository, maxNumberOfRounds),
             this.getUserInfo(realPlayer.UID),
         ]);
-        const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
+        const { betTracks: ownBets } = gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
 
         const player = {
             id: realPlayer.UID,
@@ -48,7 +40,7 @@ export default class InGameConsumer {
             type: user.type,
         };
 
-        const playerArr = Object.values(this.gameData.players);
+        const playerArr = Object.values(gameData.players);
         const sorted = sortBy(playerArr, "type");
 
         const players = {};
@@ -58,8 +50,8 @@ export default class InGameConsumer {
 
         delete players[realPlayer.UID];
 
-        if (!this.gameData.players[player.id]) {
-            this.gameData.players[player.id] = player;
+        if (!gameData.players[player.id]) {
+            gameData.players[player.id] = player;
         }
 
         const inGameData = {
@@ -72,7 +64,7 @@ export default class InGameConsumer {
             chips,
         };
 
-        realPlayer.socketClient.emit(this.definition.name, inGameData);
+        realPlayer.socketClient.emit(definition.name, inGameData);
 
         this.publisher.publishToAllUsersExcept(realPlayer.UID, { player });
     }

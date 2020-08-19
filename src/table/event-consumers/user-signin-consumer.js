@@ -1,8 +1,17 @@
 import { BaseUserSignInConsumer } from "../../core/event-consumers";
 import { gameConfigs } from "sc-base-database";
 import { helpers } from "sc-common";
+import TableGameDefinition from "../table-game-definition";
 
 export default class TableUserSignInConsumer extends BaseUserSignInConsumer {
+    /**
+     * @param {TableGameDefinition} definition
+     */
+    constructor(definition) {
+        super();
+        this.definition = definition;
+    }
+
     /**
      * @param {SocketIO.Socket} socketClient
      */

@@ -1,14 +1,6 @@
 import { userInfos, users, userSessions } from "sc-base-database";
-import GameDefinition from "../game-definition.js";
 
 export default class BaseUserSignInConsumer {
-    /**
-     * @param {GameDefinition} definition
-     */
-    constructor(definition) {
-        this.definition = definition;
-    }
-
     /**
      * @param {SocketIO.Socket} socketClient
      */
