@@ -90,16 +90,16 @@ export default class BaseGameStartup {
     async start() {
         try {
             this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.appConfigs.gameName });
-            this.startProcessBetQueue();
+            this.startProcessBetQueue(this.gameData);
             this.gameCron.start();
         } catch (error) {
             logger.logError(error);
         }
     }
 
-    startProcessBetQueue() {
+    startProcessBetQueue(gameData) {
         const processBetQueue = new ProcessBetQueue();
-        processBetQueue.start();
+        processBetQueue.start(gameData);
     }
 
     /**
