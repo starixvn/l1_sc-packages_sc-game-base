@@ -45,14 +45,14 @@ export default class BaseGameCron {
 
         if (this.gameData.remainingTime === durations.placingBets) {
             this.resetForNewRound();
-            // definition.bot && (await definition.bot.reset());
+            this.gameDefinition.bot && (await this.gameDefinition.bot.reset());
         }
 
         if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
             await this.settleGameRoundConsumer.settleRound(this.gameData);
         } else if (this.gameData.remainingTime < durations.placingBets) {
-            // definition.bot && definition.bot.run(gameData);
+            this.gameDefinition.bot && definition.bot.run(this.gameData);
             this.runningRoundInfoPublisher.publish(this.gameData);
         }
     }

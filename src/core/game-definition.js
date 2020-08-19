@@ -5,7 +5,8 @@ export default class GameDefinition {
         settle,
         roundRepository,
         betRepository,
-        betLogRepository
+        betLogRepository,
+        bot
     ) {
         this.id = id;
         this.name = name;
@@ -17,5 +18,6 @@ export default class GameDefinition {
         this.roundRepository = roundRepository;
         this.betRepository = betRepository;
         this.betLogRepository = betLogRepository;
+        this.bot = bot;
     }
 }
