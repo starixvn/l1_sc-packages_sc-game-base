@@ -1,7 +1,8 @@
+import { logger } from "sc-common";
+
 import BaseSocketRouter from "../../core/routers/socket-router.js";
 import InGameConsumer from "../event-consumers/in-game-consumer.js";
-import { logger } from "sc-common";
-import { UserSignInConsumer, OutGameConsumer } from "../event-consumers/index.js";
+import { OutGameConsumer, UserSignInConsumer } from "../event-consumers/index.js";
 
 export default class TableSocketRouter extends BaseSocketRouter {
     /**
@@ -14,7 +15,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
             userSignInConsumer ?? new UserSignInConsumer(definition),
             userDisconnectConsumer ?? new OutGameConsumer(definition, gameData)
         );
-        this.inGameConsumer = inGameConsumer ?? new InGameConsumer();
+        this.inGameConsumer = inGameConsumer ?? new InGameConsumer(definition, gameData);
     }
 
     /**
@@ -27,7 +28,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
 
     async handleInGame() {
         try {
-            this.inGameConsumer.inGame(this.socketClient, this.definition, this.gameData);
+            this.inGameConsumer.inGame(this.socketClient);
         } catch (err) {
             logger.logError(err);
         }
