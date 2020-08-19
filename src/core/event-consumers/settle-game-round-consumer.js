@@ -1,5 +1,5 @@
-import GameDefinition from "../game-definition.js";
 import RoundResultPublisher from "../event-publishers/round-result-publisher.js";
+import GameDefinition from "../game-definition.js";
 
 export default class SettleGameRoundConsumer {
     /**
@@ -32,7 +32,7 @@ export default class SettleGameRoundConsumer {
 
             this.gameData.roundId = finish.roundId + 1;
 
-            await settleBets(finish);
+            await this.settleBets(finish);
         }
     }
 
