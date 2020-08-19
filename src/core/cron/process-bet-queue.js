@@ -11,25 +11,28 @@ export default class ProcessBetQueue {
         this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer();
     }
 
-    start(storage) {
-        let self = this;
+    dequeueBets(gameData) {
+        if (gameData.ingame) {
+            Object.values(gameData.ingame).forEach((playerInGame) => {
+                if (!playerInGame.betProcessing && playerInGame.betQueue && playerInGame.betQueue.length > 0) {
+                    const { player, payload } = playerInGame.betQueue.shift();
 
-        setTimeout(function proceed() {
-            if (storage) {
-                Object.values(storage.gameData.usersData).forEach((userInGame) => {
-                    if (!userInGame.betProcessing && userInGame.betQueue && userInGame.betQueue.length > 0) {
-                        const { user, payload } = userInGame.betQueue.shift();
+                    playerInGame.betProcessing = true;
+                    this.placeBetConsumer
+                        .proceedBet(player, gameData, payload)
+                        .then(() => (playerInGame.betProcessing = false))
+                        .catch(logger.logError);
+                }
+            });
+        }
+    }
 
-                        userInGame.betProcessing = true;
-                        self.placeBetConsumer
-                            .proceedBet(user, payload, userInGame)
-                            .then(() => (userInGame.betProcessing = false))
-                            .catch(logger.logError);
-                    }
-                });
-            }
+    start(gameData) {
+        const keepDequeuingBets = () => {
+            this.dequeueBets(gameData);
+            setTimeout(keepDequeuingBets, this.processTimeOut);
+        };
 
-            setTimeout(proceed, self.processTimeOut);
-        }, this.processTimeOut);
+        setTimeout(keepDequeuingBets, this.processTimeOut);
     }
 }

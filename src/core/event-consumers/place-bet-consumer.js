@@ -70,7 +70,6 @@ export default class PlaceBetConsumer {
     async placeBet(player, payload, gameData) {
         const amount = payload.amount >> 0;
         const betChoice = payload.betChoice;
-        const freeBet = payload.freeBet;
 
         if (!this.validateBetRequest(gameData, player, betChoice, amount)) {
             return;
@@ -88,31 +87,31 @@ export default class PlaceBetConsumer {
             gameData.ingame[name] = newPlayer;
         }
 
-        gameData.ingame[name].betQueue.push({ player, betChoice, amount, freeBet });
+        gameData.ingame[name].betQueue.push({ player, payload });
     }
 
-    async proceedBet(player, betChoice, amount, gameData, freeBet) {
+    async proceedBet(player, gameData, payload) {
         const betInfo = {
-            cuoc: amount,
+            cuoc: payload.amount,
             gameId: this.definition.id,
             gameRoundId: gameData.roundId,
-            choiceId: this.choiceMapper[betChoice],
-            freeBet: freeBet,
+            choiceId: this.choiceMapper[payload.betChoice],
+            freeBet: payload.freeBet,
         };
 
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, gameData, apiResult.response.red, betChoice, amount, freeBet);
+            await this.handleSuccessBet(player, gameData, apiResult.response.red, payload.betChoice, payload.amount, payload.freeBet);
         } else {
             const notice = apiResult.response.inSufficientBalance ? helpers.noticeHelper.notEnoughMoney : apiResult.response;
 
-            await this.handleFailedBet(player, gameData, betChoice, amount, notice);
+            await this.handleFailedBet(player, gameData, payload.betChoice, payload.amount, notice);
         }
     }
 
     async handleSuccessBet(player, gameData, red, betChoice, amount, freeBet = false) {
-        const existingBetFilter = { uid: player.UID, phien: gameData.roundId, freeBet: freeBet};
+        const existingBetFilter = { uid: player.UID, phien: gameData.roundId, freeBet: freeBet };
         const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
         if (this.definition.betLogRepository) {
@@ -130,7 +129,7 @@ export default class PlaceBetConsumer {
                 phien: gameData.roundId,
                 time: new Date(),
                 odds: configs.odds,
-                freeBet
+                freeBet,
             };
             const existingBetIncrement = { [betChoice]: amount };
 
@@ -170,7 +169,7 @@ export default class PlaceBetConsumer {
             time: new Date(),
             choice: betChoice,
             amount,
-            freeBet
+            freeBet,
         };
 
         if (player.session) {
@@ -222,30 +221,5 @@ export default class PlaceBetConsumer {
               };
 
         return successMessage;
-    }
-
-    dequeueBets(gameData) {
-        if (gameData.ingame) {
-            Object.values(gameData.ingame).forEach((playerInGame) => {
-                if (!playerInGame.betProcessing && playerInGame.betQueue && playerInGame.betQueue.length > 0) {
-                    const { player, betChoice, amount, freeBet } = playerInGame.betQueue.shift();
-
-                    playerInGame.betProcessing = true;
-                    this.proceedBet(player, betChoice, amount, gameData, freeBet)
-                        .then(() => (playerInGame.betProcessing = false))
-                        .catch(logger.logError);
-                }
-            });
-        }
-    }
-
-    proceedBetQueue(gameData) {
-        const dequeueInterval = 50;
-        const keepDequeuingBets = () => {
-            this.dequeueBets(gameData);
-            setTimeout(keepDequeuingBets, dequeueInterval);
-        };
-
-        setTimeout(keepDequeuingBets, dequeueInterval);
     }
 }
