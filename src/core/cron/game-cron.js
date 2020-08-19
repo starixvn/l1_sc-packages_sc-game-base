@@ -50,10 +50,10 @@ export default class BaseGameCron {
 
         if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
-            await this.settleGameRoundConsumer.settleRound(gameData);
+            await this.settleGameRoundConsumer.settleRound(this.gameData);
         } else if (this.gameData.remainingTime < durations.placingBets) {
             // definition.bot && definition.bot.run(gameData);
-            this.runningRoundInfoPublisher.publish(gameData);
+            this.runningRoundInfoPublisher.publish(this.gameData);
         }
     }
 
