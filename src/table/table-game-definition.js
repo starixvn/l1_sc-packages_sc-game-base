@@ -1,4 +1,4 @@
-import GameDefinition from "../core/game-definition.js";
+import { GameDefinition } from "../core";
 
 export default class TableGameDefinition extends GameDefinition {
     /**
@@ -9,10 +9,13 @@ export default class TableGameDefinition extends GameDefinition {
         generateResult,
         settle,
         roundRepository,
+        betRepository,
+        tempBetRepository,
         betLogRepository,
         tempBetLogRepository
     ) {
-        super({ id, name, durations, choices, defaultBetTracks }, generateResult, settle, roundRepository, betLogRepository);
+        super({ id, name, durations, choices, defaultBetTracks }, generateResult, settle, roundRepository, betRepository, betLogRepository);
+        this.tempBetRepository = tempBetRepository;
         this.tempBetLogRepository = tempBetLogRepository;
     }
 }
