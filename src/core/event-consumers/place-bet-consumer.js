@@ -94,7 +94,7 @@ export default class PlaceBetConsumer {
     async proceedBet(player, betChoice, amount, gameData, freeBet) {
         const betInfo = {
             cuoc: amount,
-            gameId: appConfigs.gameId,
+            gameId: this.definition.id,
             gameRoundId: gameData.roundId,
             choiceId: this.choiceMapper[betChoice],
             freeBet: freeBet,
@@ -103,7 +103,7 @@ export default class PlaceBetConsumer {
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, gameData, apiResult.response.red, betChoice, amount);
+            await this.handleSuccessBet(player, gameData, apiResult.response.red, betChoice, amount, freeBet);
         } else {
             const notice = apiResult.response.inSufficientBalance ? helpers.noticeHelper.notEnoughMoney : apiResult.response;
 
@@ -111,12 +111,12 @@ export default class PlaceBetConsumer {
         }
     }
 
-    async handleSuccessBet(player, gameData, red, betChoice, amount) {
-        const existingBetFilter = { uid: player.UID, phien: gameData.roundId };
+    async handleSuccessBet(player, gameData, red, betChoice, amount, freeBet = false) {
+        const existingBetFilter = { uid: player.UID, phien: gameData.roundId, freeBet: freeBet};
         const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
         if (this.definition.betLogRepository) {
-            await this.insertBetLog(this.definition.betLogRepository, player, gameData.roundId, betChoice, amount);
+            await this.insertBetLog(this.definition.betLogRepository, player, gameData.roundId, betChoice, amount, freeBet);
         }
 
         if (existingBet) {
@@ -130,6 +130,7 @@ export default class PlaceBetConsumer {
                 phien: gameData.roundId,
                 time: new Date(),
                 odds: configs.odds,
+                freeBet
             };
             const existingBetIncrement = { [betChoice]: amount };
 
@@ -161,7 +162,7 @@ export default class PlaceBetConsumer {
         }
     }
 
-    async insertBetLog(betLogRepository, player, roundId, betChoice, amount) {
+    async insertBetLog(betLogRepository, player, roundId, betChoice, amount, freeBet) {
         const newBetLog = {
             uid: player.UID,
             name: player.profile.name,
@@ -169,6 +170,7 @@ export default class PlaceBetConsumer {
             time: new Date(),
             choice: betChoice,
             amount,
+            freeBet
         };
 
         if (player.session) {
