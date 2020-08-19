@@ -5,7 +5,7 @@ export default class TableGameDefinition extends GameDefinition {
      * @param {Model<Document,{}>} tempBetLogRepository
      */
     constructor(
-        { id = 0, name = "", durations = {}, choices = [], defaultBetTracks = {} },
+        { id = 0, name = "", durations = {}, choices = [], choicesMapper = {}, defaultBetTracks = {} },
         generateResult,
         settle,
         roundRepository,
@@ -15,7 +15,15 @@ export default class TableGameDefinition extends GameDefinition {
         tempBetLogRepository,
         bot
     ) {
-        super({ id, name, durations, choices, defaultBetTracks }, generateResult, settle, roundRepository, betRepository, betLogRepository, bot);
+        super(
+            { id, name, durations, choices, choicesMapper, defaultBetTracks },
+            generateResult,
+            settle,
+            roundRepository,
+            betRepository,
+            betLogRepository,
+            bot
+        );
         this.tempBetRepository = tempBetRepository;
         this.tempBetLogRepository = tempBetLogRepository;
     }

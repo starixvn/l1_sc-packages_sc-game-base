@@ -11,9 +11,8 @@ export default class PlaceBetConsumer {
      * @param {GameDefinition} definition
      */
 
-    constructor(placeBetPublisher, choiceMapper, gameData, definition) {
+    constructor(placeBetPublisher, gameData, definition) {
         this.placeBetPublisher = placeBetPublisher ?? new BasePublisher(gameData, definition.name);
-        this.choiceMapper = choiceMapper;
         this.definition = definition;
     }
 
@@ -95,7 +94,7 @@ export default class PlaceBetConsumer {
             cuoc: payload.amount,
             gameId: this.definition.id,
             gameRoundId: gameData.roundId,
-            choiceId: this.choiceMapper[payload.betChoice],
+            choiceId: this.definition.choicesMapper[payload.betChoice],
             freeBet: payload.freeBet,
         };
 
