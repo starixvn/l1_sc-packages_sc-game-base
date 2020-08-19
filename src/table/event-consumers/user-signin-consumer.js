@@ -1,7 +1,8 @@
-import { BaseUserSignInConsumer } from "../../core/event-consumers";
-import { gameConfigs } from "sc-base-database";
-import { helpers } from "sc-common";
-import TableGameDefinition from "../table-game-definition";
+import { gameConfigs } from 'sc-base-database';
+import { helpers } from 'sc-common';
+
+import { BaseUserSignInConsumer } from '../../core/event-consumers';
+import TableGameDefinition from '../table-game-definition';
 
 export default class TableUserSignInConsumer extends BaseUserSignInConsumer {
     /**
