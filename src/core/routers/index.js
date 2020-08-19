@@ -1,4 +1,4 @@
-import BaseSocketRouter from "./socket-router.js";
-import BaseAdminSocketRouter from "./socket-router.js";
+import BaseAdminSocketRouter from "./admin-socket-router";
+import BaseSocketRouter from "./socket-router";
 
 export { BaseSocketRouter, BaseAdminSocketRouter };

@@ -1,8 +1,9 @@
 import { placeBet as placeBetApi } from "sc-base-apis";
 import { helpers } from "sc-common";
-import { BasePublisher } from "../event-publishers/index.js";
-import GameDefinition from "../game-definition.js";
-import GameData from "../game-data.js";
+
+import { BasePublisher } from "./../event-publishers";
+import GameData from "./../game-data";
+import GameDefinition from "./../game-definition";
 
 export default class PlaceBetConsumer {
     /**

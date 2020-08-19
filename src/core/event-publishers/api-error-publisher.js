@@ -1,4 +1,4 @@
-import BaseEventPublisher from "./base-publisher.js";
+import BaseEventPublisher from "./base-publisher";
 
 export default class ApiErrorPublisher extends BaseEventPublisher {
     publish(userId, apiError) {

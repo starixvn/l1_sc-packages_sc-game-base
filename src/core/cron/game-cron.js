@@ -4,7 +4,7 @@ import { logger } from "sc-common";
 
 import { SettleGameRoundConsumer } from "../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "../event-publishers";
-import GameDefinition from "../game-definition.js";
+import GameDefinition from "../game-definition";
 
 export default class BaseGameCron {
     /**

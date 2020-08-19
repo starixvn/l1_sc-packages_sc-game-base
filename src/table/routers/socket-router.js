@@ -1,8 +1,8 @@
 import { logger } from "sc-common";
 
-import BaseSocketRouter from "../../core/routers/socket-router.js";
-import InGameConsumer from "../event-consumers/in-game-consumer.js";
-import { OutGameConsumer, UserSignInConsumer } from "../event-consumers/index.js";
+import BaseSocketRouter from "./../../core/routers/socket-router";
+import { OutGameConsumer, UserSignInConsumer } from "./../event-consumers";
+import InGameConsumer from "./../event-consumers/in-game-consumer";
 
 export default class TableSocketRouter extends BaseSocketRouter {
     /**

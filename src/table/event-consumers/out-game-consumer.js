@@ -1,4 +1,4 @@
-import { BaseEventConsumers, BaseEventPublishers } from "./../../core/index.js";
+import { BaseEventConsumers, BaseEventPublishers } from "./../../core";
 
 export default class OutGameConsumer extends BaseEventConsumers.BaseUserDisconnectConsumer {
     constructor(definition, gameData, publisher = null) {

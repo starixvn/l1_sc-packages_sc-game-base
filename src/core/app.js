@@ -1,6 +1,7 @@
 import express from "express";
-import BaseStartup from "./startup.js";
-import { GameDefinition } from "./index.js";
+
+import GameDefinition from "./game-definition";
+import BaseStartup from "./startup";
 
 export default class BaseGameApp {
     /**

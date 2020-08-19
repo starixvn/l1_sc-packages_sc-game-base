@@ -1,4 +1,4 @@
-import ProcessBetQueue from "./process-bet-queue.js";
-import BaseGameCron from "./game-cron.js";
+import BaseGameCron from "./game-cron";
+import ProcessBetQueue from "./process-bet-queue";
 
 export { ProcessBetQueue, BaseGameCron };

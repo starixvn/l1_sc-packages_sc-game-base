@@ -1,5 +1,5 @@
-import { Cron } from "../../core/index.js";
-import SettleGameRoundConsumer from "../event-consumers/settle-game-round-consumer.js";
+import { Cron } from "./../../core";
+import SettleGameRoundConsumer from "./../event-consumers/settle-game-round-consumer";
 
 export default class TableGameCron extends Cron.BaseGameCron {
     constructor(gameDefinition, gameData, settleGameRoundConsumer = null) {

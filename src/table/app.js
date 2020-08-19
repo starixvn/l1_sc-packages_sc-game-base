@@ -1,5 +1,5 @@
-import { BaseGameApp } from "../core/index.js";
-import TableStartup from "./startup.js";
+import { BaseGameApp } from "../core";
+import TableStartup from "./startup";
 
 export default class TableGameApp extends BaseGameApp {
     constructor(appConfigs, definition, gameData, startup) {

@@ -1,3 +1,3 @@
-import SocketRouter from "./socket-router.js";
+import SocketRouter from "./socket-router";
 
 export { SocketRouter };

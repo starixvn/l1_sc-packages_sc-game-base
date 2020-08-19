@@ -1,4 +1,4 @@
-import BaseEventPublisher from "./base-publisher.js";
+import BaseEventPublisher from "./base-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
     publish({ bet, betResult }) {
@@ -13,5 +13,6 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
         }
 
         this.publishToUser(bet.uid, { status: betStatus });
+        // TODO: Send latest balance to players who are not in the room anymore.
     }
 }

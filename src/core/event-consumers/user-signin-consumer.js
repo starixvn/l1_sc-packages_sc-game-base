@@ -35,7 +35,7 @@ export default class BaseUserSignInConsumer {
         const userData = {
             UID: user._id.toString(),
             profile: { name: userInfo.name },
-            session: session,
+            session,
             socketClient,
         };
 
@@ -49,6 +49,6 @@ export default class BaseUserSignInConsumer {
         });
 
         // Store new user data
-        gameData.realPlayers[socketClient.id] = { ...userData };
+        gameData.realPlayers[socketClient.id] = userData;
     }
 }

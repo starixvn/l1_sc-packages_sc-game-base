@@ -1,4 +1,5 @@
 import { logger } from "sc-common";
+
 import { PlaceBetConsumer } from "./../event-consumers";
 
 export default class ProcessBetQueue {

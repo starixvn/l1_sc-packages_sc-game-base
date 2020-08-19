@@ -1,6 +1,6 @@
 import { logger } from "sc-common";
 
-import GameDefinition from "../game-definition.js";
+import GameDefinition from "./../game-definition";
 import { HistoryQuery } from "../query-apis";
 import { BaseUserDisconnectConsumer, BaseUserSignInConsumer } from "./../event-consumers";
 

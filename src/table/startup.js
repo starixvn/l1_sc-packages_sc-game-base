@@ -1,5 +1,5 @@
-import BaseGameStartup from "../core/startup.js";
-import { TableGameCron } from "./index.js";
+import BaseGameStartup from "./../core/startup";
+import TableGameCron from "./cron/game-cron";
 
 export default class TableStartup extends BaseGameStartup {
     constructor(appConfigs, definition, gameData, gameCron) {

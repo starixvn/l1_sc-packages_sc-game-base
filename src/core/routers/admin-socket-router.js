@@ -1,4 +1,5 @@
 import { logger } from "sc-common";
+
 import { AdminAuthenticationConsumer } from "./../event-consumers";
 
 export default class BaseAdminSocketRouter {

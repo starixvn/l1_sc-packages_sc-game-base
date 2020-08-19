@@ -1,8 +1,8 @@
-import ApiErrorPublisher from "./api-error-publisher.js";
-import BasePublisher from "./base-publisher.js";
-import GameStatusPublisher from "./game-status-publisher.js";
-import RoundResultPublisher from "./round-result-publisher.js";
-import RunningRoundInfoPublisher from "./running-round-info-publisher.js";
-import UserBetResultPublisher from "./user-bet-result-publisher.js";
+import ApiErrorPublisher from "./api-error-publisher";
+import BasePublisher from "./base-publisher";
+import GameStatusPublisher from "./game-status-publisher";
+import RoundResultPublisher from "./round-result-publisher";
+import RunningRoundInfoPublisher from "./running-round-info-publisher";
+import UserBetResultPublisher from "./user-bet-result-publisher";
 
 export { BasePublisher, ApiErrorPublisher, GameStatusPublisher, RunningRoundInfoPublisher, RoundResultPublisher, UserBetResultPublisher };

@@ -1,4 +1,4 @@
-import * as Core from './core/index.js';
-import * as Table from './table/index.js';
+import * as Core from "./core";
+import * as Table from "./table";
 
 export { Core, Table };
