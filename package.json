@@ -27,7 +27,7 @@
         "lodash": "^4.17.19",
         "mongoose": "^5.9.25",
         "morgan": "^1.10.0",
-        "sc-base-apis": "^1.5.1-beta.3",
+        "sc-base-apis": "^1.5.1-beta.4",
         "sc-base-database": "^1.2.0",
         "sc-common": "^1.3.2",
         "socket.io": "^2.3.0"
