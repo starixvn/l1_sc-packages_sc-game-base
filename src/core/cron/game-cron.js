@@ -1,9 +1,10 @@
-import GameDefinition from "../game-definition.js";
 import cron from "cron";
-import { logger } from "sc-common";
 import { gameConfigs } from "sc-base-database";
-import { GameStatusPublisher, RunningRoundInfoPublisher } from "../event-publishers";
+import { logger } from "sc-common";
+
 import { SettleGameRoundConsumer } from "../event-consumers";
+import { GameStatusPublisher, RunningRoundInfoPublisher } from "../event-publishers";
+import GameDefinition from "../game-definition.js";
 
 export default class BaseGameCron {
     /**

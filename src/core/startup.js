@@ -2,14 +2,15 @@ import bodyParser from "body-parser";
 import helmet from "helmet";
 import http from "http";
 import morgan from "morgan";
-import socketIo from "socket.io";
 import { init as initApis } from "sc-base-apis";
 import { gameConfigs, init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
+import socketIo from "socket.io";
+
 import * as Bot from "./bot/index.js";
+import BaseGameCron from "./cron/game-cron.js";
 import ProcessBetQueue from "./cron/process-bet-queue.js";
 import GameDefinition from "./game-definition.js";
-import BaseGameCron from "./cron/game-cron.js";
 
 export default class BaseGameStartup {
     /**
@@ -89,7 +90,7 @@ export default class BaseGameStartup {
     async start() {
         try {
             this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.appConfigs.gameName });
-            this.startProcessBetQueue();
+            //this.startProcessBetQueue();
             this.gameCron.start();
         } catch (error) {
             logger.logError(error);
