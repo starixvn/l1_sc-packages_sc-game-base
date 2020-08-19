@@ -1,5 +1,5 @@
 import { placeBet as placeBetApi } from "sc-base-apis";
-import { helpers, logger } from "sc-common";
+import { helpers } from "sc-common";
 import { BasePublisher } from "../event-publishers/index.js";
 import GameDefinition from "../game-definition.js";
 import GameData from "../game-data.js";
