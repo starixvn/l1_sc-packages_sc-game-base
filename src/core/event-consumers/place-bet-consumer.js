@@ -65,4 +65,27 @@ export default class PlaceBetConsumer {
 
         return true;
     }
+
+    async placeBet(player, payload, gameData) {
+        const amount = payload.amount >> 0;
+        const betChoice = payload.betChoice;
+
+        if (!this.validateBetRequest(gameData, player, betChoice, amount)) {
+            return;
+        }
+
+        const name = player.profile.name;
+
+        if (!gameData.ingame[name]) {
+            const newPlayer = {
+                name: player.profile.name,
+                betTracks: {},
+            };
+
+            newPlayer.betQueue = [];
+            gameData.ingame[name] = newPlayer;
+        }
+
+        gameData.ingame[name].betQueue.push({ player, payload });
+    }
 }
