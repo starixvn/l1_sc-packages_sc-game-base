@@ -10,6 +10,6 @@ export default class TablePlaceBetConsumer extends PlaceBetConsumer {
      */
 
     constructor(definition, gameData, placeBetPublisher = null) {
-        super(gameData, definition, placeBetPublisher);
+        super(definition, gameData, placeBetPublisher);
     }
 }

@@ -21,7 +21,7 @@ export default class PlaceBetConsumer {
             return false;
         }
 
-        const gameName = this.definition.name;
+        const gameName = this.definition.configName;
         const configs = gameData.gameConfigs;
         const { betTracks } = gameData.ingame[player.profile.name] || { betTracks: {} };
         const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
