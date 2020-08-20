@@ -11,7 +11,14 @@ export default class BaseSocketRouter {
      * @param {UserRecheckinConsumer} userRecheckinConsumer
      * @param {PlaceBetConsumer} placeBetConsumer
      */
-    constructor(definition, gameData, userSignInConsumer, userDisconnectConsumer = null, userRecheckinConsumer = null, placeBetConsumer) {
+    constructor(
+        definition,
+        gameData,
+        userSignInConsumer,
+        userDisconnectConsumer = null,
+        userRecheckinConsumer = null,
+        placeBetConsumer = null
+    ) {
         this.definition = definition;
         this.gameData = gameData;
         this.userSignInConsumer = userSignInConsumer ?? new UserSignInConsumer();
