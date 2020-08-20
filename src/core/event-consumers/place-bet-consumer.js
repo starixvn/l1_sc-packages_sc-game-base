@@ -12,26 +12,31 @@ export default class PlaceBetConsumer {
      */
 
     constructor(definition, gameData, publisher = null) {
-        this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
         this.definition = definition;
+        this.gameData = gameData;
+        this.gameName = definition.name;
+        this.publisher = publisher ?? new BasePublisher(this.gameName, gameData);
     }
 
-    validateBetRequest(gameData, player, betChoice, amount) {
+    validateBetRequest(player, betChoice, amount) {
         if (!amount || !betChoice) {
             return false;
         }
 
-        const gameName = this.definition.name;
-        const configs = gameData.gameConfigs;
-        const { betTracks } = gameData.ingame[player.profile.name] || { betTracks: {} };
+        const configs = this.gameData.gameConfigs;
+        const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
         const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
         const maxBetPerChoice = configs.choices_maxbet[betChoice] || 0;
 
         const defaultCriteria = [
             {
+                failure: !configs.enabled,
+                notice: helpers.noticeHelper.placeBetNextRound,
+            },
+            {
                 failure:
-                    gameData.remainingTime < this.definition.durations.lockingBet ||
-                    gameData.remainingTime >= this.definition.durations.placingBets,
+                    this.gameData.remainingTime < this.definition.durations.lockingBet ||
+                    this.gameData.remainingTime >= this.definition.durations.placingBets,
                 notice: helpers.noticeHelper.placeBetNextRound,
             },
             {
@@ -58,7 +63,7 @@ export default class PlaceBetConsumer {
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
-            this.publisher.publishToUser(player.UID, { [gameName]: { notice: failedCriterion.notice } });
+            this.publisher.publishToUser(player.UID, { [this.gameName]: { notice: failedCriterion.notice } });
 
             return false;
         }
@@ -66,26 +71,26 @@ export default class PlaceBetConsumer {
         return true;
     }
 
-    async placeBet(player, payload, gameData) {
+    async placeBet(player, payload) {
         const amount = payload.amount >> 0;
         const betChoice = payload.betChoice;
 
-        if (!this.validateBetRequest(gameData, player, betChoice, amount)) {
+        if (!this.validateBetRequest(player, betChoice, amount)) {
             return;
         }
 
         const name = player.profile.name;
 
-        if (!gameData.ingame[name]) {
+        if (!this.gameData.ingame[name]) {
             const newPlayer = {
                 name: player.profile.name,
                 betTracks: {},
+                betQueue: [],
             };
 
-            newPlayer.betQueue = [];
-            gameData.ingame[name] = newPlayer;
+            this.gameData.ingame[name] = newPlayer;
         }
 
-        gameData.ingame[name].betQueue.push({ player, payload });
+        this.gameData.ingame[name].betQueue.push({ player, payload });
     }
 }

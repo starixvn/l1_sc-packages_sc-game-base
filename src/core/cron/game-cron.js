@@ -2,9 +2,9 @@ import cron from "cron";
 import { gameConfigs } from "sc-base-database";
 import { logger } from "sc-common";
 
-import { SettleGameRoundConsumer } from "../event-consumers";
-import { GameStatusPublisher, RunningRoundInfoPublisher } from "../event-publishers";
-import GameDefinition from "../game-definition";
+import { SettleGameRoundConsumer } from "./../event-consumers";
+import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
+import GameDefinition from "./../game-definition";
 
 export default class BaseGameCron {
     /**
@@ -24,12 +24,22 @@ export default class BaseGameCron {
             .findOne({}, "id", { sort: { _id: -1 } })
             .lean()
             .exec();
+        const job = new cron.CronJob(
+            "* * * * * *",
+            () => this.proceed().catch(logger.logError),
+            () => {
+                Logger.logError(
+                    `${this.gameDefinition.name} unexpectedly stopped at round #${this.gameData.roundId} because some other tasks halt it.`
+                );
+                job.start();
+            }
+        );
 
-        if (!!lastRound) {
+        if (lastRound) {
             this.gameData.roundId = lastRound.id + 1;
         }
 
-        new cron.CronJob("* * * * * *", () => this.proceed().catch(logger.logError), null, true);
+        job.start();
     }
 
     async proceed() {
@@ -61,16 +71,25 @@ export default class BaseGameCron {
         const { name: gameName, configName, durations } = this.gameDefinition;
         const configs = await gameConfigs.findOne({ name: configName }).lean().exec();
         const previouslyDisabled = this.gameData.disabled;
+        const configuredlyDisabled = !configs || !configs.enabled;
+
+        if (previouslyDisabled) {
+            if (this.gameData.delayStartTime > 0) {
+                this.gameData.delayStartTime--;
+            } else if (!configuredlyDisabled) {
+                this.gameData.delayStartTime = configs?.delayStartTime ?? 0;
+            }
+        }
 
         this.gameData.gameConfigs = configs;
-        this.gameData.disabled = !configs || !configs.enabled;
+        this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
 
         if (this.gameData.disabled) {
             this.gameData.remainingTime = durations.wholeRound;
-            this.gameStatusPublisher.publishDisableGameStatus(configs);
+            this.gameStatusPublisher.publishDisableGameStatus(this.gameData);
             await gameConfigs.updateOne({ name: gameName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
-            this.gameStatusPublisher.publishPreviousDisableGameStatus({ gameData: this.gameData, gameConfigs: configs });
+            this.gameStatusPublisher.publishPreviousDisableGameStatus(this.gameData);
         } else {
             this.gameStatusPublisher.publishStartGame(this.gameData);
         }

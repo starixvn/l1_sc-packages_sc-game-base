@@ -1,8 +1,12 @@
 export default class UserDisconnectConsumer {
+    constructor(gameData) {
+        this.gameData = gameData;
+    }
+
     /**
      * @param {SocketIO.Socket} socketClient
      */
-    consume(socketClient, gameData) {
-        delete gameData.realPlayers[socketClient.id];
+    consume(socketClient) {
+        delete this.gameData.realPlayers[socketClient.id];
     }
 }

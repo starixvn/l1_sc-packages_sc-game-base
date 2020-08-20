@@ -3,7 +3,7 @@ import SettleGameRoundConsumer from "../../core/event-consumers/settle-game-roun
 export default class TableSettleGameRoundConsumer extends SettleGameRoundConsumer {
     async settleBets({ result, settlementResult, roundId, time }) {
         const realPlayerBets = await this.gameDefinition.betRepository.find({ phien: roundId }).exec();
-        const botBets = await this.gameDefinition.tempBetLogRepository.find({ phien: roundId }).exec();
+        const botBets = await this.gameDefinition.tempBetRepository.find({ phien: roundId }).exec();
         const allBets = realPlayerBets.concat(botBets);
 
         if (allBets && allBets.length) {

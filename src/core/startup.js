@@ -22,7 +22,23 @@ export default class BaseGameStartup {
         this.definition = definition;
         this.gameData = gameData;
         this.gameCron = gameCron ?? new BaseGameCron(definition, gameData);
+        this.processBetQueue = new ProcessBetQueue(definition, gameData);
     }
+
+    /**
+     * @param {express.Express} app
+     */
+    initHttpRouter(app) {}
+
+    /**
+     * @param {socketIo.Socket} socketClient
+     */
+    initSocketRouter(socketClient) {}
+
+    /**
+     * @param {socketIo.Socket} socketClient
+     */
+    initAdminSocketRouter(socketClient) {}
 
     /**
      * @param {express.Express} app
@@ -90,30 +106,10 @@ export default class BaseGameStartup {
     async start() {
         try {
             this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.appConfigs.gameName });
-            this.startProcessBetQueue(this.definition, this.gameData);
+            this.processBetQueue.start();
             this.gameCron.start();
         } catch (error) {
             logger.logError(error);
         }
     }
-
-    startProcessBetQueue(definition, gameData) {
-        const processBetQueue = new ProcessBetQueue(definition, gameData);
-        processBetQueue.start(gameData);
-    }
-
-    /**
-     * @param {express.Express} app
-     */
-    initHttpRouter(app) {}
-
-    /**
-     * @param {socketIo.Socket} socketClient
-     */
-    initSocketRouter(socketClient) {}
-
-    /**
-     * @param {socketIo.Socket} socketClient
-     */
-    initAdminSocketRouter(socketClient) {}
 }

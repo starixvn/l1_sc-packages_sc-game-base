@@ -1,7 +1,8 @@
 import { logger } from "sc-common";
-import BaseSocketRouter from "./../../core/routers/socket-router";
-import { OutGameConsumer, UserSignInConsumer, TablePlaceBetConsumer, InGameConsumer } from "./../event-consumers";
+
 import { UserRecheckinConsumer } from "./../../core/event-consumers";
+import BaseSocketRouter from "./../../core/routers/socket-router";
+import { InGameConsumer, OutGameConsumer, TablePlaceBetConsumer, UserSignInConsumer } from "./../event-consumers";
 
 export default class TableSocketRouter extends BaseSocketRouter {
     /**
@@ -21,9 +22,9 @@ export default class TableSocketRouter extends BaseSocketRouter {
         super(
             definition,
             gameData,
-            userSignInConsumer ?? new UserSignInConsumer(definition),
+            userSignInConsumer ?? new UserSignInConsumer(definition, gameData),
             userDisconnectConsumer ?? new OutGameConsumer(definition, gameData),
-            reCheckinConsumer ?? new UserRecheckinConsumer(),
+            reCheckinConsumer ?? new UserRecheckinConsumer(gameData),
             placeBetConsumer ?? new TablePlaceBetConsumer(definition, gameData)
         );
         this.inGameConsumer = inGameConsumer ?? new InGameConsumer(definition, gameData);
@@ -40,8 +41,8 @@ export default class TableSocketRouter extends BaseSocketRouter {
     async handleInGame() {
         try {
             this.inGameConsumer.inGame(this.socketClient);
-        } catch (err) {
-            logger.logError(err);
+        } catch (error) {
+            logger.logError(error);
         }
     }
 }

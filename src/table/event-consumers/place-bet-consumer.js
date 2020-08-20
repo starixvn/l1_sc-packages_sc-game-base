@@ -1,6 +1,6 @@
-import PlaceBetConsumer from "../../core/event-consumers/place-bet-consumer.js";
-import TableGameData from "../table-game-data.js";
-import TableGameDefinition from "../table-game-definition.js";
+import PlaceBetConsumer from "../../core/event-consumers/place-bet-consumer";
+import TableGameData from "../table-game-data";
+import TableGameDefinition from "../table-game-definition";
 
 export default class TablePlaceBetConsumer extends PlaceBetConsumer {
     /**

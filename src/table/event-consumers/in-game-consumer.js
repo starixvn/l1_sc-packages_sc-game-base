@@ -1,10 +1,9 @@
-import sortBy from "lodash.sortby";
 import { getBalance } from "sc-base-apis";
 import { userInfos } from "sc-base-database";
 
-import { BaseEventPublishers } from "../../core";
-import TableGameData from "../table-game-data.js";
-import TableGameDefinition from "../table-game-definition";
+import { BaseEventPublishers } from "./../../core";
+import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 
 export default class InGameConsumer {
     /**
@@ -16,6 +15,10 @@ export default class InGameConsumer {
         this.gameData = gameData;
         this.publisher = new BaseEventPublishers.BasePublisher(definition.name, gameData);
     }
+
+    convertSettlementResult(roundResult) {}
+
+    convertResult(round) {}
 
     /**
      * @param {SocketIO.Client} socketClient
@@ -39,7 +42,7 @@ export default class InGameConsumer {
             this.getRounds(this.definition.roundRepository, maxNumberOfRounds),
             this.getUserInfo(realPlayer.UID),
         ]);
-
+        const players = { ...this.gameData.players };
         const player = {
             id: realPlayer.UID,
             name: realPlayer.profile.name,
@@ -47,14 +50,6 @@ export default class InGameConsumer {
             avatarId: user.avatarId,
             type: user.type,
         };
-
-        const playerArr = Object.values(this.gameData.players);
-        const sorted = sortBy(playerArr, "type");
-
-        const players = {};
-        sorted.forEach((item) => {
-            players[item.id] = item;
-        });
 
         delete players[realPlayer.UID];
 
@@ -73,7 +68,6 @@ export default class InGameConsumer {
         };
 
         realPlayer.socketClient.emit(this.definition.name, inGameData);
-
         this.publisher.publishToAllUsersExcept(realPlayer.UID, { player });
     }
 
@@ -85,6 +79,7 @@ export default class InGameConsumer {
 
         return rounds.map((round) => {
             const result = round.result ?? this.convertResult(round);
+
             return {
                 roundId: round.id,
                 result: result,
@@ -97,13 +92,18 @@ export default class InGameConsumer {
         return await userInfos
             .findOne(
                 { id: uid },
-                { UID: true, name: true, avatarId: true, red: true, joinedOn: true, security: true, currency: true, type: true }
+                {
+                    UID: true,
+                    name: true,
+                    avatarId: true,
+                    red: true,
+                    joinedOn: true,
+                    security: true,
+                    currency: true,
+                    type: true,
+                }
             )
             .lean()
             .exec();
     }
-
-    convertSettlementResult(roundResult) {}
-
-    convertResult(round) {}
 }

@@ -1,9 +1,6 @@
-import { GameDefinition } from "../core";
+import { GameDefinition } from "./../core";
 
 export default class TableGameDefinition extends GameDefinition {
-    /**
-     * @param {Model<Document,{}>} tempBetLogRepository
-     */
     constructor(
         { id = 0, name = "", durations = {}, choices = [], choicesMapper = {}, defaultBetTracks = {} },
         generateResult,
@@ -12,7 +9,6 @@ export default class TableGameDefinition extends GameDefinition {
         betRepository,
         tempBetRepository,
         betLogRepository,
-        tempBetLogRepository,
         bot
     ) {
         super(
@@ -25,6 +21,5 @@ export default class TableGameDefinition extends GameDefinition {
             bot
         );
         this.tempBetRepository = tempBetRepository;
-        this.tempBetLogRepository = tempBetLogRepository;
     }
 }

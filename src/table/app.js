@@ -1,4 +1,4 @@
-import { BaseGameApp } from "../core";
+import { BaseGameApp } from "./../core";
 import TableStartup from "./startup";
 
 export default class TableGameApp extends BaseGameApp {

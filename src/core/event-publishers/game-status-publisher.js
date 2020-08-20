@@ -1,15 +1,16 @@
 import BaseEventPublisher from "./base-publisher";
 
 export default class GameStatusPublisher extends BaseEventPublisher {
-    publishDisableGameStatus(gameConfigs) {
-        const disabledMessage = gameConfigs?.disabled_message ?? "";
+    publishDisableGameStatus(gameData) {
+        const disabledMessage = gameData.gameConfigs.disabled_message ?? "";
         const payload = { um: true, um_message: disabledMessage };
 
         this.publishToAllUsers(payload);
         this.publishToAllAdmins(payload);
     }
 
-    publishPreviousDisableGameStatus({ gameData, gameConfigs }) {
+    publishPreviousDisableGameStatus(gameData) {
+        const gameConfigs = gameData.gameConfigs;
         const configs = {
             minbet: gameConfigs.minbet,
             maxbet: gameConfigs.maxbet,

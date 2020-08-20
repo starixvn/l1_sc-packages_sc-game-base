@@ -1,5 +1,5 @@
-import { logger } from "sc-common";
 import { placeBet as placeBetApi } from "sc-base-apis";
+import { logger } from "sc-common";
 
 import { PlaceBetConsumer } from "./../event-consumers";
 import { BasePublisher } from "./../event-publishers";
@@ -13,26 +13,28 @@ export default class ProcessBetQueue {
      */
 
     constructor(definition, gameData, publisher = null) {
-        this.publisher = publisher ?? new BasePublisher(gameData, definition.name);
+        this.definition = definition;
+        this.gameData = gameData;
+        this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
     }
 
-    start(gameData) {
+    start() {
         const keepDequeuingBets = () => {
-            this.dequeueBets(gameData);
+            this.dequeueBets();
             setTimeout(keepDequeuingBets, this.processTimeOut);
         };
 
         setTimeout(keepDequeuingBets, this.processTimeOut);
     }
 
-    dequeueBets(gameData) {
-        if (gameData.ingame) {
-            Object.values(gameData.ingame).forEach((playerInGame) => {
+    dequeueBets() {
+        if (this.gameData.ingame) {
+            Object.values(this.gameData.ingame).forEach((playerInGame) => {
                 if (!playerInGame.betProcessing && playerInGame.betQueue && playerInGame.betQueue.length > 0) {
                     const { player, payload } = playerInGame.betQueue.shift();
 
                     playerInGame.betProcessing = true;
-                    this.proceedBet(player, gameData, payload)
+                    this.proceedBet(player, payload)
                         .then(() => (playerInGame.betProcessing = false))
                         .catch(logger.logError);
                 }
@@ -40,11 +42,11 @@ export default class ProcessBetQueue {
         }
     }
 
-    async proceedBet(player, gameData, payload) {
+    async proceedBet(player, payload) {
         const betInfo = {
             cuoc: payload.amount,
             gameId: this.definition.id,
-            gameRoundId: gameData.roundId,
+            gameRoundId: this.gameData.roundId,
             choiceId: this.definition.choicesMapper[payload.betChoice],
             freeBet: payload.freeBet,
         };
@@ -52,31 +54,31 @@ export default class ProcessBetQueue {
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, gameData, apiResult.response.red, payload);
+            await this.handleSuccessBet(player, apiResult.response.red, payload);
         } else {
             const notice = apiResult.response.inSufficientBalance ? helpers.noticeHelper.notEnoughMoney : apiResult.response;
 
-            await this.handleFailedBet(player, gameData, payload.betChoice, payload.amount, notice);
+            await this.handleFailedBet(player, payload.betChoice, payload.amount, notice);
         }
     }
 
-    async handleSuccessBet(player, gameData, red, bet) {
-        const existingBetFilter = { uid: player.UID, phien: gameData.roundId, freeBet: bet.freeBet };
+    async handleSuccessBet(player, red, bet) {
+        const existingBetFilter = { uid: player.UID, phien: this.gameData.roundId, freeBet: bet.freeBet };
         const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
         if (this.definition.betLogRepository) {
-            await this.insertBetLog(this.definition.betLogRepository, player, gameData.roundId, bet);
+            await this.insertBetLog(this.definition.betLogRepository, player, this.gameData.roundId, bet);
         }
 
         if (existingBet) {
             existingBet[bet.betChoice] += bet.amount;
             await existingBet.save();
         } else {
-            const configs = gameData.gameConfigs;
+            const configs = this.gameData.gameConfigs;
             const newBet = {
                 uid: player.UID,
                 name: player.profile.name,
-                phien: gameData.roundId,
+                phien: this.gameData.roundId,
                 time: new Date(),
                 odds: configs.odds,
                 freeBet: bet.freeBet,
@@ -95,12 +97,12 @@ export default class ProcessBetQueue {
             );
         }
 
-        this.adjustBetTracks(gameData, player.profile.name, bet.betChoice, bet.amount);
-        this.notifyPlacingBetResult(player, gameData, red, bet);
+        this.adjustBetTracks(player.profile.name, bet.betChoice, bet.amount);
+        this.notifyPlacingBetResult(player, red, bet);
     }
 
-    handleFailedBet(player, gameData, betChoice, betAmount, notice) {
-        this.adjustBetTracks(gameData, player.profile.name, betChoice, -betAmount);
+    handleFailedBet(player, betChoice, betAmount, notice) {
+        this.adjustBetTracks(player.profile.name, betChoice, -betAmount);
 
         if (notice.apiError) {
             this.publisher.publishToUser(player.UID, { endBet: -1, apiError: notice.apiError });
@@ -130,37 +132,37 @@ export default class ProcessBetQueue {
         await betLogRepository.create(newBetLog);
     }
 
-    adjustBetTracks(gameData, playerName, betChoice, amount) {
-        if (gameData.ingame && gameData.ingame[playerName]) {
-            const playerInGame = gameData.ingame[playerName];
+    adjustBetTracks(playerName, betChoice, amount) {
+        if (this.gameData.ingame?.[playerName]) {
+            const playerInGame = this.gameData.ingame[playerName];
 
             playerInGame.betTracks[betChoice] += amount;
         }
     }
 
-    notifyPlacingBetResult(player, gameData, red, bet) {
-        const result = this.generatePlacingBetResult(gameData, player, red, bet);
+    notifyPlacingBetResult(player, red, bet) {
+        const result = this.generatePlacingBetResult(player, red, bet);
         this.publisher.publishToUser(player.UID, result);
     }
 
-    generatePlacingBetResult(gameData, player, userBalance, bet) {
-        gameData.totalBets[bet.betChoice] += bet.amount;
+    generatePlacingBetResult(player, userBalance, bet) {
+        this.gameData.totalBets[bet.betChoice] += bet.amount;
 
-        if (gameData.chips) {
-            gameData.chips[bet.betChoice][amount] += 1;
+        if (this.gameData.chips) {
+            this.gameData.chips[bet.betChoice][amount] += 1;
         }
 
-        if (gameData.players[player.UID]) {
-            gameData.players[player.UID].red = userBalance;
+        if (this.gameData.players[player.UID]) {
+            this.gameData.players[player.UID].red = userBalance;
         }
 
-        const betTracks = gameData.ingame[player.profile.name];
+        const betTracks = this.gameData.ingame[player.profile.name];
         const ownBets = constants.choices.reduce((result, choice) => {
             result[choice] = betTracks[bet.choice];
             return result;
         }, {});
 
-        const successMessage = gameData.chips
+        const successMessage = this.gameData.chips
             ? {
                   [this.definition.name]: {
                       ownChip: { box: bet.betChoice, bet: bet.amount },
@@ -171,7 +173,12 @@ export default class ProcessBetQueue {
                   user: { red: userBalance },
               }
             : {
-                  [this.definition.name]: { totalBets: gameData.totalBets, ownBets: ownBets, endBet: bet.amount, freeBet: bet.freeBet },
+                  [this.definition.name]: {
+                      totalBets: this.gameData.totalBets,
+                      ownBets: ownBets,
+                      endBet: bet.amount,
+                      freeBet: bet.freeBet,
+                  },
                   user: { red: userBalance },
               };
 

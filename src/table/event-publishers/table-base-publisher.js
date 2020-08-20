@@ -1,4 +1,4 @@
-import { BasePublisher } from "../../core/event-publishers";
+import { BasePublisher } from "./../../core/event-publishers";
 
 export default class TableBaseEventPublisher extends BasePublisher {
     constructor(gameName, gameData) {

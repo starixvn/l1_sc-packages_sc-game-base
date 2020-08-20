@@ -8,6 +8,10 @@ export default class HistoryQuery {
         this.definition = definition;
     }
 
+    convertSettlementResult(roundResult) {}
+
+    convertResult(round) {}
+
     async queryHistory(player, page, pageSize = 8) {
         if (page < 1 || !player) {
             return;
@@ -26,7 +30,6 @@ export default class HistoryQuery {
             __v: false,
             __archive: false,
         };
-
         const bets = await this.definition.betRepository
             .find(filter, betProjection, { sort: { _id: -1 }, skip: numberOfSkippedBets, limit: pageSize })
             .lean()
@@ -37,21 +40,15 @@ export default class HistoryQuery {
             betLogs = await Promise.all(
                 bets.map(async (bet) => {
                     const round = await this.definition.roundRepository.findOne({ id: bet.phien }, { _id: false }).lean().exec();
-
                     const result = round.result ?? this.convertResult(round);
+                    const betLogDetails = this.definition.betLogDetails ? await this.getBetLogDetails(player) : [];
 
-                    if (this.definition.betLogDetails) {
-                        const betLogDetails = await this.getBetLogDetails(player);
-
-                        return {
-                            ...bet,
-                            result: result,
-                            settlementResult: round.settlementResult ?? this.convertSettlementResult(result),
-                            betLogDetails,
-                        };
-                    }
-
-                    return { ...bet, result: result, settlementResult: round.settlementResult ?? this.convertSettlementResult(result) };
+                    return {
+                        ...bet,
+                        result: result,
+                        settlementResult: round.settlementResult ?? this.convertSettlementResult(result),
+                        betLogDetails,
+                    };
                 })
             );
         }
@@ -67,8 +64,4 @@ export default class HistoryQuery {
 
         return betLogDetails;
     }
-
-    convertSettlementResult(roundResult) {}
-
-    convertResult(round) {}
 }

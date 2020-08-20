@@ -22,10 +22,10 @@ export default class BaseSocketRouter {
     ) {
         this.definition = definition;
         this.gameData = gameData;
-        this.userSignInConsumer = userSignInConsumer ?? new UserSignInConsumer();
-        this.userDisconnectConsumer = userDisconnectConsumer ?? new UserDisconnectConsumer();
+        this.userSignInConsumer = userSignInConsumer ?? new UserSignInConsumer(gameData);
+        this.userDisconnectConsumer = userDisconnectConsumer ?? new UserDisconnectConsumer(gameData);
         this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(definition, gameData);
-        this.userRecheckinConsumer = userRecheckinConsumer ?? new UserRecheckinConsumer();
+        this.userRecheckinConsumer = userRecheckinConsumer ?? new UserRecheckinConsumer(gameData);
         this.historyQuery = new HistoryQuery(definition);
     }
 
@@ -42,14 +42,12 @@ export default class BaseSocketRouter {
     }
 
     async handlePlaceBet(payload) {
-        await this.placeBetConsumer
-            .placeBet(this.gameData.realPlayers[this.socketClient.id], payload, this.gameData)
-            .catch(logger.logError);
+        await this.placeBetConsumer.placeBet(this.gameData.realPlayers[this.socketClient.id], payload).catch(logger.logError);
     }
 
     async handleSignIn(payload) {
         try {
-            await this.userSignInConsumer.consume(this.socketClient, this.gameData, payload); // push to message queue later
+            await this.userSignInConsumer.consume(this.socketClient, payload); // push to message queue later
         } catch (err) {
             logger.logError(err);
         }
@@ -58,6 +56,7 @@ export default class BaseSocketRouter {
     async handleGetHistory(payload) {
         try {
             const history = await this.historyQuery.queryHistory(this.gameData.realPlayers[this.socketClient.id], payload.page);
+
             this.socketClient.emit(this.definition.name, history);
         } catch (err) {
             logger.logError(err);
@@ -66,7 +65,7 @@ export default class BaseSocketRouter {
 
     async handleDisconnect() {
         try {
-            this.userDisconnectConsumer.consume(this.socketClient, this.gameData);
+            this.userDisconnectConsumer.consume(this.socketClient);
             this.socketClient.disconnect();
         } catch (err) {
             logger.logError(err);
@@ -75,7 +74,7 @@ export default class BaseSocketRouter {
 
     async handleRecheckin(payload) {
         try {
-            await this.userRecheckinConsumer.consume(this.socketClient, this.gameData, payload);
+            await this.userRecheckinConsumer.consume(this.socketClient, payload);
         } catch (err) {
             logger.logError(err);
         }
