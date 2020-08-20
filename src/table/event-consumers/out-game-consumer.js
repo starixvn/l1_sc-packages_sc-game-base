@@ -14,6 +14,6 @@ export default class OutGameConsumer extends BaseEventConsumers.BaseUserDisconne
             this.publisher.publishToAllUsers({ outgame: { playerId: realPlayer.UID } });
         }
 
-        super.consume(socketClient, storage);
+        super.consume(socketClient, gameData);
     }
 }
