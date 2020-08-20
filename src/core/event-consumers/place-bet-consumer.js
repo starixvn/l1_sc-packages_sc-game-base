@@ -12,7 +12,7 @@ export default class PlaceBetConsumer {
      */
 
     constructor(definition, gameData, publisher = null) {
-        this.publisher = publisher ?? new BasePublisher(gameData, definition.name);
+        this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
         this.definition = definition;
     }
 
@@ -21,7 +21,7 @@ export default class PlaceBetConsumer {
             return false;
         }
 
-        const gameName = this.definition.configName;
+        const gameName = this.definition.name;
         const configs = gameData.gameConfigs;
         const { betTracks } = gameData.ingame[player.profile.name] || { betTracks: {} };
         const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
