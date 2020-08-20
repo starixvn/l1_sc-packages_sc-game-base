@@ -1,6 +1,6 @@
 import { logger } from "sc-common";
 import { HistoryQuery } from "../query-apis";
-import { UserDisconnectConsumer, UserRecheckinConsumer, UserSignInConsumer } from "./../event-consumers";
+import { UserDisconnectConsumer, UserRecheckinConsumer, UserSignInConsumer, PlaceBetConsumer } from "./../event-consumers";
 import GameDefinition from "./../game-definition";
 
 export default class BaseSocketRouter {
@@ -9,12 +9,14 @@ export default class BaseSocketRouter {
      * @param {UserSignInConsumer} userSignInConsumer
      * @param {UserDisconnectConsumer} userDisconnectConsumer
      * @param {UserRecheckinConsumer} userRecheckinConsumer
+     * @param {PlaceBetConsumer} placeBetConsumer
      */
-    constructor(definition, gameData, userSignInConsumer, userDisconnectConsumer = null, userRecheckinConsumer = null) {
+    constructor(definition, gameData, userSignInConsumer, userDisconnectConsumer = null, userRecheckinConsumer = null, placeBetConsumer) {
         this.definition = definition;
         this.gameData = gameData;
         this.userSignInConsumer = userSignInConsumer ?? new UserSignInConsumer();
         this.userDisconnectConsumer = userDisconnectConsumer ?? new UserDisconnectConsumer();
+        this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(definition, gameData);
         this.userRecheckinConsumer = userRecheckinConsumer ?? new UserRecheckinConsumer();
         this.historyQuery = new HistoryQuery(definition);
     }
@@ -31,7 +33,11 @@ export default class BaseSocketRouter {
         this.socketClient.on("recheckin", this.handleRecheckin.bind(this));
     }
 
-    async handlePlaceBet(payload) {}
+    async handlePlaceBet(payload) {
+        await this.placeBetConsumer
+            .placeBet(this.gameData.realPlayers[this.socketClient.id], payload, this.gameData)
+            .catch(logger.logError);
+    }
 
     async handleSignIn(payload) {
         try {

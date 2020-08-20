@@ -1,18 +1,27 @@
 import { logger } from "sc-common";
 import BaseSocketRouter from "./../../core/routers/socket-router";
-import { OutGameConsumer, UserSignInConsumer } from "./../event-consumers";
+import { OutGameConsumer, UserSignInConsumer, TablePlaceBetConsumer } from "./../event-consumers";
 import InGameConsumer from "./../event-consumers/in-game-consumer";
 
 export default class TableSocketRouter extends BaseSocketRouter {
     /**
      * @param {InGameConsumer} inGameConsumer
+     * @param {TablePlaceBetConsumer} placeBetConsumer
      */
-    constructor(definition, gameData, userSignInConsumer = null, userDisconnectConsumer = null, inGameConsumer = null) {
+    constructor(
+        definition,
+        gameData,
+        userSignInConsumer = null,
+        userDisconnectConsumer = null,
+        inGameConsumer = null,
+        placeBetConsumer = null
+    ) {
         super(
             definition,
             gameData,
             userSignInConsumer ?? new UserSignInConsumer(definition),
-            userDisconnectConsumer ?? new OutGameConsumer(definition, gameData)
+            userDisconnectConsumer ?? new OutGameConsumer(definition, gameData),
+            placeBetConsumer ?? new TablePlaceBetConsumer(definition, gameData)
         );
         this.inGameConsumer = inGameConsumer ?? new InGameConsumer(definition, gameData);
     }

@@ -12,7 +12,7 @@ export default class PlaceBetConsumer {
      * @param {GameDefinition} definition
      */
 
-    constructor(placeBetPublisher, gameData, definition) {
+    constructor(definition, gameData, placeBetPublisher = null) {
         this.placeBetPublisher = placeBetPublisher ?? new BasePublisher(gameData, definition.name);
         this.definition = definition;
     }
@@ -102,7 +102,7 @@ export default class PlaceBetConsumer {
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, gameData, apiResult.response.red, payload.betChoice, payload.amount, payload.freeBet);
+            await this.handleSuccessBet(player, gameData, apiResult.response.red, payload);
         } else {
             const notice = apiResult.response.inSufficientBalance ? helpers.noticeHelper.notEnoughMoney : apiResult.response;
 
@@ -110,16 +110,16 @@ export default class PlaceBetConsumer {
         }
     }
 
-    async handleSuccessBet(player, gameData, red, betChoice, amount, freeBet = false) {
-        const existingBetFilter = { uid: player.UID, phien: gameData.roundId, freeBet: freeBet };
+    async handleSuccessBet(player, gameData, red, bet) {
+        const existingBetFilter = { uid: player.UID, phien: gameData.roundId, freeBet: bet.freeBet };
         const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
         if (this.definition.betLogRepository) {
-            await this.insertBetLog(this.definition.betLogRepository, player, gameData.roundId, betChoice, amount, freeBet);
+            await this.insertBetLog(this.definition.betLogRepository, player, gameData.roundId, bet);
         }
 
         if (existingBet) {
-            existingBet[betChoice] += amount;
+            existingBet[bet.betChoice] += bet.amount;
             await existingBet.save();
         } else {
             const configs = gameData.gameConfigs;
@@ -129,9 +129,9 @@ export default class PlaceBetConsumer {
                 phien: gameData.roundId,
                 time: new Date(),
                 odds: configs.odds,
-                freeBet,
+                freeBet: bet.freeBet,
             };
-            const existingBetIncrement = { [betChoice]: amount };
+            const existingBetIncrement = { [bet.betChoice]: bet.amount };
 
             if (player.session) {
                 newBet.memberId = player.session.memberId;
@@ -145,8 +145,8 @@ export default class PlaceBetConsumer {
             );
         }
 
-        this.adjustBetTracks(gameData, player.profile.name, betChoice, amount);
-        this.notifyPlacingBetResult(this.definition.name, player, gameData, red, betChoice, amount);
+        this.adjustBetTracks(gameData, player.profile.name, bet.betChoice, bet.amount);
+        this.notifyPlacingBetResult(player, gameData, red, bet);
     }
 
     handleFailedBet(player, gameData, betChoice, betAmount, notice) {
@@ -161,15 +161,15 @@ export default class PlaceBetConsumer {
         }
     }
 
-    async insertBetLog(betLogRepository, player, roundId, betChoice, amount, freeBet) {
+    async insertBetLog(betLogRepository, player, roundId, bet) {
         const newBetLog = {
             uid: player.UID,
             name: player.profile.name,
             phien: roundId,
             time: new Date(),
-            choice: betChoice,
-            amount,
-            freeBet,
+            choice: bet.betChoice,
+            amount: bet.amount,
+            freeBet: bet.freeBet,
         };
 
         if (player.session) {
@@ -188,35 +188,40 @@ export default class PlaceBetConsumer {
         }
     }
 
-    notifyPlacingBetResult(gameName, player, gameData, red, betChoice, amount) {
-        const result = this.generatePlacingBetResult(gameName, gameData, player, red, betChoice, amount);
+    notifyPlacingBetResult(player, gameData, red, bet) {
+        const result = this.generatePlacingBetResult(gameData, player, red, bet);
         this.placeBetPublisher.publishSuccessBet(result);
     }
 
-    generatePlacingBetResult(gameName, gameData, player, userBalance, betChoice, betAmount) {
-        gameData.totalBets[betChoice] += betAmount;
+    generatePlacingBetResult(gameData, player, userBalance, bet) {
+        gameData.totalBets[bet.betChoice] += bet.amount;
 
         if (gameData.chips) {
-            gameData.chips[betChoice][amount] += 1;
+            gameData.chips[bet.betChoice][amount] += 1;
         }
 
         if (gameData.players[player.UID]) {
             gameData.players[player.UID].red = userBalance;
         }
 
-        const betsOfThisUser = gameData.ingame[player.profile.name];
+        const betTracks = gameData.ingame[player.profile.name];
         const ownBets = constants.choices.reduce((result, choice) => {
-            result[choice] = betsOfThisUser[choice];
+            result[choice] = betTracks[bet.choice];
             return result;
         }, {});
 
         const successMessage = gameData.chips
             ? {
-                  [gameName]: { ownChip: { box: betChoice, bet: betAmount }, ownBets: ownBets, endBet: betAmount },
+                  [this.definition.name]: {
+                      ownChip: { box: bet.betChoice, bet: bet.amount },
+                      ownBets: ownBets,
+                      endBet: bet.amount,
+                      freeBet: bet.freeBet,
+                  },
                   user: { red: userBalance },
               }
             : {
-                  [gameName]: { totalBets: gameData.totalBets, ownBets: ownBets, endBet: betAmount },
+                  [this.definition.name]: { totalBets: gameData.totalBets, ownBets: ownBets, endBet: bet.amount, freeBet: bet.freeBet },
                   user: { red: userBalance },
               };
 
