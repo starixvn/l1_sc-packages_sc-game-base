@@ -14,6 +14,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
         userSignInConsumer = null,
         userDisconnectConsumer = null,
         inGameConsumer = null,
+        reCheckinConsumer = null,
         placeBetConsumer = null
     ) {
         super(
@@ -21,6 +22,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
             gameData,
             userSignInConsumer ?? new UserSignInConsumer(definition),
             userDisconnectConsumer ?? new OutGameConsumer(definition, gameData),
+            reCheckinConsumer ?? new UserRecheckinConsumer(),
             placeBetConsumer ?? new TablePlaceBetConsumer(definition, gameData)
         );
         this.inGameConsumer = inGameConsumer ?? new InGameConsumer(definition, gameData);
