@@ -1,12 +1,20 @@
 import { userInfos, users, userSessions } from "sc-base-database";
+import UserSignInPublisher from "../event-publishers/user-signin-publisher";
 
-export default class BaseUserSignInConsumer {
+export default class UserSignInConsumer {
+    /**
+     * @param {UserSignInPublisher} userSigninPublisher
+     */
+    constructor(userSigninPublisher = null) {
+        this.userSigninPublisher = userSigninPublisher ?? new UserSignInPublisher();
+    }
+
     /**
      * @param {SocketIO.Socket} socketClient
      */
     async consume(socketClient, gameData, payload) {
         if (!payload) {
-            this.publishUnauthorizedMessage(socketClient);
+            this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
 
             return;
         }
@@ -22,12 +30,8 @@ export default class BaseUserSignInConsumer {
         ) {
             this.handleSignInSuccess(socketClient, gameData, user, userInfo, userSession);
         } else {
-            this.publishUnauthorizedMessage(socketClient);
+            this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
         }
-    }
-
-    publishUnauthorizedMessage(socketClient) {
-        socketClient.emit("message", { unauthorized: true });
     }
 
     handleSignInSuccess(socketClient, gameData, user, userInfo, userSession) {
@@ -43,7 +47,8 @@ export default class BaseUserSignInConsumer {
 
         // Clean up old user data
         Object.values(gameData.realPlayers).forEach((player) => {
-            if (player.UID === userData.UID && player.socketClient && !player.socketClient.connected) {
+            if (player.UID === userData.UID && player.socketClient) {
+                player.socketClient.disconnect(true);
                 delete gameData.realPlayers[player.socketClient.id];
             }
         });

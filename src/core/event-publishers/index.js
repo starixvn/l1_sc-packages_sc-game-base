@@ -4,5 +4,14 @@ import GameStatusPublisher from "./game-status-publisher";
 import RoundResultPublisher from "./round-result-publisher";
 import RunningRoundInfoPublisher from "./running-round-info-publisher";
 import UserBetResultPublisher from "./user-bet-result-publisher";
+import UserSignInPublisher from "./user-signin-publisher";
 
-export { BasePublisher, ApiErrorPublisher, GameStatusPublisher, RunningRoundInfoPublisher, RoundResultPublisher, UserBetResultPublisher };
+export {
+    BasePublisher,
+    ApiErrorPublisher,
+    GameStatusPublisher,
+    RunningRoundInfoPublisher,
+    RoundResultPublisher,
+    UserBetResultPublisher,
+    UserSignInPublisher,
+};

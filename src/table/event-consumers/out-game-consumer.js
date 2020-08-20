@@ -1,6 +1,6 @@
 import { BaseEventConsumers, BaseEventPublishers } from "./../../core";
 
-export default class OutGameConsumer extends BaseEventConsumers.BaseUserDisconnectConsumer {
+export default class OutGameConsumer extends BaseEventConsumers.UserDisconnectConsumer {
     constructor(definition, gameData, publisher = null) {
         super();
         this.publisher = publisher ?? new BaseEventPublishers.BasePublisher(definition.name, gameData);

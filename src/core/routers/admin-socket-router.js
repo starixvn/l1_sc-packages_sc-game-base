@@ -1,12 +1,11 @@
 import { logger } from "sc-common";
-
 import { AdminAuthenticationConsumer } from "./../event-consumers";
 
 export default class BaseAdminSocketRouter {
     /**
      * @param {AdminAuthenticationConsumer} adminAuthenticationConsumer
      */
-    constructor(adminAuthenticationConsumer) {
+    constructor(adminAuthenticationConsumer = null) {
         this.adminAuthenticationConsumer = adminAuthenticationConsumer ?? new AdminAuthenticationConsumer();
     }
 

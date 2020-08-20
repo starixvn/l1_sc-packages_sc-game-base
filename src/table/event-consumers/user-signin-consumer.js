@@ -1,15 +1,18 @@
-import { gameConfigs } from 'sc-base-database';
-import { helpers } from 'sc-common';
+import { gameConfigs } from "sc-base-database";
+import { helpers } from "sc-common";
+import { UserSignInConsumer } from "../../core/event-consumers";
+import { TableUserSignInPublisher } from "../event-publishers";
+import TableGameDefinition from "../table-game-definition";
 
-import { BaseUserSignInConsumer } from '../../core/event-consumers';
-import TableGameDefinition from '../table-game-definition';
-
-export default class TableUserSignInConsumer extends BaseUserSignInConsumer {
+export default class TableUserSignInConsumer extends UserSignInConsumer {
     /**
      * @param {TableGameDefinition} definition
+     * @param {TableUserSignInPublisher} userSigninPublisher
      */
-    constructor(definition) {
-        super();
+    constructor(definition, userSigninPublisher = null) {
+        super(userSigninPublisher);
+
+        this.userSigninPublisher = userSigninPublisher ?? new TableUserSignInPublisher();
         this.definition = definition;
     }
 
@@ -30,13 +33,13 @@ export default class TableUserSignInConsumer extends BaseUserSignInConsumer {
             }
 
             const notice = { title: helpers.noticeHelper.noticeTitle, text: umMessage, load: false };
-            socketClient.emit("message", { notice: notice, um: true });
+            this.userSigninPublisher.publishUmNotice(socketClient, notice);
         }
     }
 
     handleSignInSuccess(socketClient, gameData, user, userInfo, userSession) {
         super.handleSignInSuccess(socketClient, gameData, user, userInfo, userSession);
 
-        socketClient.emit("message", { toGame: this.definition.name });
+        this.userSigninPublisher.publishToGameMessage(socketClient, this.definition.name);
     }
 }

@@ -1,4 +1,4 @@
-export default class BaseUserDisconnectConsumer {
+export default class UserDisconnectConsumer {
     /**
      * @param {SocketIO.Socket} socketClient
      */

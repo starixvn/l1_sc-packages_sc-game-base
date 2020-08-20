@@ -1,5 +1,4 @@
 import { logger } from "sc-common";
-
 import BaseSocketRouter from "./../../core/routers/socket-router";
 import { OutGameConsumer, UserSignInConsumer } from "./../event-consumers";
 import InGameConsumer from "./../event-consumers/in-game-consumer";
