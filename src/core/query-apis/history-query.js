@@ -36,10 +36,7 @@ export default class HistoryQuery {
         if (bets && bets.length > 0) {
             betLogs = await Promise.all(
                 bets.map(async (bet) => {
-                    const round = await this.definition.roundRepository
-                        .findOne({ id: bet.phien }, { _id: false, result: true, settlementResult: true })
-                        .lean()
-                        .exec();
+                    const round = await this.definition.roundRepository.findOne({ id: bet.phien }, { _id: false }).lean().exec();
 
                     const result = round.result ?? this.convertResult(round);
 

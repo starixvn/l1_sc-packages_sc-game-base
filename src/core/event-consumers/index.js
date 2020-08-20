@@ -1,4 +1,5 @@
 import AdminAuthenticationConsumer from "./admin-authentication-consumer";
+import AdminMonitorConsumer from "./admin-monitor-consumer";
 import PlaceBetConsumer from "./place-bet-consumer";
 import SettleGameRoundConsumer from "./settle-game-round-consumer";
 import UserDisconnectConsumer from "./user-disconnect-consumer";
@@ -12,4 +13,5 @@ export {
     PlaceBetConsumer,
     SettleGameRoundConsumer,
     UserRecheckinConsumer,
+    AdminMonitorConsumer,
 };
