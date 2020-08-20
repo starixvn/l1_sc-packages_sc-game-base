@@ -1,6 +1,7 @@
 import { logger } from "sc-common";
+
 import { HistoryQuery } from "../query-apis";
-import { UserDisconnectConsumer, UserRecheckinConsumer, UserSignInConsumer, PlaceBetConsumer } from "./../event-consumers";
+import { PlaceBetConsumer, UserDisconnectConsumer, UserRecheckinConsumer, UserSignInConsumer } from "./../event-consumers";
 import GameDefinition from "./../game-definition";
 
 export default class BaseSocketRouter {
@@ -56,7 +57,7 @@ export default class BaseSocketRouter {
 
     async handleGetHistory(payload) {
         try {
-            const history = this.historyQuery.queryHistory(this.gameData.realPlayers[this.socketClient.id], payload.page);
+            const history = await this.historyQuery.queryHistory(this.gameData.realPlayers[this.socketClient.id], payload.page);
             this.socketClient.emit(this.definition.name, history);
         } catch (err) {
             logger.logError(err);
