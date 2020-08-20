@@ -1,12 +1,13 @@
 import { logger } from "sc-common";
 import BaseSocketRouter from "./../../core/routers/socket-router";
-import { OutGameConsumer, UserSignInConsumer, TablePlaceBetConsumer } from "./../event-consumers";
-import InGameConsumer from "./../event-consumers/in-game-consumer";
+import { OutGameConsumer, UserSignInConsumer, TablePlaceBetConsumer, InGameConsumer } from "./../event-consumers";
+import { UserRecheckinConsumer } from "./../../core/event-consumers";
 
 export default class TableSocketRouter extends BaseSocketRouter {
     /**
      * @param {InGameConsumer} inGameConsumer
      * @param {TablePlaceBetConsumer} placeBetConsumer
+     * @param {UserRecheckinConsumer} reCheckinConsumer
      */
     constructor(
         definition,
