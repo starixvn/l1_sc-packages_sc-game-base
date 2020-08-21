@@ -1,7 +1,7 @@
 import { placeBet as placeBetApi } from "sc-base-apis";
 import { helpers, logger } from "sc-common";
 
-import { BasePublisher } from "./../event-publishers";
+import { PlaceBetPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
@@ -11,13 +11,13 @@ export default class ProcessBetQueue {
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
-     * @param {BasePublisher} publisher
+     * @param {PlaceBetPublisher} publisher
      */
 
     constructor(definition, gameData, publisher = null) {
         this.definition = definition;
         this.gameData = gameData;
-        this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
+        this.publisher = publisher ?? new PlaceBetPublisher(definition.name, gameData);
     }
 
     start() {
@@ -104,11 +104,11 @@ export default class ProcessBetQueue {
 
     handleFailedBet(player, notice) {
         if (notice.apiError) {
-            this.publisher.publishToUser(player.UID, { endBet: -1, apiError: notice.apiError });
+            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, apiError: notice.apiError });
         } else if (notice.kickedOut) {
-            this.publisher.publishToUser(player.UID, { endBet: -1, kickedOut: notice.kickedOut });
+            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, kickedOut: notice.kickedOut });
         } else {
-            this.publisher.publishToUser(player.UID, { endBet: -1, notice });
+            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, notice });
         }
     }
 
@@ -132,39 +132,31 @@ export default class ProcessBetQueue {
     }
 
     adjustBetTracks(playerName, betChoice, amount) {
+        this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount;
+
         if (this.gameData.ingame?.[playerName]) {
             const playerInGame = this.gameData.ingame[playerName];
 
-            if(!playerInGame.betTracks[betChoice])
-            {
-                playerInGame.betTracks[betChoice] = 0;
-            }
-
-            playerInGame.betTracks[betChoice] += amount;
+            playerInGame.betTracks[betChoice] = (playerInGame.betTracks[betChoice] ?? 0) + amount;
         }
     }
 
     notifyPlacingBetResult(player, red, bet) {
         const result = this.generatePlacingBetResult(player, red, bet);
 
-        this.publisher.publishToUser(player.UID, result);
+        this.publisher.publishSuccessBet(player.UID, result);
     }
 
-    generatePlacingBetResult(player, userBalance, bet) {
-        const { betChoice, amount, freeBet } = bet;
+    generatePlacingBetResult(player, red, bet) {
+        const { amount, freeBet } = bet;
         const { betTracks } = this.gameData.ingame[player.profile.name];
 
-        this.gameData.totalBets[betChoice] += amount;
-
-        if (this.gameData.players[player.UID]) {
-            this.gameData.players[player.UID].red = userBalance;
-        }
-
         return {
+            playerId: player.UID,
             ownBets: betTracks,
             endBet: amount,
             freeBet: freeBet,
-            user: { red: userBalance },
+            user: { red },
         };
     }
 }

@@ -1,16 +1,35 @@
 import { Cron } from "./../../core";
+import { TablePlaceBetPublisher } from "./../event-publishers";
+import GameData from "./../game-data";
+import GameDefinition from "./../game-definition";
 
 export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
-    generatePlacingBetResult(player, userBalance, bet) {
-        const { betChoice, amount } = bet;
-        const betResult = super.generatePlacingBetResult(player, userBalance, bet);
+    /**
+     * @param {GameDefinition} definition
+     * @param {GameData} gameData
+     * @param {TablePlaceBetPublisher} publishe
+     */
 
-        betResult.ownChip = { betChoice, amount };
+    constructor(definition, gameData, publisher = null) {
+        this.definition = definition;
+        this.gameData = gameData;
+        this.publisher = publisher ?? new TablePlaceBetPublisher(definition.name, gameData);
+    }
+
+    generatePlacingBetResult(player, red, bet) {
+        const { betChoice, amount } = bet;
+        const ownBet = super.generatePlacingBetResult(player, red, bet);
+
+        ownBet.ownChip = { betChoice, amount };
 
         if (this.gameData.chips) {
             this.gameData.chips[betChoice][amount] += 1;
         }
 
-        return betResult;
+        if (this.gameData.players[player.UID]) {
+            this.gameData.players[player.UID].red = red;
+        }
+
+        return ownBet;
     }
 }
