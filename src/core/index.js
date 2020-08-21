@@ -5,5 +5,6 @@ import * as BaseEventPublishers from "./event-publishers";
 import GameDefinition from "./game-definition";
 import * as Routers from "./routers";
 import BaseStartup from "./startup";
+import RoundQuery from "./query-apis/round-query";
 
-export { BaseStartup, BaseGameApp, GameDefinition, Cron, Routers, BaseEventPublishers, BaseEventConsumers };
+export { BaseStartup, BaseGameApp, GameDefinition, Cron, Routers, BaseEventPublishers, BaseEventConsumers, RoundQuery };
