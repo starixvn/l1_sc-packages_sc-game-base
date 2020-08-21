@@ -1,6 +1,6 @@
 import { logger } from "sc-common";
 
-import { HistoryQuery } from "../query-apis";
+import { HistoryQuery, RoundQuery } from "../query-apis";
 import { PlaceBetConsumer, UserDisconnectConsumer, UserRecheckinConsumer, UserSignInConsumer } from "./../event-consumers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
@@ -13,6 +13,7 @@ export default class BaseSocketRouter {
      * @param {UserDisconnectConsumer} userDisconnectConsumer
      * @param {UserRecheckinConsumer} userRecheckinConsumer
      * @param {PlaceBetConsumer} placeBetConsumer
+     * @param {RoundQuery} roundQuery
      */
     constructor(
         definition,
@@ -20,7 +21,8 @@ export default class BaseSocketRouter {
         userSignInConsumer,
         userDisconnectConsumer = null,
         userRecheckinConsumer = null,
-        placeBetConsumer = null
+        placeBetConsumer = null,
+        roundQuery = null
     ) {
         this.definition = definition;
         this.gameData = gameData;
@@ -29,6 +31,7 @@ export default class BaseSocketRouter {
         this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(definition, gameData);
         this.userRecheckinConsumer = userRecheckinConsumer ?? new UserRecheckinConsumer(gameData);
         this.historyQuery = new HistoryQuery(definition);
+        this.roundQuery = roundQuery ?? new RoundQuery(definition);
     }
 
     /**
