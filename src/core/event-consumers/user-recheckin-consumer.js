@@ -1,5 +1,4 @@
 import { userInfos, users, userSessions } from "sc-base-database";
-import { logger } from "sc-common";
 
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 
@@ -19,35 +18,31 @@ export default class UserRecheckinConsumer {
             return;
         }
 
-        if (this.gameData.loggedUsers[socketClient.id]) {
+        if (this.gameData.realPlayers[socketClient.id]) {
             this.userSigninPublisher.publishRecheckInSuccessMesasge(socketClient);
         } else {
-            try {
-                const user = await users.findOne({ "local.username": payload.username }).lean().exec();
-                const userInfo = await userInfos.findOne({ id: user._id.toString() }).lean().exec();
-                const userSession = await userSessions.findOne({ sessionId: payload.ss }).lean().exec();
+            const user = await users.findOne({ "local.username": payload.username }).lean().exec();
+            const userInfo = await userInfos.findOne({ id: user._id.toString() }).lean().exec();
+            const userSession = await userSessions.findOne({ sessionId: payload.ss }).lean().exec();
 
-                if (
-                    userSession &&
-                    userSession.username === payload.username &&
-                    userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
-                ) {
-                    userSession.characterName = userInfo.name;
+            if (
+                userSession &&
+                userSession.username === payload.username &&
+                userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
+            ) {
+                userSession.characterName = userInfo.name;
 
-                    const userData = {
-                        UID: user._id.toString(),
-                        profile: { name: userInfo.name },
-                        session: userSession,
-                        socketClient,
-                    };
+                const userData = {
+                    UID: user._id.toString(),
+                    profile: { name: userInfo.name },
+                    session: userSession,
+                    socketClient,
+                };
 
-                    // Store new user data
-                    this.gameData.loggedUsers[socketClient.id] = userData;
-                } else {
-                    this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
-                }
-            } catch (error) {
-                logger.logError(error);
+                // Store new user data
+                this.gameData.realPlayers[socketClient.id] = userData;
+            } else {
+                this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
             }
         }
     }

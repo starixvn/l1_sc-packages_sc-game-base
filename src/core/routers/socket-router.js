@@ -46,11 +46,7 @@ export default class BaseSocketRouter {
     }
 
     async handleSignIn(payload) {
-        try {
-            await this.userSignInConsumer.consume(this.socketClient, payload); // push to message queue later
-        } catch (err) {
-            logger.logError(err);
-        }
+        await this.userSignInConsumer.consume(this.socketClient, payload).catch(logger.logError); // push to message queue later
     }
 
     async handleGetHistory(payload) {
@@ -73,10 +69,6 @@ export default class BaseSocketRouter {
     }
 
     async handleRecheckin(payload) {
-        try {
-            await this.userRecheckinConsumer.consume(this.socketClient, payload);
-        } catch (err) {
-            logger.logError(err);
-        }
+        await this.userRecheckinConsumer.consume(this.socketClient, payload).catch(logger.logError);
     }
 }

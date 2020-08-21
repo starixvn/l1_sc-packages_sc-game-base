@@ -1,5 +1,5 @@
 import { placeBet as placeBetApi } from "sc-base-apis";
-import { logger } from "sc-common";
+import { helpers, logger } from "sc-common";
 
 import { PlaceBetConsumer } from "./../event-consumers";
 import { BasePublisher } from "./../event-publishers";
