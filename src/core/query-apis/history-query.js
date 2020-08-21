@@ -1,16 +1,15 @@
 import GameDefinition from "../game-definition";
+import { RoundQuery } from ".";
 
 export default class HistoryQuery {
     /**
      * @param {GameDefinition} definition
+     * @param {RoundQuery} roundQuery
      */
-    constructor(definition) {
+    constructor(definition, roundQuery = null) {
         this.definition = definition;
+        this.roundQuery = roundQuery ?? new RoundQuery(definition);
     }
-
-    convertSettlementResult(roundResult) {}
-
-    convertResult(round) {}
 
     async queryHistory(player, page, pageSize = 8) {
         if (page < 1 || !player) {
@@ -39,14 +38,13 @@ export default class HistoryQuery {
         if (bets && bets.length > 0) {
             betLogs = await Promise.all(
                 bets.map(async (bet) => {
-                    const round = await this.definition.roundRepository.findOne({ id: bet.phien }, { _id: false }).lean().exec();
-                    const result = round.result ?? this.convertResult(round);
+                    const round = await this.roundQuery.getOne(bet.phien, { _id: false });
                     const betLogDetails = this.definition.betLogDetails ? await this.getBetLogDetails(player) : [];
 
                     return {
                         ...bet,
-                        result: result,
-                        settlementResult: round.settlementResult ?? this.convertSettlementResult(result),
+                        result: round.result,
+                        settlementResult: round.settlementResult,
                         betLogDetails,
                     };
                 })

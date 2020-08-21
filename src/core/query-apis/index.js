@@ -1,3 +1,4 @@
 import HistoryQuery from "./history-query";
+import RoundQuery from "./round-query";
 
-export { HistoryQuery };
+export { HistoryQuery, RoundQuery };
