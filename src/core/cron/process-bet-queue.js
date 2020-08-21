@@ -157,28 +157,24 @@ export default class ProcessBetQueue {
         }
 
         const betTracks = this.gameData.ingame[player.profile.name];
-        const ownBets = constants.choices.reduce((result, choice) => {
+        const ownBets = this.definition.choices.reduce((result, choice) => {
             result[choice] = betTracks[bet.choice];
             return result;
         }, {});
 
         const successMessage = this.gameData.chips
             ? {
-                  [this.definition.name]: {
-                      ownChip: { box: bet.betChoice, bet: bet.amount },
-                      ownBets: ownBets,
-                      endBet: bet.amount,
-                      freeBet: bet.freeBet,
-                  },
+                  ownChip: { box: bet.betChoice, bet: bet.amount },
+                  ownBets: ownBets,
+                  endBet: bet.amount,
+                  freeBet: bet.freeBet,
                   user: { red: userBalance },
               }
             : {
-                  [this.definition.name]: {
-                      totalBets: this.gameData.totalBets,
-                      ownBets: ownBets,
-                      endBet: bet.amount,
-                      freeBet: bet.freeBet,
-                  },
+                  totalBets: this.gameData.totalBets,
+                  ownBets: ownBets,
+                  endBet: bet.amount,
+                  freeBet: bet.freeBet,
                   user: { red: userBalance },
               };
 
