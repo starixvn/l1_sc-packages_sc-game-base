@@ -17,12 +17,12 @@ export default class BaseGameStartup {
      * @param {GameDefinition} definition
      * * @param {BaseGameCron} gameCron
      */
-    constructor(appConfigs, definition, gameData, gameCron) {
+    constructor(appConfigs, definition, gameData, gameCron, processBetQueue) {
         this.appConfigs = appConfigs;
         this.definition = definition;
         this.gameData = gameData;
         this.gameCron = gameCron ?? new BaseGameCron(definition, gameData);
-        this.processBetQueue = new ProcessBetQueue(definition, gameData);
+        this.processBetQueue = processBetQueue ?? new ProcessBetQueue(definition, gameData);
     }
 
     /**
