@@ -1,3 +1,5 @@
+import { endGame } from "sc-base-apis";
+
 import RoundResultPublisher from "../event-publishers/round-result-publisher.js";
 import GameDefinition from "../game-definition.js";
 

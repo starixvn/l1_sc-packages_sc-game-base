@@ -158,7 +158,7 @@ export default class ProcessBetQueue {
             this.gameData.players[player.UID].red = userBalance;
         }
 
-        const betTracks = this.gameData.ingame[player.profile.name];
+        const { betTracks } = this.gameData.ingame[player.profile.name];
 
         const successMessage = this.gameData.chips
             ? {
