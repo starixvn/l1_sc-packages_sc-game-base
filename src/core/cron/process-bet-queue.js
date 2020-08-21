@@ -135,6 +135,11 @@ export default class ProcessBetQueue {
         if (this.gameData.ingame?.[playerName]) {
             const playerInGame = this.gameData.ingame[playerName];
 
+            if(!playerInGame.betTracks[betChoice])
+            {
+                playerInGame.betTracks[betChoice] = 0;
+            }
+
             playerInGame.betTracks[betChoice] += amount;
         }
     }

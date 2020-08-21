@@ -3,7 +3,7 @@ import { Cron } from "./../../core";
 export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
     generatePlacingBetResult(player, userBalance, bet) {
         const { betChoice, amount } = bet;
-        const betResult = base.generatePlacingBetResult(player, userBalance, bet);
+        const betResult = super.generatePlacingBetResult(player, userBalance, bet);
 
         betResult.ownChip = { betChoice, bet: amount };
 
