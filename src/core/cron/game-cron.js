@@ -4,11 +4,13 @@ import { logger } from "sc-common";
 
 import { SettleGameRoundConsumer } from "./../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
+import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
 export default class BaseGameCron {
     /**
      * @param {GameDefinition} gameDefinition
+     * @param {GameData} gameData
      * @param {SettleGameRoundConsumer} settleGameRoundConsumer
      */
     constructor(gameDefinition, gameData, settleGameRoundConsumer = null) {

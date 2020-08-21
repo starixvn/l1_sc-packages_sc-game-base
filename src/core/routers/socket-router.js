@@ -2,11 +2,13 @@ import { logger } from "sc-common";
 
 import { HistoryQuery } from "../query-apis";
 import { PlaceBetConsumer, UserDisconnectConsumer, UserRecheckinConsumer, UserSignInConsumer } from "./../event-consumers";
+import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
 export default class BaseSocketRouter {
     /**
      * @param {GameDefinition} definition
+     * @param {GameData} gameData
      * @param {UserSignInConsumer} userSignInConsumer
      * @param {UserDisconnectConsumer} userDisconnectConsumer
      * @param {UserRecheckinConsumer} userRecheckinConsumer

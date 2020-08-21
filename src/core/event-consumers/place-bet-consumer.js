@@ -6,16 +6,15 @@ import GameDefinition from "./../game-definition";
 
 export default class PlaceBetConsumer {
     /**
-     * @param {BasePublisher} publisher
-     * @param {GameData} gameData
      * @param {GameDefinition} definition
+     * @param {GameData} gameData
+     * @param {BasePublisher} publisher
      */
 
     constructor(definition, gameData, publisher = null) {
         this.definition = definition;
         this.gameData = gameData;
-        this.gameName = definition.name;
-        this.publisher = publisher ?? new BasePublisher(this.gameName, gameData);
+        this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
     }
 
     validateBetRequest(player, betChoice, amount) {
