@@ -146,10 +146,12 @@ export default class ProcessBetQueue {
     }
 
     generatePlacingBetResult(player, userBalance, bet) {
-        this.gameData.totalBets[bet.betChoice] += bet.amount;
+        const { betChoice, amount, freeBet } = bet;
+
+        this.gameData.totalBets[betChoice] += amount;
 
         if (this.gameData.chips) {
-            this.gameData.chips[bet.betChoice][amount] += 1;
+            this.gameData.chips[betChoice][amount] += 1;
         }
 
         if (this.gameData.players[player.UID]) {
@@ -157,24 +159,20 @@ export default class ProcessBetQueue {
         }
 
         const betTracks = this.gameData.ingame[player.profile.name];
-        const ownBets = this.definition.choices.reduce((result, choice) => {
-            result[choice] = betTracks[bet.choice];
-            return result;
-        }, {});
 
         const successMessage = this.gameData.chips
             ? {
-                  ownChip: { box: bet.betChoice, bet: bet.amount },
-                  ownBets: ownBets,
-                  endBet: bet.amount,
-                  freeBet: bet.freeBet,
+                  ownChip: { betChoice, bet: amount },
+                  ownBets: betTracks,
+                  endBet: amount,
+                  freeBet: freeBet,
                   user: { red: userBalance },
               }
             : {
                   totalBets: this.gameData.totalBets,
-                  ownBets: ownBets,
-                  endBet: bet.amount,
-                  freeBet: bet.freeBet,
+                  ownBets: betTracks,
+                  endBet: amount,
+                  freeBet: freeBet,
                   user: { red: userBalance },
               };
 
