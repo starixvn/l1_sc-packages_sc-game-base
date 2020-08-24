@@ -27,8 +27,8 @@ export default class RoundQuery {
         });
     }
 
-    async getOne(phien, projections) {
-        const round = await this.definition.roundRepository.findOne({ phien }, projections).exec();
+    async getOne(id, projections) {
+        const round = await this.definition.roundRepository.findOne({ id }, projections).exec();
 
         return {
             roundId: round.id,
