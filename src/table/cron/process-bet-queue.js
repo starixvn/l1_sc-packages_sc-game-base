@@ -5,7 +5,7 @@ export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
         const { betChoice, amount } = bet;
         const betResult = super.generatePlacingBetResult(player, userBalance, bet);
 
-        betResult.ownChip = { betChoice, bet: amount };
+        betResult.ownChip = { betChoice, amount };
 
         if (this.gameData.chips) {
             this.gameData.chips[betChoice][amount] += 1;
