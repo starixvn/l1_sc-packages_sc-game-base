@@ -91,8 +91,7 @@ export default class SettleGameRoundConsumer {
             status.bet = betResult.totalLost;
         }
 
-        roundRepository.publishToUser(bet.UID, status);
-        //userBetResultPublisher.publish({ bet, betResult: status });
+        this.roundResultPublisher.publishToUser(bet.UID, { status });
         // TODO: Update user coin
         //     if (status.win && void 0 !== self.io.users[bet.uid]) {
         //         self.io.users[bet.uid].forEach(function (client) {

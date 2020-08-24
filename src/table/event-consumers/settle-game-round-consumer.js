@@ -17,8 +17,8 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
                     bet.thanhtoan = true;
 
                     await bet.save();
-                    this.notifyBetResult(bet, betResult);
                     await this.callEndGame(bet, roundId, time, betResult);
+                    this.notifyBetResult(bet, betResult);
                 })
             );
         }
@@ -28,16 +28,7 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
     notifyBetResult(bet, betResult) {
         if (betResult.totalWin > 0 && this.gameData.players[bet.uid]) {
             this.gameData.players[bet.uid].red += betResult.totalWin;
-            //updateBotBalance(bet.uid, gameData.usersAndBots[bet.uid].red);
         }
-
-        //userBetResultPublisher.publish({ bet, betResult: status });
-        // TODO: Update user coin
-        //     if (status.win && void 0 !== self.io.users[bet.uid]) {
-        //         self.io.users[bet.uid].forEach(function (client) {
-        //             User.updateCoint(client);
-        //         });
-        //     }
 
         super.notifyBetResult(bet, betResult);
     }
