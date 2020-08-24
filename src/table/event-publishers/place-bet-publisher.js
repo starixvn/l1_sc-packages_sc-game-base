@@ -8,7 +8,7 @@ export default class TablePlaceBetPublisher extends PlaceBetPublisher {
             ...payload.user,
         };
 
-        this.publishToUser(playerId, { ownChip: payload });
+        this.publishToUser(playerId, { ...payload });
         this.publishToAllUsersExcept(playerId, { playerChip: toCurrentOtherUsersPayload });
     }
 }
