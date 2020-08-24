@@ -1,7 +1,7 @@
 import { helpers } from "sc-common";
 import { userInfos } from "sc-base-database";
 
-import { BasePublisher } from "../event-publishers";
+import { BasePublisher } from "../../core/event-publishers";
 import { TableGameDefinition, TableGameData } from "./../";
 import { BaseBot } from "../../core";
 
