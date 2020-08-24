@@ -46,7 +46,7 @@ export default class ProcessBetQueue {
 
     async proceedBet(player, payload) {
         const betInfo = {
-            cuoc: payload.amount,
+            amount: payload.amount,
             gameId: this.definition.id,
             gameRoundId: this.gameData.roundId,
             choiceId: this.definition.choicesMapper[payload.betChoice],
