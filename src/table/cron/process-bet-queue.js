@@ -1,7 +1,7 @@
 import { Cron } from "./../../core";
 import { TablePlaceBetPublisher } from "./../event-publishers";
-import GameData from "./../game-data";
-import GameDefinition from "./../game-definition";
+import GameData from "./../table-game-data";
+import GameDefinition from "./../table-game-definition";
 
 export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
     /**
