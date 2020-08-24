@@ -23,11 +23,11 @@ export default class BaseBot {
         this.totalTickets = 0;
         this.totalBets = {};
         this.resetBotData = {
-            totalBet = 0,
-            choices = {},
-            red = 0,
-            remainTickets = 0,
-            betOnChoices = {}
+            totalBet: 0,
+            choices: {},
+            red: 0,
+            remainTickets: 0,
+            betOnChoices: {},
         };
     }
 
@@ -65,8 +65,7 @@ export default class BaseBot {
         this.currentBotRatio = 0;
     }
 
-    async removeBot(botId) {
-    }
+    async removeBot(botId) {}
 
     resetAllBotData() {
         Object.keys(this.botsInRoom).forEach((id) => this.resetBot(this.botsInRoom[id]));
@@ -78,7 +77,7 @@ export default class BaseBot {
 
     resetBot(bot) {
         if (!!bot) {
-            bot = {...this.resetBotData}           
+            bot = { ...this.resetBotData };
             bot.remainTickets = getTicketsPerRound();
         }
     }
@@ -87,23 +86,21 @@ export default class BaseBot {
         return Math.floor(Math.random() * 3 + 2);
     }
 
-    async botPlaceBet(bot){
-    }
+    async botPlaceBet(bot) {}
 
-    getBetChoice(bot){}
+    getBetChoice(bot) {}
 
-    getMaxBet(bot, choice){}
+    getMaxBet(bot, choice) {}
 
-    convertAmountToChip(amount){
+    convertAmountToChip(amount) {
         return amount;
     }
 
-    getMinBet() {    
+    getMinBet() {
         return Math.max(1, this.gameData.gameConfigs.minbet);
     }
 
-    getTotalBetAmount(bet)
-    {
+    getTotalBetAmount(bet) {
         let totalBet = 0;
         if (bet) {
             this.definition.choices.forEach((choice) => {
@@ -114,9 +111,9 @@ export default class BaseBot {
         return totalBet;
     }
 
-    generatePlaceBetPayload(playerId, choice, amount, balance){
-        return  {
+    generatePlaceBetPayload(playerId, choice, amount, balance) {
+        return {
             chip: { playerId: playerId, box: choice, cuoc: amount, red: balance },
         };
-    }   
+    }
 }
