@@ -62,7 +62,7 @@ export default class PlaceBetConsumer {
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
-            this.publisher.publishToUser(player.UID, { notice: failedCriterion.notice });
+            this.publisher.publishToUser(player.UID, { notice: failedCriterion.notice, endBet: -1 });
 
             return false;
         }
