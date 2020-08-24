@@ -25,7 +25,7 @@ export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
 
         if (this.gameData.chips) {
             this.gameData.chips[betChoice] = this.gameData.chips[betChoice] ?? {};
-            this.gameData.chips[betChoice][amount] = ((this.gameData.chips[betChoice] ?? {})[amount] ?? 0) + 1;
+            this.gameData.chips[betChoice][amount] = (this.gameData.chips[betChoice][amount] ?? 0) + 1;
         }
 
         if (this.gameData.players[player.UID]) {

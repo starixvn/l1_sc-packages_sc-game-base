@@ -71,8 +71,14 @@ export default class PlaceBetConsumer {
     }
 
     async placeBet(player, payload) {
-        const amount = payload.amount >> 0;
-        const betChoice = payload.betChoice;
+        const standardizedPayload = Object.assign(
+            {
+                amount: payload.amount >> 0,
+                freeBet: payload.freeBet ?? false,
+            },
+            payload
+        );
+        const { amount, betChoice } = standardizedPayload;
 
         if (!this.validateBetRequest(player, betChoice, amount)) {
             return;
@@ -90,6 +96,6 @@ export default class PlaceBetConsumer {
             this.gameData.ingame[name] = newPlayer;
         }
 
-        this.gameData.ingame[name].betQueue.push({ player, payload });
+        this.gameData.ingame[name].betQueue.push({ player, standardizedPayload });
     }
 }
