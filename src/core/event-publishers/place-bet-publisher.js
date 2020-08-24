@@ -1,15 +1,13 @@
 import BasePublisher from "./base-publisher";
 
 export default class PlaceBetPublisher extends BasePublisher {
-    publishGameFailedBet(userId, payload) {
-        this.publishToUser(userId, payload);
+    publishGameFailedBet(playerId, payload) {
+        this.publishToUser(playerId, payload);
     }
 
-    publishGeneralFailedBet(userId, payload) {
-        this.publishToUser(userId, payload, "message");
+    publishGeneralFailedBet(playerId, payload) {
+        this.publishToUser(playerId, payload, "message");
     }
 
-    publishSuccessBet(payload) {
-        this.publishToAllUsers(payload);
-    }
+    publishSuccessBet(playerId, payload) {}
 }

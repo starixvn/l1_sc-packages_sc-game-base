@@ -142,17 +142,16 @@ export default class ProcessBetQueue {
     }
 
     notifyPlacingBetResult(player, red, bet) {
-        const result = this.generatePlacingBetResult(player, red, bet);
+        const result = this.generatePlacingBetResult(red, bet);
 
         this.publisher.publishSuccessBet(player.UID, result);
     }
 
-    generatePlacingBetResult(player, red, bet) {
+    generatePlacingBetResult(red, bet) {
         const { amount, freeBet } = bet;
         const { betTracks } = this.gameData.ingame[player.profile.name];
 
         return {
-            playerId: player.UID,
             ownBets: betTracks,
             endBet: amount,
             freeBet: freeBet,
