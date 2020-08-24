@@ -3,18 +3,19 @@ import { userInfos } from "sc-base-database";
 
 import { BasePublisher } from "../../core/event-publishers";
 import TableGameData from "./../table-game-data";
-import TableGameDefinition from "./../table-game-definition";
 import { BaseBot } from "../../core";
 
 export default class TableGameBot extends BaseBot {
     /**
      * @param {TableGameData} gameData
-     * @param {TableGameDefinition} definition
      * @param {BasePublisher} publisher
      */
 
-    constructor(definition, gameData, publisher = null) {
-        super(definition, gameData, publisher);
+    constructor(gameName, choices, durations, configName, tempBetRepository, gameData, publisher = null) {
+        super(gameName, gameData, choices, publisher);
+        this.durations = durations;
+        this.configName = configName;
+        this.tempBetRepository = tempBetRepository;
         this.inOutValues = {
             in: 3,
             out: 4,
@@ -22,7 +23,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async run() {
-        if (configs?.botenabled && this.gameData.remainingTime > this.definition.durations.settlementDuration) {
+        if (configs?.botenabled && this.gameData.remainingTime > this.durations.settlementDuration) {
             const random = (Math.random() * 5) >> 0;
             if (this.shouldAddBot(random)) {
                 await this.joinRoom();
@@ -113,7 +114,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async botJoinRoom(bot) {
-        await userInfos.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.definition.configName });
+        await userInfos.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.configName });
 
         this.resetBot(bot);
         botList.splice(i, 1);
@@ -164,10 +165,8 @@ export default class TableGameBot extends BaseBot {
         const minBet = getMinBet();
         const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
 
-        if (this.gameData.remainingTime > this.definition.durations.settlementDuration) {
-            const currentBet = await this.definition.tempBetRepository
-                .findOne({ uid: bot.id, phien: this.gameData.roundId, red: true })
-                .lean();
+        if (this.gameData.remainingTime > this.durations.settlementDuration) {
+            const currentBet = await this.tempBetRepository.findOne({ uid: bot.id, phien: this.gameData.roundId, red: true }).lean();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= maxBet) {
@@ -208,7 +207,7 @@ export default class TableGameBot extends BaseBot {
     getTotalBetAmount(bet) {
         let totalBet = 0;
         if (bet) {
-            this.definition.choices.forEach((choice) => {
+            super.choices.forEach((choice) => {
                 totalBet += bet[choice];
             });
         }
@@ -242,7 +241,7 @@ export default class TableGameBot extends BaseBot {
             time: new Date(),
         };
 
-        await this.definition.tempBetRepository.updateOne(
+        await this.tempBetRepository.updateOne(
             { uid: bot.id, phien: this.gameData.roundId, red: true },
             { $inc: update, $setOnInsert: create },
             { upsert: true, setDefaultsOnInsert: true }
