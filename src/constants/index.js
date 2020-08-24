@@ -1,3 +1,3 @@
-import GameTypes from './game-types.js';
+import GameTypes from "./game-types";
 
 export { GameTypes };

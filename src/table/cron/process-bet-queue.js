@@ -9,8 +9,9 @@ export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
      * @param {GameData} gameData
      * @param {TablePlaceBetPublisher} publishe
      */
-
     constructor(definition, gameData, publisher = null) {
+        super(definition, gameData, publisher);
+
         this.definition = definition;
         this.gameData = gameData;
         this.publisher = publisher ?? new TablePlaceBetPublisher(definition.name, gameData);
@@ -23,7 +24,8 @@ export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
         ownBet.ownChip = { betChoice, amount };
 
         if (this.gameData.chips) {
-            this.gameData.chips[betChoice][amount] += 1;
+            this.gameData.chips[betChoice] = this.gameData.chips[betChoice] ?? {};
+            this.gameData.chips[betChoice][amount] = ((this.gameData.chips[betChoice] ?? {})[amount] ?? 0) + 1;
         }
 
         if (this.gameData.players[player.UID]) {
