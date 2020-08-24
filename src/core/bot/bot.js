@@ -21,8 +21,14 @@ export default class BaseBot {
         this.maxNumberOfBots = 0;
         this.botsInRoom = [];
         this.totalTickets = 0;
-        this.totalSmallTickets = 0;
         this.totalBets = {};
+        this.resetBotData = {
+            totalBet = 0,
+            choices = {},
+            red = 0,
+            remainTickets = 0,
+            betOnChoices = {}
+        };
     }
 
     async resetBots() {
@@ -47,6 +53,8 @@ export default class BaseBot {
         this.resetBotData();
     }
 
+    async run() {}
+
     async removeAllBots() {
         const bots = Object.values(this.gameData.players).filter((player) => player.type);
 
@@ -58,15 +66,10 @@ export default class BaseBot {
     }
 
     async removeBot(botId) {
-        await userInfos.updateOne({ id: botId }, { inRoom: false, inGameRoom: "" });
-
-        this.publisher.publishToAllUsers({ outgame: { playerId: botId } });
-
-        delete this.gameData.players[botId];
     }
 
-    resetBotData() {
-        Object.keys(botsInRoom).forEach((id) => this.resetBot(botsInRoom[id]));
+    resetAllBotData() {
+        Object.keys(this.botsInRoom).forEach((id) => this.resetBot(this.botsInRoom[id]));
 
         this.totalTickets = 0;
         this.totalSmallTickets = 0;
@@ -75,10 +78,8 @@ export default class BaseBot {
 
     resetBot(bot) {
         if (!!bot) {
-            bot.totalBet = 0;
+            bot = {...this.resetBotData}           
             bot.remainTickets = getTicketsPerRound();
-            bot.choices = [];
-            bot.betOnChoices = {};
         }
     }
 
@@ -86,72 +87,36 @@ export default class BaseBot {
         return Math.floor(Math.random() * 3 + 2);
     }
 
-    async joinRoom() {
-        const botUsers = await userInfos.find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type");
+    async botPlaceBet(bot){
+    }
 
-        const length = this.getNumberOfBotsToJoin();
+    getBetChoice(bot){}
 
-        let botList = helpers.arrayHelper.shuffle(botUsers);
-        botList = botList.slice(0, length);
+    getMaxBet(bot, choice){}
 
-        for (let i = 0; i < botList.length; i++) {
-            let bot = botList[i];
+    convertAmountToChip(amount){
+        return amount;
+    }
 
-            if (!!bot) {
-                await botJoinRoom(bot);
-            }
+    getMinBet() {    
+        return Math.max(1, this.gameData.gameConfigs.minbet);
+    }
+
+    getTotalBetAmount(bet)
+    {
+        let totalBet = 0;
+        if (bet) {
+            this.definition.choices.forEach((choice) => {
+                totalBet += bet[choice];
+            });
         }
+
+        return totalBet;
     }
 
-    getNumberOfBotsToJoin() {
-        const maxBotRandom = maxNumberOfBots / this.gameData.remainingTime;
-
-        return Math.floor(Math.random() * maxBotRandom + 1);
-    }
-
-    async botJoinRoom(bot) {
-        await userInfos.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.definition.configName });
-
-        this.resetBot(bot);
-        botList.splice(i, 1);
-
-        this.botsInRoom[bot.id] = bot;
-        this.gameData.players[bot.id] = bot;
-
-        const payload = {
-            ingame: {
-                player: {
-                    id: bot.id,
-                    name: bot.name,
-                    red: bot.red,
-                    avatarId: bot.avatarId,
-                    type: bot.type,
-                },
-            },
+    generatePlaceBetPayload(playerId, choice, amount, balance){
+        return  {
+            chip: { playerId: playerId, box: choice, cuoc: amount, red: balance },
         };
-
-        this.publisher.publishToAllUsers(payload);
-    }
-
-    async leaveRoom() {
-        const activeBots = Object.values(this.botsInRoom).length;
-        const maxBotRemoveRandom = Math.min(activeBots.length / this.gameData.remainingTime, 4);
-
-        const totalBots = (Math.random() * maxBotRemoveRandom) >> 0;
-
-        for (let i = 0; i < totalBots; i++) {
-            let index = (Math.random() * totalBots) >> 0;
-
-            // if (!changedTopBots && roundId % modRoundToChangedTopBot == 0) {
-            //     // change top of bots
-            //     index = (Math.random() * 8) >> 0;
-            //     changedTopBots = true;
-            // }
-
-            let playerId = activeBots[index];
-
-            await this.removeBot(playerId);
-            this.botsInRoom.slice(playerId, 1);
-        }
-    }
+    }   
 }
