@@ -2,7 +2,8 @@ import { helpers } from "sc-common";
 import { userInfos } from "sc-base-database";
 
 import { BasePublisher } from "../../core/event-publishers";
-import { TableGameDefinition, TableGameData } from "./../";
+import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 import { BaseBot } from "../../core";
 
 export default class TableGameBot extends BaseBot {
