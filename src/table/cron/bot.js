@@ -5,7 +5,7 @@ import { BasePublisher } from "../event-publishers";
 import { TableGameDefinition, TableGameData } from "./../";
 import { BaseBot } from "../../core";
 
-export default class TableBot extends BaseBot {
+export default class TableGameBot extends BaseBot {
     /**
      * @param {TableGameData} gameData
      * @param {TableGameDefinition} definition
