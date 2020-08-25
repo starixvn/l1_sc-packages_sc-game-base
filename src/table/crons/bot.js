@@ -38,7 +38,7 @@ export default class TableGameBot extends BaseBot {
             for (let i = 0; i < botsToBet.length; i++) {
                 let bot = botsToBet[i];
 
-                await this.placeBet(bot, roundId, time);
+                await this.placeBet(bot);
             }
         }
     }
@@ -55,7 +55,9 @@ export default class TableGameBot extends BaseBot {
         const maxTickets = Math.floor(Object.keys(this.botsInRoom).length / this.gameData.remainingTime) + 5;
         const numberBotsToBet = Math.floor(Math.random() * maxTickets + 5);
 
-        let botsToBet = Object.values(this.botsInRoom).filter((t) => t.totalBet < configs.bot_maxbet && t.remainTickets > 0);
+        let botsToBet = Object.values(this.botsInRoom).filter(
+            (t) => t.totalBet < this.gameData.gameConfigs.bot_maxbet && t.remainTickets > 0
+        );
         botsToBet = helpers.arrayHelper.shuffle(botsToBet);
 
         return botsToBet.slice(0, numberBotsToBet);
@@ -80,7 +82,9 @@ export default class TableGameBot extends BaseBot {
     }
 
     resetBot(bot) {
-        bot = { ...this.resetBotData };
+        bot.totalBet = 0;
+        bot.choices = {};
+        bot.betOnChoices = {};
         bot.remainTickets = this.getTicketsPerRound();
     }
 
@@ -89,7 +93,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async joinRoom() {
-        const botUsers = await userInfos.find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type");
+        const botUsers = await userInfos.find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type").lean();
 
         const length = this.getNumberOfBotsToJoin();
 
@@ -115,7 +119,6 @@ export default class TableGameBot extends BaseBot {
         await userInfos.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.configName });
 
         this.resetBot(bot);
-        botList.splice(i, 1);
 
         this.botsInRoom[bot.id] = bot;
         this.gameData.players[bot.id] = bot;

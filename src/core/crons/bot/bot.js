@@ -48,7 +48,7 @@ export default class BaseBot {
             await this.removeAllBots();
         }
 
-        this.resetBotData();
+        this.resetAllBotData();
     }
 
     async run() {}
@@ -73,12 +73,7 @@ export default class BaseBot {
         this.totalBets = {};
     }
 
-    resetBot(bot) {
-        if (!!bot) {
-            bot = { ...this.resetBotData };
-            bot.remainTickets = getTicketsPerRound();
-        }
-    }
+    resetBot(bot) {}
 
     getTicketsPerRound() {
         return Math.floor(Math.random() * 3 + 2);
