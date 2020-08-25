@@ -40,7 +40,7 @@ export default class BaseSocketRouter {
     }
 
     async handleSignIn(payload) {
-        await this.userSignInConsumer.consume(this.socketClient, payload).catch(logger.logError); // push to message queue later
+        await this.userSignInConsumer.consume(this.socketClient, payload).catch(logger.logError);
     }
 
     async handleGetHistory(payload) {
@@ -53,9 +53,9 @@ export default class BaseSocketRouter {
         }
     }
 
-    async handleDisconnect() {
+    async handleDisconnect(reason) {
         try {
-            this.userDisconnectConsumer.consume(this.socketClient);
+            this.userDisconnectConsumer.consume(this.socketClient, reason);
             this.socketClient.disconnect();
         } catch (err) {
             logger.logError(err);

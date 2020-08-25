@@ -1,9 +1,11 @@
 import { userInfos, users, userSessions } from "sc-base-database";
 
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
+import GameData from "./../game-data";
 
 export default class UserSignInConsumer {
     /**
+     * @param {GameData} gameData
      * @param {UserSignInPublisher} userSigninPublisher
      */
     constructor(gameData, userSigninPublisher = null) {
@@ -33,6 +35,7 @@ export default class UserSignInConsumer {
             this.handleSignInSuccess(socketClient, user, userInfo, userSession);
         } else {
             this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
+            socketClient.disconnect(true);
         }
     }
 

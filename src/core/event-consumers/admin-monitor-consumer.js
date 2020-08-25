@@ -1,21 +1,23 @@
 import GameDefinition from "../game-definition";
+import GameData from "./../game-data";
 
 export default class AdminMonitorConsumer {
     /**
-     * @param {GameDefinition} definition
      * @param {SocketIO.Socket} socketClient
+     * @param {GameDefinition} definition
+     * @param {GameData} gameData
      */
     async consume(socketClient, definition, gameData) {
-        const round = await definition.roundRepository
+        const lastRound = await definition.roundRepository
             .findOne({}, { id: true, result: true, settlementResult: true }, { sort: { id: -1 } })
             .lean()
             .exec();
 
-        if (round) {
+        if (lastRound) {
             const payload = {
-                roundId: round.id + 1,
-                result: round.result,
-                settlementResult: round.settlementResult,
+                roundId: lastRound.id + 1,
+                result: lastRound.result,
+                settlementResult: lastRound.settlementResult,
                 remainingTime: gameData.remainingTime,
             };
 

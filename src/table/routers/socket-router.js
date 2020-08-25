@@ -41,10 +41,6 @@ export default class TableSocketRouter extends BaseSocketRouter {
     }
 
     async handleInGame() {
-        try {
-            this.inGameConsumer.inGame(this.socketClient);
-        } catch (error) {
-            logger.logError(error);
-        }
+        this.inGameConsumer.inGame(this.socketClient).catch(logger.logError);
     }
 }
