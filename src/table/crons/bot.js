@@ -2,7 +2,7 @@ import { helpers } from "sc-common";
 import { userInfos } from "sc-base-database";
 
 import { BasePublisher } from "../../core/event-publishers";
-import TableGameData from "./../table-game-data";
+import TableGameData from "../table-game-data";
 import { BaseBot } from "../../core";
 
 export default class TableGameBot extends BaseBot {
@@ -38,7 +38,7 @@ export default class TableGameBot extends BaseBot {
             for (let i = 0; i < botsToBet.length; i++) {
                 let bot = botsToBet[i];
 
-                await botPlaceBet(bot, roundId, time);
+                await this.placeBet(bot, roundId, time);
             }
         }
     }
@@ -80,10 +80,8 @@ export default class TableGameBot extends BaseBot {
     }
 
     resetBot(bot) {
-        if (!!bot) {
-            bot = { ...this.resetBotData };
-            bot.remainTickets = getTicketsPerRound();
-        }
+        bot = { ...this.resetBotData };
+        bot.remainTickets = this.getTicketsPerRound();
     }
 
     getTicketsPerRound() {
@@ -102,13 +100,13 @@ export default class TableGameBot extends BaseBot {
             let bot = botList[i];
 
             if (!!bot) {
-                await botJoinRoom(bot);
+                await this.botJoinRoom(bot);
             }
         }
     }
 
     getNumberOfBotsToJoin() {
-        const maxBotRandom = maxNumberOfBots / this.gameData.remainingTime;
+        const maxBotRandom = this.maxNumberOfBots / this.gameData.remainingTime;
 
         return Math.floor(Math.random() * maxBotRandom + 1);
     }
@@ -159,10 +157,10 @@ export default class TableGameBot extends BaseBot {
         }
     }
 
-    async botPlaceBet(bot) {
+    async placeBet(bot) {
         const choice = this.getBetChoice(bot);
         const maxBet = this.getMaxBet(bot, choice);
-        const minBet = getMinBet();
+        const minBet = this.getMinBet();
         const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
 
         if (this.gameData.remainingTime > this.durations.lockingBet) {
