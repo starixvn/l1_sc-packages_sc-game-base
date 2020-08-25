@@ -1,7 +1,7 @@
 import { endGame } from "sc-base-apis";
 
-import RoundResultPublisher from "../event-publishers/round-result-publisher.js";
-import GameDefinition from "../game-definition.js";
+import RoundResultPublisher from "../event-publishers/round-result-publisher";
+import GameDefinition from "../game-definition";
 
 export default class SettleGameRoundConsumer {
     /**

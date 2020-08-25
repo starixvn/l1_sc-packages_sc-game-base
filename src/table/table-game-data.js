@@ -1,4 +1,4 @@
-import BaseGameData from "../core/game-data.js";
+import BaseGameData from "./../core/game-data";
 
 export default class TableGameData extends BaseGameData {
     constructor() {

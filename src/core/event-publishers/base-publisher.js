@@ -1,4 +1,10 @@
+import GameData from "./../game-data";
+
 export default class BaseEventPublisher {
+    /**
+     * @param {string} gameName
+     * @param {GameData} gameData
+     */
     constructor(gameName, gameData) {
         this.gameName = gameName;
         this.gameData = gameData;
