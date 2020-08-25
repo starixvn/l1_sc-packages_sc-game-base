@@ -7,9 +7,9 @@ import { gameConfigs, init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
 import socketIo from "socket.io";
 
-import * as Bot from "./bot";
-import BaseGameCron from "./cron/game-cron";
-import ProcessBetQueue from "./cron/process-bet-queue";
+import * as Bot from "./crons/bot";
+import BaseGameCron from "./crons/game-cron";
+import ProcessBetQueue from "./crons/process-bet-queue";
 import GameDefinition from "./game-definition";
 
 export default class BaseGameStartup {

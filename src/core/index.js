@@ -1,5 +1,5 @@
 import BaseGameApp from "./app";
-import * as Cron from "./cron";
+import * as Cron from "./crons";
 import * as BaseEventConsumers from "./event-consumers";
 import * as BaseEventPublishers from "./event-publishers";
 import GameDefinition from "./game-definition";

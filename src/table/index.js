@@ -1,6 +1,6 @@
 import TableGameApp from "./app";
-import TableGameCron from "./cron/game-cron";
-import TableGameBot from "./cron/bot";
+import TableGameCron from "./crons/game-cron";
+import TableGameBot from "./crons/bot";
 import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
 import * as Routers from "./routers";
