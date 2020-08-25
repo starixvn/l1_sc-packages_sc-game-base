@@ -19,7 +19,7 @@ export default class BaseBot {
         this.maxNumberOfBots = 0;
         this.botsInRoom = [];
         this.totalTickets = 0;
-        this.totalBets = {};
+        this.totalBets = [];
         this.resetBotData = {
             totalBet: 0,
             choices: {},
@@ -106,7 +106,7 @@ export default class BaseBot {
 
     generatePlaceBetPayload(playerId, choice, amount, balance) {
         return {
-            chip: { playerId: playerId, box: choice, cuoc: amount, red: balance },
+            playerChip: { playerId, betChoice: choice, amount, red: balance },
         };
     }
 }

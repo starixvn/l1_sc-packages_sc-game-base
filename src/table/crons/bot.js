@@ -60,7 +60,7 @@ export default class TableGameBot extends BaseBot {
         );
         botsToBet = helpers.arrayHelper.shuffle(botsToBet);
 
-        return botsToBet.slice(0, numberBotsToBet);
+        return botsToBet.slice(0, Math.min(numberBotsToBet, botsToBet.length - 1));
     }
 
     async removeAllBots() {
@@ -83,7 +83,7 @@ export default class TableGameBot extends BaseBot {
 
     resetBot(bot) {
         bot.totalBet = 0;
-        bot.choices = {};
+        bot.choices = [];
         bot.betOnChoices = {};
         bot.remainTickets = this.getTicketsPerRound();
     }
@@ -179,15 +179,16 @@ export default class TableGameBot extends BaseBot {
 
                     await this.insertOrUpdateBet(bot, choice, amount, currentBet);
 
-                    this.totalBets[choice] = this.totalBets[choice] ? this.totalBets[box] : this.totalBets[box] + amount;
+                    this.totalBets[choice] = this.totalBets[choice] ? this.totalBets[choice] + amount : amount;
                     this.totalTickets += 1;
                     if (this.gameData.players[bot.id]) {
                         this.gameData.players[bot.id].red = user.red;
                     }
+                    this.gameData.totalBets[choice] = this.gameData.totalBets[choice] ? this.gameData.totalBets[choice] + amount : amount;
 
                     this.updateBotInRoomData(bot, choice, amount, user.red);
 
-                    publisher.publishToAllUsers(generatePlaceBetPayload(bot.id, choice, amount, user.red));
+                    publisher.publishToAllUsers(this.generatePlaceBetPayload(bot.id, choice, amount, user.red));
                 }
             }
         }
@@ -222,12 +223,6 @@ export default class TableGameBot extends BaseBot {
         bot.red = balance;
         bot.remainTickets--;
         bot.betOnChoices[choice] += amount;
-    }
-
-    generatePlaceBetPayload(playerId, choice, amount, balance) {
-        return {
-            chip: { playerId: playerId, box: choice, cuoc: amount, red: balance },
-        };
     }
 
     async insertOrUpdateBet(bot, choice, amount, currentBet) {
