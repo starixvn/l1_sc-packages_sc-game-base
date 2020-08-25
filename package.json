@@ -44,8 +44,8 @@
         "@semantic-release/release-notes-generator": "^9.0.1",
         "husky": "^4.2.5",
         "install": "^0.13.0",
-        "semantic-release": "^17.1.1",
-        "sc-semantic-release": "^1.0.0"
+        "sc-semantic-release": "^1.0.1",
+        "semantic-release": "^17.1.1"
     },
     "husky": {
         "hooks": {
