@@ -1,8 +1,8 @@
 import { helpers } from "sc-common";
 import { userInfos } from "sc-base-database";
 
-import { BasePublisher } from "../event-publishers";
-import GameData from "../game-data";
+import { BasePublisher } from "../../event-publishers";
+import GameData from "../../game-data";
 
 export default class BaseBot {
     /**
@@ -84,7 +84,7 @@ export default class BaseBot {
         return Math.floor(Math.random() * 3 + 2);
     }
 
-    async botPlaceBet(bot) {}
+    async placeBet(bot) {}
 
     getBetChoice(bot) {}
 
