@@ -154,7 +154,7 @@ export default class ProcessBetQueue {
         return {
             ownBets: betTracks,
             endBet: amount,
-            freeBet: freeBet,
+            freeBet,
             user: { red },
         };
     }

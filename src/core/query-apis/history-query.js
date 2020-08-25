@@ -1,5 +1,5 @@
-import GameDefinition from "../game-definition";
-import { RoundQuery } from ".";
+import GameDefinition from "./../game-definition";
+import RoundQuery from "./round-query";
 
 export default class HistoryQuery {
     /**

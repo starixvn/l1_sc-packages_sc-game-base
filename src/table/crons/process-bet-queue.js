@@ -10,11 +10,7 @@ export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
      * @param {TablePlaceBetPublisher} publishe
      */
     constructor(definition, gameData, publisher = null) {
-        super(definition, gameData, publisher);
-
-        this.definition = definition;
-        this.gameData = gameData;
-        this.publisher = publisher ?? new TablePlaceBetPublisher(definition.name, gameData);
+        super(definition, gameData, publisher ?? new TablePlaceBetPublisher(definition.name, gameData));
     }
 
     generatePlacingBetResult(player, red, bet) {

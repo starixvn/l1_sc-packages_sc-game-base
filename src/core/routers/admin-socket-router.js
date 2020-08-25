@@ -1,7 +1,8 @@
 import { logger } from "sc-common";
 
-import GameDefinition from "../game-definition.js";
 import { AdminAuthenticationConsumer, AdminMonitorConsumer } from "./../event-consumers";
+import GameData from "./../game-data";
+import GameDefinition from "./../game-definition";
 
 export default class BaseAdminSocketRouter {
     /**
@@ -15,7 +16,9 @@ export default class BaseAdminSocketRouter {
 
     /**
      * @param {GameDefinition} definition
+     * @param {GameData} definition
      * @param {SocketIO.Socket} socketClient
+     * @param {string} adminSecretKey
      */
     init(definition, gameData, socketClient, adminSecretKey) {
         this.definition = definition;

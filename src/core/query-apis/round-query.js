@@ -1,4 +1,4 @@
-import GameDefinition from "../game-definition";
+import GameDefinition from "./../game-definition";
 
 export default class RoundQuery {
     /**
@@ -18,7 +18,7 @@ export default class RoundQuery {
             .lean()
             .exec();
 
-        return rounds.map((round) => {            
+        return rounds.map((round) => {
             return {
                 roundId: round.id,
                 result: round.result ?? this.convertResult(round),
