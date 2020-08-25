@@ -23,7 +23,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async run() {
-        if (this.gameData.gameConfigs?.botenabled && this.gameData.remainingTime > this.durations.settlementDuration) {
+        if (this.gameData.gameConfigs?.botenabled && this.gameData.remainingTime > this.durations.lockingBet) {
             const random = (Math.random() * 5) >> 0;
             if (this.shouldAddBot(random)) {
                 await this.joinRoom();
@@ -165,7 +165,7 @@ export default class TableGameBot extends BaseBot {
         const minBet = getMinBet();
         const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
 
-        if (this.gameData.remainingTime > this.durations.settlementDuration) {
+        if (this.gameData.remainingTime > this.durations.lockingBet) {
             const currentBet = await this.tempBetRepository.findOne({ uid: bot.id, phien: this.gameData.roundId, red: true }).lean();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
