@@ -1,3 +1,10 @@
+# [1.13.0-dev-TableGameBase.3](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.2...v1.13.0-dev-TableGameBase.3) (2020-08-25)
+
+
+### Features
+
+* log the reason why the connection disconnected ([1946e84](https://git3.nexdev.net/sc-packages/sc-game-base/commit/1946e84e699faf326afaba986251010f6a04fbcc))
+
 # [1.13.0-dev-TableGameBase.2](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.1...v1.13.0-dev-TableGameBase.2) (2020-08-25)
 
 
