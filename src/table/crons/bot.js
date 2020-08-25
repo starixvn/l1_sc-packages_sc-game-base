@@ -188,7 +188,7 @@ export default class TableGameBot extends BaseBot {
 
                     this.updateBotInRoomData(bot, choice, amount, user.red);
 
-                    publisher.publishToAllUsers(this.generatePlaceBetPayload(bot.id, choice, amount, user.red));
+                    this.publisher.publishToAllUsers(this.generatePlaceBetPayload(bot.id, choice, amount, user.red));
                 }
             }
         }
@@ -209,7 +209,7 @@ export default class TableGameBot extends BaseBot {
     getTotalBetAmount(bet) {
         let totalBet = 0;
         if (bet) {
-            super.choices.forEach((choice) => {
+            this.choices.forEach((choice) => {
                 totalBet += bet[choice];
             });
         }
