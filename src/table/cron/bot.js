@@ -23,7 +23,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async run() {
-        if (configs?.botenabled && this.gameData.remainingTime > this.durations.settlementDuration) {
+        if (this.gameData.gameConfigs?.botenabled && this.gameData.remainingTime > this.durations.settlementDuration) {
             const random = (Math.random() * 5) >> 0;
             if (this.shouldAddBot(random)) {
                 await this.joinRoom();

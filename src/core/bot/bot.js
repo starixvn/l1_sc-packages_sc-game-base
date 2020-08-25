@@ -29,7 +29,7 @@ export default class BaseBot {
         };
     }
 
-    async resetBots() {
+    async reset() {
         const configs = this.gameData.gameConfigs;
         if (configs.botenabled) {
             const botRatio = helpers.configHelper.getMaxBotForCurrentHour(configs);
