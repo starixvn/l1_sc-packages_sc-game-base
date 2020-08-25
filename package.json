@@ -11,7 +11,8 @@
         "betaver": "npm version prerelease --preid beta",
         "pub": "npm publish --registry http://npm.lumigame.com",
         "pubbeta": "npm publish --registry http://npm.lumigame.com --tag beta",
-        "unpublish": "npm unpublish --force sc-base-database"
+        "unpublish": "npm unpublish --force sc-base-database",
+        "semantic-release": "semantic-release"
     },
     "author": {
         "email": "pentagon@luminetsoft.com",
@@ -31,5 +32,24 @@
         "sc-base-database": "^1.3.0",
         "sc-common": "^1.4.3",
         "socket.io": "^2.3.0"
+    },
+    "devDependencies": {
+        "@commitlint/cli": "^9.1.2",
+        "@commitlint/config-conventional": "^9.1.2",
+        "@semantic-release/changelog": "^5.0.1",
+        "@semantic-release/commit-analyzer": "^8.0.1",
+        "@semantic-release/git": "^9.0.0",
+        "@semantic-release/gitlab": "^6.0.4",
+        "@semantic-release/npm": "^7.0.5",
+        "@semantic-release/release-notes-generator": "^9.0.1",
+        "husky": "^4.2.5",
+        "install": "^0.13.0",
+        "semantic-release": "^17.1.1",
+        "sc-semantic-release": "^1.0.0"
+    },
+    "husky": {
+        "hooks": {
+            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+        }
     }
 }
