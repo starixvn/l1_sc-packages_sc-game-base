@@ -1,3 +1,10 @@
+# [1.13.0-dev-TableGameBase.4](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.3...v1.13.0-dev-TableGameBase.4) (2020-08-25)
+
+
+### Features
+
+* update publisher for table game bot ([4fca4e9](https://git3.nexdev.net/sc-packages/sc-game-base/commit/4fca4e97ae8cddca6682a21be14371a77ee0aa99))
+
 # [1.13.0-dev-TableGameBase.3](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.2...v1.13.0-dev-TableGameBase.3) (2020-08-25)
 
 
