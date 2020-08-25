@@ -6,7 +6,6 @@ import { init as initApis } from "sc-base-apis";
 import { gameConfigs, init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
 import socketIo from "socket.io";
-
 import * as Bot from "./crons/bot";
 import BaseGameCron from "./crons/game-cron";
 import ProcessBetQueue from "./crons/process-bet-queue";
