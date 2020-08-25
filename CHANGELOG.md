@@ -1,3 +1,10 @@
+# [1.13.0-dev-TableGameBase.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.12.5...v1.13.0-dev-TableGameBase.1) (2020-08-25)
+
+
+### Features
+
+* implement table game base ([4ef4d34](https://git3.nexdev.net/sc-packages/sc-game-base/commit/4ef4d34ed45a0b936ee5b6ad9745797684c2f344))
+
 # Release Notes
 
 ## 1.11.0 / 2020-08-01
