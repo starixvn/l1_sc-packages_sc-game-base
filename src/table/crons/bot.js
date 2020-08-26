@@ -241,4 +241,10 @@ export default class TableGameBot extends BaseBot {
             { upsert: true, setDefaultsOnInsert: true }
         );
     }
+
+    generatePlaceBetPayload(playerId, choice, amount, balance) {
+        return {
+            playerChip: { playerId, betChoice: choice, amount, red: balance },
+        };
+    }
 }

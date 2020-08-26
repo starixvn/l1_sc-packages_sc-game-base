@@ -42,8 +42,6 @@ export default class BaseBot {
                 const disabledBots = bots.filter((bot) => bot.disabled);
                 disabledBots.forEach((bot) => this.removeBot(bot.id));
             }
-
-            // changedTopBots = false;
         } else {
             await this.removeAllBots();
         }
@@ -53,15 +51,7 @@ export default class BaseBot {
 
     async run() {}
 
-    async removeAllBots() {
-        const bots = Object.values(this.gameData.players).filter((player) => player.type);
-
-        bots.forEach(async (bot) => await removeBot(bot.id));
-
-        this.botsInRoom = [];
-        this.maxNumberOfBots = 0;
-        this.currentBotRatio = 0;
-    }
+    async removeAllBots() {}
 
     async removeBot(botId) {}
 
@@ -75,19 +65,11 @@ export default class BaseBot {
 
     resetBot(bot) {}
 
-    getTicketsPerRound() {
-        return Math.floor(Math.random() * 3 + 2);
-    }
-
     async placeBet(bot) {}
 
     getBetChoice(bot) {}
 
     getMaxBet(bot, choice) {}
-
-    convertAmountToChip(amount) {
-        return amount;
-    }
 
     getMinBet() {
         return Math.max(1, this.gameData.gameConfigs.minbet);
@@ -102,11 +84,5 @@ export default class BaseBot {
         }
 
         return totalBet;
-    }
-
-    generatePlaceBetPayload(playerId, choice, amount, balance) {
-        return {
-            playerChip: { playerId, betChoice: choice, amount, red: balance },
-        };
     }
 }
