@@ -1,3 +1,10 @@
+# [1.13.0-dev-TableGameBase.5](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.4...v1.13.0-dev-TableGameBase.5) (2020-08-26)
+
+
+### Bug Fixes
+
+* settle game round ([24253db](https://git3.nexdev.net/sc-packages/sc-game-base/commit/24253dbe11d52e091ae40e0161ca636cbe766f53))
+
 # [1.13.0-dev-TableGameBase.4](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.3...v1.13.0-dev-TableGameBase.4) (2020-08-25)
 
 
