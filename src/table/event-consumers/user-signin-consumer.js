@@ -14,6 +14,7 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
     constructor(definition, gameData, userSigninPublisher = null) {
         super(gameData, userSigninPublisher);
 
+        this.definition = definition;
         this.userSigninPublisher = userSigninPublisher ?? new TableUserSignInPublisher();
     }
 

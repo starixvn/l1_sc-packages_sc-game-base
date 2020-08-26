@@ -45,7 +45,7 @@ export default class SettleGameRoundConsumer {
     async queryBets(roundId) {}
 
     async settleBets({ result, settlementResult, roundId, time }) {
-        const bets = await queryBets(roundId);
+        const bets = await this.queryBets(roundId);
 
         if (bets && bets.length) {
             const { odds } = this.gameData.gameConfigs;
@@ -65,7 +65,7 @@ export default class SettleGameRoundConsumer {
             );
         }
 
-        this.roundResultPublisher.publishRoundResult(collectRoundResult(result, settlementResult, roundId));
+        this.roundResultPublisher.publishRoundResult(this.collectRoundResult(result, settlementResult, roundId));
     }
 
     calculateBetResult(settlementResult, bet, odds) {

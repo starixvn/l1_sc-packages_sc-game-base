@@ -10,7 +10,11 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
 
     captureBetResult(uid, betResult) {
         if (betResult.totalWin > 0) {
-            this.gameData.winningPlayers[uid] = status;
+            this.gameData.winningPlayers[uid] = {
+                win: true,
+                bet: betResult.totalWin,
+                winningByChoices: betResult.winningByChoices,
+            };
 
             if (this.gameData.players[uid]) {
                 this.gameData.players[uid].red += betResult.totalWin;
