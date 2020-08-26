@@ -1,3 +1,5 @@
+# [1.13.0-dev-TableGameBase.7](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.6...v1.13.0-dev-TableGameBase.7) (2020-08-26)
+
 # [1.13.0-dev-TableGameBase.6](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.5...v1.13.0-dev-TableGameBase.6) (2020-08-26)
 
 
