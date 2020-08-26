@@ -25,7 +25,7 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
     }
 
     collectRoundResult(result, settlementResult, roundId) {
-        const roundResult = super.collectRound(result, settlementResult, roundId);
+        const roundResult = super.collectRoundResult(result, settlementResult, roundId);
 
         roundResult.winningPlayers = this.gameData.winningPlayers;
 
