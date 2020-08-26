@@ -1,3 +1,10 @@
+# [1.13.0-dev-TableGameBase.6](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.5...v1.13.0-dev-TableGameBase.6) (2020-08-26)
+
+
+### Bug Fixes
+
+* return winningPlayers to client ([2b1d76e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2b1d76ea89e3f14e12b0b8439b93db41ced7afcd))
+
 # [1.13.0-dev-TableGameBase.5](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.4...v1.13.0-dev-TableGameBase.5) (2020-08-26)
 
 
