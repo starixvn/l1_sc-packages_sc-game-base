@@ -1,3 +1,10 @@
+# [1.13.0-dev-TableGameBase.11](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.10...v1.13.0-dev-TableGameBase.11) (2020-08-26)
+
+
+### Bug Fixes
+
+* correct wrong import ([97cd198](https://git3.nexdev.net/sc-packages/sc-game-base/commit/97cd1982ae059d231f8c4c26da418663c19a56bc))
+
 # [1.13.0-dev-TableGameBase.10](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.9...v1.13.0-dev-TableGameBase.10) (2020-08-26)
 
 
