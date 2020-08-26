@@ -1,3 +1,11 @@
+# [1.13.0-dev-TableGameBase.12](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.11...v1.13.0-dev-TableGameBase.12) (2020-08-26)
+
+
+### Bug Fixes
+
+* export HttpRouter ([e99c2db](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e99c2dbd143db43472402508dfdde6093cf7bdbb))
+* remove red in tempBet  of bot ([952ed6a](https://git3.nexdev.net/sc-packages/sc-game-base/commit/952ed6abeab09797b0662e235b6efc2d3d7eb69e))
+
 # [1.13.0-dev-TableGameBase.11](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.10...v1.13.0-dev-TableGameBase.11) (2020-08-26)
 
 
