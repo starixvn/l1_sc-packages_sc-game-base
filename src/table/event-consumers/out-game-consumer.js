@@ -1,4 +1,4 @@
-import { BaseEventConsumers, BaseEventPublishers, BaseEventPublishers } from "./../../core";
+import { BaseEventConsumers, BaseEventPublishers } from "./../../core";
 import TableGameData from "./../table-game-data";
 import TableGameDefinition from "./../table-game-definition";
 
