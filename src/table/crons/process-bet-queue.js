@@ -1,13 +1,13 @@
-import { Cron } from "../../core";
-import { TablePlaceBetPublisher } from "../event-publishers";
-import GameData from "../table-game-data";
-import GameDefinition from "../table-game-definition";
+import { Cron } from "./../../core";
+import { TablePlaceBetPublisher } from "./../event-publishers";
+import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 
 export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
     /**
-     * @param {GameDefinition} definition
-     * @param {GameData} gameData
-     * @param {TablePlaceBetPublisher} publishe
+     * @param {TableGameDefinition} definition
+     * @param {TableGameData} gameData
+     * @param {TablePlaceBetPublisher} publisher
      */
     constructor(definition, gameData, publisher = null) {
         super(definition, gameData, publisher ?? new TablePlaceBetPublisher(definition.name, gameData));

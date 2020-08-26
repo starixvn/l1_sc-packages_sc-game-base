@@ -45,4 +45,8 @@ export default class BaseEventPublisher {
             socket && socket.emit("message", { [this.gameName]: payload });
         });
     }
+
+    publishApiError(userId, apiError) {
+        this.publishToUser(userId, apiError);
+    }
 }

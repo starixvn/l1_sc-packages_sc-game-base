@@ -14,6 +14,7 @@ export default class UserDisconnectConsumer {
 
     /**
      * @param {SocketIO.Socket} socketClient
+     * @param {string} reason
      */
     consume(socketClient, reason) {
         if (!this.ignoredDisconnectionReason.includes(reason)) {

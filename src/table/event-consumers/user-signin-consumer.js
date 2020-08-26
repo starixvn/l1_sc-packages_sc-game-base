@@ -2,18 +2,18 @@ import { helpers } from "sc-common";
 
 import { UserSignInConsumer } from "./../../core/event-consumers";
 import { TableUserSignInPublisher } from "./../event-publishers";
+import TableGameData from "./../table-game-data";
 import TableGameDefinition from "./../table-game-definition";
 
 export default class TableUserSignInConsumer extends UserSignInConsumer {
     /**
      * @param {TableGameDefinition} definition
+     * @param {TableGameData} gameData
      * @param {TableUserSignInPublisher} userSigninPublisher
      */
     constructor(definition, gameData, userSigninPublisher = null) {
         super(gameData, userSigninPublisher);
 
-        this.definition = definition;
-        this.gameData = gameData;
         this.userSigninPublisher = userSigninPublisher ?? new TableUserSignInPublisher();
     }
 

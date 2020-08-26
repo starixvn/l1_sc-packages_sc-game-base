@@ -70,7 +70,7 @@ export default class PlaceBetConsumer {
         return true;
     }
 
-    async placeBet(player, payload) {
+    async consume(player, payload) {
         Object.assign(payload, {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,

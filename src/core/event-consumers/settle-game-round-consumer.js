@@ -1,17 +1,21 @@
 import { endGame } from "sc-base-apis";
 
-import RoundResultPublisher from "../event-publishers/round-result-publisher";
-import GameDefinition from "../game-definition";
+import { RoundResultPublisher, UserBetResultPublisher } from "./../event-publishers";
+import GameData from "./../game-data";
+import GameDefinition from "./../game-definition";
 
 export default class SettleGameRoundConsumer {
     /**
      * @param {GameDefinition} gameDefinition
+     * @param {GameData} gameData
      * @param {RoundResultPublisher} roundResultPublisher
+     * @param {UserBetResultPublisher} userBetResultPublisher
      */
-    constructor(gameDefinition, gameData, roundResultPublisher = null) {
+    constructor(gameDefinition, gameData, roundResultPublisher = null, userBetResultPublisher = null) {
         this.gameDefinition = gameDefinition;
         this.gameData = gameData;
         this.roundResultPublisher = roundResultPublisher ?? new RoundResultPublisher(gameDefinition.name, gameData);
+        this.userBetResultPublisher = userBetResultPublisher ?? new UserBetResultPublisher(gameDefinition.name, gameData);
     }
 
     async settleRound() {
@@ -38,7 +42,31 @@ export default class SettleGameRoundConsumer {
         }
     }
 
-    async settleBets({ result, settlementResult, roundId, time }) {}
+    async queryBets(roundId) {}
+
+    async settleBets({ result, settlementResult, roundId, time }) {
+        const bets = await queryBets(roundId);
+
+        if (bets && bets.length) {
+            const { odds } = this.gameData.gameConfigs;
+
+            await Promise.all(
+                bets.map(async (bet) => {
+                    const betResult = this.calculateBetResult(settlementResult, bet, odds);
+
+                    bet.betwin = betResult.totalWin;
+                    bet.thanhtoan = true;
+
+                    await bet.save();
+                    await this.callEndGame(bet, roundId, time, betResult);
+                    this.captureBetResult(bet, betResult);
+                    this.userBetResultPublisher.publish(bet.uid, betResult);
+                })
+            );
+        }
+
+        this.roundResultPublisher.publishRoundResult(collectRoundResult(result, settlementResult, roundId));
+    }
 
     calculateBetResult(settlementResult, bet, odds) {
         const betResult = Object.entries(settlementResult).reduce(
@@ -74,30 +102,10 @@ export default class SettleGameRoundConsumer {
         return betResult;
     }
 
-    notifyBetResult(bet, betResult) {
-        const status = { winningByChoices: betResult.winningByChoices };
+    captureBetResult(uid, betResult) {}
 
-        if (betResult.totalWin > 0) {
-            status.win = true;
-            status.bet = betResult.totalWin;
-            this.gameData.winningPlayers[bet.uid] = status;
-
-            if (this.gameData.players[bet.uid]) {
-                this.gameData.players[bet.uid].red += betResult.totalWin;
-                //updateBotBalance(bet.uid, gameData.usersAndBots[bet.uid].red);
-            }
-        } else {
-            status.win = false;
-            status.bet = betResult.totalLost;
-        }
-
-        this.roundResultPublisher.publishToUser(bet.uid, { status });
-        // TODO: Update user coin
-        //     if (status.win && void 0 !== self.io.users[bet.uid]) {
-        //         self.io.users[bet.uid].forEach(function (client) {
-        //             User.updateCoint(client);
-        //         });
-        //     }
+    collectRoundResult(result, settlementResult, roundId) {
+        return { result, settlementResult, roundId };
     }
 
     async callEndGame(bet, roundId, time, betResult) {
@@ -128,7 +136,7 @@ export default class SettleGameRoundConsumer {
         const apiResult = await endGame(bet.uid, gameInfo, settlementInfo);
 
         if (!apiResult.isOk) {
-            //userBetResultPublisher.publishEndGameError(bet.uid, apiResult.response);
+            this.userBetResultPublisher.publishApiError(bet.uid, apiResult.response);
         }
     }
 }

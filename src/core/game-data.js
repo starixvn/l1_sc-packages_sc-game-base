@@ -7,5 +7,6 @@ export default class BaseGameData {
         this.totalBets = {};
         this.gameConfigs = {};
         this.ingame = {};
+        this.settlementResultFromAdmin = {};
     }
 }

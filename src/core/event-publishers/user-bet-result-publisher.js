@@ -1,18 +1,18 @@
 import BaseEventPublisher from "./base-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
-    publish({ bet, betResult }) {
-        const betStatus = { winningByChoices: betResult.winningByChoices };
+    publish(userId, betResult) {
+        const status = { winningByChoices: betResult.winningByChoices };
 
         if (betResult.totalWin > 0) {
-            betStatus.win = true;
-            betStatus.bet = betResult.totalWin;
+            status.win = true;
+            status.bet = betResult.totalWin;
         } else {
-            betStatus.win = false;
-            betStatus.bet = betResult.totalLost;
+            status.win = false;
+            status.bet = betResult.totalLost;
         }
 
-        this.publishToUser(bet.uid, { status: betStatus });
+        this.publishToUser(userId, { status });
         // TODO: Send latest balance to players who are not in the room anymore.
     }
 }

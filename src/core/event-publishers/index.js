@@ -1,4 +1,3 @@
-import ApiErrorPublisher from "./api-error-publisher";
 import BasePublisher from "./base-publisher";
 import GameStatusPublisher from "./game-status-publisher";
 import PlaceBetPublisher from "./place-bet-publisher";
@@ -9,7 +8,6 @@ import UserSignInPublisher from "./user-signin-publisher";
 
 export {
     BasePublisher,
-    ApiErrorPublisher,
     GameStatusPublisher,
     RunningRoundInfoPublisher,
     RoundResultPublisher,

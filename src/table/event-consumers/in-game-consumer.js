@@ -1,29 +1,28 @@
 import { getBalance } from "sc-base-apis";
 import { userInfos } from "sc-base-database";
 
-import { BaseEventPublishers } from "./../../core";
+import { BaseEventPublishers, QueryApis } from "./../../core";
 import TableGameData from "./../table-game-data";
 import TableGameDefinition from "./../table-game-definition";
-import { RoundQuery } from "../../core/query-apis";
 
 export default class InGameConsumer {
     /**
      * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
-     * @param {BasePublisher} publisher
-     * @param {RoundQuery} roundQuery
+     * @param {QueryApis.RoundQuery} roundQuery
+     * @param {BaseEventPublishers.BasePublisher} publisher
      */
-    constructor(definition, gameData, roundQuery = null) {
+    constructor(definition, gameData, roundQuery = null, publisher = null) {
         this.definition = definition;
         this.gameData = gameData;
-        this.roundQuery = roundQuery ?? new RoundQuery(definition);
-        this.publisher = new BaseEventPublishers.BasePublisher(definition.name, gameData);
+        this.roundQuery = roundQuery ?? new QueryApis.RoundQuery(definition);
+        this.publisher = publisher ?? new BaseEventPublishers.BasePublisher(definition.name, gameData);
     }
 
     /**
      * @param {SocketIO.Client} socketClient
      */
-    async inGame(socketClient) {
+    async consume(socketClient) {
         const realPlayer = this.gameData.realPlayers[socketClient.id];
 
         if (!realPlayer) {
@@ -68,8 +67,8 @@ export default class InGameConsumer {
         this.publisher.publishToAllUsersExcept(realPlayer.UID, { player });
     }
 
-    async getUserInfo(uid) {
-        return await userInfos
+    getUserInfo(uid) {
+        return userInfos
             .findOne(
                 { id: uid },
                 {

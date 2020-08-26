@@ -1,12 +1,12 @@
 import { Cron } from "./../../core";
 import TableSettleGameRoundConsumer from "./../event-consumers/settle-game-round-consumer";
-import GameData from "./../table-game-data";
-import GameDefinition from "./../table-game-definition";
+import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 
 export default class TableGameCron extends Cron.BaseGameCron {
     /**
-     * @param {GameDefinition} gameDefinition
-     * @param {GameData} gameData
+     * @param {TableGameDefinition} gameDefinition
+     * @param {TableGameData} gameData
      * @param {TableSettleGameRoundConsumer} settleGameRoundConsumer
      */
     constructor(gameDefinition, gameData, settleGameRoundConsumer = null) {
@@ -14,8 +14,8 @@ export default class TableGameCron extends Cron.BaseGameCron {
     }
 
     resetForNewRound() {
-        this.gameData.ingame = {};
-        this.gameData.totalBets = {};
+        super.resetForNewRound();
+
         this.gameData.chips = {};
         this.gameData.winningPlayers = {};
     }

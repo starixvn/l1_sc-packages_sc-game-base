@@ -12,15 +12,24 @@ export default class BaseSocketRouter {
      * @param {UserSignInConsumer} userSignInConsumer
      * @param {UserDisconnectConsumer} userDisconnectConsumer
      * @param {PlaceBetConsumer} placeBetConsumer
+     * @param {HistoryQuery} historyQuery
      * @param {RoundQuery} roundQuery
      */
-    constructor(definition, gameData, userSignInConsumer, userDisconnectConsumer = null, placeBetConsumer = null, roundQuery = null) {
+    constructor(
+        definition,
+        gameData,
+        userSignInConsumer,
+        userDisconnectConsumer = null,
+        placeBetConsumer = null,
+        historyQuery = null,
+        roundQuery = null
+    ) {
         this.definition = definition;
         this.gameData = gameData;
         this.userSignInConsumer = userSignInConsumer ?? new UserSignInConsumer(gameData);
         this.userDisconnectConsumer = userDisconnectConsumer ?? new UserDisconnectConsumer(gameData);
         this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(definition, gameData);
-        this.historyQuery = new HistoryQuery(definition);
+        this.historyQuery = historyQuery ?? new HistoryQuery(definition);
         this.roundQuery = roundQuery ?? new RoundQuery(definition);
     }
 
@@ -36,7 +45,7 @@ export default class BaseSocketRouter {
     }
 
     async handlePlaceBet(payload) {
-        await this.placeBetConsumer.placeBet(this.gameData.realPlayers[this.socketClient.id], payload).catch(logger.logError);
+        await this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload).catch(logger.logError);
     }
 
     async handleSignIn(payload) {

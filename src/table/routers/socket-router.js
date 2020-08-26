@@ -1,16 +1,21 @@
 import { logger } from "sc-common";
 
-import { RoundQuery } from "../../core";
+import { BaseEventConsumers, QueryApis } from "./../../core";
 import BaseSocketRouter from "./../../core/routers/socket-router";
-import { InGameConsumer, OutGameConsumer, TablePlaceBetConsumer, UserSignInConsumer } from "./../event-consumers";
+import { InGameConsumer, OutGameConsumer, UserSignInConsumer } from "./../event-consumers";
+import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 
 export default class TableSocketRouter extends BaseSocketRouter {
     /**
-     * @param {InGameConsumer} inGameConsumer
-     * @param {TablePlaceBetConsumer} placeBetConsumer
-     * @param {RoundQuery} roundQuery
+     * @param {TableGameDefinition} definition
+     * @param {TableGameData} gameData
      * @param {UserSignInConsumer} userSignInConsumer
      * @param {OutGameConsumer} userDisconnectConsumer
+     * @param {InGameConsumer} inGameConsumer
+     * @param {BaseEventConsumers.PlaceBetConsumer} placeBetConsumer
+     * @param {QueryApis.HistoryQuery} historyQuery
+     * @param {QueryApis.RoundQuery} roundQuery
      */
     constructor(
         definition,
@@ -19,6 +24,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
         userDisconnectConsumer = null,
         inGameConsumer = null,
         placeBetConsumer = null,
+        historyQuery = null,
         roundQuery = null
     ) {
         super(
@@ -26,9 +32,11 @@ export default class TableSocketRouter extends BaseSocketRouter {
             gameData,
             userSignInConsumer ?? new UserSignInConsumer(definition, gameData),
             userDisconnectConsumer ?? new OutGameConsumer(definition, gameData),
-            placeBetConsumer ?? new TablePlaceBetConsumer(definition, gameData),
-            roundQuery ?? new RoundQuery(definition)
+            placeBetConsumer,
+            historyQuery,
+            roundQuery
         );
+
         this.inGameConsumer = inGameConsumer ?? new InGameConsumer(definition, gameData);
     }
 
@@ -41,6 +49,6 @@ export default class TableSocketRouter extends BaseSocketRouter {
     }
 
     async handleInGame() {
-        this.inGameConsumer.inGame(this.socketClient).catch(logger.logError);
+        this.inGameConsumer.consume(this.socketClient).catch(logger.logError);
     }
 }

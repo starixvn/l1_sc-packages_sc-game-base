@@ -10,12 +10,16 @@ import socketIo from "socket.io";
 import * as Bot from "./crons/bot";
 import BaseGameCron from "./crons/game-cron";
 import ProcessBetQueue from "./crons/process-bet-queue";
+import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 
 export default class BaseGameStartup {
     /**
+     * @param {Object} appConfigs
      * @param {GameDefinition} definition
-     * * @param {BaseGameCron} gameCron
+     * @param {GameData} gameData
+     * @param {BaseGameCron} gameCron
+     * @param {ProcessBetQueue} processBetQueue
      */
     constructor(appConfigs, definition, gameData, gameCron, processBetQueue) {
         this.appConfigs = appConfigs;

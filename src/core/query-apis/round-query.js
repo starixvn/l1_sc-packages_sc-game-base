@@ -18,13 +18,11 @@ export default class RoundQuery {
             .lean()
             .exec();
 
-        return rounds.map((round) => {
-            return {
-                roundId: round.id,
-                result: round.result ?? this.convertResult(round),
-                settlementResult: round.settlementResult ?? this.convertSettlementResult(result),
-            };
-        });
+        return rounds.map((round) => ({
+            roundId: round.id,
+            result: round.result ?? this.convertResult(round),
+            settlementResult: round.settlementResult ?? this.convertSettlementResult(result),
+        }));
     }
 
     async getOne(id, projections) {

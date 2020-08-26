@@ -1,17 +1,26 @@
-import { BaseEventConsumers, BaseEventPublishers } from "./../../core";
+import { BaseEventConsumers, BaseEventPublishers, BaseEventPublishers } from "./../../core";
+import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 
 export default class OutGameConsumer extends BaseEventConsumers.UserDisconnectConsumer {
+    /**
+     * @param {TableGameDefinition} definition
+     * @param {TableGameData} gameData
+     * @param {BaseEventPublishers.BasePublisher} publisher
+     */
     constructor(definition, gameData, publisher = null) {
-        super();
-        this.gameData = gameData;
+        super(gameData);
         this.publisher = publisher ?? new BaseEventPublishers.BasePublisher(definition.name, gameData);
     }
 
+    /**
+     * @param {SocketIO.Socket} socketClient
+     * @param {string} reason
+     */
     consume(socketClient, reason) {
         const realPlayer = this.gameData.realPlayers[socketClient.id];
 
         if (realPlayer) {
-            delete this.gameData.players[realPlayer.UID];
             this.publisher.publishToAllUsers({ outgame: { playerId: realPlayer.UID } });
         }
 
