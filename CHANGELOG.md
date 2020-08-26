@@ -1,3 +1,10 @@
+# [1.13.0-dev-TableGameBase.10](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.9...v1.13.0-dev-TableGameBase.10) (2020-08-26)
+
+
+### Features
+
+* add onlineusers for table game base ([4813b7f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/4813b7fcb848c90c52f7bd1d2ab553604839d183))
+
 # [1.13.0-dev-TableGameBase.9](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.8...v1.13.0-dev-TableGameBase.9) (2020-08-26)
 
 # [1.13.0-dev-TableGameBase.8](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.7...v1.13.0-dev-TableGameBase.8) (2020-08-26)
