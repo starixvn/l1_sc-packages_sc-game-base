@@ -1,3 +1,10 @@
+# [1.13.0-dev-TableGameBase.8](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.7...v1.13.0-dev-TableGameBase.8) (2020-08-26)
+
+
+### Bug Fixes
+
+* remove useless update user info ([dce8308](https://git3.nexdev.net/sc-packages/sc-game-base/commit/dce83085d1ca714b734de11fa4c6a898c7cbc601))
+
 # [1.13.0-dev-TableGameBase.7](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.6...v1.13.0-dev-TableGameBase.7) (2020-08-26)
 
 # [1.13.0-dev-TableGameBase.6](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0-dev-TableGameBase.5...v1.13.0-dev-TableGameBase.6) (2020-08-26)
