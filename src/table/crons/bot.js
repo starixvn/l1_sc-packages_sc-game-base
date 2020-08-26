@@ -1,9 +1,9 @@
-import { helpers } from "sc-common";
 import { userInfos } from "sc-base-database";
+import { helpers } from "sc-common";
 
+import { BaseBot } from "../../core";
 import { BasePublisher } from "../../core/event-publishers";
 import TableGameData from "../table-game-data";
-import { BaseBot } from "../../core";
 
 export default class TableGameBot extends BaseBot {
     /**
@@ -124,14 +124,12 @@ export default class TableGameBot extends BaseBot {
         this.gameData.players[bot.id] = bot;
 
         const payload = {
-            ingame: {
-                player: {
-                    id: bot.id,
-                    name: bot.name,
-                    red: bot.red,
-                    avatarId: bot.avatarId,
-                    type: bot.type,
-                },
+            player: {
+                id: bot.id,
+                name: bot.name,
+                red: bot.red,
+                avatarId: bot.avatarId,
+                type: bot.type,
             },
         };
 

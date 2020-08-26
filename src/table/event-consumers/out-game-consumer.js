@@ -7,7 +7,7 @@ export default class OutGameConsumer extends BaseEventConsumers.UserDisconnectCo
         this.publisher = publisher ?? new BaseEventPublishers.BasePublisher(definition.name, gameData);
     }
 
-    consume(socketClient) {
+    consume(socketClient, reason) {
         const realPlayer = this.gameData.realPlayers[socketClient.id];
 
         if (realPlayer) {
@@ -15,6 +15,6 @@ export default class OutGameConsumer extends BaseEventConsumers.UserDisconnectCo
             this.publisher.publishToAllUsers({ outgame: { playerId: realPlayer.UID } });
         }
 
-        super.consume(socketClient);
+        super.consume(socketClient, reason);
     }
 }
