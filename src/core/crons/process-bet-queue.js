@@ -55,7 +55,7 @@ export default class ProcessBetQueue {
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, apiResult.response.red, payload, apiResult.response.scoins);
+            await this.handleSuccessBet(player, apiResult.response, payload);
         } else {
             const notice = apiResult.response.inSufficientBalance ? helpers.noticeHelper.notEnoughMoney : apiResult.response;
 
@@ -63,7 +63,7 @@ export default class ProcessBetQueue {
         }
     }
 
-    async handleSuccessBet(player, red, bet, scoins = 0) {
+    async handleSuccessBet(player, balance, bet) {
         const existingBetFilter = { uid: player.UID, phien: this.gameData.roundId, freeBet: bet.freeBet };
         const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
@@ -99,7 +99,7 @@ export default class ProcessBetQueue {
         }
 
         this.adjustBetTracks(player.profile.name, bet.betChoice, bet.amount);
-        this.notifyPlacingBetResult(player, red, bet, scoins);
+        this.notifyPlacingBetResult(player, balance, bet);
     }
 
     handleFailedBet(player, notice) {
@@ -141,13 +141,13 @@ export default class ProcessBetQueue {
         }
     }
 
-    notifyPlacingBetResult(player, red, bet, scoins = 0) {
-        const result = this.generatePlacingBetResult(player, red, bet, scoins);
+    notifyPlacingBetResult(player, balance, bet) {
+        const result = this.generatePlacingBetResult(player, balance, bet);
 
         this.publisher.publishSuccessBet(player.UID, result);
     }
 
-    generatePlacingBetResult(player, red, bet, scoins = 0) {
+    generatePlacingBetResult(player, balance, bet) {
         const { amount, freeBet } = bet;
         const { betTracks } = this.gameData.ingame[player.profile.name];
 
@@ -155,7 +155,10 @@ export default class ProcessBetQueue {
             ownBets: betTracks,
             endBet: amount,
             freeBet,
-            user: { red, scoins },
+            user: {
+                red: balance.red,
+                scoins: balance.scoins,
+            },
         };
     }
 }
