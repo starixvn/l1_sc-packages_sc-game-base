@@ -55,7 +55,7 @@ export default class ProcessBetQueue {
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, apiResult.response.red, payload);
+            await this.handleSuccessBet(player, apiResult.response.red, payload, apiResult.response.scoins);
         } else {
             const notice = apiResult.response.inSufficientBalance ? helpers.noticeHelper.notEnoughMoney : apiResult.response;
 
@@ -63,7 +63,7 @@ export default class ProcessBetQueue {
         }
     }
 
-    async handleSuccessBet(player, red, bet) {
+    async handleSuccessBet(player, red, bet, scoins = 0) {
         const existingBetFilter = { uid: player.UID, phien: this.gameData.roundId, freeBet: bet.freeBet };
         const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
@@ -99,7 +99,7 @@ export default class ProcessBetQueue {
         }
 
         this.adjustBetTracks(player.profile.name, bet.betChoice, bet.amount);
-        this.notifyPlacingBetResult(player, red, bet);
+        this.notifyPlacingBetResult(player, red, bet, scoins);
     }
 
     handleFailedBet(player, notice) {
@@ -141,13 +141,13 @@ export default class ProcessBetQueue {
         }
     }
 
-    notifyPlacingBetResult(player, red, bet) {
-        const result = this.generatePlacingBetResult(player, red, bet);
+    notifyPlacingBetResult(player, red, bet, scoins = 0) {
+        const result = this.generatePlacingBetResult(player, red, bet, scoins);
 
         this.publisher.publishSuccessBet(player.UID, result);
     }
 
-    generatePlacingBetResult(player, red, bet) {
+    generatePlacingBetResult(player, red, bet, scoins = 0) {
         const { amount, freeBet } = bet;
         const { betTracks } = this.gameData.ingame[player.profile.name];
 
@@ -155,7 +155,7 @@ export default class ProcessBetQueue {
             ownBets: betTracks,
             endBet: amount,
             freeBet,
-            user: { red },
+            user: { red, scoins },
         };
     }
 }
