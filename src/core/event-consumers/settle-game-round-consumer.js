@@ -73,7 +73,8 @@ export default class SettleGameRoundConsumer {
             (result, [choice, win]) => {
                 const betAmount = bet[choice];
                 let winAmount = win ? betAmount * (odds[choice] || 1) : 0;
-                winAmount = bet.freeBet ? winAmount - betAmount : winAmount;
+
+                winAmount = win && bet.freeBet ? winAmount - betAmount : winAmount;
 
                 result.totalBetAmount += betAmount;
                 result.totalWin += winAmount;
