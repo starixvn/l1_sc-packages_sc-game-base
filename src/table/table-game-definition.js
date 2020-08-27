@@ -2,7 +2,7 @@ import { GameDefinition } from "./../core";
 
 export default class TableGameDefinition extends GameDefinition {
     constructor(
-        { id = 0, name = "", durations = {}, choices = [], choicesMapper = {}, defaultBetTracks = {} },
+        { id = 0, name = "", durations = {}, choices = [], choicesMapper = {} },
         generateResult,
         settle,
         roundRepository,
@@ -12,7 +12,7 @@ export default class TableGameDefinition extends GameDefinition {
         bot
     ) {
         super(
-            { id, name, durations, choices, choicesMapper, defaultBetTracks },
+            { id, name, durations, choices, choicesMapper },
             generateResult,
             settle,
             roundRepository,

@@ -1,6 +1,12 @@
 import SettleGameRoundConsumer from "../../core/event-consumers/settle-game-round-consumer";
 
 export default class TableSettleGameRoundConsumer extends SettleGameRoundConsumer {
+    defaultWinningStatus = {
+        win: true,
+        bet: 0,
+        winningByChoices: {},
+    };
+
     async queryBets(roundId) {
         const realPlayerBets = await this.gameDefinition.betRepository.find({ phien: roundId }).exec();
         const botBets = await this.gameDefinition.tempBetRepository.find({ phien: roundId }).exec();
@@ -10,11 +16,14 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
 
     captureBetResult(uid, betResult) {
         if (betResult.totalWin > 0) {
-            this.gameData.winningPlayers[uid] = {
+            const existingWinningStatus = this.gameData.winningPlayers[uid] ?? this.defaultWinningStatus;
+            const winningStatus = {
                 win: true,
-                bet: betResult.totalWin,
-                winningByChoices: betResult.winningByChoices,
+                bet: existingWinningStatus.totalWin + betResult.totalWin,
+                winningByChoices: Object.assign({}, existingWinningStatus.winningByChoices, betResult.winningByChoices),
             };
+
+            this.gameData.winningPlayers[uid] = winningStatus;
 
             if (this.gameData.players[uid]) {
                 this.gameData.players[uid].red += betResult.totalWin;
