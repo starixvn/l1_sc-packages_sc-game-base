@@ -18,20 +18,27 @@ export default class RoundQuery {
             .lean()
             .exec();
 
-        return rounds.map((round) => ({
-            roundId: round.id,
-            result: round.result ?? this.convertResult(round),
-            settlementResult: round.settlementResult ?? this.convertSettlementResult(result),
-        }));
+        return rounds.map((round) => {
+            const result = round.result ?? this.convertResult(round);
+            const settlementResult = round.settlementResult ?? this.convertSettlementResult(result);
+
+            return {
+                roundId: round.id,
+                result,
+                settlementResult,
+            };
+        });
     }
 
     async getOne(id, projections) {
         const round = await this.definition.roundRepository.findOne({ id }, projections).exec();
+        const result = round.result ?? this.convertResult(round);
+        const settlementResult = round.settlementResult ?? this.convertSettlementResult(result);
 
         return {
             roundId: round.id,
-            result: round.result ?? this.convertResult(round),
-            settlementResult: round.settlementResult ?? this.convertSettlementResult(result),
+            result,
+            settlementResult,
         };
     }
 }
