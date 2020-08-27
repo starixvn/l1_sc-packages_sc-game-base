@@ -72,9 +72,9 @@ export default class SettleGameRoundConsumer {
         const betResult = Object.entries(settlementResult).reduce(
             (result, [choice, win]) => {
                 const betAmount = bet[choice];
-                let winAmount = win ? betAmount * (odds[choice] || 1) : 0;
-
-                winAmount = win && bet.freeBet ? winAmount - betAmount : winAmount;
+                const originalOdds = odds[choice] || 1;
+                const effectiveOdds = bet.freeBet ? originalOdds - 1 : originalOdds;
+                const winAmount = win ? betAmount * effectiveOdds : 0;
 
                 result.totalBetAmount += betAmount;
                 result.totalWin += winAmount;
