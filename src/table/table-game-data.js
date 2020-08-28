@@ -5,7 +5,6 @@ export default class TableGameData extends BaseGameData {
         super(remainingTime, totalBets);
 
         this.chips = {};
-        this.realPlayers = {};
         this.players = {};
     }
 }

@@ -6,7 +6,9 @@ export default class BaseGameData {
         this.delayStartTime = 0;
         this.disabled = false;
         this.gameConfigs = {};
+        this.realPlayers = {};
         this.ingame = {};
+        this.admins = {};
         this.settlementResultFromAdmin = {};
     }
 }
