@@ -36,8 +36,8 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
         }
     }
 
-    handleSignInSuccess(socketClient, user, userInfo, userSession) {
-        super.handleSignInSuccess(socketClient, user, userInfo, userSession);
+    handleSignInSuccess(socketClient, userInfo, userSession) {
+        super.handleSignInSuccess(socketClient, userInfo, userSession);
 
         this.userSigninPublisher.publishToGameMessage(socketClient, this.definition.name);
     }

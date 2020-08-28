@@ -13,9 +13,9 @@ export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
         super(definition, gameData, publisher ?? new TablePlaceBetPublisher(definition.name, gameData));
     }
 
-    generatePlacingBetResult(player, red, bet) {
+    generatePlacingBetResult(player, balance, bet) {
         const { betChoice, amount } = bet;
-        const ownBet = super.generatePlacingBetResult(player, red, bet);
+        const ownBet = super.generatePlacingBetResult(player, balance, bet);
 
         ownBet.ownChip = { betChoice, amount };
 
@@ -25,7 +25,7 @@ export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
         }
 
         if (this.gameData.players[player.UID]) {
-            this.gameData.players[player.UID].red = red;
+            this.gameData.players[player.UID].red = balance.red;
         }
 
         return ownBet;
