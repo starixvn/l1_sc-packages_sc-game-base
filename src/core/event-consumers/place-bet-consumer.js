@@ -17,17 +17,17 @@ export default class PlaceBetConsumer {
         this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
     }
 
-    validateBetRequest(player, betChoice, amount) {
-        if (!amount || !betChoice) {
-            return false;
-        }
+    composeValidationCriteria(player, betChoice, amount) {
+        const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria() ?? [];
+        const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount) || [];
 
+        return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
+    }
+
+    composeBettingTimeValidationCriteria() {
         const configs = this.gameData.gameConfigs;
-        const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
-        const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
-        const maxBetPerChoice = configs.choices_maxbet[betChoice] || 0;
 
-        const defaultCriteria = [
+        return [
             {
                 failure: !configs.enabled,
                 notice: helpers.noticeHelper.placeBetNextRound,
@@ -38,6 +38,16 @@ export default class PlaceBetConsumer {
                     this.gameData.remainingTime >= this.definition.durations.placingBets,
                 notice: helpers.noticeHelper.placeBetNextRound,
             },
+        ];
+    }
+
+    composeBetAmountValidationCriteria(player, betChoice, amount) {
+        const configs = this.gameData.gameConfigs;
+        const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
+        const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
+        const maxBetPerChoice = configs.choices_maxbet[betChoice] || 0;
+
+        return [
             {
                 failure: amount > maxBetPerChoice || betTracks[betChoice] + amount > maxBetPerChoice,
                 notice: helpers.noticeHelper.maxBetForChoice(maxBetPerChoice),
@@ -55,10 +65,14 @@ export default class PlaceBetConsumer {
                 notice: helpers.noticeHelper.maxBet(configs.maxbet),
             },
         ];
+    }
 
-        const criteria = this.definition.additionalValidationCriteria
-            ? this.definition.additionalValidationCriteria.concat(defaultCriteria)
-            : defaultCriteria;
+    validateBetRequest(player, betChoice, amount) {
+        if (!amount || !betChoice) {
+            return false;
+        }
+
+        const criteria = this.composeValidationCriteria(player, betChoice, amount);
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {

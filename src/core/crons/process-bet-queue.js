@@ -57,11 +57,8 @@ export default class ProcessBetQueue {
         if (apiResult.isOk) {
             await this.handleSuccessBet(player, apiResult.response, payload);
         } else {
-            const notice = apiResult.response.inSufficientBalance
-                ? freeBet
-                    ? helpers.noticeHelper.notEnoughScoin
-                    : helpers.noticeHelper.notEnoughMoney
-                : apiResult.response;
+            const insufficientNotice = freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
+            const notice = apiResult.response.inSufficientBalance ? insufficientNotice : apiResult.response;
 
             this.handleFailedBet(player, notice);
         }
