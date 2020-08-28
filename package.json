@@ -1,6 +1,6 @@
 {
     "name": "sc-game-base",
-    "version": "1.13.0-dev-TableGameBase.27",
+    "version": "1.13.0-dev-TableGameBase.28",
     "description": "SC Game base for game services",
     "main": "./src/index.js",
     "scripts": {
