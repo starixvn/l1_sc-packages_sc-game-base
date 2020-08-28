@@ -6,5 +6,16 @@ import * as EventPublishers from "./event-publishers";
 import * as Routers from "./routers";
 import TableGameStartup from "./startup";
 import TableGameDefinition from "./table-game-definition";
+import TableGameData from "./table-game-data";
 
-export { TableGameDefinition, TableGameApp, TableGameStartup, TableGameCron, Routers, EventConsumers, EventPublishers, TableGameBot };
+export {
+    TableGameDefinition,
+    TableGameData,
+    TableGameApp,
+    TableGameStartup,
+    TableGameCron,
+    Routers,
+    EventConsumers,
+    EventPublishers,
+    TableGameBot,
+};

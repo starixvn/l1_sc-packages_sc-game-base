@@ -10,7 +10,7 @@ export default class HttpRouter {
         this.gameData = gameData;
     }
 
-    init(app) {
+    init(app, appConfigs) {
         app.get(
             "/api/onlineusers",
             utils.authentication.useAuthenticate({
