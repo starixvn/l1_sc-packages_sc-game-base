@@ -7,7 +7,7 @@ export default class RunningRoundInfoPublisher extends BaseEventPublisher {
         });
 
         this.publishToAllAdmins({
-            inGame: gameData.usersData,
+            inGame: gameData.ingame,
         });
     }
 }
