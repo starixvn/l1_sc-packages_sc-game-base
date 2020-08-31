@@ -30,7 +30,7 @@
         "morgan": "^1.10.0",
         "sc-base-apis": "^1.6.0-dev-TableGameBase.5",
         "sc-base-database": "^1.3.0-dev-FreeBet.1",
-        "sc-common": "^1.4.5-dev-FreeBet.1",
+        "sc-common": "^1.4.6-dev-FreeBet.1",
         "socket.io": "^2.3.0"
     },
     "devDependencies": {

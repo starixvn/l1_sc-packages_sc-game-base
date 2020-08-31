@@ -1,6 +1,6 @@
 import { logger } from "sc-common";
 
-import { BaseEventConsumers, QueryApis } from "./../../core";
+import { BaseEventConsumers, BaseEventPublishers, QueryApis } from "./../../core";
 import BaseSocketRouter from "./../../core/routers/socket-router";
 import { InGameConsumer, OutGameConsumer, UserSignInConsumer } from "./../event-consumers";
 import TableGameData from "./../table-game-data";
@@ -14,6 +14,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
      * @param {OutGameConsumer} userDisconnectConsumer
      * @param {InGameConsumer} inGameConsumer
      * @param {BaseEventConsumers.PlaceBetConsumer} placeBetConsumer
+     * @param {BaseEventPublishers.UserSignInPublisher} userSignInPublisher
      * @param {QueryApis.HistoryQuery} historyQuery
      * @param {QueryApis.RoundQuery} roundQuery
      */
@@ -24,6 +25,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
         userDisconnectConsumer = null,
         inGameConsumer = null,
         placeBetConsumer = null,
+        userSignInPublisher = null,
         historyQuery = null,
         roundQuery = null
     ) {
@@ -33,6 +35,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
             userSignInConsumer ?? new UserSignInConsumer(definition, gameData),
             userDisconnectConsumer ?? new OutGameConsumer(definition, gameData),
             placeBetConsumer,
+            userSignInPublisher,
             historyQuery,
             roundQuery
         );
@@ -48,7 +51,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
         this.socketClient.on("inGame", this.handleInGame.bind(this));
     }
 
-    async handleInGame() {
+    handleInGame() {
         this.inGameConsumer.consume(this.socketClient).catch(logger.logError);
     }
 }

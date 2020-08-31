@@ -17,12 +17,18 @@ export default class UserDisconnectConsumer {
      * @param {string} reason
      */
     consume(socketClient, reason) {
+        const loggedUser = this.gameData.realPlayers[socketClient.id];
+
         if (!this.ignoredDisconnectionReason.includes(reason)) {
-            logger.setTag({ id: "ip-address", value: socketClient.handshake.address });
+            logger.setTag({ id: "socket-io-id", value: socketClient.id });
+            logger.setTag({ id: "username", value: loggedUser?.session?.username });
             logger.log(`Socket disconnected with the reason: ${reason}`);
-            logger.setTag({ id: "ip-address", value: "" });
+            logger.setTag({ id: "socket-io-id", value: "" });
+            logger.setTag({ id: "username", value: "" });
         }
 
-        delete this.gameData.realPlayers[socketClient.id];
+        if (loggedUser) {
+            delete this.gameData.realPlayers[socketClient.id];
+        }
     }
 }
