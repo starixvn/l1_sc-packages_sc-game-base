@@ -62,10 +62,6 @@ export default class BaseSocketRouter {
 
     async handleSignIn(payload) {
         try {
-            if (!this.verify()) {
-                return;
-            }
-
             await this.userSignInConsumer.consume(this.socketClient, payload);
         } catch (error) {
             logger.logError(error);
