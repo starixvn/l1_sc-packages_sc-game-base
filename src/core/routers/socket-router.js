@@ -50,7 +50,7 @@ export default class BaseSocketRouter {
 
     async handlePlaceBet(payload) {
         try {
-            if (!validate()) {
+            if (!this.verify()) {
                 return;
             }
 
@@ -62,7 +62,7 @@ export default class BaseSocketRouter {
 
     async handleSignIn(payload) {
         try {
-            if (!validate()) {
+            if (!this.verify()) {
                 return;
             }
 
@@ -74,7 +74,7 @@ export default class BaseSocketRouter {
 
     async handleGetHistory(payload) {
         try {
-            if (!validate()) {
+            if (!this.verify()) {
                 return;
             }
 
