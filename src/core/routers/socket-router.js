@@ -48,13 +48,13 @@ export default class BaseSocketRouter {
         this.socketClient.on("disconnect", this.handleDisconnect.bind(this));
     }
 
-    async handlePlaceBet(payload) {
+    handlePlaceBet(payload) {
         try {
             if (!this.verify()) {
                 return;
             }
 
-            await this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
+            this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
         } catch (error) {
             logger.logError(error);
         }
@@ -82,7 +82,7 @@ export default class BaseSocketRouter {
         }
     }
 
-    async handleDisconnect(reason) {
+    handleDisconnect(reason) {
         try {
             this.userDisconnectConsumer.consume(this.socketClient, reason);
         } catch (error) {
