@@ -1,5 +1,4 @@
 import { userInfos, userSessions } from "sc-base-database";
-import { logger } from "sc-common";
 
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
@@ -34,12 +33,6 @@ export default class UserSignInConsumer {
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
             this.handleSignInSuccess(socketClient, userInfo, userSession);
-
-            logger.setTag({ id: "socket-io-id", value: socketClient.id });
-            logger.setTag({ id: "username", value: payload.username });
-            logger.log("Sign-in: Success");
-            logger.setTag({ id: "socket-io-id", value: "" });
-            logger.setTag({ id: "username", value: "" });
         } else {
             this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
             socketClient.disconnect(true);

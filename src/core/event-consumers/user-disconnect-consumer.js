@@ -1,5 +1,3 @@
-import { logger } from "sc-common";
-
 import GameData from "./../game-data";
 
 export default class UserDisconnectConsumer {
@@ -14,21 +12,10 @@ export default class UserDisconnectConsumer {
 
     /**
      * @param {SocketIO.Socket} socketClient
-     * @param {string} reason
      */
-    consume(socketClient, reason) {
-        const loggedUser = this.gameData.realPlayers[socketClient.id];
-
-        if (!this.ignoredDisconnectionReason.includes(reason)) {
-            logger.setTag({ id: "socket-io-id", value: socketClient.id });
-            logger.setTag({ id: "username", value: loggedUser?.session?.username });
-            logger.log(`Socket disconnected with the reason: ${reason}`);
-            logger.setTag({ id: "socket-io-id", value: "" });
-            logger.setTag({ id: "username", value: "" });
-        }
-
-        if (loggedUser) {
+    consume(socketClient) {
+        setTimeout(() => {
             delete this.gameData.realPlayers[socketClient.id];
-        }
+        });
     }
 }

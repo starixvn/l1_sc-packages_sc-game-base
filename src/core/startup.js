@@ -58,7 +58,7 @@ export default class BaseGameStartup {
         }
 
         await initBaseDatabase(this.appConfigs.database);
-        await Bot.resetInRoom(this.appConfigs.gameName);
+        await Bot.resetInRoom(this.definition.name);
         initApis(this.appConfigs.apiSettings);
     }
 
@@ -67,7 +67,8 @@ export default class BaseGameStartup {
      */
     async startServer(app) {
         const httpServer = http.createServer(app);
-        const { gameName, hostingPort, socketOptions } = this.appConfigs;
+        const { hostingPort, socketOptions } = this.appConfigs;
+        const gameNameInSocketNamespace = this.definition.name.toLowerCase();
 
         const socketServer = socketIo(httpServer, socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 });
 
@@ -78,11 +79,11 @@ export default class BaseGameStartup {
 
         this.initHttpRouter(app);
 
-        socketServer.of(`/user/${gameName}`).on("connection", (socketClient) => {
+        socketServer.of(`/user/${gameNameInSocketNamespace}`).on("connection", (socketClient) => {
             this.initSocketRouter(socketClient);
         });
 
-        socketServer.of(`/admin/${gameName}`).on("connection", (socketClient) => {
+        socketServer.of(`/admin/${gameNameInSocketNamespace}`).on("connection", (socketClient) => {
             this.initAdminSocketRouter(socketClient);
         });
 
@@ -109,7 +110,7 @@ export default class BaseGameStartup {
 
     async start() {
         try {
-            this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.appConfigs.gameName });
+            this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.definition.configName });
             this.processBetQueue.start();
             this.gameCron.start();
         } catch (error) {

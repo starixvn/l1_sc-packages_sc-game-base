@@ -17,15 +17,14 @@ export default class HttpRouter {
                 authUrl: appConfigs.apiSettings.authUrl,
                 audiences: appConfigs.authenticateSettings.audiences,
             }),
-            (req, res) => this.handleOnlineUsers(res)
+            (_req, res) => this.handleOnlineUsers(res)
         );
     }
 
-    async handleOnlineUsers(res) {
+    handleOnlineUsers(res) {
         try {
             const users = this.mapRealUsers(Object.values(this.gameData.realPlayers));
-
-            let bots = Object.values(this.gameData.players)
+            const bots = Object.values(this.gameData.players)
                 .filter((player) => player.type)
                 .map((bot) => ({ name: bot.name, red: bot.red }));
 
@@ -37,18 +36,15 @@ export default class HttpRouter {
                 totalBots: bots.length,
                 bots: bots,
             });
-
-            return;
-        } catch (err) {
-            logger.logError(err);
+        } catch (error) {
+            logger.logError(error);
+            res.send({ error: true });
         }
-
-        res.send({ error: true });
     }
 
     mapRealUsers(players) {
-        let uusUsers = [];
-        let realUsers = [];
+        const uusUsers = [];
+        const realUsers = [];
 
         players.forEach(function (player) {
             if (player && player.session && player.socketClient && player.socketClient.connected) {
@@ -58,6 +54,7 @@ export default class HttpRouter {
                     currency: player.session.currency,
                     character: player.session.characterName,
                 };
+
                 if (player.session.currency && player.session.currency.toUpperCase() === "UUS") {
                     uusUsers.push(user);
                 } else {
@@ -66,6 +63,6 @@ export default class HttpRouter {
             }
         });
 
-        return { uusUsers: uusUsers, realUsers: realUsers };
+        return { uusUsers, realUsers };
     }
 }

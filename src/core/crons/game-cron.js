@@ -72,7 +72,7 @@ export default class BaseGameCron {
     }
 
     async checkGameStatus() {
-        const { name: gameName, configName, durations } = this.gameDefinition;
+        const { configName, durations } = this.gameDefinition;
         const configs = await gameConfigs.findOne({ name: configName }).lean().exec();
         const previouslyDisabled = this.gameData.disabled;
         const configuredlyDisabled = !configs || !configs.enabled;
@@ -91,7 +91,7 @@ export default class BaseGameCron {
         if (this.gameData.disabled) {
             this.gameData.remainingTime = durations.wholeRound;
             this.gameStatusPublisher.publishDisableGameStatus(this.gameData);
-            await gameConfigs.updateOne({ name: gameName }, { disabledround: this.gameData.roundId });
+            await gameConfigs.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
             this.gameStatusPublisher.publishPreviousDisableGameStatus(this.gameData);
         } else {

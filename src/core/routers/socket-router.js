@@ -82,9 +82,9 @@ export default class BaseSocketRouter {
         }
     }
 
-    handleDisconnect(reason) {
+    handleDisconnect() {
         try {
-            this.userDisconnectConsumer.consume(this.socketClient, reason);
+            this.userDisconnectConsumer.consume(this.socketClient);
         } catch (error) {
             logger.logError(error);
         }
