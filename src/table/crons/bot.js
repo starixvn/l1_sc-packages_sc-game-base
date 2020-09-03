@@ -20,6 +20,14 @@ export default class TableGameBot extends BaseBot {
             in: 3,
             out: 4,
         };
+
+        this.removeBotAtTheTable = false;
+        this.removeBotAtTheTableRoundFrequency = 6;
+    }
+
+    resetAllBotData() {
+        super.resetAllBotData();
+        this.removeBotAtTheTable = false;
     }
 
     async run() {
@@ -145,16 +153,15 @@ export default class TableGameBot extends BaseBot {
         for (let i = 0; i < totalBots; i++) {
             let index = (Math.random() * totalBots) >> 0;
 
-            // if (!changedTopBots && roundId % modRoundToChangedTopBot == 0) {
-            //     // change top of bots
-            //     index = (Math.random() * 8) >> 0;
-            //     changedTopBots = true;
-            // }
+            if (!this.removeBotAtTheTable && roundId % this.removeBotAtTheTableRoundFrequency == 0) {
+                index = (Math.random() * 8) >> 0;
+                this.removeBotAtTheTable = true;
+            }
 
             let playerId = activeBots[index];
 
             await this.removeBot(playerId);
-            this.botsInRoom.slice(playerId, 1);
+            this.botsInRoom.splice(playerId, 1);
         }
     }
 
