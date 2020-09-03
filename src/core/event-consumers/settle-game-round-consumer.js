@@ -59,7 +59,7 @@ export default class SettleGameRoundConsumer {
 
                     await bet.save();
                     await this.callEndGame(bet, roundId, time, betResult);
-                    this.captureBetResult(bet, betResult);
+                    this.captureBetResult(bet.uid, betResult);
                     this.userBetResultPublisher.publish(bet.uid, betResult);
                 })
             );
