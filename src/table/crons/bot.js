@@ -188,7 +188,13 @@ export default class TableGameBot extends BaseBot {
                     if (this.gameData.players[bot.id]) {
                         this.gameData.players[bot.id].red = user.red;
                     }
+
                     this.gameData.totalBets[choice] = this.gameData.totalBets[choice] ? this.gameData.totalBets[choice] + amount : amount;
+
+                    if (this.gameData.chips) {
+                        this.gameData.chips[choice] = this.gameData.chips[choice] ?? {};
+                        this.gameData.chips[choice][amount] = (this.gameData.chips[choice][amount] ?? 0) + 1;
+                    }
 
                     this.updateBotInRoomData(bot, choice, amount, user.red);
 
