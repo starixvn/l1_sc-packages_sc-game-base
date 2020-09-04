@@ -56,7 +56,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     shouldRemoveBot(random) {
-        return random == this.inOutValues.out;
+        return random == this.inOutValues.out && Object.keys(this.botsInRoom).length > 0;
     }
 
     getBotsToBet() {
@@ -145,23 +145,24 @@ export default class TableGameBot extends BaseBot {
     }
 
     async leaveRoom() {
-        const activeBots = Object.values(this.botsInRoom).length;
-        const maxBotRemoveRandom = Math.min(activeBots.length / this.gameData.remainingTime, 4);
+        const activeBots = Object.values(this.botsInRoom);
+        const maxBotRemoveRandom = Math.max(activeBots.length / this.gameData.remainingTime, 4);
 
-        const totalBots = (Math.random() * maxBotRemoveRandom) >> 0;
+        const totalBots = maxBotRemoveRandom > activeBots.length ? 1 : maxBotRemoveRandom;
 
         for (let i = 0; i < totalBots; i++) {
-            let index = (Math.random() * totalBots) >> 0;
+            const randomIndex = Math.random() * activeBots.length;
+            let index = randomIndex >> 0;
 
-            if (!this.removeBotAtTheTable && roundId % this.removeBotAtTheTableRoundFrequency == 0) {
+            if (!this.removeBotAtTheTable && this.gameData.roundId % this.removeBotAtTheTableRoundFrequency == 0) {
                 index = (Math.random() * 8) >> 0;
                 this.removeBotAtTheTable = true;
             }
 
-            let playerId = activeBots[index];
+            const playerId = activeBots[index].id;
 
             await this.removeBot(playerId);
-            this.botsInRoom.splice(playerId, 1);
+            delete this.botsInRoom[playerId];
         }
     }
 
