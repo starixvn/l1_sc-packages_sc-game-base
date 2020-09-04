@@ -102,25 +102,19 @@ export default class TableGameBot extends BaseBot {
 
     async joinRoom() {
         const botUsers = await userInfos.find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type").lean();
+        const newBots = this.getBotsToJoin(botUsers);
 
-        const length = this.getNumberOfBotsToJoin();
-
-        let botList = helpers.arrayHelper.shuffle(botUsers);
-        botList = botList.slice(0, length);
-
-        for (let i = 0; i < botList.length; i++) {
-            let bot = botList[i];
-
-            if (!!bot) {
-                await this.botJoinRoom(bot);
-            }
-        }
+        newBots.forEach(async (bot) => {
+            await this.botJoinRoom(bot);
+        });
     }
 
-    getNumberOfBotsToJoin() {
+    getBotsToJoin(botUsers) {
         const maxBotRandom = this.maxNumberOfBots / this.gameData.remainingTime;
+        const numberOfBotsToJoin = Math.floor(Math.random() * maxBotRandom + 1);
+        const shuffleBots = helpers.arrayHelper.shuffle(botUsers);
 
-        return Math.floor(Math.random() * maxBotRandom + 1);
+        return shuffleBots.slice(0, numberOfBotsToJoin);
     }
 
     async botJoinRoom(bot) {
@@ -145,25 +139,29 @@ export default class TableGameBot extends BaseBot {
     }
 
     async leaveRoom() {
-        const activeBots = Object.values(this.botsInRoom);
-        const maxBotRemoveRandom = Math.max(activeBots.length / this.gameData.remainingTime, 4);
+        let totalActiveBots = Object.values(this.botsInRoom).length;
+        const maxBotRemoveRandom = Math.max(totalActiveBots / this.gameData.remainingTime, 4);
+        const totalRemoval = maxBotRemoveRandom > totalActiveBots ? 1 : maxBotRemoveRandom;
 
-        const totalBots = maxBotRemoveRandom > activeBots.length ? 1 : maxBotRemoveRandom;
-
-        for (let i = 0; i < totalBots; i++) {
-            const randomIndex = Math.random() * activeBots.length;
-            let index = randomIndex >> 0;
-
-            if (!this.removeBotAtTheTable && this.gameData.roundId % this.removeBotAtTheTableRoundFrequency == 0) {
-                index = (Math.random() * 8) >> 0;
-                this.removeBotAtTheTable = true;
-            }
-
-            const playerId = activeBots[index].id;
+        for (let i = 0; i < totalRemoval; i++) {
+            const index = this.getIndexToRemove(totalActiveBots);
+            const playerId = Object.values(this.botsInRoom)[index].id;
 
             await this.removeBot(playerId);
             delete this.botsInRoom[playerId];
+
+            totalActiveBots = Object.values(this.botsInRoom).length;
         }
+    }
+
+    getIndexToRemove(totalBots) {
+        if (!this.removeBotAtTheTable && this.gameData.roundId % this.removeBotAtTheTableRoundFrequency == 0) {
+            this.removeBotAtTheTable = true;
+
+            return (Math.random() * 8) >> 0;
+        }
+
+        return (Math.random() * totalBots) >> 0;
     }
 
     async placeBet(bot) {
