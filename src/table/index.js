@@ -1,4 +1,4 @@
-import TableGameBot from "./crons/bot";
+import TableGameBot from "./crons/table-game-bot";
 import TableGameCron from "./crons/table-game-cron";
 import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
