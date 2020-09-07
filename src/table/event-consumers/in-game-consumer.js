@@ -30,9 +30,9 @@ export default class InGameConsumer {
         }
 
         const maxNumberOfRounds = 100;
-        const { minbet, maxbet, choices_maxbet, odds } = this.gameData.gameConfigs;
+        const { minbet, maxbet, choices_maxbet, odds, enableFreeBet } = this.gameData.gameConfigs;
         const { remainingTime, totalBets, chips } = this.gameData;
-        const gameConfigs = { minbet, maxbet, choices_maxbet, odds };
+        const gameConfigs = { minbet, maxbet, choices_maxbet, odds, enableFreeBet };
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
 
         await getBalance(realPlayer, true);
