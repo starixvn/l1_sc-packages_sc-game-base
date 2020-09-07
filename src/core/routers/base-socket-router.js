@@ -33,8 +33,8 @@ export default class BaseSocketRouter {
         this.userDisconnectConsumer = userDisconnectConsumer ?? new UserDisconnectConsumer(gameData);
         this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(definition, gameData);
         this.userSignInPublisher = userSignInPublisher ?? new UserSignInPublisher();
-        this.historyQuery = historyQuery ?? new HistoryQuery(definition);
         this.roundQuery = roundQuery ?? new RoundQuery(definition);
+        this.historyQuery = historyQuery ?? new HistoryQuery(definition, this.roundQuery);
     }
 
     /**

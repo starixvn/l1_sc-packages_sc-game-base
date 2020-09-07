@@ -40,7 +40,7 @@ export default class TableSocketRouter extends BaseSocketRouter {
             roundQuery
         );
 
-        this.inGameConsumer = inGameConsumer ?? new InGameConsumer(definition, gameData);
+        this.inGameConsumer = inGameConsumer ?? new InGameConsumer(definition, gameData, roundQuery);
     }
 
     /**
