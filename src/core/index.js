@@ -1,4 +1,4 @@
-import BaseGameApp from "./app";
+import BaseGameApp from "./base-game-app";
 import * as Cron from "./crons";
 import BaseBot from "./crons/bot/base-bot";
 import * as BaseEventConsumers from "./event-consumers";
