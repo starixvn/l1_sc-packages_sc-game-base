@@ -54,8 +54,8 @@ export default class HistoryQuery {
         return { history: { betLogs, page, pageSize, total } };
     }
 
-    async getBetLogDetails(player, roundId) {
-        return await this.definition.betLogRepository
+    getBetLogDetails(player, roundId) {
+        return this.definition.betLogRepository
             .find({ phien: roundId, uid: player.UID }, { _id: false, time: true, choice: true, amount: true }, { sort: { _id: -1 } })
             .lean()
             .exec();
