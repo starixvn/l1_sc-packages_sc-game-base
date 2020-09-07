@@ -1,3 +1,4 @@
+import Chance from "chance";
 import { userInfos } from "sc-base-database";
 import { helpers } from "sc-common";
 
@@ -23,6 +24,7 @@ export default class TableGameBot extends BaseBot {
 
         this.removeBotAtTheTable = false;
         this.removeBotAtTheTableRoundFrequency = 6;
+        this.chance = new Chance();
     }
 
     resetAllBotData() {
@@ -32,7 +34,7 @@ export default class TableGameBot extends BaseBot {
 
     async run() {
         if (this.gameData.gameConfigs?.botenabled && this.gameData.remainingTime > this.durations.lockingBet) {
-            const random = (Math.random() * 5) >> 0;
+            const random = this.chance.integer({ min: 0, max: 5 });
             if (this.shouldAddBot(random)) {
                 await this.joinRoom();
             }
@@ -61,12 +63,13 @@ export default class TableGameBot extends BaseBot {
 
     getBotsToBet() {
         const maxTickets = Math.floor(Object.keys(this.botsInRoom).length / this.gameData.remainingTime) + 5;
-        const numberBotsToBet = Math.floor(Math.random() * maxTickets + 5);
+        const numberBotsToBet = this.chance.integer({ min: 5, max: maxTickets });
 
         let botsToBet = Object.values(this.botsInRoom).filter(
             (t) => t.totalBet < this.gameData.gameConfigs.bot_maxbet && t.remainTickets > 0
         );
-        botsToBet = helpers.arrayHelper.shuffle(botsToBet);
+
+        botsToBet = this.chance.shuffle(botsToBet);
 
         return botsToBet.slice(0, Math.min(numberBotsToBet, botsToBet.length - 1));
     }
@@ -112,7 +115,7 @@ export default class TableGameBot extends BaseBot {
     getBotsToJoin(botUsers) {
         const maxBotRandom = this.maxNumberOfBots / this.gameData.remainingTime;
         const numberOfBotsToJoin = Math.floor(Math.random() * maxBotRandom + 1);
-        const shuffleBots = helpers.arrayHelper.shuffle(botUsers);
+        const shuffleBots = this.chance.shuffle(botUsers);
 
         return shuffleBots.slice(0, numberOfBotsToJoin);
     }
@@ -139,29 +142,26 @@ export default class TableGameBot extends BaseBot {
     }
 
     async leaveRoom() {
-        let totalActiveBots = Object.values(this.botsInRoom).length;
-        const maxBotRemoveRandom = Math.max(totalActiveBots / this.gameData.remainingTime, 4);
-        const totalRemoval = maxBotRemoveRandom > totalActiveBots ? 1 : maxBotRemoveRandom;
+        const maxBotRemoveRandom = Math.max(Object.values(this.botsInRoom).length / this.gameData.remainingTime, 4);
+        const totalRemoval = this.chance.integer({ min: 1, max: Math.min(maxBotRemoveRandom, 1) });
+        const removalIds = this.getRemovalBotIds(totalRemoval);
 
-        for (let i = 0; i < totalRemoval; i++) {
-            const index = this.getIndexToRemove(totalActiveBots);
-            const playerId = Object.keys(this.botsInRoom)[index];
-
-            await this.removeBot(playerId);
-            delete this.botsInRoom[playerId];
-
-            totalActiveBots = Object.values(this.botsInRoom).length;
-        }
+        removalIds.forEach(botId => {
+            await this.removeBot(botId);
+            delete this.botsInRoom[botId];
+        });  
     }
 
-    getIndexToRemove(totalBots) {
+    getRemovalBotIds(totalRemoval) {
         if (!this.removeBotAtTheTable && this.gameData.roundId % this.removeBotAtTheTableRoundFrequency == 0) {
             this.removeBotAtTheTable = true;
 
-            return (Math.random() * 8) >> 0;
+            return this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval);
         }
 
-        return (Math.random() * totalBots) >> 0;
+        const shuffleBots = this.chance.shuffle(Object.keys(this.botsInRoom));
+
+        return this.chance.pickset(shuffleBots, totalRemoval);
     }
 
     async placeBet(bot) {
