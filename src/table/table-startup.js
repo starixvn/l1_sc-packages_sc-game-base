@@ -1,8 +1,7 @@
-import BaseGameStartup from "../core/startup";
-import TableGameCron from "./crons/game-cron";
-import TableProcessBetQueue from "./crons/process-bet-queue";
+import { BaseStartup } from "../core";
+import { TableGameCron, TableProcessBetQueue } from "./crons";
 
-export default class TableStartup extends BaseGameStartup {
+export default class TableStartup extends BaseStartup {
     constructor(appConfigs, definition, gameData, gameCron, processBetQueue) {
         super(
             appConfigs,

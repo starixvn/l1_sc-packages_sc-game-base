@@ -1,5 +1,5 @@
 import { BaseGameApp } from "../core";
-import TableStartup from "./startup";
+import TableStartup from "./table-startup";
 
 export default class TableGameApp extends BaseGameApp {
     constructor(appConfigs, definition, gameData, startup) {
