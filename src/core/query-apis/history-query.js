@@ -39,7 +39,7 @@ export default class HistoryQuery {
             betLogs = await Promise.all(
                 bets.map(async (bet) => {
                     const round = await this.roundQuery.getOne(bet.phien, { _id: false });
-                    const betLogDetails = this.definition.betLogDetails ? await this.getBetLogDetails(player) : [];
+                    const betLogDetails = this.definition.betLogDetails ? await this.getBetLogDetails(player, bet.phien) : [];
 
                     return {
                         ...bet,
@@ -54,12 +54,10 @@ export default class HistoryQuery {
         return { history: { betLogs, page, pageSize, total } };
     }
 
-    async getBetLogDetails(player) {
-        const betLogDetails = await this.definition.betLogRepository
-            .find({ phien: bet.phien, uid: player.UID }, { _id: false, time: true, choice: true, amount: true }, { sort: { _id: -1 } })
+    async getBetLogDetails(player, roundId) {
+        return await this.definition.betLogRepository
+            .find({ phien: roundId, uid: player.UID }, { _id: false, time: true, choice: true, amount: true }, { sort: { _id: -1 } })
             .lean()
             .exec();
-
-        return betLogDetails;
     }
 }
