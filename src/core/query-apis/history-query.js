@@ -13,7 +13,7 @@ export default class HistoryQuery {
 
     async queryHistory(player, page, pageSize = 8) {
         if (page < 1 || !player) {
-            return;
+            return {};
         }
 
         const filter = { uid: player.UID, thanhtoan: true };

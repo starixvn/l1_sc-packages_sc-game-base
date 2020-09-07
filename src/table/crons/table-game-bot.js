@@ -45,7 +45,7 @@ export default class TableGameBot extends BaseBot {
 
             const botsToBet = this.getBotsToBet();
 
-            botsToBet.forEach(async (bot) => await this.placeBet(bot));
+            botsToBet.forEach(async (bot) => this.placeBet(bot));
         }
     }
 
@@ -73,7 +73,7 @@ export default class TableGameBot extends BaseBot {
     async removeAllBots() {
         const bots = Object.values(this.gameData.players).filter((player) => player.type);
 
-        bots.forEach(async (bot) => await this.removeBot(bot.id));
+        bots.forEach(async (bot) => this.removeBot(bot.id));
 
         this.botsInRoom = [];
         this.maxNumberOfBots = 0;
