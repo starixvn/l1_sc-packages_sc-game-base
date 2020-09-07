@@ -1,4 +1,4 @@
-import BasePublisher from "./base-publisher";
+import BasePublisher from "./base-event-publisher";
 import GameStatusPublisher from "./game-status-publisher";
 import PlaceBetPublisher from "./place-bet-publisher";
 import RoundResultPublisher from "./round-result-publisher";

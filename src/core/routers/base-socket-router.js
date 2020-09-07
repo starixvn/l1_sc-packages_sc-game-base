@@ -1,10 +1,10 @@
 import { logger } from "sc-common";
 
+import { PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "../event-consumers";
+import { UserSignInPublisher } from "../event-publishers";
+import GameData from "../game-data";
+import GameDefinition from "../game-definition";
 import { HistoryQuery, RoundQuery } from "../query-apis";
-import { PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
-import { UserSignInPublisher } from "./../event-publishers";
-import GameData from "./../game-data";
-import GameDefinition from "./../game-definition";
 
 export default class BaseSocketRouter {
     /**

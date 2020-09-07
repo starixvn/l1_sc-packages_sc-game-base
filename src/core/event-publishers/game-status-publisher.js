@@ -1,4 +1,4 @@
-import BaseEventPublisher from "./base-publisher";
+import BaseEventPublisher from "./base-event-publisher";
 
 export default class GameStatusPublisher extends BaseEventPublisher {
     publishDisableGameStatus(gameData) {

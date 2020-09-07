@@ -1,4 +1,4 @@
-import BasePublisher from "./base-publisher";
+import BasePublisher from "./base-event-publisher";
 
 export default class PlaceBetPublisher extends BasePublisher {
     publishGameFailedBet(playerId, payload) {
