@@ -143,13 +143,13 @@ export default class TableGameBot extends BaseBot {
 
     async leaveRoom() {
         const maxBotRemoveRandom = Math.max(Object.values(this.botsInRoom).length / this.gameData.remainingTime, 4);
-        const totalRemoval = this.chance.integer({ min: 1, max: Math.min(maxBotRemoveRandom, 1) });
+        const totalRemoval = this.chance.integer({ min: 1, max: Math.max(maxBotRemoveRandom, 1) });
         const removalIds = this.getRemovalBotIds(totalRemoval);
 
-        removalIds.forEach(botId => {
+        removalIds.forEach(async (botId) => {
             await this.removeBot(botId);
             delete this.botsInRoom[botId];
-        });  
+        });
     }
 
     getRemovalBotIds(totalRemoval) {
