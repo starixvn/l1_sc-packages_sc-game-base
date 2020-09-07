@@ -49,7 +49,7 @@ export default class BaseGameCron {
     async proceed() {
         const { durations } = this.gameDefinition;
 
-        if (this.gameData.remainingTime == durations.wholeRound) {
+        if (this.gameData.remainingTime === durations.wholeRound) {
             this.checkGameStatus();
         }
 
