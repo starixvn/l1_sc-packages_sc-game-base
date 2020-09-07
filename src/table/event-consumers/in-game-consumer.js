@@ -53,7 +53,7 @@ export default class InGameConsumer {
             this.gameData.players[player.id] = player;
         }
 
-        const inGameData = {
+        const payload = {
             gameConfigs,
             roundHistory,
             remainingTime,
@@ -61,9 +61,10 @@ export default class InGameConsumer {
             totalBets,
             players,
             chips,
+            user,
         };
 
-        realPlayer.socketClient.emit(this.definition.name, inGameData);
+        realPlayer.socketClient.emit(this.definition.name, payload);
         this.publisher.publishToAllUsersExcept(realPlayer.UID, { player });
     }
 
