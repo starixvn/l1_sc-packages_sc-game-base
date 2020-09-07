@@ -145,7 +145,7 @@ export default class TableGameBot extends BaseBot {
 
         for (let i = 0; i < totalRemoval; i++) {
             const index = this.getIndexToRemove(totalActiveBots);
-            const playerId = Object.values(this.botsInRoom)[index].id;
+            const playerId = Object.keys(this.botsInRoom)[index];
 
             await this.removeBot(playerId);
             delete this.botsInRoom[playerId];
