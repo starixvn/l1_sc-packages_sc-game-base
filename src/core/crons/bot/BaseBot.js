@@ -19,7 +19,7 @@ export default class BaseBot {
         this.maxNumberOfBots = 0;
         this.botsInRoom = [];
         this.totalTickets = 0;
-        this.totalBets = [];
+        this.totalBets = {};
         this.resetBotData = {
             totalBet: 0,
             choices: {},
@@ -33,7 +33,7 @@ export default class BaseBot {
         const configs = this.gameData.gameConfigs;
         if (configs.botenabled) {
             const botRatio = helpers.configHelper.getMaxBotForCurrentHour(configs);
-            if (this.currentBotRatio != botRatio) {
+            if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
 
                 const bots = await userInfos.find({ type: true }).lean();

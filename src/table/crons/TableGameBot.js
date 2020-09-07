@@ -45,20 +45,16 @@ export default class TableGameBot extends BaseBot {
 
             const botsToBet = this.getBotsToBet();
 
-            for (let i = 0; i < botsToBet.length; i++) {
-                let bot = botsToBet[i];
-
-                await this.placeBet(bot);
-            }
+            botsToBet.forEach(async (bot) => await this.placeBet(bot));
         }
     }
 
     shouldAddBot(random) {
-        return random == this.inOutValues.in && Object.keys(this.botsInRoom).length <= this.maxNumberOfBots;
+        return random === this.inOutValues.in && Object.keys(this.botsInRoom).length <= this.maxNumberOfBots;
     }
 
     shouldRemoveBot(random) {
-        return random == this.inOutValues.out && Object.keys(this.botsInRoom).length > 0;
+        return random === this.inOutValues.out && Object.keys(this.botsInRoom).length > 0;
     }
 
     getBotsToBet() {
@@ -77,7 +73,7 @@ export default class TableGameBot extends BaseBot {
     async removeAllBots() {
         const bots = Object.values(this.gameData.players).filter((player) => player.type);
 
-        bots.forEach(async (bot) => await removeBot(bot.id));
+        bots.forEach(async (bot) => await this.removeBot(bot.id));
 
         this.botsInRoom = [];
         this.maxNumberOfBots = 0;
@@ -153,15 +149,13 @@ export default class TableGameBot extends BaseBot {
     }
 
     getRemovalBotIds(totalRemoval) {
-        if (!this.removeBotAtTheTable && this.gameData.roundId % this.removeBotAtTheTableRoundFrequency == 0) {
+        if (!this.removeBotAtTheTable && this.gameData.roundId % this.removeBotAtTheTableRoundFrequency === 0) {
             this.removeBotAtTheTable = true;
 
-            return this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval);
+            return this.chance.pickset(Object.keys(this.botsInRoom).slice(0, 8), this.chance.integer({ min: 1, max: 3 }));
         }
 
-        const shuffleBots = this.chance.shuffle(Object.keys(this.botsInRoom));
-
-        return this.chance.pickset(shuffleBots, totalRemoval);
+        return this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval);
     }
 
     async placeBet(bot) {
@@ -175,7 +169,7 @@ export default class TableGameBot extends BaseBot {
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= maxBet) {
-                let user = await userInfos.findOne({ id: bot.id }, "red");
+                const user = await userInfos.findOne({ id: bot.id }, "red");
                 if (user && user.red > amount) {
                     user.red -= amount;
                     await user.save();
@@ -238,7 +232,7 @@ export default class TableGameBot extends BaseBot {
         const currentAmount = currentBet ? currentBet[choice] : 0;
         const update = { [choice]: amount + currentAmount };
 
-        let create = {
+        const create = {
             uid: bot.id,
             name: bot.name,
             phien: this.gameData.roundId,

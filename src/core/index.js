@@ -1,6 +1,6 @@
 import BaseGameApp from "./app";
 import * as Cron from "./crons";
-import BaseBot from "./crons/bot/bot";
+import BaseBot from "./crons/bot/BaseBot";
 import * as BaseEventConsumers from "./event-consumers";
 import * as BaseEventPublishers from "./event-publishers";
 import GameDefinition from "./game-definition";
