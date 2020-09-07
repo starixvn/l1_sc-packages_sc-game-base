@@ -1,8 +1,8 @@
 import { logger } from "sc-common";
 
-import { AdminAuthenticationConsumer, AdminDisconnectConsumer, AdminMonitorConsumer } from "./../event-consumers";
-import GameData from "./../game-data";
-import GameDefinition from "./../game-definition";
+import { AdminAuthenticationConsumer, AdminDisconnectConsumer, AdminMonitorConsumer } from "../event-consumers";
+import GameData from "../game-data";
+import GameDefinition from "../game-definition";
 
 export default class BaseAdminSocketRouter {
     /**
