@@ -1,4 +1,4 @@
-import BaseGameStartup from "./../core/startup";
+import BaseGameStartup from "../core/startup";
 import TableGameCron from "./crons/game-cron";
 import TableProcessBetQueue from "./crons/process-bet-queue";
 
