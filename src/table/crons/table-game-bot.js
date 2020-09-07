@@ -172,25 +172,17 @@ export default class TableGameBot extends BaseBot {
                 const user = await userInfos.findOne({ id: bot.id }, "red");
                 if (user && user.red > amount) {
                     user.red -= amount;
-                    await user.save();
 
+                    await user.save();
                     await this.insertOrUpdateBet(bot, choice, amount, currentBet);
 
-                    this.totalBets[choice] = this.totalBets[choice] ? this.totalBets[choice] + amount : amount;
                     this.totalTickets += 1;
                     if (this.gameData.players[bot.id]) {
                         this.gameData.players[bot.id].red = user.red;
                     }
 
-                    this.gameData.totalBets[choice] = this.gameData.totalBets[choice] ? this.gameData.totalBets[choice] + amount : amount;
-
-                    if (this.gameData.chips) {
-                        this.gameData.chips[choice] = this.gameData.chips[choice] ?? {};
-                        this.gameData.chips[choice][amount] = (this.gameData.chips[choice][amount] ?? 0) + 1;
-                    }
-
+                    this.updateTotalBetsAndChips(choice, amount);
                     this.updateBotInRoomData(bot, choice, amount, user.red);
-
                     this.publisher.publishToAllUsers(this.generatePlaceBetPayload(bot.id, choice, amount, user.red));
                 }
             }
@@ -218,6 +210,15 @@ export default class TableGameBot extends BaseBot {
         }
 
         return totalBet;
+    }
+
+    updateTotalBetsAndChips(choice, amount) {
+        this.gameData.totalBets[choice] = this.gameData.totalBets[choice] ? this.gameData.totalBets[choice] + amount : amount;
+
+        if (this.gameData.chips) {
+            this.gameData.chips[choice] = this.gameData.chips[choice] ?? {};
+            this.gameData.chips[choice][amount] = (this.gameData.chips[choice][amount] ?? 0) + 1;
+        }
     }
 
     updateBotInRoomData(bot, choice, amount, balance) {
