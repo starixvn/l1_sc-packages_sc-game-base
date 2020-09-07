@@ -77,6 +77,7 @@ export default class InGameConsumer {
                     name: true,
                     avatarId: true,
                     red: true,
+                    scoins: true,
                     joinedOn: true,
                     security: true,
                     currency: true,
