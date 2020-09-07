@@ -17,9 +17,9 @@ export default class PlaceBetConsumer {
         this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
     }
 
-    composeValidationCriteria(player, betChoice, amount) {
+    composeValidationCriteria(player, betChoice, amount, freeBet) {
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria() ?? [];
-        const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount) || [];
+        const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) || [];
 
         return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
     }
@@ -41,13 +41,17 @@ export default class PlaceBetConsumer {
         ];
     }
 
-    composeBetAmountValidationCriteria(player, betChoice, amount) {
+    composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) {
         const configs = this.gameData.gameConfigs;
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
         const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
         const maxBetPerChoice = configs.choices_maxbet[betChoice] || 0;
 
         return [
+            {
+                failure: freeBet && !configs.enableFreeBet,
+                notice: helpers.noticeHelper.cannotPlaceBet,
+            },
             {
                 failure: amount > maxBetPerChoice || betTracks[betChoice] + amount > maxBetPerChoice,
                 notice: helpers.noticeHelper.maxBetForChoice(maxBetPerChoice),
@@ -67,12 +71,12 @@ export default class PlaceBetConsumer {
         ];
     }
 
-    validateBetRequest(player, betChoice, amount) {
+    validateBetRequest(player, betChoice, amount, freeBet) {
         if (!amount || !betChoice) {
             return false;
         }
 
-        const criteria = this.composeValidationCriteria(player, betChoice, amount);
+        const criteria = this.composeValidationCriteria(player, betChoice, amount, freeBet);
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
@@ -90,10 +94,10 @@ export default class PlaceBetConsumer {
             freeBet: payload.freeBet ?? false,
         });
 
-        const { amount, betChoice } = payload;
+        const { amount, betChoice, freeBet } = payload;
         const name = player.profile.name;
 
-        if (!this.validateBetRequest(player, betChoice, amount)) {
+        if (!this.validateBetRequest(player, betChoice, amount, freeBet)) {
             return;
         }
 
