@@ -14,7 +14,7 @@ export default class AdminAuthenticationConsumer {
             gameData.admins[socketClient.id] = { socketClient };
             socketClient.emit("message", { authorized: true });
         } else {
-            socketClient.emit("message", { unauth: { message: "Authentication failure" } });
+            socketClient.emit("message", { unauth: { message: "Authentication failed!" } });
         }
     }
 }

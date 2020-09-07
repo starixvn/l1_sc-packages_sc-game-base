@@ -50,7 +50,7 @@ export default class PlaceBetConsumer {
         return [
             {
                 failure: freeBet && !configs.enableFreeBet,
-                notice: helpers.noticeHelper.cannotPlaceBet,
+                notice: helpers.noticeHelper.invalidBet,
             },
             {
                 failure: amount > maxBetPerChoice || betTracks[betChoice] + amount > maxBetPerChoice,
