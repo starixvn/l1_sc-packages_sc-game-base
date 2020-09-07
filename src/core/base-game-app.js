@@ -1,8 +1,8 @@
 import express from "express";
 
+import BaseStartup from "./base-game-startup";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
-import BaseStartup from "./startup";
 
 export default class BaseGameApp {
     /**

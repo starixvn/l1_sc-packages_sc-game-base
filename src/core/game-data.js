@@ -1,4 +1,4 @@
-export default class BaseGameData {
+export default class GameData {
     constructor(remainingTime, totalBets) {
         this.remainingTime = remainingTime ?? 0;
         this.totalBets = totalBets ?? {};

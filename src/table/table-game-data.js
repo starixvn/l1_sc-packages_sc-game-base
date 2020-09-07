@@ -1,6 +1,6 @@
-import BaseGameData from "./../core/game-data";
+import GameData from "./../core/game-data";
 
-export default class TableGameData extends BaseGameData {
+export default class TableGameData extends GameData {
     constructor(remainingTime, totalBets) {
         super(remainingTime, totalBets);
 
