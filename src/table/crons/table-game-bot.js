@@ -25,6 +25,7 @@ export default class TableGameBot extends BaseBot {
         this.removeBotAtTheTable = false;
         this.removeBotAtTheTableRoundFrequency = 6;
         this.chance = new Chance();
+        this.minBotsAtTheTable = 8;
     }
 
     resetAllBotData() {
@@ -54,7 +55,10 @@ export default class TableGameBot extends BaseBot {
     }
 
     shouldRemoveBot(random) {
-        return random === this.inOutValues.out && Object.keys(this.botsInRoom).length > 0;
+        const totalBots = Object.keys(this.botsInRoom).length;
+        const numberBotsAtTable = Math.min(this.maxNumberOfBots, this.minBotsAtTheTable);
+
+        return random === this.inOutValues.out && totalBots > numberBotsAtTable;
     }
 
     getBotsToBet() {
