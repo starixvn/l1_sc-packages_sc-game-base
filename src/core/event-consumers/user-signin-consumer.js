@@ -32,6 +32,13 @@ export default class UserSignInConsumer {
             userSession.username === payload.username &&
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
+            Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
+                if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
+                    realPlayer.socketClient.disconnect(true);
+                    delete this.gameData.realPlayers[realPlayer.socketClient.id];
+                }
+            });
+
             this.handleSignInSuccess(socketClient, userInfo, userSession);
         } else {
             this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
