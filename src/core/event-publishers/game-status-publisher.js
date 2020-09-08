@@ -16,6 +16,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
             maxbet: gameConfigs.maxbet,
             choices_maxbet: gameConfigs.choices_maxbet,
             odds: gameConfigs.odds,
+            enableFreeBet: gameConfigs.enableFreeBet,
         };
 
         this.publishToAllUsers({ configs, remainingTime: gameData.remainingTime });
