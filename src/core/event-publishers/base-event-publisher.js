@@ -39,7 +39,9 @@ export default class BaseEventPublisher {
     }
 
     publishToAllAdmins(payload) {
-        const socketAdmins = Object.values(this.gameData.admins).map((admin) => admin.socketClient);
+        const socketAdmins = Object.values(this.gameData.admins)
+            .map((admin) => admin.socketClient)
+            .filter((socket) => socket.connected);
 
         socketAdmins.forEach((socket) => {
             socket && socket.emit("message", { [this.gameName]: payload });
