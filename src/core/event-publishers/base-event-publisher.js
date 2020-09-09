@@ -1,3 +1,5 @@
+import { logger } from "sc-common";
+
 import GameData from "../game-data";
 
 export default class BaseEventPublisher {
@@ -44,6 +46,7 @@ export default class BaseEventPublisher {
             .filter((socket) => socket.connected);
 
         socketAdmins.forEach((socket) => {
+            logger.log(payload);
             socket && socket.emit("message", { [this.gameName]: payload });
         });
     }
