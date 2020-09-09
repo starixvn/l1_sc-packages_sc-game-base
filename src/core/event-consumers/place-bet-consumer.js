@@ -20,8 +20,9 @@ export default class PlaceBetConsumer {
     composeValidationCriteria(player, betChoice, amount, freeBet) {
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria() ?? [];
         const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) || [];
+        const betChoiceValidationCriteria = this.composeBetChoiceValidationCriteria(betChoice) || [];
 
-        return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
+        return bettingTimeValidationCriteria.concat(betAmountValidationCriteria, betChoiceValidationCriteria);
     }
 
     composeBettingTimeValidationCriteria() {
@@ -67,6 +68,15 @@ export default class PlaceBetConsumer {
             {
                 failure: totalAmount > configs.maxbet,
                 notice: helpers.noticeHelper.maxBet(configs.maxbet),
+            },
+        ];
+    }
+
+    composeBetChoiceValidationCriteria(betChoice) {
+        return [
+            {
+                failure: !this.definition.choices.includes(betChoice),
+                notice: helpers.noticeHelper.invalidBet,
             },
         ];
     }
