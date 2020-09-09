@@ -1,5 +1,5 @@
-import GameDefinition from "../game-definition";
 import GameData from "./../game-data";
+import GameDefinition from "./../game-definition";
 
 export default class AdminMonitorConsumer {
     /**

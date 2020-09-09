@@ -1,10 +1,10 @@
 import { logger } from "sc-common";
 
-import { BaseEventConsumers, BaseEventPublishers, QueryApis } from "../../core";
-import { BaseSocketRouter } from "../../core/routers";
-import { InGameConsumer, OutGameConsumer, UserSignInConsumer } from "../event-consumers";
-import TableGameData from "../table-game-data";
-import TableGameDefinition from "../table-game-definition";
+import { BaseEventConsumers, BaseEventPublishers, QueryApis } from "./../../core";
+import { BaseSocketRouter } from "./../../core/routers";
+import { InGameConsumer, OutGameConsumer, UserSignInConsumer } from "./../event-consumers";
+import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 
 export default class TableSocketRouter extends BaseSocketRouter {
     /**

@@ -1,6 +1,6 @@
 import { logger, utils } from "sc-common";
 
-import TableGameData from "../table-game-data";
+import TableGameData from "./../table-game-data";
 
 export default class HttpRouter {
     /**

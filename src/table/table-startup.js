@@ -1,4 +1,4 @@
-import { BaseStartup } from "../core";
+import { BaseStartup } from "./../core";
 import { TableGameCron, TableProcessBetQueue } from "./crons";
 
 export default class TableStartup extends BaseStartup {

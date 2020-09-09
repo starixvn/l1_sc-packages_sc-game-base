@@ -1,6 +1,6 @@
-import { BaseEventConsumers, BaseEventPublishers } from "../../core";
-import TableGameData from "../table-game-data";
-import TableGameDefinition from "../table-game-definition";
+import { BaseEventConsumers, BaseEventPublishers } from "./../../core";
+import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 
 export default class OutGameConsumer extends BaseEventConsumers.UserDisconnectConsumer {
     /**

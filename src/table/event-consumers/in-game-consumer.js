@@ -1,9 +1,9 @@
 import { getBalance } from "sc-base-apis";
 import { userInfos } from "sc-base-database";
 
-import { BaseEventPublishers, QueryApis } from "../../core";
-import TableGameData from "../table-game-data";
-import TableGameDefinition from "../table-game-definition";
+import { BaseEventPublishers, QueryApis } from "./../../core";
+import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 
 export default class InGameConsumer {
     /**

@@ -1,8 +1,6 @@
 import GameData from "./../game-data";
 
 export default class UserDisconnectConsumer {
-    ignoredDisconnectionReason = ["client namespace disconnect"];
-
     /**
      * @param {GameData} gameData
      */

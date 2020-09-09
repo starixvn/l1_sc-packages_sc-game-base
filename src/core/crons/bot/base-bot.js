@@ -1,8 +1,8 @@
-import { helpers } from "sc-common";
 import { userInfos } from "sc-base-database";
+import { helpers } from "sc-common";
 
-import { BasePublisher } from "../../event-publishers";
-import GameData from "../../game-data";
+import { BasePublisher } from "./../../event-publishers";
+import GameData from "./../../game-data";
 
 export default class BaseBot {
     /**
@@ -17,7 +17,7 @@ export default class BaseBot {
 
         this.currentBotRatio = 0;
         this.maxNumberOfBots = 0;
-        this.botsInRoom = [];
+        this.botsInRoom = {};
         this.totalTickets = 0;
         this.totalBets = {};
         this.resetBotData = {
@@ -31,8 +31,10 @@ export default class BaseBot {
 
     async reset() {
         const configs = this.gameData.gameConfigs;
+
         if (configs.botenabled) {
             const botRatio = helpers.configHelper.getMaxBotForCurrentHour(configs);
+
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
 
@@ -77,6 +79,7 @@ export default class BaseBot {
 
     getTotalBetAmount(bet) {
         let totalBet = 0;
+
         if (bet) {
             this.choices.forEach((choice) => {
                 totalBet += bet[choice];

@@ -1,6 +1,6 @@
 import { logger } from "sc-common";
 
-import GameData from "../game-data";
+import GameData from "./../game-data";
 
 export default class BaseEventPublisher {
     /**

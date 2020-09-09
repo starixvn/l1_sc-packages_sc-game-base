@@ -2,9 +2,9 @@ import Chance from "chance";
 import { userInfos } from "sc-base-database";
 import { helpers } from "sc-common";
 
-import { BaseBot } from "../../core";
-import { BasePublisher } from "../../core/event-publishers";
-import TableGameData from "../table-game-data";
+import { BaseBot } from "./../../core";
+import { BasePublisher } from "./../../core/event-publishers";
+import TableGameData from "./../table-game-data";
 
 export default class TableGameBot extends BaseBot {
     /**
@@ -36,6 +36,7 @@ export default class TableGameBot extends BaseBot {
     async run() {
         if (this.gameData.gameConfigs?.botenabled && this.gameData.remainingTime > this.durations.lockingBet) {
             const random = this.chance.integer({ min: 0, max: 5 });
+
             if (this.shouldAddBot(random)) {
                 await this.joinRoom();
             }
@@ -79,7 +80,7 @@ export default class TableGameBot extends BaseBot {
 
         bots.forEach(async (bot) => this.removeBot(bot.id));
 
-        this.botsInRoom = [];
+        this.botsInRoom = {};
         this.maxNumberOfBots = 0;
         this.currentBotRatio = 0;
     }
@@ -174,6 +175,7 @@ export default class TableGameBot extends BaseBot {
 
             if (totalBetAmount + amount <= maxBet) {
                 const user = await userInfos.findOne({ id: bot.id }, "red");
+
                 if (user && user.red > amount) {
                     user.red -= amount;
 
@@ -207,6 +209,7 @@ export default class TableGameBot extends BaseBot {
 
     getTotalBetAmount(bet) {
         let totalBet = 0;
+
         if (bet) {
             this.choices.forEach((choice) => {
                 totalBet += bet[choice];

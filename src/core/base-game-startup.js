@@ -74,7 +74,7 @@ export default class BaseGameStartup {
 
         app.set("port", process.env.PORT || hostingPort);
         app.get("/", function (req, res, next) {
-            res.send(`Don't touch ${this.definition.name}, babe!`);
+            res.send(`I'm ${this.definition.name}. You'd better not touch me, babe!`);
         });
 
         this.initHttpRouter(app);

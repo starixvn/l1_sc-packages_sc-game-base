@@ -1,4 +1,4 @@
-import { PlaceBetPublisher } from "../../core/event-publishers";
+import { PlaceBetPublisher } from "./../../core/event-publishers";
 
 export default class TablePlaceBetPublisher extends PlaceBetPublisher {
     publishSuccessBet(playerId, payload) {

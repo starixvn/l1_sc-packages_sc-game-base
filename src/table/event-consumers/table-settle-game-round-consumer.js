@@ -1,4 +1,4 @@
-import SettleGameRoundConsumer from "../../core/event-consumers/settle-game-round-consumer";
+import SettleGameRoundConsumer from "./../../core/event-consumers/settle-game-round-consumer";
 
 export default class TableSettleGameRoundConsumer extends SettleGameRoundConsumer {
     defaultWinningStatus = {
