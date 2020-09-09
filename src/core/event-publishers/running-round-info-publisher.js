@@ -7,7 +7,10 @@ export default class RunningRoundInfoPublisher extends BaseEventPublisher {
         });
 
         this.publishToAllAdmins({
-            inGame: gameData.ingame,
+            inGame: {
+                name: gameData.ingame.name,
+                betTracks: gameData.ingame.betTracks,
+            },
         });
     }
 }

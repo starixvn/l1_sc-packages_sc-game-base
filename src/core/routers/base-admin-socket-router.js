@@ -41,7 +41,7 @@ export default class BaseAdminSocketRouter {
                 await this.adminMonitorConsumer.consume(this.socketClient, this.definition, this.gameData);
             }
         } catch (err) {
-            logger.log(err);
+            logger.logError(err);
         }
     }
 
@@ -49,7 +49,7 @@ export default class BaseAdminSocketRouter {
         try {
             this.adminDisconnectConsumer.consume(this.gameData, this.socketClient);
         } catch (err) {
-            logger.log(err);
+            logger.logError(err);
         }
     }
 }
