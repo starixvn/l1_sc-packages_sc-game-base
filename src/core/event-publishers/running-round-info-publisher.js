@@ -6,11 +6,12 @@ export default class RunningRoundInfoPublisher extends BaseEventPublisher {
             totalBets: gameData.totalBets,
         });
 
-        const { ...ingame } = gameData;
-        for (const user in ingame) {
-            delete user.betQueue;
-        }
+        const inGame = {};
+        Object.values(gameData.ingame).forEach((user) => {
+            const { name, betTracks } = user;
+            inGame[user.name] = { name, betTracks };
+        });
 
-        this.publishToAllAdmins({ inGame: ingame });
+        this.publishToAllAdmins({ inGame });
     }
 }
