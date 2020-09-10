@@ -50,7 +50,7 @@ export default class BaseGameCron {
         const { durations } = this.gameDefinition;
 
         if (this.gameData.remainingTime === durations.wholeRound) {
-            this.checkGameStatus();
+            await this.checkGameStatus();
         }
 
         if (!this.gameData.disabled) {
