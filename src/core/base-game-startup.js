@@ -73,7 +73,7 @@ export default class BaseGameStartup {
         const socketServer = socketIo(httpServer, socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 });
 
         app.set("port", process.env.PORT || hostingPort);
-        app.get("/", function (req, res, next) {
+        app.get("/", (req, res, next) => {
             res.send(`I'm ${this.definition.name}. You'd better not touch me, babe!`);
         });
 
