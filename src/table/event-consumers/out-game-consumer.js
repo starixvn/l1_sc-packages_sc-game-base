@@ -22,8 +22,9 @@ export default class OutGameConsumer extends BaseEventConsumers.UserDisconnectCo
 
         if (realPlayer) {
             this.publisher.publishToAllUsers({ outgame: { playerId: realPlayer.UID } });
+            delete this.gameData.players[realPlayer.UID];
         }
 
-        super.consume(socketClient, reason);
+        super.consume(socketClient);
     }
 }
