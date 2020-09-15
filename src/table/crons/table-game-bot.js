@@ -170,7 +170,7 @@ export default class TableGameBot extends BaseBot {
         const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
 
         if (this.gameData.remainingTime > this.durations.lockingBet) {
-            const currentBet = await this.tempBetRepository.findOne({ uid: bot.id, phien: this.gameData.roundId }).lean();
+            const currentBet = await this.tempBetRepository.findOne({ uid: bot.id, phien: this.gameData.roundId }).lean().exec();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= maxBet) {

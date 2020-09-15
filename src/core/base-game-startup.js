@@ -110,7 +110,7 @@ export default class BaseGameStartup {
 
     async start() {
         try {
-            this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.definition.configName });
+            this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.definition.configName }).lean().exec();
             this.processBetQueue.start();
             this.gameCron.start();
         } catch (error) {
