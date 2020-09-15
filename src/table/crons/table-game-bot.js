@@ -105,7 +105,10 @@ export default class TableGameBot extends BaseBot {
     }
 
     async joinRoom() {
-        const botUsers = await userInfos.find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type").lean();
+        const botUsers = await userInfos
+            .find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type")
+            .lean()
+            .exec();
         const newBots = this.getBotsToJoin(botUsers);
 
         newBots.forEach(async (bot) => {
