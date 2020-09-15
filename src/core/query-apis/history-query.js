@@ -11,6 +11,10 @@ export default class HistoryQuery {
         this.roundQuery = roundQuery ?? new RoundQuery(definition);
     }
 
+    convertBet(bet) {
+        return bet;
+    }
+
     async queryHistory(player, page, pageSize = 8) {
         if (page < 1 || !player) {
             return {};
@@ -42,7 +46,7 @@ export default class HistoryQuery {
                     const betLogDetails = this.definition.betLogDetails ? await this.getBetLogDetails(player, bet.phien) : [];
 
                     return {
-                        ...bet,
+                        ...this.convertBet(bet),
                         result: round.result,
                         settlementResult: round.settlementResult,
                         betLogDetails,
