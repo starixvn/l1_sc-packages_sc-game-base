@@ -32,7 +32,7 @@ export default class BaseGameCron {
             "* * * * * *",
             () => this.proceed().catch(logger.logError),
             () => {
-                Logger.logError(
+                logger.logError(
                     `${this.gameDefinition.name} unexpectedly stopped at round #${this.gameData.roundId} because some other tasks halt it.`
                 );
                 job.start();
