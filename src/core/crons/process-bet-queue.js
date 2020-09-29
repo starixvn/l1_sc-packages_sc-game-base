@@ -131,9 +131,10 @@ export default class ProcessBetQueue {
         await betLogRepository.create(newBetLog);
     }
 
-    adjustBetTracks(playerName, betChoice, amount) {
+    adjustBetTracks(player, betChoice, amount) {
         this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount;
 
+        const playerName = player.profile.name;
         if (this.gameData.ingame?.[playerName]) {
             const playerInGame = this.gameData.ingame[playerName];
 
