@@ -1,7 +1,7 @@
 export default class GameData {
-    constructor(remainingTime, totalBets) {
+    constructor(remainingTime) {
         this.remainingTime = remainingTime ?? 0;
-        this.totalBets = totalBets ?? {};
+        this.totalBets = {};
         this.roundId = 1;
         this.delayStartTime = 0;
         this.disabled = false;
