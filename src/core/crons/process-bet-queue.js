@@ -98,7 +98,8 @@ export default class ProcessBetQueue {
             );
         }
 
-        this.adjustBetTracks(player.profile.name, bet.betChoice, bet.amount);
+        this.adjustBetTracks(player.profile.name, bet);
+        this.adjustTotalBets(player, bet);
         this.notifyPlacingBetResult(player, balance, bet);
     }
 
@@ -131,15 +132,18 @@ export default class ProcessBetQueue {
         await betLogRepository.create(newBetLog);
     }
 
-    adjustBetTracks(player, betChoice, amount) {
-        this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount;
-
-        const playerName = player.profile.name;
+    adjustBetTracks(playerName, bet) {
+        const { betChoice, amount } = bet;
         if (this.gameData.ingame?.[playerName]) {
             const playerInGame = this.gameData.ingame[playerName];
 
             playerInGame.betTracks[betChoice] = (playerInGame.betTracks[betChoice] ?? 0) + amount;
         }
+    }
+
+    adjustTotalBets(player, bet) {
+        const { betChoice, amount } = bet;
+        this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount;
     }
 
     notifyPlacingBetResult(player, balance, bet) {
