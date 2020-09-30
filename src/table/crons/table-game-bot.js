@@ -1,7 +1,6 @@
 import Chance from "chance";
 import { userInfos } from "sc-base-database";
 import { helpers } from "sc-common";
-
 import { BaseBot } from "./../../core";
 import { BasePublisher } from "./../../core/event-publishers";
 import TableGameData from "./../table-game-data";
