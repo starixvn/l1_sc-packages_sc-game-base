@@ -12,6 +12,7 @@ import * as Bot from "./crons/bot";
 import ProcessBetQueue from "./crons/process-bet-queue";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
+import { BaseAdminSocketRouter } from "./routers";
 
 export default class BaseGameStartup {
     /**
@@ -42,7 +43,10 @@ export default class BaseGameStartup {
     /**
      * @param {socketIo.Socket} socketClient
      */
-    initAdminSocketRouter(socketClient) {}
+    initAdminSocketRouter(socketClient) {
+        const router = new BaseAdminSocketRouter();
+        router.init(this.definition, this.gameData, socketClient, this.appConfigs.adminSecretKey);
+    }
 
     /**
      * @param {express.Express} app
