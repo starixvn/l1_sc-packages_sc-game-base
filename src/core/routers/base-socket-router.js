@@ -1,40 +1,31 @@
 import { logger } from "sc-common";
 
+import { InGameConsumer } from "../event-consumers";
 import { PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
-import GameData from "./../game-data";
-import GameDefinition from "./../game-definition";
 import { HistoryQuery, RoundQuery } from "./../query-apis";
 
 export default class BaseSocketRouter {
-    /**
-     * @param {GameDefinition} definition
-     * @param {GameData} gameData
-     * @param {UserSignInConsumer} userSignInConsumer
-     * @param {UserDisconnectConsumer} userDisconnectConsumer
-     * @param {PlaceBetConsumer} placeBetConsumer
-     * @param {UserSignInPublisher} userSignInPublisher
-     * @param {HistoryQuery} historyQuery
-     * @param {RoundQuery} roundQuery
-     */
-    constructor(
-        definition,
+    constructor({
+        gameDefinition,
         gameData,
         userSignInConsumer,
-        userDisconnectConsumer = null,
-        placeBetConsumer = null,
-        userSignInPublisher = null,
-        historyQuery = null,
-        roundQuery = null
-    ) {
-        this.definition = definition;
+        userDisconnectConsumer,
+        inGameConsumer,
+        placeBetConsumer,
+        userSignInPublisher,
+        historyQuery,
+        roundQuery,
+    }) {
+        this.definition = gameDefinition;
         this.gameData = gameData;
         this.userSignInConsumer = userSignInConsumer ?? new UserSignInConsumer(gameData);
         this.userDisconnectConsumer = userDisconnectConsumer ?? new UserDisconnectConsumer(gameData);
-        this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(definition, gameData);
+        this.ingGameConsumer = inGameConsumer ?? new InGameConsumer({ gameDefinition, gameData });
+        this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(gameDefinition, gameData);
         this.userSignInPublisher = userSignInPublisher ?? new UserSignInPublisher();
-        this.roundQuery = roundQuery ?? new RoundQuery(definition);
-        this.historyQuery = historyQuery ?? new HistoryQuery(definition, this.roundQuery);
+        this.roundQuery = roundQuery ?? new RoundQuery(gameDefinition);
+        this.historyQuery = historyQuery ?? new HistoryQuery(gameDefinition, this.roundQuery);
     }
 
     /**
@@ -44,6 +35,7 @@ export default class BaseSocketRouter {
         this.socketClient = socketClient;
         this.socketClient.on("bet", this.handlePlaceBet.bind(this));
         this.socketClient.on("signin", this.handleSignIn.bind(this));
+        this.socketClient.on("inGame", this.handleInGame.bind(this));
         this.socketClient.on("getHistory", this.handleGetHistory.bind(this));
         this.socketClient.on("disconnect", this.handleDisconnect.bind(this));
     }
@@ -66,6 +58,10 @@ export default class BaseSocketRouter {
         } catch (error) {
             logger.logError(error);
         }
+    }
+
+    handleInGame() {
+        this.inGameConsumer.consume(this.socketClient).catch(logger.logError);
     }
 
     async handleGetHistory(payload) {

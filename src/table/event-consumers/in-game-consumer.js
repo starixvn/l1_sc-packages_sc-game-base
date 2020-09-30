@@ -1,43 +1,24 @@
 import { getBalance } from "sc-base-apis";
 import { userInfos } from "sc-base-database";
 
-import { BaseEventPublishers, QueryApis } from "./../../core";
-import TableGameData from "./../table-game-data";
-import TableGameDefinition from "./../table-game-definition";
+import { BaseEventConsumers } from "../../core";
 
-export default class InGameConsumer {
-    /**
-     * @param {TableGameDefinition} definition
-     * @param {TableGameData} gameData
-     * @param {QueryApis.RoundQuery} roundQuery
-     * @param {BaseEventPublishers.BasePublisher} publisher
-     */
-    constructor(definition, gameData, roundQuery = null, publisher = null) {
-        this.definition = definition;
-        this.gameData = gameData;
-        this.roundQuery = roundQuery ?? new QueryApis.RoundQuery(definition);
-        this.publisher = publisher ?? new BaseEventPublishers.BasePublisher(definition.name, gameData);
-    }
-
+export default class InGameConsumer extends BaseEventConsumers.InGameConsumer {
     /**
      * @param {SocketIO.Client} socketClient
      */
     async consume(socketClient) {
-        const realPlayer = this.gameData.realPlayers[socketClient.id];
+        super.consume(socketClient);
+        this.publisher.publishToAllUsersExcept(realPlayer.UID, { player });
+    }
 
-        if (!realPlayer) {
-            return;
-        }
+    async buildPayload() {
+        const payload = await super.buildPayload();
 
-        const maxNumberOfRounds = 100;
-        const { minbet, maxbet, choices_maxbet, odds, enableFreeBet } = this.gameData.gameConfigs;
-        const { remainingTime, totalBets, chips } = this.gameData;
-        const gameConfigs = { minbet, maxbet, choices_maxbet, odds, enableFreeBet };
-        const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
-
+        const { chips } = this.gameData;
         await getBalance(realPlayer, true);
 
-        const [roundHistory, user] = await Promise.all([this.roundQuery.getList(maxNumberOfRounds), this.getUserInfo(realPlayer.UID)]);
+        const user = await this.getUserInfo(realPlayer.UID);
         const players = { ...this.gameData.players };
         const player = {
             id: realPlayer.UID,
@@ -53,19 +34,12 @@ export default class InGameConsumer {
             this.gameData.players[player.id] = player;
         }
 
-        const payload = {
-            gameConfigs,
-            roundHistory,
-            remainingTime,
-            ownBets,
-            totalBets,
+        return {
+            ...payload,
             players,
             chips,
             user,
         };
-
-        realPlayer.socketClient.emit(this.definition.name, payload);
-        this.publisher.publishToAllUsersExcept(realPlayer.UID, { player });
     }
 
     getUserInfo(uid) {
