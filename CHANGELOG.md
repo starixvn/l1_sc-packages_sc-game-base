@@ -1,3 +1,15 @@
+# [1.14.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0...v1.14.0) (2020-09-30)
+
+
+### Bug Fixes
+
+* correct logger call ([18f2cd1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/18f2cd136d91e0c11d8aa4288620bdd320c30937))
+
+
+### Features
+
+* correct npm version ([dae81fa](https://git3.nexdev.net/sc-packages/sc-game-base/commit/dae81fa73c3ca9da15519549d6508e526c27bae0))
+
 # [1.13.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.12.5...v1.13.0) (2020-09-16)
 
 
