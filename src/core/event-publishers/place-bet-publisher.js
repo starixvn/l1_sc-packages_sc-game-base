@@ -9,5 +9,7 @@ export default class PlaceBetPublisher extends BasePublisher {
         this.publishToUser(playerId, payload, "message");
     }
 
-    publishSuccessBet(playerId, payload) {}
+    publishSuccessBet(playerId, payload) {
+        this.publishToUser(playerId, payload);
+    }
 }
