@@ -47,6 +47,7 @@ export default class InGameConsumer extends BaseEventConsumers.InGameConsumer {
             .findOne(
                 { id: uid },
                 {
+                    _id: false,
                     UID: true,
                     name: true,
                     avatarId: true,

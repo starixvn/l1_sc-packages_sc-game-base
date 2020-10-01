@@ -138,6 +138,7 @@ export default class ProcessBetQueue {
 
     adjustBetTracks(playerName, bet) {
         const { betChoice, amount } = bet;
+
         if (this.gameData.ingame?.[playerName]) {
             const playerInGame = this.gameData.ingame[playerName];
 
@@ -147,6 +148,7 @@ export default class ProcessBetQueue {
 
     adjustTotalBets(player, bet) {
         const { betChoice, amount } = bet;
+
         this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount;
     }
 

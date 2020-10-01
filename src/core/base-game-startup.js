@@ -45,6 +45,7 @@ export default class BaseGameStartup {
      */
     initAdminSocketRouter(socketClient) {
         const router = new BaseAdminSocketRouter();
+
         router.init(this.definition, this.gameData, socketClient, this.appConfigs.adminSecretKey);
     }
 
@@ -73,7 +74,6 @@ export default class BaseGameStartup {
         const httpServer = http.createServer(app);
         const { hostingPort, socketOptions } = this.appConfigs;
         const gameNameInSocketNamespace = this.definition.name.toLowerCase();
-
         const socketServer = socketIo(httpServer, socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 });
 
         app.set("port", process.env.PORT || hostingPort);
