@@ -64,12 +64,30 @@ export default class ProcessBetQueue {
     }
 
     async handleSuccessBet(player, balance, roundId, bet) {
-        const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
-        const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
-
         if (this.definition.betLogRepository) {
             await this.insertBetLog(this.definition.betLogRepository, player, roundId, bet);
         }
+
+        await this.insertOrUpdateBet(player, bet);
+
+        this.adjustBetTracks(player.profile.name, bet);
+        this.adjustTotalBets(player, bet);
+        this.notifyPlacingBetResult(player, balance, bet);
+    }
+
+    handleFailedBet(player, notice) {
+        if (notice.apiError) {
+            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, apiError: notice.apiError });
+        } else if (notice.kickedOut) {
+            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, kickedOut: notice.kickedOut });
+        } else {
+            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, notice });
+        }
+    }
+
+    async insertOrUpdateBet(player, bet) {
+        const existingBetFilter = { uid: player.UID, phien: this.gameData.roundId, freeBet: bet.freeBet };
+        const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
         if (existingBet) {
             existingBet[bet.betChoice] += bet.amount;
@@ -96,20 +114,6 @@ export default class ProcessBetQueue {
                 { $inc: existingBetIncrement, $setOnInsert: newBet },
                 { upsert: true, setDefaultsOnInsert: true }
             );
-        }
-
-        this.adjustBetTracks(player.profile.name, bet);
-        this.adjustTotalBets(player, bet);
-        this.notifyPlacingBetResult(player, balance, bet);
-    }
-
-    handleFailedBet(player, notice) {
-        if (notice.apiError) {
-            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, apiError: notice.apiError });
-        } else if (notice.kickedOut) {
-            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, kickedOut: notice.kickedOut });
-        } else {
-            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, notice });
         }
     }
 

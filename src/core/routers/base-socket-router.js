@@ -21,7 +21,7 @@ export default class BaseSocketRouter {
         this.gameData = gameData;
         this.userSignInConsumer = userSignInConsumer ?? new UserSignInConsumer(gameData);
         this.userDisconnectConsumer = userDisconnectConsumer ?? new UserDisconnectConsumer(gameData);
-        this.ingGameConsumer = inGameConsumer ?? new InGameConsumer({ definition, gameData });
+        this.inGameConsumer = inGameConsumer ?? new InGameConsumer({ definition, gameData });
         this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(definition, gameData);
         this.userSignInPublisher = userSignInPublisher ?? new UserSignInPublisher();
         this.roundQuery = roundQuery ?? new RoundQuery(definition);

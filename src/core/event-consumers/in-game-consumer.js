@@ -1,4 +1,4 @@
-import { BasePublisher } from "../event-consumers";
+import { BasePublisher } from "../event-publishers";
 import { RoundQuery } from "../query-apis";
 
 export default class InGameConsumer {
