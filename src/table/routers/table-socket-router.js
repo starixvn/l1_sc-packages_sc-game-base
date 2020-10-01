@@ -3,7 +3,7 @@ import { InGameConsumer, OutGameConsumer, UserSignInConsumer } from "./../event-
 
 export default class TableSocketRouter extends BaseSocketRouter {
     constructor({
-        gameDefinition,
+        definition,
         gameData,
         userSignInConsumer,
         userDisconnectConsumer,
@@ -14,11 +14,11 @@ export default class TableSocketRouter extends BaseSocketRouter {
         roundQuery,
     }) {
         super({
-            gameDefinition,
+            definition,
             gameData,
-            userSignInConsumer: userSignInConsumer ?? new UserSignInConsumer(gameDefinition, gameData),
-            userDisconnectConsumer: userDisconnectConsumer ?? new OutGameConsumer(gameDefinition, gameData),
-            inGameConsumer: inGameConsumer ?? new InGameConsumer(gameDefinition, gameData, roundQuery),
+            userSignInConsumer: userSignInConsumer ?? new UserSignInConsumer(definition, gameData),
+            userDisconnectConsumer: userDisconnectConsumer ?? new OutGameConsumer(definition, gameData),
+            inGameConsumer: inGameConsumer ?? new InGameConsumer(definition, gameData, roundQuery),
             placeBetConsumer,
             userSignInPublisher,
             historyQuery,

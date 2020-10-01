@@ -5,12 +5,12 @@ import TableGameDefinition from "./../table-game-definition";
 
 export default class TableGameCron extends Cron.BaseGameCron {
     /**
-     * @param {TableGameDefinition} gameDefinition
+     * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
      * @param {TableSettleGameRoundConsumer} settleGameRoundConsumer
      */
-    constructor(gameDefinition, gameData, settleGameRoundConsumer = null) {
-        super(gameDefinition, gameData, settleGameRoundConsumer ?? new TableSettleGameRoundConsumer(gameDefinition, gameData));
+    constructor(definition, gameData, settleGameRoundConsumer = null) {
+        super(definition, gameData, settleGameRoundConsumer ?? new TableSettleGameRoundConsumer(definition, gameData));
     }
 
     resetForNewRound() {

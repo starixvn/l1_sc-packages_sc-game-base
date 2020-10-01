@@ -9,22 +9,22 @@ import GameDefinition from "./../game-definition";
 
 export default class BaseGameCron {
     /**
-     * @param {GameDefinition} gameDefinition
+     * @param {GameDefinition} definition
      * @param {GameData} gameData
      * @param {SettleGameRoundConsumer} settleGameRoundConsumer
      * @param {GameStatusPublisher} gameStatusPublisher
      * @param {RunningRoundInfoPublisher} runningRoundInfoPublisher
      */
-    constructor(gameDefinition, gameData, settleGameRoundConsumer = null, gameStatusPublisher = null, runningRoundInfoPublisher = null) {
-        this.gameDefinition = gameDefinition;
+    constructor(definition, gameData, settleGameRoundConsumer = null, gameStatusPublisher = null, runningRoundInfoPublisher = null) {
+        this.definition = definition;
         this.gameData = gameData;
-        this.settleGameRoundConsumer = settleGameRoundConsumer ?? new SettleGameRoundConsumer(gameDefinition, gameData);
-        this.gameStatusPublisher = gameStatusPublisher ?? new GameStatusPublisher(gameDefinition.name, gameData);
-        this.runningRoundInfoPublisher = runningRoundInfoPublisher ?? new RunningRoundInfoPublisher(gameDefinition.name, gameData);
+        this.settleGameRoundConsumer = settleGameRoundConsumer ?? new SettleGameRoundConsumer(definition, gameData);
+        this.gameStatusPublisher = gameStatusPublisher ?? new GameStatusPublisher(definition.name, gameData);
+        this.runningRoundInfoPublisher = runningRoundInfoPublisher ?? new RunningRoundInfoPublisher(definition.name, gameData);
     }
 
     async start() {
-        const lastRound = await this.gameDefinition.roundRepository
+        const lastRound = await this.definition.roundRepository
             .findOne({}, "id", { sort: { _id: -1 } })
             .lean()
             .exec();
@@ -33,7 +33,7 @@ export default class BaseGameCron {
             () => this.proceed().catch(logger.logError),
             () => {
                 logger.logError(
-                    `${this.gameDefinition.name} unexpectedly stopped at round #${this.gameData.roundId} because some other tasks halt it.`
+                    `${this.definition.name} unexpectedly stopped at round #${this.gameData.roundId} because some other tasks halt it.`
                 );
                 job.start();
             }
@@ -47,7 +47,7 @@ export default class BaseGameCron {
     }
 
     async proceed() {
-        const { durations } = this.gameDefinition;
+        const { durations } = this.definition;
 
         if (this.gameData.remainingTime === durations.wholeRound) {
             await this.checkGameStatus();
@@ -59,20 +59,20 @@ export default class BaseGameCron {
 
         if (this.gameData.remainingTime === durations.placingBets) {
             this.resetForNewRound();
-            this.gameDefinition.bot && (await this.gameDefinition.bot.reset());
+            this.definition.bot && (await this.definition.bot.reset());
         }
 
         if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
             await this.settleGameRoundConsumer.settleRound(this.gameData);
         } else if (this.gameData.remainingTime < durations.placingBets) {
-            this.gameDefinition.bot && (await this.gameDefinition.bot.run());
+            this.definition.bot && (await this.definition.bot.run());
             this.runningRoundInfoPublisher.publish(this.gameData);
         }
     }
 
     async checkGameStatus() {
-        const { configName, durations } = this.gameDefinition;
+        const { configName, durations } = this.definition;
         const configs = await gameConfigs.findOne({ name: configName }).lean().exec();
         const previouslyDisabled = this.gameData.disabled;
         const configuredlyDisabled = !configs || !configs.enabled;

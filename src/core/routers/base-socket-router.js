@@ -7,7 +7,7 @@ import { HistoryQuery, RoundQuery } from "./../query-apis";
 
 export default class BaseSocketRouter {
     constructor({
-        gameDefinition,
+        definition,
         gameData,
         userSignInConsumer,
         userDisconnectConsumer,
@@ -17,15 +17,15 @@ export default class BaseSocketRouter {
         historyQuery,
         roundQuery,
     }) {
-        this.definition = gameDefinition;
+        this.definition = definition;
         this.gameData = gameData;
         this.userSignInConsumer = userSignInConsumer ?? new UserSignInConsumer(gameData);
         this.userDisconnectConsumer = userDisconnectConsumer ?? new UserDisconnectConsumer(gameData);
-        this.ingGameConsumer = inGameConsumer ?? new InGameConsumer({ gameDefinition, gameData });
-        this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(gameDefinition, gameData);
+        this.ingGameConsumer = inGameConsumer ?? new InGameConsumer({ definition, gameData });
+        this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(definition, gameData);
         this.userSignInPublisher = userSignInPublisher ?? new UserSignInPublisher();
-        this.roundQuery = roundQuery ?? new RoundQuery(gameDefinition);
-        this.historyQuery = historyQuery ?? new HistoryQuery(gameDefinition, this.roundQuery);
+        this.roundQuery = roundQuery ?? new RoundQuery(definition);
+        this.historyQuery = historyQuery ?? new HistoryQuery(definition, this.roundQuery);
     }
 
     /**

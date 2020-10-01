@@ -2,11 +2,11 @@ import { BasePublisher } from "../event-consumers";
 import { RoundQuery } from "../query-apis";
 
 export default class InGameConsumer {
-    constructor({ gameDefinition, gameData, roundQuery, publisher }) {
-        this.definition = gameDefinition;
+    constructor({ definition, gameData, roundQuery, publisher }) {
+        this.definition = definition;
         this.gameData = gameData;
-        this.roundQuery = roundQuery ?? new RoundQuery(gameDefinition);
-        this.publisher = publisher ?? new BasePublisher(gameDefinition.name, gameData);
+        this.roundQuery = roundQuery ?? new RoundQuery(definition);
+        this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
     }
 
     /**
