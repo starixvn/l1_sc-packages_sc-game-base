@@ -7,13 +7,13 @@ export default class InGameConsumer extends BaseEventConsumers.InGameConsumer {
     /**
      * @param {SocketIO.Client} socketClient
      */
-    async consume(socketClient) {
-        super.consume(socketClient);
+    async consume(realPlayer) {
+        super.consume(realPlayer);
         this.publisher.publishToAllUsersExcept(realPlayer.UID, { player });
     }
 
-    async buildPayload() {
-        const payload = await super.buildPayload();
+    async buildPayload(realPlayer) {
+        const payload = await super.buildPayload(realPlayer);
 
         const { chips } = this.gameData;
         await getBalance(realPlayer, true);

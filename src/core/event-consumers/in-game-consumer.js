@@ -9,21 +9,12 @@ export default class InGameConsumer {
         this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
     }
 
-    /**
-     * @param {SocketIO.Client} socketClient
-     */
-    async consume(socketClient) {
-        const realPlayer = this.gameData.realPlayers[socketClient.id];
-
-        if (!realPlayer) {
-            return;
-        }
-
-        const payload = await this.buildPayload();
+    async consume(realPlayer) {
+        const payload = await this.buildPayload(realPlayer);
         realPlayer.socketClient.emit(this.definition.name, payload);
     }
 
-    async buildPayload() {
+    async buildPayload(realPlayer) {
         const maxNumberOfRounds = 100;
         const { minbet, maxbet, choices_maxbet, odds, enableFreeBet } = this.gameData.gameConfigs;
         const { remainingTime, totalBets } = this.gameData;
