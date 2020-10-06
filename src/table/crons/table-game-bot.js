@@ -46,7 +46,7 @@ export default class TableGameBot extends BaseBot {
 
             const botsToBet = this.getBotsToBet();
 
-            botsToBet.forEach(async (bot) => this.placeBet(bot));
+            Promise.all(botsToBet.map(async (bot) => this.placeBet(bot)));
         }
     }
 
@@ -77,7 +77,7 @@ export default class TableGameBot extends BaseBot {
     async removeAllBots() {
         const bots = Object.values(this.gameData.players).filter((player) => player.type);
 
-        bots.forEach(async (bot) => this.removeBot(bot.id));
+        Promise.all(bots.map(async (bot) => this.removeBot(bot.id)));
 
         this.botsInRoom = {};
         this.maxNumberOfBots = 0;
@@ -110,9 +110,11 @@ export default class TableGameBot extends BaseBot {
             .exec();
         const newBots = this.getBotsToJoin(botUsers);
 
-        newBots.forEach(async (bot) => {
-            await this.botJoinRoom(bot);
-        });
+        Promise.all(
+            newBots.map(async (bot) => {
+                await this.botJoinRoom(bot);
+            })
+        );
     }
 
     getBotsToJoin(botUsers) {
@@ -149,10 +151,12 @@ export default class TableGameBot extends BaseBot {
         const totalRemoval = this.chance.integer({ min: 1, max: Math.max(maxBotRemoveRandom, 1) });
         const removalIds = this.getRemovalBotIds(totalRemoval);
 
-        removalIds.forEach(async (botId) => {
-            await this.removeBot(botId);
-            delete this.botsInRoom[botId];
-        });
+        Promise.all(
+            removalIds.map(async (botId) => {
+                await this.removeBot(botId);
+                delete this.botsInRoom[botId];
+            })
+        );
     }
 
     getRemovalBotIds(totalRemoval) {
@@ -197,28 +201,8 @@ export default class TableGameBot extends BaseBot {
         }
     }
 
-    getBetChoice(bot) {}
-
-    getMaxBet(bot, choice) {}
-
     convertAmountToChip(amount) {
         return amount;
-    }
-
-    getMinBet() {
-        return Math.max(1, this.gameData.gameConfigs.minbet);
-    }
-
-    getTotalBetAmount(bet) {
-        let totalBet = 0;
-
-        if (bet) {
-            this.choices.forEach((choice) => {
-                totalBet += bet[choice];
-            });
-        }
-
-        return totalBet;
     }
 
     updateTotalBetsAndChips(choice, amount) {

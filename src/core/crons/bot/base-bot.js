@@ -38,7 +38,7 @@ export default class BaseBot {
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
 
-                const bots = await userInfos.find({ type: true }).lean();
+                const bots = await userInfos.find({ type: true }).lean().exec();
                 this.maxNumberOfBots = Math.floor(bots.length * this.currentBotRatio);
 
                 const disabledBots = bots.filter((bot) => bot.disabled);
@@ -82,7 +82,7 @@ export default class BaseBot {
 
         if (bet) {
             this.choices.forEach((choice) => {
-                totalBet += bet[choice];
+                totalBet += bet[choice] ?? 0;
             });
         }
 
