@@ -17,7 +17,6 @@ export default class BaseBot {
 
         this.currentBotRatio = 0;
         this.maxNumberOfBots = 0;
-        this.botsInRoom = {};
         this.totalTickets = 0;
         this.totalBets = {};
         this.resetBotData = {
@@ -58,8 +57,6 @@ export default class BaseBot {
     async removeBot(botId) {}
 
     resetAllBotData() {
-        Object.keys(this.botsInRoom).forEach((id) => this.resetBot(this.botsInRoom[id]));
-
         this.totalTickets = 0;
         this.totalSmallTickets = 0;
         this.totalBets = {};

@@ -25,11 +25,13 @@ export default class TableGameBot extends BaseBot {
         this.removeBotAtTheTableRoundFrequency = 6;
         this.chance = new Chance();
         this.minBotsAtTheTable = 8;
+        this.botsInRoom = {};
     }
 
     resetAllBotData() {
         super.resetAllBotData();
         this.removeBotAtTheTable = false;
+        Object.keys(this.botsInRoom).forEach((id) => this.resetBot(this.botsInRoom[id]));
     }
 
     async run() {
@@ -46,7 +48,7 @@ export default class TableGameBot extends BaseBot {
 
             const botsToBet = this.getBotsToBet();
 
-            await Promise.all(botsToBet.map(async (bot) => this.placeBet(bot)));
+            await Promise.all(botsToBet.map((bot) => this.placeBet(bot)));
         }
     }
 
@@ -77,7 +79,7 @@ export default class TableGameBot extends BaseBot {
     async removeAllBots() {
         const bots = Object.values(this.gameData.players).filter((player) => player.type);
 
-        Promise.all(bots.map(async (bot) => this.removeBot(bot.id)));
+        await Promise.all(bots.map((bot) => this.removeBot(bot.id)));
 
         this.botsInRoom = {};
         this.maxNumberOfBots = 0;
@@ -111,8 +113,8 @@ export default class TableGameBot extends BaseBot {
         const newBots = this.getBotsToJoin(botUsers);
 
         await Promise.all(
-            newBots.map(async (bot) => {
-                await this.botJoinRoom(bot);
+            newBots.map((bot) => {
+                this.botJoinRoom(bot);
             })
         );
     }
