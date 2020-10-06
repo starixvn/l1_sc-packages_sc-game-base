@@ -1,10 +1,10 @@
 import { logger, utils } from "sc-common";
 
-import TableGameData from "./../table-game-data";
+import GameData from "../game-data";
 
 export default class HttpRouter {
     /**
-     * @param {TableGameData} gameData
+     * @param {GameData} gameData
      */
     constructor(gameData) {
         this.gameData = gameData;

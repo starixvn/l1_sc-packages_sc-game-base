@@ -15,10 +15,17 @@ export default class BaseGameCron {
      * @param {GameStatusPublisher} gameStatusPublisher
      * @param {RunningRoundInfoPublisher} runningRoundInfoPublisher
      */
-    constructor(definition, gameData, settleGameRoundConsumer = null, gameStatusPublisher = null, runningRoundInfoPublisher = null) {
+    constructor(
+        definition,
+        gameData,
+        apiSettings,
+        settleGameRoundConsumer = null,
+        gameStatusPublisher = null,
+        runningRoundInfoPublisher = null
+    ) {
         this.definition = definition;
         this.gameData = gameData;
-        this.settleGameRoundConsumer = settleGameRoundConsumer ?? new SettleGameRoundConsumer(definition, gameData);
+        this.settleGameRoundConsumer = settleGameRoundConsumer ?? new SettleGameRoundConsumer(definition, gameData, apiSettings);
         this.gameStatusPublisher = gameStatusPublisher ?? new GameStatusPublisher(definition.name, gameData);
         this.runningRoundInfoPublisher = runningRoundInfoPublisher ?? new RunningRoundInfoPublisher(definition.name, gameData);
     }

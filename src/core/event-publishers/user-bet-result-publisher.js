@@ -1,7 +1,17 @@
+import Axios from "axios";
+
+import AuthenticationHelper from "../../helpers/authentication-helper";
 import BaseEventPublisher from "./base-event-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
-    publish(userId, betResult) {
+    constructor(gameName, gameData, apiSettings) {
+        super(gameName, gameData);
+        this.apiSettings = apiSettings;
+        this.authenticationHelper = new AuthenticationHelper(apiSettings.client);
+        this.authenticationHelper.autoUpdateToken();
+    }
+
+    async publish(userId, betResult) {
         const status = { winningByChoices: betResult.winningByChoices };
 
         if (betResult.totalWin > 0) {
@@ -12,7 +22,32 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
             status.bet = betResult.totalLost;
         }
 
-        this.publishToUser(userId, { status });
-        // TODO: Send latest balance to players who are not in the room anymore.
+        await this.publishToUser(userId, { status });
+    }
+
+    async publishToUser(userId, payload) {
+        const realPlayer = Object.values(this.gameData.realPlayers).find(
+            (player) => player.UID === userId && player.socketClient && player.socketClient.connected
+        );
+
+        if (realPlayer && realPlayer.socketClient) {
+            realPlayer.socketClient.emit(path, payload);
+        } else {
+            this.updateBalance(userId);
+        }
+    }
+
+    async updateBalance(userId) {
+        const { mainServerUrl, useAuthenticate, requestTimeout } = this.apiSettings;
+        const defaultTimeout = 2500;
+        const requestConfigs = {
+            timeout: requestTimeout || defaultTimeout,
+            headers: {},
+        };
+        if (useAuthenticate) {
+            requestConfigs.headers.Authorization = this.authenticationHelper.token;
+        }
+
+        await Axios.post(`${mainServerUrl}/api/updateBalance`, { uid: userId }, requestConfigs);
     }
 }

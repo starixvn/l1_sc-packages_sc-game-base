@@ -12,7 +12,7 @@ import * as Bot from "./crons/bot";
 import ProcessBetQueue from "./crons/process-bet-queue";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
-import { BaseAdminSocketRouter } from "./routers";
+import { BaseAdminSocketRouter, HttpRouter } from "./routers";
 
 export default class BaseGameStartup {
     /**
@@ -33,7 +33,10 @@ export default class BaseGameStartup {
     /**
      * @param {express.Express} app
      */
-    initHttpRouter(app) {}
+    initHttpRouter(app) {
+        const router = new HttpRouter(this.gameData);
+        router.init(app, this.appConfigs);
+    }
 
     /**
      * @param {socketIo.Socket} socketClient

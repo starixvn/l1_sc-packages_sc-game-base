@@ -11,11 +11,11 @@ export default class SettleGameRoundConsumer {
      * @param {RoundResultPublisher} roundResultPublisher
      * @param {UserBetResultPublisher} userBetResultPublisher
      */
-    constructor(definition, gameData, roundResultPublisher = null, userBetResultPublisher = null) {
+    constructor(definition, gameData, apiSettings, roundResultPublisher = null, userBetResultPublisher = null) {
         this.definition = definition;
         this.gameData = gameData;
         this.roundResultPublisher = roundResultPublisher ?? new RoundResultPublisher(definition.name, gameData);
-        this.userBetResultPublisher = userBetResultPublisher ?? new UserBetResultPublisher(definition.name, gameData);
+        this.userBetResultPublisher = userBetResultPublisher ?? new UserBetResultPublisher(definition.name, gameData, apiSettings);
     }
 
     async settleRound() {
@@ -60,7 +60,7 @@ export default class SettleGameRoundConsumer {
                     await bet.save();
                     await this.callEndGame(bet, roundId, time, betResult);
                     this.captureBetResult(bet.uid, betResult);
-                    this.userBetResultPublisher.publish(bet.uid, betResult);
+                    await this.userBetResultPublisher.publish(bet.uid, betResult);
                 })
             );
         }
