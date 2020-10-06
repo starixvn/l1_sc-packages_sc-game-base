@@ -7,7 +7,7 @@ export default class TableStartup extends BaseStartup {
             appConfigs,
             definition,
             gameData,
-            gameCron ?? new TableGameCron(definition, gameData, appConfigs.apiSettings),
+            gameCron ?? new TableGameCron(definition, gameData, appConfigs.mainServerApiSettings),
             processBetQueue ?? new TableProcessBetQueue(definition, gameData)
         );
     }

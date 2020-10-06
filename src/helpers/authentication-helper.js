@@ -47,7 +47,7 @@ export default class AuthenticationHelper {
             client_id: this.identitySettings.id,
             client_secret: this.identitySettings.secret,
         };
-        const issuer = await Issuer.discover(this.identitySettings.authUrl);
+        const issuer = await Issuer.discover(this.identitySettings.url);
         const client = new issuer.Client(clientMetadata);
         const token = await client.grant(clientMetadata);
 

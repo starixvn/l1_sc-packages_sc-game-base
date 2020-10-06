@@ -26,7 +26,7 @@ export default class BaseGameStartup {
         this.appConfigs = appConfigs;
         this.definition = definition;
         this.gameData = gameData;
-        this.gameCron = gameCron ?? new BaseGameCron(definition, gameData, appConfigs.apiSettings);
+        this.gameCron = gameCron ?? new BaseGameCron(definition, gameData, appConfigs.mainServerApiSettings);
         this.processBetQueue = processBetQueue ?? new ProcessBetQueue(definition, gameData);
     }
 

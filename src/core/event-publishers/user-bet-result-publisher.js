@@ -7,7 +7,7 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
     constructor(gameName, gameData, apiSettings) {
         super(gameName, gameData);
         this.apiSettings = apiSettings;
-        this.authenticationHelper = new AuthenticationHelper(apiSettings.client);
+        this.authenticationHelper = new AuthenticationHelper(apiSettings.auth);
         this.authenticationHelper.autoUpdateToken();
     }
 
