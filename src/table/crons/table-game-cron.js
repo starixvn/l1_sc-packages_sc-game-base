@@ -9,8 +9,8 @@ export default class TableGameCron extends Cron.BaseGameCron {
      * @param {TableGameData} gameData
      * @param {TableSettleGameRoundConsumer} settleGameRoundConsumer
      */
-    constructor(definition, gameData, settleGameRoundConsumer = null) {
-        super(definition, gameData, settleGameRoundConsumer ?? new TableSettleGameRoundConsumer(definition, gameData));
+    constructor(definition, gameData, apiSettings, settleGameRoundConsumer = null) {
+        super(definition, gameData, apiSettings, settleGameRoundConsumer ?? new TableSettleGameRoundConsumer(definition, gameData));
     }
 
     resetForNewRound() {
