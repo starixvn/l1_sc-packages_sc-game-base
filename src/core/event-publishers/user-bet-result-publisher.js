@@ -4,10 +4,10 @@ import AuthenticationHelper from "../helpers/authentication-helper";
 import BaseEventPublisher from "./base-event-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
-    constructor(gameName, gameData, apiSettings) {
+    constructor(gameName, gameData, mainServerApiSettings) {
         super(gameName, gameData);
-        this.apiSettings = apiSettings;
-        this.authenticationHelper = new AuthenticationHelper(apiSettings.auth);
+        this.mainServerApiSettings = mainServerApiSettings;
+        this.authenticationHelper = new AuthenticationHelper(mainServerApiSettings.auth);
         this.authenticationHelper.autoUpdateToken();
     }
 
@@ -33,12 +33,12 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
         if (realPlayer && realPlayer.socketClient) {
             realPlayer.socketClient.emit(path, payload);
         } else {
-            this.updateBalance(userId);
+            this.refreshBalance(userId);
         }
     }
 
-    async updateBalance(userId) {
-        const { url, useAuthenticate, requestTimeout } = this.apiSettings;
+    async refreshBalance(userId) {
+        const { url, useAuthenticate, requestTimeout } = this.mainServerApiSettings;
         const defaultTimeout = 2500;
         const requestConfigs = {
             timeout: requestTimeout || defaultTimeout,
