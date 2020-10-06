@@ -1,5 +1,5 @@
-import { BasePublisher } from "../event-publishers";
-import { RoundQuery } from "../query-apis";
+import { BasePublisher } from "./../event-publishers";
+import { RoundQuery } from "./../query-apis";
 
 export default class InGameConsumer {
     constructor({ definition, gameData, roundQuery, publisher }) {
@@ -11,6 +11,7 @@ export default class InGameConsumer {
 
     async consume(realPlayer) {
         const payload = await this.buildPayload(realPlayer);
+
         realPlayer.socketClient.emit(this.definition.name, payload);
     }
 

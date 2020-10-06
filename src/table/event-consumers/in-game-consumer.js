@@ -1,12 +1,9 @@
 import { getBalance } from "sc-base-apis";
 import { userInfos } from "sc-base-database";
 
-import { BaseEventConsumers } from "../../core";
+import { BaseEventConsumers } from "./../../core";
 
 export default class InGameConsumer extends BaseEventConsumers.InGameConsumer {
-    /**
-     * @param {SocketIO.Client} socketClient
-     */
     async consume(realPlayer) {
         super.consume(realPlayer);
         this.publisher.publishToAllUsersExcept(realPlayer.UID, { player });
@@ -14,8 +11,8 @@ export default class InGameConsumer extends BaseEventConsumers.InGameConsumer {
 
     async buildPayload(realPlayer) {
         const payload = await super.buildPayload(realPlayer);
-
         const { chips } = this.gameData;
+
         await getBalance(realPlayer, true);
 
         const user = await this.getUserInfo(realPlayer.UID);
