@@ -1,4 +1,5 @@
 import OpenIdClient from "openid-client";
+import { logger } from "sc-common";
 
 const beforeTokenExpired = 60 * 5;
 const timeout = 60000;
@@ -35,9 +36,9 @@ export default class AuthenticationHelper {
             this.token = token.token;
             this.expired = token.expired;
 
-            this.logger.log("Get bearer token successfully.");
+            logger.log("Get bearer token successfully.");
         } catch (error) {
-            this.logger.logError(`Get bearer token failed: ${error}`);
+            logger.logError(`Get bearer token failed: ${error}`);
         }
     }
 

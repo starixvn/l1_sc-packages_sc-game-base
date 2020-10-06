@@ -1,6 +1,6 @@
 import Axios from "axios";
 
-import AuthenticationHelper from "../../helpers/authentication-helper";
+import AuthenticationHelper from "../helpers/authentication-helper";
 import BaseEventPublisher from "./base-event-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
@@ -38,7 +38,7 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
     }
 
     async updateBalance(userId) {
-        const { mainServerUrl, useAuthenticate, requestTimeout } = this.apiSettings;
+        const { url, useAuthenticate, requestTimeout } = this.apiSettings;
         const defaultTimeout = 2500;
         const requestConfigs = {
             timeout: requestTimeout || defaultTimeout,
@@ -48,6 +48,6 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
             requestConfigs.headers.Authorization = this.authenticationHelper.token;
         }
 
-        await Axios.post(`${mainServerUrl}/api/updateBalance`, { uid: userId }, requestConfigs);
+        await Axios.post(`${url}/updateBalance`, { uid: userId }, requestConfigs);
     }
 }
