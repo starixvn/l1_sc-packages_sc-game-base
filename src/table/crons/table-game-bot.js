@@ -112,11 +112,7 @@ export default class TableGameBot extends BaseBot {
             .exec();
         const newBots = this.getBotsToJoin(botUsers);
 
-        await Promise.all(
-            newBots.map((bot) => {
-                this.botJoinRoom(bot);
-            })
-        );
+        await Promise.all(newBots.map((bot) => this.botJoinRoom(bot)));
     }
 
     getBotsToJoin(botUsers) {
