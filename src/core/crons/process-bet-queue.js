@@ -13,7 +13,6 @@ export default class ProcessBetQueue {
      * @param {GameData} gameData
      * @param {PlaceBetPublisher} publisher
      */
-
     constructor(definition, gameData, publisher = null) {
         this.definition = definition;
         this.gameData = gameData;
@@ -55,7 +54,7 @@ export default class ProcessBetQueue {
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, apiResult.response, payload, betInfo.gameRoundId);
+            await this.handleSuccessBet(player, apiResult.response, betInfo.gameRoundId, payload);
         } else {
             const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
             const notice = apiResult.response.inSufficientBalance ? insufficientNotice : apiResult.response;
@@ -64,7 +63,7 @@ export default class ProcessBetQueue {
         }
     }
 
-    async handleSuccessBet(player, balance, bet, roundId) {
+    async handleSuccessBet(player, balance, roundId, bet) {
         const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
         const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
