@@ -68,7 +68,7 @@ export default class ProcessBetQueue {
             await this.insertBetLog(this.definition.betLogRepository, player, roundId, bet);
         }
 
-        await this.upsertBet(player, bet);
+        await this.upsertBet(player, roundId, bet);
 
         this.adjustBetTracks(player.profile.name, bet);
         this.adjustTotalBets(player, bet);
@@ -85,8 +85,8 @@ export default class ProcessBetQueue {
         }
     }
 
-    async upsertBet(player, bet) {
-        const existingBetFilter = { uid: player.UID, phien: this.gameData.roundId, freeBet: bet.freeBet };
+    async upsertBet(player, roundId, bet) {
+        const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
         const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
         if (existingBet) {
