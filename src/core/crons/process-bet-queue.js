@@ -55,7 +55,7 @@ export default class ProcessBetQueue {
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, apiResult.response, payload);
+            await this.handleSuccessBet(player, apiResult.response, payload, betInfo.gameRoundId);
         } else {
             const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
             const notice = apiResult.response.inSufficientBalance ? insufficientNotice : apiResult.response;
@@ -64,12 +64,12 @@ export default class ProcessBetQueue {
         }
     }
 
-    async handleSuccessBet(player, balance, bet) {
-        const existingBetFilter = { uid: player.UID, phien: this.gameData.roundId, freeBet: bet.freeBet };
+    async handleSuccessBet(player, balance, bet, roundId) {
+        const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
         const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
         if (this.definition.betLogRepository) {
-            await this.insertBetLog(this.definition.betLogRepository, player, this.gameData.roundId, bet);
+            await this.insertBetLog(this.definition.betLogRepository, player, roundId, bet);
         }
 
         if (existingBet) {
@@ -80,7 +80,7 @@ export default class ProcessBetQueue {
             const newBet = {
                 uid: player.UID,
                 name: player.profile.name,
-                phien: this.gameData.roundId,
+                phien: roundId,
                 time: new Date(),
                 odds: configs.odds,
                 freeBet: bet.freeBet,
