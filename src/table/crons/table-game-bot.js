@@ -25,11 +25,13 @@ export default class TableGameBot extends BaseBot {
         this.removeBotAtTheTableRoundFrequency = 6;
         this.chance = new Chance();
         this.minBotsAtTheTable = 8;
+        this.botsInRoom = {};
     }
 
     resetAllBotData() {
         super.resetAllBotData();
         this.removeBotAtTheTable = false;
+        Object.keys(this.botsInRoom).forEach((id) => this.resetBot(this.botsInRoom[id]));
     }
 
     async run() {
@@ -46,7 +48,7 @@ export default class TableGameBot extends BaseBot {
 
             const botsToBet = this.getBotsToBet();
 
-            botsToBet.forEach(async (bot) => this.placeBet(bot));
+            await Promise.all(botsToBet.map((bot) => this.placeBet(bot)));
         }
     }
 
@@ -77,7 +79,7 @@ export default class TableGameBot extends BaseBot {
     async removeAllBots() {
         const bots = Object.values(this.gameData.players).filter((player) => player.type);
 
-        bots.forEach(async (bot) => this.removeBot(bot.id));
+        await Promise.all(bots.map((bot) => this.removeBot(bot.id)));
 
         this.botsInRoom = {};
         this.maxNumberOfBots = 0;
@@ -110,9 +112,7 @@ export default class TableGameBot extends BaseBot {
             .exec();
         const newBots = this.getBotsToJoin(botUsers);
 
-        newBots.forEach(async (bot) => {
-            await this.botJoinRoom(bot);
-        });
+        await Promise.all(newBots.map((bot) => this.botJoinRoom(bot)));
     }
 
     getBotsToJoin(botUsers) {
@@ -149,10 +149,12 @@ export default class TableGameBot extends BaseBot {
         const totalRemoval = this.chance.integer({ min: 1, max: Math.max(maxBotRemoveRandom, 1) });
         const removalIds = this.getRemovalBotIds(totalRemoval);
 
-        removalIds.forEach(async (botId) => {
-            await this.removeBot(botId);
-            delete this.botsInRoom[botId];
-        });
+        await Promise.all(
+            removalIds.map(async (botId) => {
+                await this.removeBot(botId);
+                delete this.botsInRoom[botId];
+            })
+        );
     }
 
     getRemovalBotIds(totalRemoval) {
@@ -197,28 +199,8 @@ export default class TableGameBot extends BaseBot {
         }
     }
 
-    getBetChoice(bot) {}
-
-    getMaxBet(bot, choice) {}
-
     convertAmountToChip(amount) {
         return amount;
-    }
-
-    getMinBet() {
-        return Math.max(1, this.gameData.gameConfigs.minbet);
-    }
-
-    getTotalBetAmount(bet) {
-        let totalBet = 0;
-
-        if (bet) {
-            this.choices.forEach((choice) => {
-                totalBet += bet[choice];
-            });
-        }
-
-        return totalBet;
     }
 
     updateTotalBetsAndChips(choice, amount) {

@@ -17,7 +17,6 @@ export default class BaseBot {
 
         this.currentBotRatio = 0;
         this.maxNumberOfBots = 0;
-        this.botsInRoom = {};
         this.totalTickets = 0;
         this.totalBets = {};
         this.resetBotData = {
@@ -38,7 +37,7 @@ export default class BaseBot {
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
 
-                const bots = await userInfos.find({ type: true }).lean();
+                const bots = await userInfos.find({ type: true }).lean().exec();
                 this.maxNumberOfBots = Math.floor(bots.length * this.currentBotRatio);
 
                 const disabledBots = bots.filter((bot) => bot.disabled);
@@ -58,8 +57,6 @@ export default class BaseBot {
     async removeBot(botId) {}
 
     resetAllBotData() {
-        Object.keys(this.botsInRoom).forEach((id) => this.resetBot(this.botsInRoom[id]));
-
         this.totalTickets = 0;
         this.totalSmallTickets = 0;
         this.totalBets = {};
@@ -82,7 +79,7 @@ export default class BaseBot {
 
         if (bet) {
             this.choices.forEach((choice) => {
-                totalBet += bet[choice];
+                totalBet += bet[choice] ?? 0;
             });
         }
 
