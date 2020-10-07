@@ -1,3 +1,6 @@
+import { getBalance } from "sc-base-apis";
+import { userInfos } from "sc-base-database";
+
 import { BasePublisher } from "./../event-publishers";
 import { RoundQuery } from "./../query-apis";
 
@@ -11,6 +14,17 @@ export default class InGameConsumer {
 
     async consume(realPlayer) {
         const payload = await this.buildPayload(realPlayer);
+        const { user } = payload;
+
+        if (!this.gameData.players[realPlayer.UID]) {
+            this.gameData.players[realPlayer.UID] = {
+                id: realPlayer.UID,
+                name: realPlayer.profile.name,
+                red: user.red,
+                avatarId: user.avatarId,
+                type: user.type,
+            };
+        }
 
         realPlayer.socketClient.emit(this.definition.name, payload);
     }
@@ -22,6 +36,8 @@ export default class InGameConsumer {
         const gameConfigs = { minbet, maxbet, choices_maxbet, odds, enableFreeBet };
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
         const roundHistory = await this.roundQuery.getList(maxNumberOfRounds);
+        await getBalance(realPlayer, true);
+        const user = await this.getUserInfo(realPlayer.UID);
 
         return {
             gameConfigs,
@@ -29,6 +45,28 @@ export default class InGameConsumer {
             remainingTime,
             ownBets,
             totalBets,
+            user,
         };
+    }
+
+    getUserInfo(uid) {
+        return userInfos
+            .findOne(
+                { id: uid },
+                {
+                    _id: false,
+                    UID: true,
+                    name: true,
+                    avatarId: true,
+                    red: true,
+                    scoins: true,
+                    joinedOn: true,
+                    security: true,
+                    currency: true,
+                    type: true,
+                }
+            )
+            .lean()
+            .exec();
     }
 }
