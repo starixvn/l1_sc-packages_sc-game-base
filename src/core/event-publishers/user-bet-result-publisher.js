@@ -25,7 +25,7 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
         await this.publishToUser(userId, { status });
     }
 
-    async publishToUser(userId, payload) {
+    async publishToUser(userId, payload, path = this.gameName) {
         const realPlayer = Object.values(this.gameData.realPlayers).find(
             (player) => player.UID === userId && player.socketClient && player.socketClient.connected
         );
@@ -48,6 +48,6 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
             requestConfigs.headers.Authorization = this.authenticationHelper.token;
         }
 
-        await Axios.post(`${url}/updateBalance`, { uid: userId }, requestConfigs);
+        await Axios.post(`${url}/refreshBalance`, { uid: userId }, requestConfigs);
     }
 }
