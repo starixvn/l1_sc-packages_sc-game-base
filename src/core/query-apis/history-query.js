@@ -43,7 +43,7 @@ export default class HistoryQuery {
             betLogs = await Promise.all(
                 bets.map(async (bet) => {
                     const round = await this.roundQuery.getOne(bet.phien, { _id: false });
-                    const betLogDetails = this.definition.betLogDetails ? await this.getBetLogDetails(player, bet.phien) : [];
+                    const betLogDetails = this.definition.betLogRepository ? await this.getBetLogDetails(player, bet.phien) : [];
 
                     return {
                         ...this.convertBet(bet),
