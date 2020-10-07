@@ -1,3 +1,14 @@
+## [1.14.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.14.0...v1.14.1) (2020-10-07)
+
+
+### Bug Fixes
+
+* add await to Promise all ([8fe373c](https://git3.nexdev.net/sc-packages/sc-game-base/commit/8fe373ccd6ea817153d5f12c981ae5ac61278289))
+* change foreach to promise all, add exec to find for bot ([db54ecc](https://git3.nexdev.net/sc-packages/sc-game-base/commit/db54ecc8fb8f95cbb551220378dd9476c0d95bea))
+* pass round id from bet info when handle success bet ([d0597cb](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d0597cb78185c06fed63a98511213ab9627af4cf))
+* remove botsInRoom in base bot ([7fe03d3](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7fe03d344e5f2b0b4cdda8006d6a9501c3cfd425))
+* update promise all ([f0652f8](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f0652f8b075224d702a6238373869293d050aa10))
+
 # [1.14.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.13.0...v1.14.0) (2020-09-30)
 
 
