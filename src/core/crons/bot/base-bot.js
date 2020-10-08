@@ -1,19 +1,20 @@
 import { userInfos } from "sc-base-database";
 import { helpers } from "sc-common";
 
+import GameDefinition from "../../game-definition";
 import { BasePublisher } from "./../../event-publishers";
 import GameData from "./../../game-data";
 
 export default class BaseBot {
     /**
+     * @param {GameDefinition} definition
      * @param {GameData} gameData
      * @param {BasePublisher} publisher
      */
-
-    constructor(gameName, gameData, choices, publisher = null) {
+    constructor(definition, gameData, publisher = null) {
+        this.definition = definition;
         this.gameData = gameData;
-        this.choices = choices;
-        this.publisher = publisher ?? new BasePublisher(gameName, gameData);
+        this.publisher = publisher ?? new BasePublisher(this.definition.name, gameData);
 
         this.currentBotRatio = 0;
         this.maxNumberOfBots = 0;
@@ -78,7 +79,7 @@ export default class BaseBot {
         let totalBet = 0;
 
         if (bet) {
-            this.choices.forEach((choice) => {
+            this.definition.choices.forEach((choice) => {
                 totalBet += bet[choice] ?? 0;
             });
         }

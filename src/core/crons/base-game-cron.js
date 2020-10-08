@@ -2,6 +2,7 @@ import cron from "cron";
 import { gameConfigs } from "sc-base-database";
 import { logger } from "sc-common";
 
+import { BaseBot } from "..";
 import { SettleGameRoundConsumer } from "./../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
@@ -11,6 +12,7 @@ export default class BaseGameCron {
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
+     * @param {BaseBot} bot
      * @param {SettleGameRoundConsumer} settleGameRoundConsumer
      * @param {GameStatusPublisher} gameStatusPublisher
      * @param {RunningRoundInfoPublisher} runningRoundInfoPublisher
@@ -19,12 +21,14 @@ export default class BaseGameCron {
         definition,
         gameData,
         mainServerApiSettings,
+        bot,
         settleGameRoundConsumer = null,
         gameStatusPublisher = null,
         runningRoundInfoPublisher = null
     ) {
         this.definition = definition;
         this.gameData = gameData;
+        this.bot = bot ?? new BaseBot(definition, gameData);
         this.settleGameRoundConsumer = settleGameRoundConsumer ?? new SettleGameRoundConsumer(definition, gameData, mainServerApiSettings);
         this.gameStatusPublisher = gameStatusPublisher ?? new GameStatusPublisher(definition.name, gameData);
         this.runningRoundInfoPublisher = runningRoundInfoPublisher ?? new RunningRoundInfoPublisher(definition.name, gameData);
@@ -66,14 +70,14 @@ export default class BaseGameCron {
 
         if (this.gameData.remainingTime === durations.placingBets) {
             this.resetForNewRound();
-            this.definition.bot && (await this.definition.bot.reset());
+            await this.bot.reset();
         }
 
         if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
             await this.settleGameRoundConsumer.settleRound(this.gameData);
         } else if (this.gameData.remainingTime < durations.placingBets) {
-            this.definition.bot && (await this.definition.bot.run());
+            await this.bot.run();
             this.runningRoundInfoPublisher.publish(this.gameData);
         }
     }

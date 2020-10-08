@@ -12,11 +12,9 @@ export default class TableGameBot extends BaseBot {
      * @param {BasePublisher} publisher
      */
 
-    constructor(gameName, choices, durations, configName, tempBetRepository, gameData, publisher = null) {
-        super(gameName, gameData, choices, publisher);
-        this.durations = durations;
-        this.configName = configName;
-        this.tempBetRepository = tempBetRepository;
+    constructor(definition, gameData, publisher) {
+        super(definition, gameData, publisher);
+
         this.inOutValues = {
             in: 3,
             out: 4,
@@ -36,7 +34,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async run() {
-        if (this.gameData.gameConfigs?.botenabled && this.gameData.remainingTime > this.durations.lockingBet) {
+        if (this.gameData.gameConfigs?.botenabled && this.gameData.remainingTime > this.definition.durations.lockingBet) {
             const random = this.chance.integer({ min: 0, max: 5 });
 
             if (this.shouldAddBot(random)) {
@@ -125,7 +123,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async botJoinRoom(bot) {
-        await userInfos.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.configName });
+        await userInfos.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.definition.configName });
 
         this.resetBot(bot);
 
@@ -174,8 +172,8 @@ export default class TableGameBot extends BaseBot {
         const minBet = this.getMinBet();
         const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
 
-        if (this.gameData.remainingTime > this.durations.lockingBet) {
-            const currentBet = await this.tempBetRepository.findOne({ uid: bot.id, phien: this.gameData.roundId }).lean().exec();
+        if (this.gameData.remainingTime > this.definition.durations.lockingBet) {
+            const currentBet = await this.definition.tempBetRepository.findOne({ uid: bot.id, phien: this.gameData.roundId }).lean().exec();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= maxBet) {
@@ -232,7 +230,7 @@ export default class TableGameBot extends BaseBot {
             time: new Date(),
         };
 
-        await this.tempBetRepository.updateOne(
+        await this.definition.tempBetRepository.updateOne(
             { uid: bot.id, phien: this.gameData.roundId },
             { $inc: update, $setOnInsert: create },
             { upsert: true, setDefaultsOnInsert: true }
