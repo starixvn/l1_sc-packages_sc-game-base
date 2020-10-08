@@ -14,17 +14,6 @@ export default class InGameConsumer {
 
     async consume(realPlayer) {
         const payload = await this.buildPayload(realPlayer);
-        const { user } = payload;
-
-        if (!this.gameData.players[realPlayer.UID]) {
-            this.gameData.players[realPlayer.UID] = {
-                id: realPlayer.UID,
-                name: realPlayer.profile.name,
-                red: user.red,
-                avatarId: user.avatarId,
-                type: user.type,
-            };
-        }
 
         realPlayer.socketClient.emit(this.definition.name, payload);
     }
@@ -36,7 +25,9 @@ export default class InGameConsumer {
         const gameConfigs = { minbet, maxbet, choices_maxbet, odds, enableFreeBet };
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
         const roundHistory = await this.roundQuery.getList(maxNumberOfRounds);
+
         await getBalance(realPlayer, true);
+
         const user = await this.getUserInfo(realPlayer.UID);
 
         return {

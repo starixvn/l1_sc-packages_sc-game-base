@@ -60,6 +60,7 @@ export default class SettleGameRoundConsumer {
 
                     await bet.save();
                     await this.callEndGame(bet, roundId, time, betResult);
+
                     this.captureBetResult(bet.uid, betResult);
                     await this.userBetResultPublisher.publish(bet.uid, betResult);
                 })
@@ -107,7 +108,11 @@ export default class SettleGameRoundConsumer {
     captureBetResult(uid, betResult) {}
 
     collectRoundResult(result, settlementResult, roundId) {
-        return { result, settlementResult, roundId };
+        return {
+            result,
+            settlementResult,
+            roundId,
+        };
     }
 
     async callEndGame(bet, roundId, time, betResult) {

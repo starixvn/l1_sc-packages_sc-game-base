@@ -1,7 +1,6 @@
 import { logger } from "sc-common";
 
-import { InGameConsumer } from "../event-consumers";
-import { PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
+import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
 import { HistoryQuery, RoundQuery } from "./../query-apis";
 

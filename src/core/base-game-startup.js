@@ -35,6 +35,7 @@ export default class BaseGameStartup {
      */
     initHttpRouter(app) {
         const router = new HttpRouter(this.gameData);
+
         router.init(app, this.appConfigs);
     }
 
@@ -67,6 +68,7 @@ export default class BaseGameStartup {
 
         await initBaseDatabase(this.appConfigs.database);
         await Bot.resetInRoom(this.definition.configName);
+
         initApis(this.appConfigs.apiSettings);
     }
 
@@ -97,6 +99,7 @@ export default class BaseGameStartup {
         socketServer.origins((origin, callback) => {
             if (!this.appConfigs.enableCorsWs) {
                 callback(null, true);
+
                 return;
             }
 

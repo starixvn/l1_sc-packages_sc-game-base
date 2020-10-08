@@ -2,11 +2,11 @@ import cron from "cron";
 import { gameConfigs } from "sc-base-database";
 import { logger } from "sc-common";
 
-import { BaseBot } from "..";
 import { SettleGameRoundConsumer } from "./../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
+import BaseBot from "./bot/base-bot";
 
 export default class BaseGameCron {
     /**
@@ -70,14 +70,14 @@ export default class BaseGameCron {
 
         if (this.gameData.remainingTime === durations.placingBets) {
             this.resetForNewRound();
-            await this.bot.reset();
+            this.bot && (await this.bot.reset());
         }
 
         if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
             await this.settleGameRoundConsumer.settleRound(this.gameData);
         } else if (this.gameData.remainingTime < durations.placingBets) {
-            await this.bot.run();
+            this.bot && (await this.bot.run());
             this.runningRoundInfoPublisher.publish(this.gameData);
         }
     }

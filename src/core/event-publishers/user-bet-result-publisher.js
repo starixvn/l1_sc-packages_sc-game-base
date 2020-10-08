@@ -1,6 +1,6 @@
 import Axios from "axios";
 
-import AuthenticationHelper from "../helpers/authentication-helper";
+import AuthenticationHelper from "./../helpers/authentication-helper";
 import BaseEventPublisher from "./base-event-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
@@ -44,6 +44,7 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
             timeout: requestTimeout || defaultTimeout,
             headers: {},
         };
+
         if (useAuthenticate) {
             requestConfigs.headers.Authorization = this.authenticationHelper.token;
         }

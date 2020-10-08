@@ -1,9 +1,9 @@
 import { userInfos } from "sc-base-database";
 import { helpers } from "sc-common";
 
-import GameDefinition from "../../game-definition";
 import { BasePublisher } from "./../../event-publishers";
 import GameData from "./../../game-data";
+import GameDefinition from "./../../game-definition";
 
 export default class BaseBot {
     /**
