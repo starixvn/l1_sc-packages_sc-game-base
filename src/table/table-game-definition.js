@@ -8,18 +8,9 @@ export default class TableGameDefinition extends GameDefinition {
         roundRepository,
         betRepository,
         tempBetRepository,
-        betLogRepository,
-        bot
+        betLogRepository
     ) {
-        super(
-            { id, name, durations, choices, choicesMapper },
-            generateResult,
-            settle,
-            roundRepository,
-            betRepository,
-            betLogRepository,
-            bot
-        );
+        super({ id, name, durations, choices, choicesMapper }, generateResult, settle, roundRepository, betRepository, betLogRepository);
         this.tempBetRepository = tempBetRepository;
     }
 }
