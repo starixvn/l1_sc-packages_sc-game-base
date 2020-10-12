@@ -33,7 +33,7 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
         if (realPlayer && realPlayer.socketClient) {
             realPlayer.socketClient.emit(path, payload);
         } else {
-            this.refreshBalance(userId);
+            await this.refreshBalance(userId);
         }
     }
 
