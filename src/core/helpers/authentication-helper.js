@@ -1,15 +1,16 @@
+import Axios from "axios";
 import OpenIdClient from "openid-client";
 import { logger } from "sc-common";
 
+const { Issuer, custom } = OpenIdClient;
 const beforeTokenExpired = 60 * 5;
 const timeout = 60000;
-const { Issuer, custom } = OpenIdClient;
 
 custom.setHttpOptionsDefaults({ timeout });
 
-export default class AuthenticationHelper {
-    constructor(identitySettings) {
-        this.identitySettings = identitySettings;
+export class BearerAuthenticator {
+    constructor(authConfigs) {
+        this.authConfigs = authConfigs;
     }
 
     async autoUpdateToken() {
@@ -45,10 +46,10 @@ export default class AuthenticationHelper {
     async getBearerToken() {
         const clientMetadata = {
             grant_type: "client_credentials",
-            client_id: this.identitySettings.id,
-            client_secret: this.identitySettings.secret,
+            client_id: this.authConfigs.id,
+            client_secret: this.authConfigs.secret,
         };
-        const issuer = await Issuer.discover(this.identitySettings.url);
+        const issuer = await Issuer.discover(this.authConfigs.url);
         const client = new issuer.Client(clientMetadata);
         const token = await client.grant(clientMetadata);
 
@@ -60,3 +61,37 @@ export default class AuthenticationHelper {
             : null;
     }
 }
+
+let authenticationConfigs;
+let bearerAuthenticator;
+
+export const init = async (configs) => {
+    authenticationConfigs = configs;
+    bearerAuthenticator = new BearerAuthenticator(configs.auth);
+
+    await bearerAuthenticator.autoUpdateToken();
+};
+
+export const post = async (endpoint, params, options) => {
+    if (!bearerAuthenticator) {
+        logger.logError("authentication-helper has not been initialized properly.");
+    }
+
+    const defaultRequestTimeout = 2500;
+    const { url, useAuthenticate, requestTimeout } = configs;
+    const requestConfigs = {
+        timeout: options?.requestTimeout || requestTimeout || defaultRequestTimeout,
+        headers: {},
+    };
+
+    if (params?.languageCode) {
+        requestConfigs.headers.LanguageCode = params.languageCode;
+        delete params.languageCode;
+    }
+
+    if (useAuthenticate) {
+        requestConfigs.headers.Authorization = bearerAuthenticator.token;
+    }
+
+    return (await Axios.post(`${url}/${endpoint}`, params, requestConfigs)).data;
+};

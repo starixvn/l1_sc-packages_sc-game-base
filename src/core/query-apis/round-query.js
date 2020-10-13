@@ -32,6 +32,7 @@ export default class RoundQuery {
 
     async getOne(id, projections = { _id: false }) {
         const round = await this.definition.roundRepository.findOne({ id }, projections).lean().exec();
+
         round.result = round.result ?? this.convertResult(round);
         round.settlementResult = round.settlementResult ?? this.convertSettlementResult(result);
 

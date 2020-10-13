@@ -1,14 +1,9 @@
-import Axios from "axios";
-
-import AuthenticationHelper from "./../helpers/authentication-helper";
+import * as authenticationHelper from "./../helpers/authentication-helper";
 import BaseEventPublisher from "./base-event-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
-    constructor(gameName, gameData, mainServerApiSettings) {
+    constructor(gameName, gameData) {
         super(gameName, gameData);
-        this.mainServerApiSettings = mainServerApiSettings;
-        this.authenticationHelper = new AuthenticationHelper(mainServerApiSettings.auth);
-        this.authenticationHelper.autoUpdateToken();
     }
 
     async publish(userId, betResult) {
@@ -37,18 +32,7 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
         }
     }
 
-    async refreshBalance(userId) {
-        const { url, useAuthenticate, requestTimeout } = this.mainServerApiSettings;
-        const defaultTimeout = 2500;
-        const requestConfigs = {
-            timeout: requestTimeout || defaultTimeout,
-            headers: {},
-        };
-
-        if (useAuthenticate) {
-            requestConfigs.headers.Authorization = this.authenticationHelper.token;
-        }
-
-        await Axios.post(`${url}/refreshBalance`, { uid: userId }, requestConfigs);
+    refreshBalance(userId) {
+        return authenticationHelper.post("refreshBalance", { uid: userId });
     }
 }
