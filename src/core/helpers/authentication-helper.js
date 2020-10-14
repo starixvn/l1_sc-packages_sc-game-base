@@ -78,7 +78,7 @@ export const post = async (endpoint, params, options) => {
     }
 
     const defaultRequestTimeout = 2500;
-    const { url, useAuthenticate, requestTimeout } = configs;
+    const { url, useAuthenticate, requestTimeout } = authenticationConfigs;
     const requestConfigs = {
         timeout: options?.requestTimeout || requestTimeout || defaultRequestTimeout,
         headers: {},
