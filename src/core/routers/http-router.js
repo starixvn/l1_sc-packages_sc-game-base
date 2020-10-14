@@ -23,23 +23,24 @@ export default class HttpRouter {
 
     handleOnlineUsers(res) {
         try {
-            const users = this.mapRealUsers(Object.values(this.gameData.realPlayers));
-            const bots = Object.values(this.gameData.players)
-                .filter((player) => player.type)
-                .map((bot) => ({ name: bot.name, red: bot.red }));
+            const onlineUsers = this.collectOnlineUsers();
 
-            res.send({
-                totalRealPlayer: users.realUsers.length,
-                realUsers: users.realUsers,
-                totalUusPlayer: users.uusUsers.length,
-                uusUsers: users.uusUsers,
-                totalBots: bots.length,
-                bots: bots,
-            });
+            res.send(onlineUsers);
         } catch (error) {
             logger.logError(error);
             res.send({ error: true });
         }
+    }
+
+    collectOnlineUsers() {
+        const users = this.mapRealUsers(Object.values(this.gameData.realPlayers));
+
+        return {
+            totalRealPlayer: users.realUsers.length,
+            realUsers: users.realUsers,
+            totalUusPlayer: users.uusUsers.length,
+            uusUsers: users.uusUsers,
+        };
     }
 
     mapRealUsers(players) {

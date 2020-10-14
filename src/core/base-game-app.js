@@ -13,6 +13,7 @@ export default class BaseGameApp {
      * @param {BaseStartup} startup
      */
     constructor(appConfigs, definition, gameData, startup) {
+        this.appConfigs = appConfigs;
         this.startup = startup ?? new BaseStartup(appConfigs, definition, gameData);
     }
 
@@ -21,6 +22,6 @@ export default class BaseGameApp {
 
         await this.startup.configureServices(app);
         await this.startup.startServer(app);
-        await authenticationHelper.init(appConfigs.mainServerApiSettings);
+        await authenticationHelper.init(this.appConfigs.mainServerApiSettings);
     }
 }
