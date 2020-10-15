@@ -101,7 +101,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     getTicketsPerRound() {
-        return Math.floor(Math.random() * 3 + 2);
+        return this.chance.integer({ min: 2, max: 3 });
     }
 
     async joinRoom() {
@@ -115,8 +115,8 @@ export default class TableGameBot extends BaseBot {
     }
 
     getBotsToJoin(botUsers) {
-        const maxBotRandom = this.maxNumberOfBots / this.gameData.remainingTime;
-        const numberOfBotsToJoin = Math.floor(Math.random() * maxBotRandom + 1);
+        const maxBotRandom = Math.max(1, this.maxNumberOfBots / this.gameData.remainingTime);
+        const numberOfBotsToJoin = this.chance.integer({ min: 1, max: maxBotRandom });
         const shuffleBots = this.chance.shuffle(botUsers);
 
         return shuffleBots.slice(0, numberOfBotsToJoin);
