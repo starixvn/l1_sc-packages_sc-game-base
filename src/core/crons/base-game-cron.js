@@ -60,7 +60,7 @@ export default class BaseGameCron {
             this.gameData.remainingTime--;
         }
 
-        if (this.gameData.remainingTime === durations.placingBets) {
+        if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
             this.bot && (await this.bot.reset());
         }
@@ -72,6 +72,10 @@ export default class BaseGameCron {
             this.bot && (await this.bot.run());
             this.runningRoundInfoPublisher.publish(this.gameData);
         }
+    }
+
+    isStartingTime(remainingTime, durations) {
+        return remainingTime === durations.placingBets;
     }
 
     async checkGameStatus() {
