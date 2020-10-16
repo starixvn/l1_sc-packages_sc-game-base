@@ -13,15 +13,22 @@ export default class InGameConsumer {
     }
 
     async consume(realPlayer) {
-        const payload = await this.buildPayload(realPlayer);
+        const { remainingTime, gameConfigs: config } = this.gameData;
+        const um = config == null || !config.enabled;
+        const um_message = config == null ? "" : config.disabled_message;
+        realPlayer.socketClient.emit(this.definition.name, { remainingTime, um, um_message })
 
+        const payload = await this.buildPayload(realPlayer);
         realPlayer.socketClient.emit(this.definition.name, payload);
     }
 
     async buildPayload(realPlayer) {
         const maxNumberOfRounds = 100;
-        const { minbet, maxbet, choices_maxbet, odds, enableFreeBet, enabled, disabled_message } = this.gameData.gameConfigs;
-        const { remainingTime, totalBets } = this.gameData;
+        const { minbet, maxbet, choices_maxbet, odds, enableFreeBet } = this.gameData.gameConfigs;
+        const { totalBets } = this.gameData;
+
+
+
         const gameConfigs = { minbet, maxbet, choices_maxbet, odds, enableFreeBet };
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
         const roundHistory = await this.roundQuery.getList(maxNumberOfRounds);
@@ -31,11 +38,8 @@ export default class InGameConsumer {
         const user = await this.getUserInfo(realPlayer.UID);
 
         return {
-            um: !enabled,
-            um_message: disabled_message,
             gameConfigs,
             roundHistory,
-            remainingTime,
             ownBets,
             totalBets,
             user,

@@ -1,3 +1,5 @@
+import { logger } from "sc-common";
+
 import * as authenticationHelper from "./../helpers/authentication-helper";
 import BaseEventPublisher from "./base-event-publisher";
 
@@ -32,7 +34,12 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
         }
     }
 
-    refreshBalance(userId) {
-        return authenticationHelper.post("refreshBalance", { uid: userId });
+    async refreshBalance(userId) {
+        try {
+            return await authenticationHelper.post("refreshBalance", { uid: userId });
+        }
+        catch (ex) {
+            logger.logError(ex);
+        }
     }
 }
