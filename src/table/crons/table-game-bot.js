@@ -101,7 +101,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     getTicketsPerRound() {
-        return this.chance.integer({ min: 2, max: 3 });
+        return this.chance.integer({ min: 2, max: 5 });
     }
 
     async joinRoom() {
