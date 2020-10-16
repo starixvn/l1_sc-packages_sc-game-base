@@ -20,7 +20,7 @@ export default class InGameConsumer {
 
     async buildPayload(realPlayer) {
         const maxNumberOfRounds = 100;
-        const { minbet, maxbet, choices_maxbet, odds, enableFreeBet } = this.gameData.gameConfigs;
+        const { minbet, maxbet, choices_maxbet, odds, enableFreeBet, enabled, disabled_message } = this.gameData.gameConfigs;
         const { remainingTime, totalBets } = this.gameData;
         const gameConfigs = { minbet, maxbet, choices_maxbet, odds, enableFreeBet };
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
@@ -31,6 +31,8 @@ export default class InGameConsumer {
         const user = await this.getUserInfo(realPlayer.UID);
 
         return {
+            um: !enabled,
+            um_message: disabled_message,
             gameConfigs,
             roundHistory,
             remainingTime,
