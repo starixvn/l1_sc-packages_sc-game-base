@@ -19,7 +19,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
             enableFreeBet: gameConfigs.enableFreeBet,
         };
 
-        this.publishToAllUsers({ configs, remainingTime: gameData.remainingTime });
+        this.publishToAllUsers({ gameConfigs: configs, remainingTime: gameData.remainingTime });
         this.publishToAllAdmins({ remainingTime: gameData.remainingTime, roundId: gameData.roundId });
     }
 
