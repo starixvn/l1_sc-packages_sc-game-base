@@ -16,7 +16,7 @@ export default class InGameConsumer {
         const { remainingTime, gameConfigs: config } = this.gameData;
         const um = config == null || !config.enabled;
         const um_message = config == null ? "" : config.disabled_message;
-        realPlayer.socketClient.emit(this.definition.name, { remainingTime, um, um_message })
+        realPlayer.socketClient.emit(this.definition.name, { remainingTime, um, um_message });
 
         const payload = await this.buildPayload(realPlayer);
         realPlayer.socketClient.emit(this.definition.name, payload);
