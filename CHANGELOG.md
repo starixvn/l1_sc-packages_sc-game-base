@@ -1,3 +1,54 @@
+# [1.15.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.14.1...v1.15.0) (2020-10-21)
+
+
+### Bug Fixes
+
+* authentication-helper ([2def4cf](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2def4cf4a579c0c0cc71dbf3440a2ceb73d52773))
+* break the recursive cycle in the method of collecting online users ([1b23121](https://git3.nexdev.net/sc-packages/sc-game-base/commit/1b23121fbf99797bf1a686d6d2d5933068129219))
+* change math random to chancejs in table bot ([f69df1c](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f69df1ce983f1c52a098ab718ef67e20d225f31f))
+* correct betLogRepository in history-query ([85419a5](https://git3.nexdev.net/sc-packages/sc-game-base/commit/85419a5541eb4b31463c09723739f8d7dbed2e29))
+* correct getTicketsPerRound ([ba96a92](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ba96a92908a35fe122d6fd01f487ffe9cf68bebe))
+* correct init ingame consumer, set bot default as null in cron ([8136847](https://git3.nexdev.net/sc-packages/sc-game-base/commit/813684771d3bc4143860393ffcd5d0fb3dc2c516))
+* move adding player to in-game-consumer of table game ([5acd7e8](https://git3.nexdev.net/sc-packages/sc-game-base/commit/5acd7e8bd3f01dec9c299662d7e972819fa748ca))
+* organize parameters ([7a7bf79](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7a7bf794ee6431c88e01197c6112a09495f99099))
+* rebase code ([3b2a81f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/3b2a81f79176005fb69bb0db318f9a7c4b2ca128))
+* remove bot in definition constructor ([d2bc9bf](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d2bc9bfeb82ebec03e75458720d601558e223197))
+* remove totalbets param ([98a3466](https://git3.nexdev.net/sc-packages/sc-game-base/commit/98a34661bf2218e7d0b5f7e0b0c4a892afc50bdc))
+* return correct gameConfigs name ([3084acb](https://git3.nexdev.net/sc-packages/sc-game-base/commit/3084acb71c9432b32ad2ec87ed3bc7af28cf2133))
+* upgrade sc-base-api package ([983a52b](https://git3.nexdev.net/sc-packages/sc-game-base/commit/983a52baa3474b8bee72e276f10e1d92d0687751))
+* upgrade sc-base-database ([29632cc](https://git3.nexdev.net/sc-packages/sc-game-base/commit/29632cc362a7d11dba70b18a2c25492ca625dcb3))
+* upgrade sc-base-database package ([482302e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/482302ea112872e882630781bf097260c0b932dd))
+
+
+### Features
+
+* add currency to ingame object ([90fd467](https://git3.nexdev.net/sc-packages/sc-game-base/commit/90fd4677b775f7daf7048c09359f714df908c29d))
+* add inGame event for core ([74c6b0e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/74c6b0e67ba0406818bd28e39da85d8d1e2070aa))
+* add um info when ingame ([cc9bc76](https://git3.nexdev.net/sc-packages/sc-game-base/commit/cc9bc7645279173954267f445dd0160829f5ec57))
+* check start time in game cron ([d78cbe3](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d78cbe38633cc2adee2f3ba84e4de74ed437317c))
+* init authentication-helper globally ([ab856c2](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ab856c2800cf87bddc9cce8c4c695206fae17c0f))
+* release pakages ([d0bd9bb](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d0bd9bb778825143b9657f03e9bb09061bfbeaf7))
+* remain param ([cd90799](https://git3.nexdev.net/sc-packages/sc-game-base/commit/cd9079969202c9af3b849f4b42314fa1a0b3338c))
+* rename gameDefinition to definition ([52709e7](https://git3.nexdev.net/sc-packages/sc-game-base/commit/52709e73776aa506c6f0707e8c16b1b0e06c7f19))
+* return currency to admin ([519bb55](https://git3.nexdev.net/sc-packages/sc-game-base/commit/519bb55f70efcf451a5303ac8a511263b09f9277))
+* update base-game-startup ([b5b26f6](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b5b26f67e746a83e35d2cdba39795ff09c77d272))
+* update bot ([9502cbb](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9502cbbd94604244ce1dcd053468cca4c27306d9))
+* update core ([c5a0420](https://git3.nexdev.net/sc-packages/sc-game-base/commit/c5a04209735f9a56cfa4a436b97a469dfd67af93))
+* update in-game-consumer ([67df319](https://git3.nexdev.net/sc-packages/sc-game-base/commit/67df319700dc14533cf0fc53a23dffd7246a065b))
+* update in-game-consumer ([9dfb5be](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9dfb5bebac543bc5d0ef4ee706f1b100ff8fd3b2))
+* update ingame ([b226cda](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b226cda0e6c7a553fbf57e937a2a7dacb0c58502))
+* update latest balance to players who are disconnected socket ([2c361d5](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2c361d5585ff3c60472b84a122fcd95631ef554c))
+* update main server auth ([c10e50e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/c10e50e83ccad4ce2864ca765eb4ef5fe55906a4))
+* update place-bet-publisher ([e284884](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e284884c0ed80bb397436b22ee80a702f271728b))
+* update process-bet-queue ([274c820](https://git3.nexdev.net/sc-packages/sc-game-base/commit/274c820b4aa90f9788551ffe2654f48a3af3f2ba))
+* update process-bet-queue ([24190e5](https://git3.nexdev.net/sc-packages/sc-game-base/commit/24190e598576a3a82480b02226b1f13af30801d7))
+* update process-bet-queue ([adefcda](https://git3.nexdev.net/sc-packages/sc-game-base/commit/adefcdaf07fce3c50101cb2b6a340cc1aa726da5))
+* update round-query ([60bf225](https://git3.nexdev.net/sc-packages/sc-game-base/commit/60bf2256d769014b14c0b5e307c608937a8a09cc))
+* update startup ([dbfa887](https://git3.nexdev.net/sc-packages/sc-game-base/commit/dbfa88774e1f06e2e875395eb76a2cd79804a5e0))
+* update user-bet-result-publisher ([5815f7d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/5815f7dd5bdca6e56bd2bf3e125e6663d612048e))
+* update user-bet-result-publisher ([33f2053](https://git3.nexdev.net/sc-packages/sc-game-base/commit/33f2053aeb9906031e4d581cb9c9cb46fcdfffde))
+* update user-bet-result-publisher ([b398d5e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b398d5ecb9bc38a830e00e30d11eb99900ae33de))
+
 ## [1.14.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.14.0...v1.14.1) (2020-10-07)
 
 
