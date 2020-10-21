@@ -3,6 +3,7 @@ import express from "express";
 import BaseStartup from "./base-game-startup";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
+import * as authenticationHelper from "./helpers/authentication-helper";
 
 export default class BaseGameApp {
     /**
@@ -12,6 +13,7 @@ export default class BaseGameApp {
      * @param {BaseStartup} startup
      */
     constructor(appConfigs, definition, gameData, startup) {
+        this.appConfigs = appConfigs;
         this.startup = startup ?? new BaseStartup(appConfigs, definition, gameData);
     }
 
@@ -20,5 +22,6 @@ export default class BaseGameApp {
 
         await this.startup.configureServices(app);
         await this.startup.startServer(app);
+        await authenticationHelper.init(this.appConfigs.mainServerApiSettings);
     }
 }

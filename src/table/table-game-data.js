@@ -1,8 +1,8 @@
 import GameData from "./../core/game-data";
 
 export default class TableGameData extends GameData {
-    constructor(remainingTime, totalBets) {
-        super(remainingTime, totalBets);
+    constructor(remainingTime) {
+        super(remainingTime);
 
         this.chips = {};
         this.players = {};

@@ -6,23 +6,23 @@ import GameDefinition from "./../game-definition";
 
 export default class SettleGameRoundConsumer {
     /**
-     * @param {GameDefinition} gameDefinition
+     * @param {GameDefinition} definition
      * @param {GameData} gameData
      * @param {RoundResultPublisher} roundResultPublisher
      * @param {UserBetResultPublisher} userBetResultPublisher
      */
-    constructor(gameDefinition, gameData, roundResultPublisher = null, userBetResultPublisher = null) {
-        this.gameDefinition = gameDefinition;
+    constructor(definition, gameData, roundResultPublisher = null, userBetResultPublisher = null) {
+        this.definition = definition;
         this.gameData = gameData;
-        this.roundResultPublisher = roundResultPublisher ?? new RoundResultPublisher(gameDefinition.name, gameData);
-        this.userBetResultPublisher = userBetResultPublisher ?? new UserBetResultPublisher(gameDefinition.name, gameData);
+        this.roundResultPublisher = roundResultPublisher ?? new RoundResultPublisher(definition.name, gameData);
+        this.userBetResultPublisher = userBetResultPublisher ?? new UserBetResultPublisher(definition.name, gameData);
     }
 
     async settleRound() {
         const resultFromAdmin = this.gameData.settlementResultFromAdmin;
-        const result = this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.gameDefinition.generateResult();
-        const settlementResult = this.gameDefinition.settle(result);
-        const newRound = await this.gameDefinition.roundRepository.create({
+        const result = this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
+        const settlementResult = this.definition.settle(result);
+        const newRound = await this.definition.roundRepository.create({
             result,
             settlementResult,
             time: new Date(),
@@ -59,8 +59,9 @@ export default class SettleGameRoundConsumer {
 
                     await bet.save();
                     await this.callEndGame(bet, roundId, time, betResult);
+
                     this.captureBetResult(bet.uid, betResult);
-                    this.userBetResultPublisher.publish(bet.uid, betResult);
+                    await this.userBetResultPublisher.publish(bet.uid, betResult);
                 })
             );
         }
@@ -106,12 +107,16 @@ export default class SettleGameRoundConsumer {
     captureBetResult(uid, betResult) {}
 
     collectRoundResult(result, settlementResult, roundId) {
-        return { result, settlementResult, roundId };
+        return {
+            result,
+            settlementResult,
+            roundId,
+        };
     }
 
     async callEndGame(bet, roundId, time, betResult) {
         const gameInfo = {
-            gameId: this.gameDefinition.id,
+            gameId: this.definition.id,
             gameRoundId: roundId,
             memberId: bet.memberId,
             siteId: bet.siteId,

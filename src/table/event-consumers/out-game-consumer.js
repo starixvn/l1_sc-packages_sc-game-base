@@ -15,9 +15,8 @@ export default class OutGameConsumer extends BaseEventConsumers.UserDisconnectCo
 
     /**
      * @param {SocketIO.Socket} socketClient
-     * @param {string} reason
      */
-    consume(socketClient, reason) {
+    consume(socketClient) {
         const realPlayer = this.gameData.realPlayers[socketClient.id];
 
         if (realPlayer) {

@@ -64,12 +64,30 @@ export default class ProcessBetQueue {
     }
 
     async handleSuccessBet(player, balance, roundId, bet) {
-        const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
-        const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
-
         if (this.definition.betLogRepository) {
             await this.insertBetLog(this.definition.betLogRepository, player, roundId, bet);
         }
+
+        await this.upsertBet(player, roundId, bet);
+
+        this.adjustBetTracks(player.profile.name, bet);
+        this.adjustTotalBets(player, bet);
+        this.notifyPlacingBetResult(player, balance, bet);
+    }
+
+    handleFailedBet(player, notice) {
+        if (notice.apiError) {
+            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, apiError: notice.apiError });
+        } else if (notice.kickedOut) {
+            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, kickedOut: notice.kickedOut });
+        } else {
+            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, notice });
+        }
+    }
+
+    async upsertBet(player, roundId, bet) {
+        const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
+        const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
 
         if (existingBet) {
             existingBet[bet.betChoice] += bet.amount;
@@ -97,19 +115,6 @@ export default class ProcessBetQueue {
                 { upsert: true, setDefaultsOnInsert: true }
             );
         }
-
-        this.adjustBetTracks(player.profile.name, bet.betChoice, bet.amount);
-        this.notifyPlacingBetResult(player, balance, bet);
-    }
-
-    handleFailedBet(player, notice) {
-        if (notice.apiError) {
-            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, apiError: notice.apiError });
-        } else if (notice.kickedOut) {
-            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, kickedOut: notice.kickedOut });
-        } else {
-            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, notice });
-        }
     }
 
     async insertBetLog(betLogRepository, player, roundId, bet) {
@@ -131,14 +136,20 @@ export default class ProcessBetQueue {
         await betLogRepository.create(newBetLog);
     }
 
-    adjustBetTracks(playerName, betChoice, amount) {
-        this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount;
+    adjustBetTracks(playerName, bet) {
+        const { betChoice, amount } = bet;
 
         if (this.gameData.ingame?.[playerName]) {
             const playerInGame = this.gameData.ingame[playerName];
 
             playerInGame.betTracks[betChoice] = (playerInGame.betTracks[betChoice] ?? 0) + amount;
         }
+    }
+
+    adjustTotalBets(player, bet) {
+        const { betChoice, amount } = bet;
+
+        this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount;
     }
 
     notifyPlacingBetResult(player, balance, bet) {

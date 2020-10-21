@@ -114,6 +114,7 @@ export default class PlaceBetConsumer {
         if (!this.gameData.ingame[name]) {
             const newPlayer = {
                 name: player.profile.name,
+                currency: player.session.currency,
                 betTracks: {},
                 betQueue: [],
             };

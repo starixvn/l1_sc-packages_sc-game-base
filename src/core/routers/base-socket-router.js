@@ -1,36 +1,26 @@
 import { logger } from "sc-common";
 
-import { PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
+import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
-import GameData from "./../game-data";
-import GameDefinition from "./../game-definition";
 import { HistoryQuery, RoundQuery } from "./../query-apis";
 
 export default class BaseSocketRouter {
-    /**
-     * @param {GameDefinition} definition
-     * @param {GameData} gameData
-     * @param {UserSignInConsumer} userSignInConsumer
-     * @param {UserDisconnectConsumer} userDisconnectConsumer
-     * @param {PlaceBetConsumer} placeBetConsumer
-     * @param {UserSignInPublisher} userSignInPublisher
-     * @param {HistoryQuery} historyQuery
-     * @param {RoundQuery} roundQuery
-     */
-    constructor(
+    constructor({
         definition,
         gameData,
         userSignInConsumer,
-        userDisconnectConsumer = null,
-        placeBetConsumer = null,
-        userSignInPublisher = null,
-        historyQuery = null,
-        roundQuery = null
-    ) {
+        userDisconnectConsumer,
+        inGameConsumer,
+        placeBetConsumer,
+        userSignInPublisher,
+        historyQuery,
+        roundQuery,
+    }) {
         this.definition = definition;
         this.gameData = gameData;
         this.userSignInConsumer = userSignInConsumer ?? new UserSignInConsumer(gameData);
         this.userDisconnectConsumer = userDisconnectConsumer ?? new UserDisconnectConsumer(gameData);
+        this.inGameConsumer = inGameConsumer ?? new InGameConsumer({ definition, gameData });
         this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(definition, gameData);
         this.userSignInPublisher = userSignInPublisher ?? new UserSignInPublisher();
         this.roundQuery = roundQuery ?? new RoundQuery(definition);
@@ -44,6 +34,7 @@ export default class BaseSocketRouter {
         this.socketClient = socketClient;
         this.socketClient.on("bet", this.handlePlaceBet.bind(this));
         this.socketClient.on("signin", this.handleSignIn.bind(this));
+        this.socketClient.on("inGame", this.handleInGame.bind(this));
         this.socketClient.on("getHistory", this.handleGetHistory.bind(this));
         this.socketClient.on("disconnect", this.handleDisconnect.bind(this));
     }
@@ -63,6 +54,18 @@ export default class BaseSocketRouter {
     async handleSignIn(payload) {
         try {
             await this.userSignInConsumer.consume(this.socketClient, payload);
+        } catch (error) {
+            logger.logError(error);
+        }
+    }
+
+    handleInGame() {
+        try {
+            if (!this.verify()) {
+                return;
+            }
+
+            this.inGameConsumer.consume(this.gameData.realPlayers[this.socketClient.id]);
         } catch (error) {
             logger.logError(error);
         }

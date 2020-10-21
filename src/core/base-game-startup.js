@@ -9,9 +9,11 @@ import socketIo from "socket.io";
 
 import { BaseGameCron } from "./crons";
 import * as Bot from "./crons/bot";
+import BaseBot from "./crons/bot/base-bot";
 import ProcessBetQueue from "./crons/process-bet-queue";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
+import { BaseAdminSocketRouter, BaseSocketRouter, HttpRouter } from "./routers";
 
 export default class BaseGameStartup {
     /**
@@ -20,29 +22,42 @@ export default class BaseGameStartup {
      * @param {GameData} gameData
      * @param {BaseGameCron} gameCron
      * @param {ProcessBetQueue} processBetQueue
+     * @param {BaseBot} bot
      */
-    constructor(appConfigs, definition, gameData, gameCron, processBetQueue) {
+    constructor(appConfigs, definition, gameData, gameCron, processBetQueue, bot = null) {
         this.appConfigs = appConfigs;
         this.definition = definition;
         this.gameData = gameData;
-        this.gameCron = gameCron ?? new BaseGameCron(definition, gameData);
+        this.gameCron = gameCron ?? new BaseGameCron(definition, gameData, bot);
         this.processBetQueue = processBetQueue ?? new ProcessBetQueue(definition, gameData);
+    }
+
+    /**
+     * @param {socketIo.Socket} socketClient
+     */
+    initSocketRouter(socketClient) {
+        const router = new BaseSocketRouter(this.definition, this.gameData);
+
+        router.init(socketClient);
+    }
+
+    /**
+     * @param {socketIo.Socket} socketClient
+     */
+    initAdminSocketRouter(socketClient) {
+        const router = new BaseAdminSocketRouter();
+
+        router.init(this.definition, this.gameData, socketClient, this.appConfigs.adminSecretKey);
     }
 
     /**
      * @param {express.Express} app
      */
-    initHttpRouter(app) {}
+    initHttpRouter(app) {
+        const router = new HttpRouter(this.gameData);
 
-    /**
-     * @param {socketIo.Socket} socketClient
-     */
-    initSocketRouter(socketClient) {}
-
-    /**
-     * @param {socketIo.Socket} socketClient
-     */
-    initAdminSocketRouter(socketClient) {}
+        router.init(app, this.appConfigs);
+    }
 
     /**
      * @param {express.Express} app
@@ -59,6 +74,7 @@ export default class BaseGameStartup {
 
         await initBaseDatabase(this.appConfigs.database);
         await Bot.resetInRoom(this.definition.configName);
+
         initApis(this.appConfigs.apiSettings);
     }
 
@@ -69,7 +85,6 @@ export default class BaseGameStartup {
         const httpServer = http.createServer(app);
         const { hostingPort, socketOptions } = this.appConfigs;
         const gameNameInSocketNamespace = this.definition.name.toLowerCase();
-
         const socketServer = socketIo(httpServer, socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 });
 
         app.set("port", process.env.PORT || hostingPort);
@@ -90,6 +105,7 @@ export default class BaseGameStartup {
         socketServer.origins((origin, callback) => {
             if (!this.appConfigs.enableCorsWs) {
                 callback(null, true);
+
                 return;
             }
 

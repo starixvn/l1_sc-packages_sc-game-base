@@ -1,7 +1,14 @@
+import { logger } from "sc-common";
+
+import * as authenticationHelper from "./../helpers/authentication-helper";
 import BaseEventPublisher from "./base-event-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
-    publish(userId, betResult) {
+    constructor(gameName, gameData) {
+        super(gameName, gameData);
+    }
+
+    async publish(userId, betResult) {
         const status = { winningByChoices: betResult.winningByChoices };
 
         if (betResult.totalWin > 0) {
@@ -12,7 +19,27 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
             status.bet = betResult.totalLost;
         }
 
-        this.publishToUser(userId, { status });
-        // TODO: Send latest balance to players who are not in the room anymore.
+        await this.publishToUser(userId, { status });
+    }
+
+    async publishToUser(userId, payload, path = this.gameName) {
+        const realPlayer = Object.values(this.gameData.realPlayers).find(
+            (player) => player.UID === userId && player.socketClient && player.socketClient.connected
+        );
+
+        if (realPlayer && realPlayer.socketClient) {
+            realPlayer.socketClient.emit(path, payload);
+        } else {
+            await this.refreshBalance(userId);
+        }
+    }
+
+    async refreshBalance(userId) {
+        try {
+            return await authenticationHelper.post("refreshBalance", { uid: userId });
+        }
+        catch (ex) {
+            logger.logError(ex);
+        }
     }
 }
