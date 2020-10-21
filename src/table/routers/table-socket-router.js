@@ -18,7 +18,9 @@ export default class TableSocketRouter extends BaseSocketRouter {
             gameData,
             userSignInConsumer: userSignInConsumer ?? new UserSignInConsumer(definition, gameData),
             userDisconnectConsumer: userDisconnectConsumer ?? new OutGameConsumer(definition, gameData),
-            inGameConsumer: inGameConsumer ?? new InGameConsumer(definition, gameData, roundQuery),
+            inGameConsumer:
+                inGameConsumer ??
+                new InGameConsumer({ definition: definition, gameData: gameData, roundQuery: roundQuery, publisher: null }),
             placeBetConsumer,
             userSignInPublisher,
             historyQuery,
