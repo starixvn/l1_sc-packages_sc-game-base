@@ -1,3 +1,10 @@
+## [1.15.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.0...v1.15.1) (2020-10-22)
+
+
+### Bug Fixes
+
+* fix SonarQube codesmells ([1a2bba3](https://git3.nexdev.net/sc-packages/sc-game-base/commit/1a2bba3400a85e7230df1982b128397299f0967f))
+
 # [1.15.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.14.1...v1.15.0) (2020-10-21)
 
 
