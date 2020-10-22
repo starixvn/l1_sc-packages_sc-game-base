@@ -36,10 +36,9 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
 
     async refreshBalance(userId) {
         try {
-            return await authenticationHelper.post("refreshBalance", { uid: userId });
-        }
-        catch (ex) {
-            logger.logError(ex);
+            await authenticationHelper.post("refreshBalance", { uid: userId });
+        } catch (error) {
+            logger.logError(error);
         }
     }
 }

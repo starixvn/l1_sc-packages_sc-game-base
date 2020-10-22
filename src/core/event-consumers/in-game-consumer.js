@@ -13,12 +13,14 @@ export default class InGameConsumer {
     }
 
     async consume(realPlayer) {
-        const { remainingTime, gameConfigs: config } = this.gameData;
-        const um = config == null || !config.enabled;
-        const um_message = config == null ? "" : config.disabled_message;
-        realPlayer.socketClient.emit(this.definition.name, { remainingTime, um, um_message });
+        const { remainingTime, gameConfigs } = this.gameData;
+        const disabled = !gameConfigs || !gameConfigs.enabled;
+        const disabledMessage = gameConfigs?.disabled_message ?? "";
+
+        realPlayer.socketClient.emit(this.definition.name, { remainingTime, um: disabled, um_message: disabledMessage });
 
         const payload = await this.buildPayload(realPlayer);
+
         realPlayer.socketClient.emit(this.definition.name, payload);
     }
 
