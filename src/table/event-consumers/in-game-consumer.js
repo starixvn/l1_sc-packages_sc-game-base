@@ -21,13 +21,14 @@ export default class InGameConsumer extends BaseEventConsumers.InGameConsumer {
 
     async buildPayload(realPlayer) {
         const payload = await super.buildPayload(realPlayer);
-        const { chips } = this.gameData;
+        const { remainingTime, chips } = this.gameData;
         const players = { ...this.gameData.players };
 
         delete players[realPlayer.UID];
 
         return {
             ...payload,
+            remainingTime,
             players,
             chips,
         };
