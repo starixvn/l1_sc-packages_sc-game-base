@@ -1,3 +1,10 @@
+## [1.15.2](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.1...v1.15.2) (2020-10-22)
+
+
+### Bug Fixes
+
+* sending remainingTime when joining table game round ([a39c044](https://git3.nexdev.net/sc-packages/sc-game-base/commit/a39c044a49eeb460de2f351ed981dea81506da32))
+
 ## [1.15.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.0...v1.15.1) (2020-10-22)
 
 
