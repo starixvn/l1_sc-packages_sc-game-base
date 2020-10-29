@@ -27,8 +27,8 @@ export default class TableGameBot extends BaseBot {
         this.botsInRoom = {};
     }
 
-    async processDisabledBots(bots) {
-        const disabledBots = bots.filter((bot) => bot.disabled);
+    async processDisabledBots() {
+        const disabledBots = await userInfos.find({ type: true, banned: false, disabled: true }).lean().exec();
 
         await Promise.all(
             disabledBots.map(async (bot) => {
@@ -36,6 +36,17 @@ export default class TableGameBot extends BaseBot {
                     await this.removeBot(bot.id);
                     delete this.botsInRoom[bot.id];
                 }
+            })
+        );
+    }
+
+    async removeBotsIfRatioChanged(totalRemoved) {
+        const removedIds = this.chance.pickset(Object.keys(this.botsInRoom), totalRemoved);
+
+        await Promise.all(
+            removedIds.map(async (id) => {
+                await this.removeBot(id);
+                delete this.botsInRoom[id];
             })
         );
     }
@@ -193,7 +204,7 @@ export default class TableGameBot extends BaseBot {
             const currentBet = await this.definition.tempBetRepository.findOne({ uid: bot.id, phien: this.gameData.roundId }).lean().exec();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
-            if (totalBetAmount + amount <= maxBet) {
+            if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
                 const user = await userInfos.findOne({ id: bot.id }, "red").exec();
 
                 if (user && user.red > amount) {
