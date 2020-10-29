@@ -41,8 +41,7 @@ export default class BaseBot {
                 const bots = await userInfos.find({ type: true }).lean().exec();
                 this.maxNumberOfBots = Math.floor(bots.length * this.currentBotRatio);
 
-                const disabledBots = bots.filter((bot) => bot.disabled);
-                disabledBots.forEach((bot) => this.removeBot(bot.id));
+                await this.processDisabledBots();
             }
         } else {
             await this.removeAllBots();
@@ -56,6 +55,8 @@ export default class BaseBot {
     async removeAllBots() {}
 
     async removeBot(botId) {}
+
+    async processDisabledBots(bots) {}
 
     resetAllBotData() {
         this.totalTickets = 0;

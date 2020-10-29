@@ -27,6 +27,19 @@ export default class TableGameBot extends BaseBot {
         this.botsInRoom = {};
     }
 
+    async processDisabledBots(bots) {
+        const disabledBots = bots.filter((bot) => bot.disabled);
+
+        await Promise.all(
+            disabledBots.map(async (bot) => {
+                if (this.botsInRoom[bot.id]) {
+                    await this.removeBot(bot.id);
+                    delete this.botsInRoom[bot.id];
+                }
+            })
+        );
+    }
+
     resetAllBotData() {
         super.resetAllBotData();
         this.removeBotAtTheTable = false;
@@ -115,7 +128,11 @@ export default class TableGameBot extends BaseBot {
     }
 
     getBotsToJoin(botUsers) {
-        const maxBotRandom = Math.max(1, this.maxNumberOfBots / this.gameData.remainingTime);
+        const remaining = this.maxNumberOfBots - Object.keys(this.botsInRoom).length;
+        const maxBotRandom =
+            remaining > 0
+                ? Math.min(Math.max(1, this.maxNumberOfBots / this.gameData.remainingTime), remaining)
+                : Math.max(1, this.maxNumberOfBots / this.gameData.remainingTime);
         const numberOfBotsToJoin = this.chance.integer({ min: 1, max: maxBotRandom });
         const shuffleBots = this.chance.shuffle(botUsers);
 
