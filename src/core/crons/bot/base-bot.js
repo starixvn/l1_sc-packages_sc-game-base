@@ -39,12 +39,6 @@ export default class BaseBot {
                 this.currentBotRatio = botRatio;
 
                 const totalBots = await userInfos.countDocuments({ type: true, banned: false }).exec();
-                const needToRemove = this.maxNumberOfBots - totalBots * this.currentBotRatio;
-
-                if (needToRemove > 0) {
-                    await this.removeBotsIfRatioChanged(needToRemove);
-                }
-
                 this.maxNumberOfBots = Math.floor(totalBots * this.currentBotRatio);
             }
 
@@ -58,13 +52,11 @@ export default class BaseBot {
 
     async run() {}
 
-    async removeBotsIfRatioChanged(totalRemoved) {}
-
     async removeAllBots() {}
 
     async removeBot(botId) {}
 
-    async processDisabledBots(bots) {}
+    async processDisabledBots() {}
 
     resetAllBotData() {
         this.totalTickets = 0;
