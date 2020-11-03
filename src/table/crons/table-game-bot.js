@@ -260,7 +260,7 @@ export default class TableGameBot extends BaseBot {
 
         await this.definition.tempBetRepository.updateOne(
             { uid: bot.id, phien: this.gameData.roundId },
-            { $inc: update, $setOnInsert: create },
+            { $set: update, $setOnInsert: create },
             { upsert: true, setDefaultsOnInsert: true }
         );
     }
