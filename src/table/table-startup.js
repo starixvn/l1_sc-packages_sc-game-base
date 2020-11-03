@@ -28,7 +28,7 @@ export default class TableStartup extends BaseStartup {
      * @param {socketIo.Socket} socketClient
      */
     initSocketRouter(socketClient) {
-        const router = new SocketRouter(this.definition, this.gameData);
+        const router = new SocketRouter({ definition: this.definition, gameData: this.gameData });
 
         router.init(socketClient);
     }
