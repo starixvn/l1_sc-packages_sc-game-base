@@ -1,3 +1,16 @@
+## [1.15.3](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.2...v1.15.3) (2020-11-04)
+
+
+### Bug Fixes
+
+* incorrect async/await call of inGameConsumer in base-socket-router ([d29ffcf](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d29ffcf29a75c729242a5097e4a5ffc28e047e7f))
+* initSocketRouter ([f608a1f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f608a1f12f754451f61168fc309e85fc6ed48ddb))
+* move process disabled bots to table game, limit number of bots to add if reach limit ([6b84a80](https://git3.nexdev.net/sc-packages/sc-game-base/commit/6b84a80a017fcf07c06c9a1624902772b4923205))
+* remove code test bot ([a4e4ae9](https://git3.nexdev.net/sc-packages/sc-game-base/commit/a4e4ae969f0a3ecdade4b3b23cc3c98ec8e45473))
+* update disabled bots, remove bots immediately if ratio changed ([46fa8a1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/46fa8a10b296b4cb5b3469e5d7cf92e3738259a4))
+* update existing bet amount of bot instead of increasement ([0d5d0af](https://git3.nexdev.net/sc-packages/sc-game-base/commit/0d5d0af2d54b148df6d6f399ae42052c7b07ec95))
+* upgrade remove bot if ratio changed ([0f3548c](https://git3.nexdev.net/sc-packages/sc-game-base/commit/0f3548c361fc39ff94d261efafc83d9afb9f28f1))
+
 ## [1.15.2](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.1...v1.15.2) (2020-10-22)
 
 
