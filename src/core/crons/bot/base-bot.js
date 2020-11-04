@@ -38,12 +38,11 @@ export default class BaseBot {
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
 
-                const bots = await userInfos.find({ type: true }).lean().exec();
-                this.maxNumberOfBots = Math.floor(bots.length * this.currentBotRatio);
-
-                const disabledBots = bots.filter((bot) => bot.disabled);
-                disabledBots.forEach((bot) => this.removeBot(bot.id));
+                const totalBots = await userInfos.countDocuments({ type: true, banned: false }).exec();
+                this.maxNumberOfBots = Math.floor(totalBots * this.currentBotRatio);
             }
+
+            await this.processDisabledBots();
         } else {
             await this.removeAllBots();
         }
@@ -56,6 +55,8 @@ export default class BaseBot {
     async removeAllBots() {}
 
     async removeBot(botId) {}
+
+    async processDisabledBots() {}
 
     resetAllBotData() {
         this.totalTickets = 0;

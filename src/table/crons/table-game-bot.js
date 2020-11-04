@@ -27,6 +27,30 @@ export default class TableGameBot extends BaseBot {
         this.botsInRoom = {};
     }
 
+    async processDisabledBots() {
+        const disabledBots = await userInfos.find({ type: true, banned: false, disabled: true }).lean().exec();
+
+        await Promise.all(
+            disabledBots.map(async (bot) => {
+                if (this.botsInRoom[bot.id]) {
+                    await this.removeBot(bot.id);
+                    delete this.botsInRoom[bot.id];
+                }
+            })
+        );
+    }
+
+    async removeBotsIfRatioChanged(totalRemoved) {
+        const removedIds = this.chance.pickset(Object.keys(this.botsInRoom), totalRemoved);
+
+        await Promise.all(
+            removedIds.map(async (id) => {
+                await this.removeBot(id);
+                delete this.botsInRoom[id];
+            })
+        );
+    }
+
     resetAllBotData() {
         super.resetAllBotData();
         this.removeBotAtTheTable = false;
@@ -115,7 +139,11 @@ export default class TableGameBot extends BaseBot {
     }
 
     getBotsToJoin(botUsers) {
-        const maxBotRandom = Math.max(1, this.maxNumberOfBots / this.gameData.remainingTime);
+        const remaining = this.maxNumberOfBots - Object.keys(this.botsInRoom).length;
+        const maxBotRandom =
+            remaining > 0
+                ? Math.min(Math.max(1, this.maxNumberOfBots / this.gameData.remainingTime), remaining)
+                : Math.max(1, this.maxNumberOfBots / this.gameData.remainingTime);
         const numberOfBotsToJoin = this.chance.integer({ min: 1, max: maxBotRandom });
         const shuffleBots = this.chance.shuffle(botUsers);
 
@@ -176,7 +204,7 @@ export default class TableGameBot extends BaseBot {
             const currentBet = await this.definition.tempBetRepository.findOne({ uid: bot.id, phien: this.gameData.roundId }).lean().exec();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
-            if (totalBetAmount + amount <= maxBet) {
+            if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
                 const user = await userInfos.findOne({ id: bot.id }, "red").exec();
 
                 if (user && user.red > amount) {
@@ -232,7 +260,7 @@ export default class TableGameBot extends BaseBot {
 
         await this.definition.tempBetRepository.updateOne(
             { uid: bot.id, phien: this.gameData.roundId },
-            { $inc: update, $setOnInsert: create },
+            { $set: update, $setOnInsert: create },
             { upsert: true, setDefaultsOnInsert: true }
         );
     }

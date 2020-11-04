@@ -36,7 +36,7 @@ export default class BaseGameStartup {
      * @param {socketIo.Socket} socketClient
      */
     initSocketRouter(socketClient) {
-        const router = new BaseSocketRouter(this.definition, this.gameData);
+        const router = new BaseSocketRouter({ definition: this.definition, gameData: this.gameData });
 
         router.init(socketClient);
     }

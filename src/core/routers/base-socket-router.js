@@ -59,13 +59,13 @@ export default class BaseSocketRouter {
         }
     }
 
-    handleInGame() {
+    async handleInGame() {
         try {
             if (!this.verify()) {
                 return;
             }
 
-            this.inGameConsumer.consume(this.gameData.realPlayers[this.socketClient.id]);
+            await this.inGameConsumer.consume(this.gameData.realPlayers[this.socketClient.id]);
         } catch (error) {
             logger.logError(error);
         }
