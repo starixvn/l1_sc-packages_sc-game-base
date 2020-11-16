@@ -1,3 +1,10 @@
+## [1.15.4](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.3...v1.15.4) (2020-11-16)
+
+
+### Bug Fixes
+
+* update default value for disabled gameData ([37d12d3](https://git3.nexdev.net/sc-packages/sc-game-base/commit/37d12d3214f2e401e05e74f2b4fe4f3d8c5211c7))
+
 ## [1.15.3](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.2...v1.15.3) (2020-11-04)
 
 
