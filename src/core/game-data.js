@@ -4,7 +4,7 @@ export default class GameData {
         this.totalBets = {};
         this.roundId = 1;
         this.delayStartTime = 0;
-        this.disabled = false;
+        this.disabled = true;
         this.gameConfigs = {};
         this.realPlayers = {};
         this.ingame = {};
