@@ -102,6 +102,7 @@ export default class PlaceBetConsumer {
         Object.assign(payload, {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
+            freeSpin: payload.freeSpin ?? false,
         });
 
         const { amount, betChoice, freeBet } = payload;

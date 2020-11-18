@@ -50,6 +50,7 @@ export default class ProcessBetQueue {
             gameRoundId: this.gameData.roundId,
             choiceId: this.definition.choicesMapper[payload.betChoice],
             freeBet: payload.freeBet,
+            freeSpin: payload.freeSpin,
         };
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
