@@ -1,3 +1,10 @@
+## [1.15.5](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.4...v1.15.5) (2020-11-20)
+
+
+### Bug Fixes
+
+* export table crons ([bb61897](https://git3.nexdev.net/sc-packages/sc-game-base/commit/bb61897cef57420192603a41d833b536cbd99daf))
+
 ## [1.15.4](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.3...v1.15.4) (2020-11-16)
 
 
