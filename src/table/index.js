@@ -1,3 +1,4 @@
+import * as Crons from "./crons";
 import TableGameBot from "./crons/table-game-bot";
 import TableGameCron from "./crons/table-game-cron";
 import * as EventConsumers from "./event-consumers";
@@ -15,6 +16,7 @@ export {
     TableGameStartup,
     TableGameCron,
     Routers,
+    Crons,
     EventConsumers,
     EventPublishers,
     TableGameBot,
