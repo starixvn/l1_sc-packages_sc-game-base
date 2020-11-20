@@ -20,7 +20,9 @@ export default class SettleGameRoundConsumer {
 
     async settleRound() {
         const resultFromAdmin = this.gameData.settlementResultFromAdmin;
-        const result = this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
+        const generatedResult = this.definition.generateResult();
+
+        const result = this.gameData.roundId === resultFromAdmin.roundId ? { ...generatedResult, ...resultFromAdmin.result } : generatedResult;
         const settlementResult = this.definition.settle(result);
         const newRound = await this.definition.roundRepository.create({
             result,

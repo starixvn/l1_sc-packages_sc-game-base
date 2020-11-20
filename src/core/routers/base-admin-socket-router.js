@@ -40,6 +40,14 @@ export default class BaseAdminSocketRouter {
             if (payload[this.definition.name] && payload[this.definition.name].get_new) {
                 await this.adminMonitorConsumer.consume(this.socketClient, this.definition, this.gameData);
             }
+
+            if (payload[this.definition.name] && payload[this.definition.name].set_result) {
+                const { set_result } = payload[this.definition.name];
+                this.gameData.settlementResultFromAdmin = {
+                    roundId: set_result.roundId,
+                    result: { ...this.gameData.settlementResultFromAdmin?.result, ...set_result.result },
+                };
+            }
         } catch (err) {
             logger.logError(err);
         }
