@@ -116,5 +116,6 @@ export default class BaseGameCron {
     resetForNewRound() {
         this.gameData.ingame = {};
         this.gameData.totalBets = {};
+        this.gameData.settlementResultFromAdmin = {};
     }
 }
