@@ -37,11 +37,11 @@ export default class BaseAdminSocketRouter {
                 this.adminAuthenticationConsumer.consume(this.socketClient, this.gameData, payload.authentication.jwt, this.adminSecretKey);
             }
 
-            if (payload[this.definition.name] && payload[this.definition.name].get_new) {
+            if (payload[this.definition.name] && payload[this.definition.name].get_new && this.verify()) {
                 await this.adminMonitorConsumer.consume(this.socketClient, this.definition, this.gameData);
             }
 
-            if (payload[this.definition.name] && payload[this.definition.name].set_result) {
+            if (payload[this.definition.name] && payload[this.definition.name].set_result && this.verify()) {
                 const { set_result } = payload[this.definition.name];
                 this.gameData.settlementResultFromAdmin = {
                     roundId: set_result.roundId,
@@ -59,5 +59,20 @@ export default class BaseAdminSocketRouter {
         } catch (err) {
             logger.logError(err);
         }
+    }
+
+    verify() {
+        if (this.gameData.admins[this.socketClient.id]) {
+            return true;
+        }
+
+        this.socketClient.emit("message", { unauth: { message: "Unauthorized!" } });
+        this.socketClient.disconnect(true);
+
+        logger.setTag({ id: "socket-io-id", value: this.socketClient.id });
+        logger.logError("Admin not found in server storage");
+        logger.setTag({ id: "socket-io-id", value: "" });
+
+        return false;
     }
 }
