@@ -45,7 +45,7 @@ export default class BaseAdminSocketRouter {
                 const { set_result } = payload[this.definition.name];
                 this.gameData.settlementResultFromAdmin = {
                     roundId: set_result.roundId,
-                    result: { ...this.gameData.settlementResultFromAdmin?.result, ...set_result.result },
+                    result: set_result.result,
                 };
             }
         } catch (err) {
