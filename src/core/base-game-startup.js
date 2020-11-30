@@ -117,7 +117,7 @@ export default class BaseGameStartup {
         });
 
         httpServer.listen(app.get("port"), async () => {
-            console.log("Express server started and running!");
+            console.log(`Express server started and running on port ${hostingPort}!`);
             await this.start();
         });
 
