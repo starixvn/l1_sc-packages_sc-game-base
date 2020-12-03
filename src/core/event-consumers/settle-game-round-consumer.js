@@ -47,7 +47,9 @@ export default class SettleGameRoundConsumer {
         return this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
     }
 
-    async queryBets(roundId) {}
+    queryBets(roundId) {
+        return this.definition.betRepository.find({ phien: roundId }).exec();
+    }
 
     async settleBets({ result, settlementResult, roundId, time }) {
         const bets = await this.queryBets(roundId);
