@@ -1,6 +1,6 @@
 export default class GameDefinition {
     constructor(
-        { id = 0, name = "", durations = {}, choices = [], choicesMapper = {} },
+        { id = 0, name = "", durations = {}, choices = [], choicesMapper = {}, numberOfRoundHistory = 100 },
         generateResult,
         settle,
         roundRepository,
@@ -13,6 +13,7 @@ export default class GameDefinition {
         this.durations = durations;
         this.choices = choices;
         this.choicesMapper = choicesMapper;
+        this.numberOfRoundHistory = numberOfRoundHistory;
         this.generateResult = generateResult;
         this.settle = settle;
         this.roundRepository = roundRepository;

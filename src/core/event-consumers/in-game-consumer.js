@@ -25,12 +25,11 @@ export default class InGameConsumer {
     }
 
     async buildPayload(realPlayer) {
-        const maxNumberOfRounds = 100;
         const { minbet, maxbet, choices_maxbet, odds, enableFreeBet } = this.gameData.gameConfigs;
         const { totalBets } = this.gameData;
         const gameConfigs = { minbet, maxbet, choices_maxbet, odds, enableFreeBet };
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
-        const roundHistory = await this.roundQuery.getList(maxNumberOfRounds);
+        const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
 
         await getBalance(realPlayer, true);
 
