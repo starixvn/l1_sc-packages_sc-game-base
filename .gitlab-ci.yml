@@ -3,9 +3,9 @@ stages:
     - publish
 
 include:
-    - project: "lumi-ops/ci-scripts"
+    - project: "ci/common-ci"
       ref: master
       file: "sonarqube/sonarqube.gitlab-ci.yml"
-    - project: "lumi-ops/ci-scripts"
+    - project: "ci/common-ci"
       ref: master
       file: "npm/publish-npm.gitlab-ci.yml"
