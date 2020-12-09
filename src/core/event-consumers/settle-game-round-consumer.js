@@ -19,8 +19,7 @@ export default class SettleGameRoundConsumer {
     }
 
     async settleRound() {
-        const resultFromAdmin = this.gameData.settlementResultFromAdmin;
-        const result = this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
+        const result = this.generateResult();
         const settlementResult = this.definition.settle(result);
         const newRound = await this.definition.roundRepository.create({
             result,
@@ -42,7 +41,15 @@ export default class SettleGameRoundConsumer {
         }
     }
 
-    async queryBets(roundId) {}
+    generateResult() {
+        const resultFromAdmin = this.gameData.settlementResultFromAdmin;
+
+        return this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
+    }
+
+    queryBets(roundId) {
+        return this.definition.betRepository.find({ phien: roundId }).exec();
+    }
 
     async settleBets({ result, settlementResult, roundId, time }) {
         const bets = await this.queryBets(roundId);
@@ -72,7 +79,7 @@ export default class SettleGameRoundConsumer {
     calculateBetResult(settlementResult, bet, odds) {
         const betResult = Object.entries(settlementResult).reduce(
             (result, [choice, win]) => {
-                const betAmount = bet[choice];
+                const betAmount = bet[choice] ?? 0;
                 const originalOdds = odds[choice] || 1;
                 const effectiveOdds = bet.freeBet ? originalOdds - 1 : originalOdds;
                 const winAmount = win ? betAmount * effectiveOdds : 0;

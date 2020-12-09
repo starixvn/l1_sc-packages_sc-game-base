@@ -86,35 +86,31 @@ export default class ProcessBetQueue {
     }
 
     async upsertBet(player, roundId, bet) {
+        const configs = this.gameData.gameConfigs;
+        const newBet = {
+            uid: player.UID,
+            name: player.profile.name,
+            phien: roundId,
+            time: new Date(),
+            odds: configs.odds,
+            freeBet: bet.freeBet,
+        };
         const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
-        const existingBet = await this.definition.betRepository.findOne(existingBetFilter).exec();
+        const existingBetIncrement = {
+            [bet.betChoice]: bet.amount,
+            totalAmount: bet.amount,
+        };
 
-        if (existingBet) {
-            existingBet[bet.betChoice] += bet.amount;
-            await existingBet.save();
-        } else {
-            const configs = this.gameData.gameConfigs;
-            const newBet = {
-                uid: player.UID,
-                name: player.profile.name,
-                phien: roundId,
-                time: new Date(),
-                odds: configs.odds,
-                freeBet: bet.freeBet,
-            };
-            const existingBetIncrement = { [bet.betChoice]: bet.amount };
-
-            if (player.session) {
-                newBet.memberId = player.session.memberId;
-                newBet.siteId = player.session.siteId;
-            }
-
-            await this.definition.betRepository.updateOne(
-                existingBetFilter,
-                { $inc: existingBetIncrement, $setOnInsert: newBet },
-                { upsert: true, setDefaultsOnInsert: true }
-            );
+        if (player.session) {
+            newBet.memberId = player.session.memberId;
+            newBet.siteId = player.session.siteId;
         }
+
+        await this.definition.betRepository.updateOne(
+            existingBetFilter,
+            { $inc: existingBetIncrement, $setOnInsert: newBet },
+            { upsert: true, setDefaultsOnInsert: true }
+        );
     }
 
     async insertBetLog(betLogRepository, player, roundId, bet) {
