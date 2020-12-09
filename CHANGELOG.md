@@ -1,3 +1,23 @@
+# [1.16.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.5...v1.16.0) (2020-12-09)
+
+
+### Bug Fixes
+
+* correct check betAmount in calculate result ([429781e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/429781e3fdc1a4fd17147c98a3b28861a50836ac))
+* provide default implementation of settle-game-round-consumer's queryBets ([0170086](https://git3.nexdev.net/sc-packages/sc-game-base/commit/0170086a99904ae3373ddef8909196cfaba3c2b2))
+* reduce connection to DB when placing bets, add one more required field named 'totalAmount' ([9f91f20](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9f91f20180295c20df1c241b4dedd22b5d2dd65d))
+* set betAmount 0 if undefined, correct result for round query one ([9b3a6e2](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9b3a6e22263b29f105fb919a2de107438fd6dcba))
+* verify socket when connect from admin ([f05cdac](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f05cdac38b039af643058d294432275eacb0f93e))
+
+
+### Features
+
+* add hosting port when log start ([20911cd](https://git3.nexdev.net/sc-packages/sc-game-base/commit/20911cd6ad63086199bd4f4f36d5f97010b4b9e0))
+* add set_result from monitoring page ([0c8b4f1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/0c8b4f1169a5d7efb4881f4e006f2c7a96350e50))
+* make number of round history when in game configurable ([38fe66f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/38fe66fce77c3c504df4dbe00cefb4c88f29260e))
+* reset settlementResultFromAdmin when reset new round ([07f00bf](https://git3.nexdev.net/sc-packages/sc-game-base/commit/07f00bf791f5d1ed414075bd7e1d542b7e466df9))
+* set result from monitoring page ([7bec312](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7bec312ff3de120dc80aada1c61f87839b6f442d))
+
 ## [1.15.5](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.4...v1.15.5) (2020-11-20)
 
 
