@@ -1,3 +1,4 @@
+import Chance from "chance";
 import { userInfos } from "sc-base-database";
 import { helpers } from "sc-common";
 
@@ -16,17 +17,15 @@ export default class BaseBot {
         this.gameData = gameData;
         this.publisher = publisher ?? new BasePublisher(this.definition.name, gameData);
 
+        this.bots = [];
         this.currentBotRatio = 0;
         this.maxNumberOfBots = 0;
+
         this.totalTickets = 0;
+        this.totalSmallTickets = 0;
         this.totalBets = {};
-        this.resetBotData = {
-            totalBet: 0,
-            choices: {},
-            red: 0,
-            remainTickets: 0,
-            betOnChoices: {},
-        };
+
+        this.chance = new Chance();
     }
 
     async reset() {
@@ -50,9 +49,36 @@ export default class BaseBot {
         this.resetAllBotData();
     }
 
-    async run() {}
+    async run() {
+        if (
+            this.bots.length &&
+            this.gameData.gameConfigs?.botenabled &&
+            this.gameData.remainingTime > this.definition.durations.lockingBet
+        ) {
+            const maxBotRandom = this.bots.length / this.gameData.remainingTime;
+            const botsToBet = this.chance.integer({ min: (maxBotRandom * 2) / 3, max: maxBotRandom });
+            const indicesOfBotsToBeRemoved = [];
 
-    async removeAllBots() {}
+            for (let botIndex = 0; botIndex < botsToBet; botIndex++) {
+                const bot = this.bots[botIndex];
+
+                if (bot) {
+                    await this.placeBet(bot);
+                    indicesOfBotsToBeRemoved.push(botIndex);
+                }
+            }
+
+            indicesOfBotsToBeRemoved.forEach((index) => {
+                this.bots.splice(index, 1);
+            });
+        }
+    }
+
+    async removeAllBots() {
+        this.bots = [];
+        this.currentBotRatio = 0;
+        this.maxNumberOfBots = 0;
+    }
 
     async removeBot(botId) {}
 
