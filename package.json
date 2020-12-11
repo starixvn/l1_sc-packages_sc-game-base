@@ -32,8 +32,8 @@
         "morgan": "^1.10.0",
         "openid-client": "^4.2.0",
         "sc-base-apis": "^1.8.0-beta.2",
-        "sc-base-database": "^1.4.0",
-        "sc-common": "^1.5.0",
+        "sc-base-database": "^1.5.0-beta.1",
+        "sc-common": "^1.6.0-beta.0",
         "socket.io": "^2.3.0"
     },
     "devDependencies": {
