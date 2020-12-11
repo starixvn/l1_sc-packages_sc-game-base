@@ -35,7 +35,7 @@ export default class BaseGameCron {
 
     async start() {
         const lastRound = await this.definition.roundRepository
-            .findOne({}, "id", { sort: { _id: -1 } })
+            .findOne({}, "id", { sort: { id: -1 } })
             .lean()
             .exec();
         const job = new cron.CronJob(
