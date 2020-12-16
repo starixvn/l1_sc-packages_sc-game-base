@@ -1,3 +1,6 @@
+import express from "express";
+import socketIo from "socket.io";
+
 import { BaseStartup } from "./../core";
 import { TableGameCron, TableProcessBetQueue } from "./crons";
 import TableGameBot from "./crons/table-game-bot";
