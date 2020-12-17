@@ -128,8 +128,9 @@ export default class BaseGameStartup {
     async start() {
         try {
             this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.definition.configName }).lean().exec();
+
+            await this.gameCron.start();
             this.processBetQueue.start();
-            this.gameCron.start();
         } catch (error) {
             logger.logError(error);
         }
