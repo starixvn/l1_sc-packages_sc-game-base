@@ -112,17 +112,14 @@ export default class PlaceBetConsumer {
             return;
         }
 
-        if (!this.gameData.ingame[name]) {
-            const newPlayer = {
-                name: player.profile.name,
-                currency: player.session.currency,
-                betTracks: {},
-                betQueue: [],
-            };
+        const newPlayer = {
+            name: player.profile.name,
+            currency: player.session.currency,
+            betTracks: {},
+            betQueue: [],
+        };
 
-            this.gameData.ingame[name] = newPlayer;
-        }
-
+        this.gameData.ingame[name] = Object.assign(this.gameData.ingame[name] ?? {}, newPlayer);
         this.gameData.ingame[name].betQueue.push({ player, payload });
     }
 }
