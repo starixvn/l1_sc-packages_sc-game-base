@@ -44,7 +44,8 @@ export default class ProcessBetQueue {
     }
 
     async proceedBet(player, payload) {
-        const apiResult = await this.sendBetToApi(player, payload);
+        const betInfo = this.formatApiBetInfo(payload);
+        const apiResult = placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
             await this.handleSuccessBet(player, apiResult.response, betInfo.gameRoundId, payload);
@@ -56,8 +57,8 @@ export default class ProcessBetQueue {
         }
     }
 
-    async sendBetToApi(player, payload) {
-        const betInfo = {
+    formatApiBetInfo(payload) {
+        return {
             amount: payload.amount,
             gameId: this.definition.id,
             gameRoundId: this.gameData.roundId,
@@ -65,8 +66,6 @@ export default class ProcessBetQueue {
             freeBet: payload.freeBet,
             freeSpin: payload.freeSpin,
         };
-
-        return placeBetApi({ id: player.UID, session: player.session }, betInfo);
     }
 
     async handleSuccessBet(player, balance, roundId, bet) {
