@@ -119,7 +119,7 @@ export default class PlaceBetConsumer {
             betQueue: [],
         };
 
-        this.gameData.ingame[name] = Object.assign(this.gameData.ingame[name] ?? {}, newPlayer);
+        this.gameData.ingame[name] = Object.assign(newPlayer, this.gameData.ingame[name] ?? {});
         this.gameData.ingame[name].betQueue.push({ player, payload });
     }
 }
