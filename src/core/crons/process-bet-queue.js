@@ -45,7 +45,7 @@ export default class ProcessBetQueue {
 
     async proceedBet(player, payload) {
         const betInfo = this.formatApiBetInfo(payload);
-        const apiResult = placeBetApi({ id: player.UID, session: player.session }, betInfo);
+        const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
             await this.handleSuccessBet(player, apiResult.response, betInfo.gameRoundId, payload);
