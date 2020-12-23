@@ -1,3 +1,10 @@
+## [1.17.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.0...v1.17.1) (2020-12-23)
+
+
+### Bug Fixes
+
+* initialize authenticationHelper before starting server ([887aa62](https://git3.nexdev.net/sc-packages/sc-game-base/commit/887aa62e9b21260d7e0cafb0ec35128d9b10c4bb))
+
 # [1.17.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.16.0...v1.17.0) (2020-12-23)
 
 
