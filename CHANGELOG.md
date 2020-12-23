@@ -1,3 +1,31 @@
+# [1.17.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.16.0...v1.17.0) (2020-12-23)
+
+
+### Bug Fixes
+
+* 1.15.5-beta.3 upgrade sc-base-api ([1e805d5](https://git3.nexdev.net/sc-packages/sc-game-base/commit/1e805d579a1f94738ce7b8f37051b58c1c0a739c))
+* add await for place bet api ([07348f9](https://git3.nexdev.net/sc-packages/sc-game-base/commit/07348f96b31bc5ee945c52d78bec3d8b0b6360a3))
+* add missing imports ([e2bbdd9](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e2bbdd9d0a1d5f7e5b0ce77246213151dcdfa5a3))
+* assign new player to ingame ([8946a31](https://git3.nexdev.net/sc-packages/sc-game-base/commit/8946a3106dd44ee9e487e35cf354b698cfc5a38c))
+* correct game cron start call in app's run ([f1eeb24](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f1eeb24b138f0da62f2769ae877145ff217b3abf))
+* correct sha of sc-common ([3f7803d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/3f7803d90fd75579b5654452a1f15162aa9053fd))
+* downgrade sc-common package ([2f569be](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2f569bed16c19f89aabffaaad3b45de9f36773a1))
+* expose base bot ([cb467cb](https://git3.nexdev.net/sc-packages/sc-game-base/commit/cb467cb2d3c68fd4e91acf1262887f0ac2dac77c))
+* format bet info to send to api ([c100f2a](https://git3.nexdev.net/sc-packages/sc-game-base/commit/c100f2a775a9eb25310f27754ba40e4cd82dc70c))
+* separate send bet to api method in bet queue ([6a23f22](https://git3.nexdev.net/sc-packages/sc-game-base/commit/6a23f22d97115278c47ee01ff00b1bc6d2b87111))
+* sort round by id instead of _id ([ad933c1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ad933c1f6b2cbd2fd753353f9f302434ee287fb5))
+* update assign new player to ingame when place bet ([b16afa7](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b16afa70f3208ab8785748eac0f3e2584f190600))
+* upgrade sc-common and sc-base-database packages ([3cf0310](https://git3.nexdev.net/sc-packages/sc-game-base/commit/3cf0310ce32368d09e52320a0306e4b3bf0c5aa2))
+* upgrade sc-common package and publish beta 1.16.1-beta.4 ([3a2d7be](https://git3.nexdev.net/sc-packages/sc-game-base/commit/3a2d7be34fade461a2ec4f0e3d4749287253eece))
+* verify userInfo when signing in ([2cc0a8c](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2cc0a8ccb54e4978e7dddd137c6d834044e14b7f))
+
+
+### Features
+
+* add default implementation of base-bot's run and removeAllBots ([72cf261](https://git3.nexdev.net/sc-packages/sc-game-base/commit/72cf261ceac261e503d1980aa60acce5056bb39e))
+* add freeSpin for slot games ([b68cc83](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b68cc833361166496481c5ce1bd8f9bb0966f04e))
+* expose core/helpers ([d9b5cee](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d9b5cee3e7ffb8c0c46e783cd210fed79c85c586))
+
 # [1.16.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.15.5...v1.16.0) (2020-12-09)
 
 
