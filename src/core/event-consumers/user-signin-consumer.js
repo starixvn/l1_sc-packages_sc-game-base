@@ -28,6 +28,7 @@ export default class UserSignInConsumer {
         const userInfo = await userInfos.findOne({ id: userSession.userId }).lean().exec();
 
         if (
+            userInfo &&
             userSession &&
             userSession.username === payload.username &&
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()

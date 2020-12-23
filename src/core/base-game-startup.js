@@ -1,4 +1,5 @@
 import bodyParser from "body-parser";
+import express from "express";
 import helmet from "helmet";
 import http from "http";
 import morgan from "morgan";
@@ -127,8 +128,9 @@ export default class BaseGameStartup {
     async start() {
         try {
             this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.definition.configName }).lean().exec();
+
+            await this.gameCron.start();
             this.processBetQueue.start();
-            this.gameCron.start();
         } catch (error) {
             logger.logError(error);
         }

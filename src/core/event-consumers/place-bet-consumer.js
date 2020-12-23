@@ -102,6 +102,7 @@ export default class PlaceBetConsumer {
         Object.assign(payload, {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
+            freeSpin: payload.freeSpin ?? false,
         });
 
         const { amount, betChoice, freeBet } = payload;
@@ -111,17 +112,14 @@ export default class PlaceBetConsumer {
             return;
         }
 
-        if (!this.gameData.ingame[name]) {
-            const newPlayer = {
-                name: player.profile.name,
-                currency: player.session.currency,
-                betTracks: {},
-                betQueue: [],
-            };
+        const newPlayer = {
+            name: player.profile.name,
+            currency: player.session.currency,
+            betTracks: {},
+            betQueue: [],
+        };
 
-            this.gameData.ingame[name] = newPlayer;
-        }
-
+        this.gameData.ingame[name] = Object.assign(newPlayer, this.gameData.ingame[name] ?? {});
         this.gameData.ingame[name].betQueue.push({ player, payload });
     }
 }
