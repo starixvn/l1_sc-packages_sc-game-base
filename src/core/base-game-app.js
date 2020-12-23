@@ -20,8 +20,8 @@ export default class BaseGameApp {
     async run() {
         const app = express();
 
+        await authenticationHelper.init(this.appConfigs.mainServerApiSettings);
         await this.startup.configureServices(app);
         await this.startup.startServer(app);
-        await authenticationHelper.init(this.appConfigs.mainServerApiSettings);
     }
 }
