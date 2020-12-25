@@ -75,8 +75,7 @@ export default class BaseGameStartup {
 
         await initBaseDatabase(this.appConfigs.database);
         await Bot.resetInRoom(this.definition.configName);
-
-        initApis(this.appConfigs.apiSettings);
+        await initApis(this.appConfigs.apiSettings);
     }
 
     /**
