@@ -1,3 +1,10 @@
+## [1.17.2](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.1...v1.17.2) (2020-12-25)
+
+
+### Bug Fixes
+
+* initialize sc-base-apis must be async ([a4dee79](https://git3.nexdev.net/sc-packages/sc-game-base/commit/a4dee79c8540260d0232731ca233aab59cc6c928))
+
 ## [1.17.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.0...v1.17.1) (2020-12-23)
 
 
