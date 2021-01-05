@@ -64,7 +64,6 @@ export default class ProcessBetQueue {
             gameRoundId: this.gameData.roundId,
             choiceId: this.definition.choicesMapper[payload.betChoice],
             freeBet: payload.freeBet,
-            freeSpin: payload.freeSpin,
         };
     }
 

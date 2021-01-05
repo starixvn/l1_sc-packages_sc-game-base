@@ -107,7 +107,7 @@ export default class BaseGameCron {
             this.gameStatusPublisher.publishDisableGameStatus(this.gameData);
             await gameConfigs.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
-            this.gameStatusPublisher.publishPreviousDisableGameStatus(this.gameData);
+            this.gameStatusPublisher.publishEnablingGameStatus(this.gameData);
         } else {
             this.gameStatusPublisher.publishStartGame(this.gameData);
         }

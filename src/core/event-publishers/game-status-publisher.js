@@ -9,7 +9,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
         this.publishToAllAdmins(payload);
     }
 
-    publishPreviousDisableGameStatus(gameData) {
+    publishEnablingGameStatus(gameData) {
         const gameConfigs = gameData.gameConfigs;
         const configs = {
             minbet: gameConfigs.minbet,
