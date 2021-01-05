@@ -1,3 +1,5 @@
+## [1.17.3](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.2...v1.17.3) (2021-01-05)
+
 ## [1.17.2](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.1...v1.17.2) (2020-12-25)
 
 
