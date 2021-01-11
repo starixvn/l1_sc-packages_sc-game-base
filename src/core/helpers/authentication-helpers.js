@@ -8,7 +8,7 @@ const timeout = 60000;
 
 custom.setHttpOptionsDefaults({ timeout });
 
-export class BearerAuthenticator {
+class BearerAuthenticator {
     constructor(authConfigs) {
         this.authConfigs = authConfigs;
     }
@@ -65,14 +65,14 @@ export class BearerAuthenticator {
 let authenticationConfigs;
 let bearerAuthenticator;
 
-export const init = async (configs) => {
+const init = async (configs) => {
     authenticationConfigs = configs;
     bearerAuthenticator = new BearerAuthenticator(configs.auth);
 
     await bearerAuthenticator.autoUpdateToken();
 };
 
-export const post = async (endpoint, params, options) => {
+const post = async (endpoint, params, options) => {
     if (!bearerAuthenticator) {
         logger.logError("authentication-helper has not been initialized properly.");
     }
@@ -94,4 +94,9 @@ export const post = async (endpoint, params, options) => {
     }
 
     return (await Axios.post(`${url}/${endpoint}`, params, requestConfigs)).data;
+};
+
+export default {
+    init,
+    post,
 };

@@ -1,3 +1,3 @@
-import * as authenticationHelper from "./authentication-helper";
+import authenticationHelpers from "./authentication-helpers";
 
-export { authenticationHelper };
+export { authenticationHelpers };

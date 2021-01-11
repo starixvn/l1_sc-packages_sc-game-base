@@ -14,7 +14,7 @@ import BaseBot from "./crons/bot/base-bot";
 import ProcessBetQueue from "./crons/process-bet-queue";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
-import { init as authenticationHelperInit } from "./helpers/authentication-helper";
+import { authenticationHelpers } from "./helpers";
 import { BaseAdminSocketRouter, BaseSocketRouter, HttpRouter } from "./routers";
 
 export default class BaseGameStartup {
@@ -75,7 +75,7 @@ export default class BaseGameStartup {
         }
 
         await initBaseDatabase(this.appConfigs.database);
-        await authenticationHelperInit(this.appConfigs.mainServerApiSettings);
+        await authenticationHelpers.init(this.appConfigs.mainServerApiSettings);
 
         await Bot.resetInRoom(this.definition.configName);
         await initApis(this.appConfigs.apiSettings);
