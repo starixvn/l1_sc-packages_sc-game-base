@@ -1,16 +1,15 @@
-import { BaseEventConsumers, BaseEventPublishers } from "./../../core";
-import TableGameData from "./../table-game-data";
-import TableGameDefinition from "./../table-game-definition";
+import { BaseEventConsumers, BaseEventPublishers } from "../../core";
+import TableGameData from "../table-game-data";
 
-export default class OutGameConsumer extends BaseEventConsumers.UserDisconnectConsumer {
+export default class TableOutGameConsumer extends BaseEventConsumers.UserDisconnectConsumer {
     /**
-     * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
      * @param {BaseEventPublishers.BaseEventPublisher} publisher
      */
-    constructor(definition, gameData, publisher = null) {
+    constructor(gameData, publisher = null) {
         super(gameData);
-        this.publisher = publisher ?? new BaseEventPublishers.BaseEventPublisher(definition.name, gameData);
+
+        this.publisher = publisher;
     }
 
     /**
