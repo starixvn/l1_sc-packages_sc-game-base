@@ -1,4 +1,5 @@
-import { endGame } from "sc-base-apis";
+import mongoose from "mongoose";
+import { endGame as endGameApi } from "sc-base-apis";
 
 import { RoundResultPublisher, UserBetResultPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
@@ -6,22 +7,29 @@ import GameDefinition from "./../game-definition";
 
 export default class SettleGameRoundConsumer {
     /**
-     * @param {GameDefinition} definition
-     * @param {GameData} gameData
-     * @param {RoundResultPublisher} roundResultPublisher
-     * @param {UserBetResultPublisher} userBetResultPublisher
+     * @param {Object} dependencies
+     * @param {GameDefinition} dependencies.definition
+     * @param {GameData} dependencies.gameData
+     * @param {RoundResultPublisher} dependencies.roundResultPublisher
+     * @param {UserBetResultPublisher} dependencies.userBetResultPublisher
+     * @param {endGameApi} dependencies.endGame
+     * @param {mongoose.Model} dependencies.roundRepository
+     * @param {mongoose.Model} dependencies.betRepository
      */
-    constructor(definition, gameData, roundResultPublisher = null, userBetResultPublisher = null) {
+    constructor({ definition, gameData, roundResultPublisher, userBetResultPublisher, endGame, roundRepository, betRepository }) {
         this.definition = definition;
         this.gameData = gameData;
-        this.roundResultPublisher = roundResultPublisher ?? new RoundResultPublisher(definition.name, gameData);
-        this.userBetResultPublisher = userBetResultPublisher ?? new UserBetResultPublisher(definition.name, gameData);
+        this.roundResultPublisher = roundResultPublisher;
+        this.userBetResultPublisher = userBetResultPublisher;
+        this.endGame = endGame;
+        this.roundRepository = roundRepository;
+        this.betRepository = betRepository;
     }
 
     async settleRound() {
         const result = this.generateResult();
         const settlementResult = this.definition.settle(result);
-        const newRound = await this.definition.roundRepository.create({
+        const newRound = await this.roundRepository.create({
             result,
             settlementResult,
             time: new Date(),
@@ -48,7 +56,7 @@ export default class SettleGameRoundConsumer {
     }
 
     queryBets(roundId) {
-        return this.definition.betRepository.find({ phien: roundId }).exec();
+        return this.betRepository.find({ phien: roundId }).exec();
     }
 
     async settleBets({ result, settlementResult, roundId, time }) {
@@ -146,7 +154,7 @@ export default class SettleGameRoundConsumer {
             settlementInfo.redLost = betResult.totalLost;
         }
 
-        const apiResult = await endGame(bet.uid, gameInfo, settlementInfo);
+        const apiResult = await this.endGame(bet.uid, gameInfo, settlementInfo);
 
         if (!apiResult.isOk) {
             this.userBetResultPublisher.publishApiError(bet.uid, apiResult.response);

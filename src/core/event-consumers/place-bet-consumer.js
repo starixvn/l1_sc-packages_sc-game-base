@@ -13,7 +13,7 @@ export default class PlaceBetConsumer {
     constructor(definition, gameData, publisher = null) {
         this.definition = definition;
         this.gameData = gameData;
-        this.publisher = publisher ?? new BaseEventPublisher(definition.name, gameData);
+        this.publisher = publisher;
     }
 
     composeValidationCriteria(player, betChoice, amount, freeBet) {
