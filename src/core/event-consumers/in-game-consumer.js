@@ -1,15 +1,27 @@
-import { getBalance } from "sc-base-apis";
-import { userInfos } from "sc-base-database";
+import mongoose from "mongoose";
+import { getBalance as getBalanceApi } from "sc-base-apis";
 
 import { BaseEventPublisher } from "./../event-publishers";
+import GameData from "./../game-data";
+import GameDefinition from "./../game-definition";
 import { RoundQuery } from "./../query-apis";
 
 export default class InGameConsumer {
-    constructor({ definition, gameData, roundQuery, publisher }) {
+    /**
+     * @param {GameDefinition} definition
+     * @param {GameData} gameData
+     * @param {RoundQuery} roundQuery
+     * @param {BaseEventPublisher} publisher
+     * @param {getBalanceApi} getBalance
+     * @param {mongoose.Model} userInfos
+     */
+    constructor(definition, gameData, roundQuery, publisher, getBalance, userInfos) {
         this.definition = definition;
         this.gameData = gameData;
-        this.roundQuery = roundQuery ?? new RoundQuery(definition);
-        this.publisher = publisher ?? new BaseEventPublisher(definition.name, gameData);
+        this.roundQuery = roundQuery;
+        this.publisher = publisher;
+        this.getBalance = getBalance;
+        this.userInfos = userInfos;
     }
 
     async consume(realPlayer) {
@@ -31,7 +43,7 @@ export default class InGameConsumer {
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
 
-        await getBalance(realPlayer, true);
+        await this.getBalance(realPlayer, true);
 
         const user = await this.getUserInfo(realPlayer.UID);
 
@@ -45,7 +57,7 @@ export default class InGameConsumer {
     }
 
     getUserInfo(uid) {
-        return userInfos
+        return this.userInfos
             .findOne(
                 { id: uid },
                 {

@@ -1,11 +1,11 @@
-import GameDefinition from "./../game-definition";
+import mongoose from "mongoose";
 
 export default class RoundQuery {
     /**
-     * @param {GameDefinition} definition
+     * @param {mongoose.Model} roundRepository
      */
-    constructor(definition) {
-        this.definition = definition;
+    constructor(roundRepository) {
+        this.roundRepository = roundRepository;
     }
 
     convertSettlementResult(roundResult) {}
@@ -13,7 +13,7 @@ export default class RoundQuery {
     convertResult(round) {}
 
     async getList(limit, projections) {
-        const rounds = await this.definition.roundRepository
+        const rounds = await this.roundRepository
             .find({}, projections, { sort: { _id: -1 }, limit: limit })
             .lean()
             .exec();
@@ -31,7 +31,7 @@ export default class RoundQuery {
     }
 
     async getOne(id, projections = { _id: false }) {
-        const round = await this.definition.roundRepository.findOne({ id }, projections).lean().exec();
+        const round = await this.roundRepository.findOne({ id }, projections).lean().exec();
 
         round.result = round.result ?? this.convertResult(round);
         round.settlementResult = round.settlementResult ?? this.convertSettlementResult(round.result);

@@ -10,7 +10,7 @@ export default class PlaceBetConsumer {
      * @param {GameData} gameData
      * @param {BaseEventPublisher} publisher
      */
-    constructor(definition, gameData, publisher = null) {
+    constructor(definition, gameData, publisher) {
         this.definition = definition;
         this.gameData = gameData;
         this.publisher = publisher;
