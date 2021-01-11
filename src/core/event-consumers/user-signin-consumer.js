@@ -1,4 +1,4 @@
-import { userInfos, userSessions } from "sc-base-database";
+import mongoose from "mongoose";
 
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
@@ -7,10 +7,14 @@ export default class UserSignInConsumer {
     /**
      * @param {GameData} gameData
      * @param {UserSignInPublisher} userSigninPublisher
+     * @param {mongoose.Model} userInfos
+     * @param {mongoose.Model} userSessions
      */
-    constructor(gameData, userSigninPublisher = null) {
+    constructor(gameData, userSigninPublisher, userInfos, userSessions) {
         this.gameData = gameData;
-        this.userSigninPublisher = userSigninPublisher ?? new UserSignInPublisher();
+        this.userSigninPublisher = userSigninPublisher;
+        this.userInfos = userInfos;
+        this.userSessions = userSessions;
     }
 
     /**
@@ -24,8 +28,8 @@ export default class UserSignInConsumer {
             return;
         }
 
-        const userSession = await userSessions.findOne({ sessionId: payload.ss }).lean().exec();
-        const userInfo = await userInfos.findOne({ id: userSession.userId }).lean().exec();
+        const userSession = await this.userSessions.findOne({ sessionId: payload.ss }).lean().exec();
+        const userInfo = await this.userInfos.findOne({ id: userSession.userId }).lean().exec();
 
         if (
             userInfo &&
