@@ -4,10 +4,6 @@ import * as authenticationHelper from "./../helpers/authentication-helper";
 import BaseEventPublisher from "./base-event-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
-    constructor(gameName, gameData) {
-        super(gameName, gameData);
-    }
-
     async publish(userId, betResult) {
         const status = { winningByChoices: betResult.winningByChoices };
 

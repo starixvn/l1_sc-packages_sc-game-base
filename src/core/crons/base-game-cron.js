@@ -77,7 +77,7 @@ export default class BaseGameCron {
             await this.settleGameRoundConsumer.settleRound(this.gameData);
         } else if (this.gameData.remainingTime < durations.placingBets) {
             this.bot && (await this.bot.run());
-            this.runningRoundInfoPublisher.publish(this.gameData);
+            this.runningRoundInfoPublisher.publish();
         }
     }
 
