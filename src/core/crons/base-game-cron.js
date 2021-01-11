@@ -104,12 +104,12 @@ export default class BaseGameCron {
 
         if (this.gameData.disabled) {
             this.gameData.remainingTime = durations.wholeRound;
-            this.gameStatusPublisher.publishDisableGameStatus(this.gameData);
+            this.gameStatusPublisher.publishDisableGameStatus();
             await gameConfigs.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
-            this.gameStatusPublisher.publishEnablingGameStatus(this.gameData);
+            this.gameStatusPublisher.publishEnablingGameStatus();
         } else {
-            this.gameStatusPublisher.publishStartGame(this.gameData);
+            this.gameStatusPublisher.publishStartGame();
         }
     }
 

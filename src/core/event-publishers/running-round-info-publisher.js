@@ -2,9 +2,7 @@ import BaseEventPublisher from "./base-event-publisher";
 
 export default class RunningRoundInfoPublisher extends BaseEventPublisher {
     publish() {
-        this.publishToAllUsers({
-            totalBets: this.gameData.totalBets,
-        });
+        this.publishToAllUsers({ totalBets: this.gameData.totalBets });
 
         const inGame = {};
 
