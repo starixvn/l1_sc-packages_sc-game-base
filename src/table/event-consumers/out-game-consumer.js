@@ -6,11 +6,11 @@ export default class OutGameConsumer extends BaseEventConsumers.UserDisconnectCo
     /**
      * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
-     * @param {BaseEventPublishers.BasePublisher} publisher
+     * @param {BaseEventPublishers.BaseEventPublisher} publisher
      */
     constructor(definition, gameData, publisher = null) {
         super(gameData);
-        this.publisher = publisher ?? new BaseEventPublishers.BasePublisher(definition.name, gameData);
+        this.publisher = publisher ?? new BaseEventPublishers.BaseEventPublisher(definition.name, gameData);
     }
 
     /**

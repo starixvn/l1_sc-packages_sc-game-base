@@ -1,6 +1,6 @@
 import { helpers } from "sc-common";
 
-import { BasePublisher } from "./../event-publishers";
+import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
@@ -8,13 +8,12 @@ export default class PlaceBetConsumer {
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
-     * @param {BasePublisher} publisher
+     * @param {BaseEventPublisher} publisher
      */
-
     constructor(definition, gameData, publisher = null) {
         this.definition = definition;
         this.gameData = gameData;
-        this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
+        this.publisher = publisher ?? new BaseEventPublisher(definition.name, gameData);
     }
 
     composeValidationCriteria(player, betChoice, amount, freeBet) {

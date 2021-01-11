@@ -1,6 +1,6 @@
-import BasePublisher from "./base-event-publisher";
+import BaseEventPublisher from "./base-event-publisher";
 
-export default class PlaceBetPublisher extends BasePublisher {
+export default class PlaceBetPublisher extends BaseEventPublisher {
     publishGameFailedBet(playerId, payload) {
         this.publishToUser(playerId, payload);
     }

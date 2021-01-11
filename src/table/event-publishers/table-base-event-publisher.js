@@ -1,7 +1,7 @@
-import { BasePublisher } from "./../../core/event-publishers";
+import { BaseEventPublisher } from "./../../core/event-publishers";
 import TableGameData from "./../table-game-data";
 
-export default class TableBaseEventPublisher extends BasePublisher {
+export default class TableBaseEventPublisher extends BaseEventPublisher {
     /**
      * @param {string} gameName
      * @param {TableGameData} gameData

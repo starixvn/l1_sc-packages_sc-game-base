@@ -2,7 +2,7 @@ import Chance from "chance";
 import { userInfos } from "sc-base-database";
 import { helpers } from "sc-common";
 
-import { BasePublisher } from "./../../event-publishers";
+import { BaseEventPublisher } from "./../../event-publishers";
 import GameData from "./../../game-data";
 import GameDefinition from "./../../game-definition";
 
@@ -10,12 +10,12 @@ export default class BaseBot {
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
-     * @param {BasePublisher} publisher
+     * @param {BaseEventPublisher} publisher
      */
     constructor(definition, gameData, publisher = null) {
         this.definition = definition;
         this.gameData = gameData;
-        this.publisher = publisher ?? new BasePublisher(this.definition.name, gameData);
+        this.publisher = publisher ?? new BaseEventPublisher(this.definition.name, gameData);
 
         this.bots = [];
         this.currentBotRatio = 0;

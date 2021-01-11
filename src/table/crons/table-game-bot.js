@@ -3,15 +3,14 @@ import { userInfos } from "sc-base-database";
 import { helpers } from "sc-common";
 
 import { BaseBot } from "./../../core";
-import { BasePublisher } from "./../../core/event-publishers";
+import { BaseEventPublisher } from "./../../core/event-publishers";
 import TableGameData from "./../table-game-data";
 
 export default class TableGameBot extends BaseBot {
     /**
      * @param {TableGameData} gameData
-     * @param {BasePublisher} publisher
+     * @param {BaseEventPublisher} publisher
      */
-
     constructor(definition, gameData, publisher) {
         super(definition, gameData, publisher);
 

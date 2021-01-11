@@ -1,7 +1,7 @@
 import { getBalance } from "sc-base-apis";
 import { userInfos } from "sc-base-database";
 
-import { BasePublisher } from "./../event-publishers";
+import { BaseEventPublisher } from "./../event-publishers";
 import { RoundQuery } from "./../query-apis";
 
 export default class InGameConsumer {
@@ -9,7 +9,7 @@ export default class InGameConsumer {
         this.definition = definition;
         this.gameData = gameData;
         this.roundQuery = roundQuery ?? new RoundQuery(definition);
-        this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
+        this.publisher = publisher ?? new BaseEventPublisher(definition.name, gameData);
     }
 
     async consume(realPlayer) {
