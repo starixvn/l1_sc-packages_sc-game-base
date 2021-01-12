@@ -42,7 +42,7 @@ export default class BaseGameStartup {
      * @param {socketIo.Socket} socketClient
      */
     initSocketRouter(socketClient) {
-        const router = this.container.resolve(this.container.resolve(this.dependencies.socketRouter));
+        const router = this.container.resolve(this.dependencies.socketRouter);
 
         router.init(socketClient);
     }
@@ -51,7 +51,7 @@ export default class BaseGameStartup {
      * @param {socketIo.Socket} socketClient
      */
     initAdminSocketRouter(socketClient) {
-        const router = this.container.resolve(this.container.resolve(this.dependencies.adminSocketRouter));
+        const router = this.container.resolve(this.dependencies.adminSocketRouter);
 
         router.init(socketClient);
     }
@@ -60,7 +60,7 @@ export default class BaseGameStartup {
      * @param {express.Express} app
      */
     initHttpRouter(app) {
-        const router = this.container.resolve(this.container.resolve(this.dependencies.httpRouter));
+        const router = this.container.resolve(this.dependencies.httpRouter);
 
         router.init(app);
     }
