@@ -26,6 +26,7 @@ export default class ContainerRegistry {
     register(appConfigs, definition, gameData) {
         this.container.register({
             appConfigs: asValue(appConfigs),
+            adminSecretKey: asValue(appConfigs.adminSecretKey),
             gameName: asValue(definition.name),
             definition: asValue(definition),
             gameData: asValue(gameData),
