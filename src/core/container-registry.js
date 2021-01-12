@@ -39,6 +39,8 @@ export default class ContainerRegistry {
         this.registerConsumers();
         this.registerCrons();
         this.registerRouters();
+
+        return this.container;
     }
 
     registerModels() {

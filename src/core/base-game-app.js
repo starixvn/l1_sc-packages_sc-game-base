@@ -8,7 +8,7 @@ export default class BaseGameApp {
      * @param {AwilixContainer} container
      * @param {BaseStartup} startup
      */
-    constructor(container, startup) {
+    constructor(container, startup = null) {
         this.container = container;
         this.startup = startup ?? new BaseStartup(container);
     }
