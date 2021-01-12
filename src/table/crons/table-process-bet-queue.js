@@ -1,6 +1,6 @@
-import { Cron } from "./../../core";
+import { Crons } from "./../../core";
 
-export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
+export default class TableProcessBetQueue extends Crons.ProcessBetQueue {
     generatePlacingBetResult(player, balance, bet) {
         const { betChoice, amount } = bet;
         const ownBet = super.generatePlacingBetResult(player, balance, bet);

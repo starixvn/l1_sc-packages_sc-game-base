@@ -1,7 +1,7 @@
 import BaseGameApp from "./base-game-app";
 import BaseStartup from "./base-game-startup";
 import ContainerRegistry from "./container-registry";
-import * as Cron from "./crons";
+import * as Crons from "./crons";
 import * as BaseEventConsumers from "./event-consumers";
 import * as BaseEventPublishers from "./event-publishers";
 import GameData from "./game-data";
@@ -14,7 +14,7 @@ export {
     BaseGameApp,
     BaseStartup,
     ContainerRegistry,
-    Cron,
+    Crons,
     BaseEventConsumers,
     BaseEventPublishers,
     GameData,
