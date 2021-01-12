@@ -2,12 +2,12 @@ import Chance from "chance";
 import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
-import { BaseBot } from "./../../core";
+import { Cron } from "./../../core";
 import { BaseEventPublisher } from "./../../core/event-publishers";
 import TableGameData from "./../table-game-data";
 import TableGameDefinition from "./../table-game-definition";
 
-export default class TableGameBot extends BaseBot {
+export default class TableGameBot extends Cron.BaseBot {
     /**
      * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
@@ -173,7 +173,7 @@ export default class TableGameBot extends BaseBot {
         this.publisher.publishToAllUsers(payload);
     }
 
-    async resetInRoom() {
+    async resetInRoomTrackings() {
         await this.userInfos.updateMany({ type: true, inGameRoom: this.definition.configName }, { inRoom: false, inGameRoom: "" });
     }
 

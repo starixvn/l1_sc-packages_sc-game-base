@@ -6,7 +6,7 @@ import { SettleGameRoundConsumer } from "./../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import BaseBot from "./bot/base-bot";
+import BaseBot from "./base-bot";
 
 export default class BaseGameCron {
     /**

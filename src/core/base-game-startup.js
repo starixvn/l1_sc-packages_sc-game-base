@@ -9,8 +9,8 @@ import { logger, middlewares } from "sc-common";
 import socketIo from "socket.io";
 
 import { BaseGameCron } from "./crons";
+import BaseBot from "./crons/base-bot";
 import * as Bot from "./crons/bot";
-import BaseBot from "./crons/bot/base-bot";
 import ProcessBetQueue from "./crons/process-bet-queue";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";

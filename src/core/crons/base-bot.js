@@ -2,9 +2,9 @@ import Chance from "chance";
 import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
-import { BaseEventPublisher } from "./../../event-publishers";
-import GameData from "./../../game-data";
-import GameDefinition from "./../../game-definition";
+import { BaseEventPublisher } from "./../event-publishers";
+import GameData from "./../game-data";
+import GameDefinition from "./../game-definition";
 
 export default class BaseBot {
     /**
