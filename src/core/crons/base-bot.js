@@ -11,13 +11,13 @@ export default class BaseBot {
      * @param {GameDefinition} definition
      * @param {GameData} gameData
      * @param {BaseEventPublisher} publisher
-     * @param {mongoose.Model} userInfos
+     * @param {mongoose.Model} userInfosRepository
      */
-    constructor(definition, gameData, publisher, userInfos) {
+    constructor(definition, gameData, publisher, userInfosRepository) {
         this.definition = definition;
         this.gameData = gameData;
         this.publisher = publisher;
-        this.userInfos = userInfos;
+        this.userInfosRepository = userInfosRepository;
 
         this.bots = [];
         this.currentBotRatio = 0;
@@ -39,7 +39,7 @@ export default class BaseBot {
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
 
-                const totalBots = await this.userInfos.countDocuments({ type: true, banned: false }).exec();
+                const totalBots = await this.userInfosRepository.countDocuments({ type: true, banned: false }).exec();
                 this.maxNumberOfBots = Math.floor(totalBots * this.currentBotRatio);
             }
 

@@ -7,14 +7,14 @@ export default class UserSignInConsumer {
     /**
      * @param {GameData} gameData
      * @param {UserSignInPublisher} userSigninPublisher
-     * @param {mongoose.Model} userInfos
-     * @param {mongoose.Model} userSessions
+     * @param {mongoose.Model} userInfosRepository
+     * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(gameData, userSigninPublisher, userInfos, userSessions) {
+    constructor(gameData, userSigninPublisher, userInfosRepository, userSessionsRepository) {
         this.gameData = gameData;
         this.userSigninPublisher = userSigninPublisher;
-        this.userInfos = userInfos;
-        this.userSessions = userSessions;
+        this.userInfosRepository = userInfosRepository;
+        this.userSessionsRepository = userSessionsRepository;
     }
 
     /**
@@ -27,8 +27,8 @@ export default class UserSignInConsumer {
             return;
         }
 
-        const userSession = await this.userSessions.findOne({ sessionId: payload.ss }).lean().exec();
-        const userInfo = await this.userInfos.findOne({ id: userSession.userId }).lean().exec();
+        const userSession = await this.userSessionsRepository.findOne({ sessionId: payload.ss }).lean().exec();
+        const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
 
         if (
             userInfo &&

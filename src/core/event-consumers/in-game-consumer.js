@@ -13,15 +13,15 @@ export default class InGameConsumer {
      * @param {RoundQuery} roundQuery
      * @param {BaseEventPublisher} publisher
      * @param {getBalanceApi} getBalance
-     * @param {mongoose.Model} userInfos
+     * @param {mongoose.Model} userInfosRepository
      */
-    constructor(definition, gameData, roundQuery, publisher, getBalance, userInfos) {
+    constructor(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository) {
         this.definition = definition;
         this.gameData = gameData;
         this.roundQuery = roundQuery;
         this.publisher = publisher;
         this.getBalance = getBalance;
-        this.userInfos = userInfos;
+        this.userInfosRepository = userInfosRepository;
     }
 
     async consume(realPlayer) {
@@ -57,7 +57,7 @@ export default class InGameConsumer {
     }
 
     getUserInfo(uid) {
-        return this.userInfos
+        return this.userInfosRepository
             .findOne(
                 { id: uid },
                 {

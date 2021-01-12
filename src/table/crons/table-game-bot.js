@@ -12,10 +12,10 @@ export default class TableGameBot extends Crons.BaseBot {
      * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
      * @param {BaseEventPublisher} publisher
-     * @param {mongoose.Model} userInfos
+     * @param {mongoose.Model} userInfosRepository
      */
-    constructor(definition, gameData, publisher, userInfos) {
-        super(definition, gameData, publisher, userInfos);
+    constructor(definition, gameData, publisher, userInfosRepository) {
+        super(definition, gameData, publisher, userInfosRepository);
 
         this.inOutValues = {
             in: 3,
@@ -30,7 +30,7 @@ export default class TableGameBot extends Crons.BaseBot {
     }
 
     async processDisabledBots() {
-        const disabledBots = await this.userInfos.find({ type: true, banned: false, disabled: true }).lean().exec();
+        const disabledBots = await this.userInfosRepository.find({ type: true, banned: false, disabled: true }).lean().exec();
 
         await Promise.all(
             disabledBots.map(async (bot) => {
@@ -112,7 +112,7 @@ export default class TableGameBot extends Crons.BaseBot {
     }
 
     async removeBot(botId) {
-        await this.userInfos.updateOne({ id: botId }, { inRoom: false, inGameRoom: "" });
+        await this.userInfosRepository.updateOne({ id: botId }, { inRoom: false, inGameRoom: "" });
 
         this.publisher.publishToAllUsers({ outgame: { playerId: botId } });
 
@@ -131,7 +131,7 @@ export default class TableGameBot extends Crons.BaseBot {
     }
 
     async joinRoom() {
-        const botUsers = await this.userInfos
+        const botUsers = await this.userInfosRepository
             .find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type")
             .lean()
             .exec();
@@ -153,7 +153,7 @@ export default class TableGameBot extends Crons.BaseBot {
     }
 
     async botJoinRoom(bot) {
-        await this.userInfos.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.definition.configName });
+        await this.userInfosRepository.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.definition.configName });
 
         this.resetBot(bot);
 
@@ -174,7 +174,10 @@ export default class TableGameBot extends Crons.BaseBot {
     }
 
     async resetInRoomTrackings() {
-        await this.userInfos.updateMany({ type: true, inGameRoom: this.definition.configName }, { inRoom: false, inGameRoom: "" });
+        await this.userInfosRepository.updateMany(
+            { type: true, inGameRoom: this.definition.configName },
+            { inRoom: false, inGameRoom: "" }
+        );
     }
 
     async leaveRoom() {
@@ -211,7 +214,7 @@ export default class TableGameBot extends Crons.BaseBot {
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
-                const user = await this.userInfos.findOne({ id: bot.id }, "red").exec();
+                const user = await this.userInfosRepository.findOne({ id: bot.id }, "red").exec();
 
                 if (user && user.red > amount) {
                     user.red -= amount;
