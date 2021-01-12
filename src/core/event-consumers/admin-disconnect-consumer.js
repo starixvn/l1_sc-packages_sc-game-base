@@ -3,11 +3,17 @@ import GameData from "./../game-data";
 export default class AdminDisconnectConsumer {
     /**
      * @param {GameData} gameData
+     */
+    constructor(gameData) {
+        this.gameData = gameData;
+    }
+
+    /**
      * @param {SocketIO.Socket} socketClient
      */
-    consume(gameData, socketClient) {
+    consume(socketClient) {
         setTimeout(() => {
-            delete gameData.admins[socketClient.id];
+            delete this.gameData.admins[socketClient.id];
         });
     }
 }

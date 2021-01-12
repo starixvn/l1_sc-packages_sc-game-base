@@ -22,8 +22,7 @@ export default class UserSignInConsumer {
      */
     async consume(socketClient, payload) {
         if (!payload) {
-            this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
-            socketClient.disconnect(true);
+            this.handleUnauthorizedSignIn(socketClient);
 
             return;
         }
@@ -46,8 +45,7 @@ export default class UserSignInConsumer {
 
             this.handleSignInSuccess(socketClient, userInfo, userSession);
         } else {
-            this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
-            socketClient.disconnect(true);
+            this.handleUnauthorizedSignIn(socketClient);
         }
     }
 
@@ -63,5 +61,10 @@ export default class UserSignInConsumer {
         this.gameData.realPlayers[socketClient.id] = userData;
 
         socketClient.emit("signedIn");
+    }
+
+    handleUnauthorizedSignIn(socketClient) {
+        this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
+        socketClient.disconnect(true);
     }
 }

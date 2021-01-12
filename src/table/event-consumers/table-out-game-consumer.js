@@ -6,7 +6,7 @@ export default class TableOutGameConsumer extends BaseEventConsumers.UserDisconn
      * @param {TableGameData} gameData
      * @param {BaseEventPublishers.BaseEventPublisher} publisher
      */
-    constructor(gameData, publisher = null) {
+    constructor(gameData, publisher) {
         super(gameData);
 
         this.publisher = publisher;
