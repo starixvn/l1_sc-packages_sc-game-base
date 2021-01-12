@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { placeBet as placeBetApi } from "sc-base-apis";
 import { helpers, logger } from "sc-common";
 
@@ -9,14 +10,23 @@ export default class ProcessBetQueue {
     processTimeOut = 50;
 
     /**
-     * @param {GameDefinition} definition
-     * @param {GameData} gameData
-     * @param {PlaceBetPublisher} publisher
+     * @param {Object} dependencies
+     * @param {GameDefinition} dependencies.definition
+     * @param {GameData} dependencies.gameData
+     * @param {PlaceBetPublisher} dependencies.placeBetPublisher
+     * @param {placeBetApi} dependencies.placeBet
+     * @param {logger} dependencies.logService
+     * @param {mongoose.Model} dependencies.betRepository
+     * @param {mongoose.Model} dependencies.betLogRepository
      */
-    constructor(definition, gameData, publisher = null) {
+    constructor({ definition, gameData, placeBetPublisher, placeBet, logService, betRepository, betLogRepository }) {
         this.definition = definition;
         this.gameData = gameData;
-        this.publisher = publisher ?? new PlaceBetPublisher(definition.name, gameData);
+        this.placeBetPublisher = placeBetPublisher;
+        this.placeBet = placeBet;
+        this.logService = logService;
+        this.betRepository = betRepository;
+        this.betLogRepository = betLogRepository;
     }
 
     start() {
@@ -37,7 +47,7 @@ export default class ProcessBetQueue {
                     playerInGame.betProcessing = true;
                     this.proceedBet(player, payload)
                         .then(() => (playerInGame.betProcessing = false))
-                        .catch(logger.logError);
+                        .catch(this.logService.logError);
                 }
             });
         }
@@ -45,7 +55,7 @@ export default class ProcessBetQueue {
 
     async proceedBet(player, payload) {
         const betInfo = this.formatApiBetInfo(payload);
-        const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
+        const apiResult = await this.placeBet({ id: player.UID, session: player.session }, betInfo);
 
         if (apiResult.isOk) {
             await this.handleSuccessBet(player, apiResult.response, betInfo.gameRoundId, payload);
@@ -68,8 +78,8 @@ export default class ProcessBetQueue {
     }
 
     async handleSuccessBet(player, balance, roundId, bet) {
-        if (this.definition.betLogRepository) {
-            await this.insertBetLog(this.definition.betLogRepository, player, roundId, bet);
+        if (this.betLogRepository) {
+            await this.insertBetLog(player, roundId, bet);
         }
 
         await this.upsertBet(player, roundId, bet);
@@ -82,11 +92,11 @@ export default class ProcessBetQueue {
         this.decreaseBetTracks(player.profile.name, bet);
 
         if (notice.apiError) {
-            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, apiError: notice.apiError });
+            this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, apiError: notice.apiError });
         } else if (notice.kickedOut) {
-            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, kickedOut: notice.kickedOut });
+            this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, kickedOut: notice.kickedOut });
         } else {
-            this.publisher.publishGameFailedBet(player.UID, { endBet: -1, notice });
+            this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, notice });
         }
     }
 
@@ -111,14 +121,14 @@ export default class ProcessBetQueue {
             newBet.siteId = player.session.siteId;
         }
 
-        await this.definition.betRepository.updateOne(
+        await this.betRepository.updateOne(
             existingBetFilter,
             { $inc: existingBetIncrement, $setOnInsert: newBet },
             { upsert: true, setDefaultsOnInsert: true }
         );
     }
 
-    async insertBetLog(betLogRepository, player, roundId, bet) {
+    async insertBetLog(player, roundId, bet) {
         const newBetLog = {
             uid: player.UID,
             name: player.profile.name,
@@ -134,7 +144,7 @@ export default class ProcessBetQueue {
             newBetLog.siteId = player.session.siteId;
         }
 
-        await betLogRepository.create(newBetLog);
+        await this.betLogRepository.create(newBetLog);
     }
 
     decreaseBetTracks(playerName, bet) {
@@ -156,7 +166,7 @@ export default class ProcessBetQueue {
     notifyPlacingBetResult(player, balance, bet) {
         const result = this.generatePlacingBetResult(player, balance, bet);
 
-        this.publisher.publishSuccessBet(player.UID, result);
+        this.placeBetPublisher.publishSuccessBet(player.UID, result);
     }
 
     generatePlacingBetResult(player, balance, bet) {
