@@ -5,18 +5,19 @@ import GameData from "./../game-data";
 export default class AdminAuthenticationConsumer {
     /**
      * @param {GameData} gameData
+     * @param {String} adminSecretKey
      */
-    constructor(gameData) {
+    constructor(gameData, adminSecretKey) {
         this.gameData = gameData;
+        this.adminSecretKey = adminSecretKey;
     }
 
     /**
      * @param {SocketIO.Socket} socketClient
      * @param {string} token
-     * @param {string} secretKey
      */
-    consume(socketClient, token, secretKey) {
-        if (utils.authentication.adminAuthenticate(token, secretKey)) {
+    consume(socketClient, token) {
+        if (utils.authentication.adminAuthenticate(token, this.adminSecretKey)) {
             this.gameData.admins[socketClient.id] = { socketClient };
             socketClient.emit("message", { authorized: true });
         } else {

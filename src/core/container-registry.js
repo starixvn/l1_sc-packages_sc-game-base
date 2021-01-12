@@ -9,6 +9,7 @@ import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import { authenticationHelpers } from "./helpers";
+import * as Routers from "./routers";
 
 export default class ContainerRegistry {
     /**
@@ -37,6 +38,7 @@ export default class ContainerRegistry {
         this.registerPublishers();
         this.registerConsumers();
         this.registerCrons();
+        this.registerRouters();
     }
 
     registerModels() {
@@ -46,11 +48,11 @@ export default class ContainerRegistry {
             userSessionsRepository: asValue(userSessions),
         });
 
-        /* this.container.register({
-            roundsRepository: asValue(xxxRounds),
-            betRepository: asValue(xxxBets),
-            betLogRepository: asValue(xxxBetLogs),
-        }); */
+        this.container.register({
+            roundsRepository: asValue(undefined),
+            betRepository: asValue(undefined),
+            betLogRepository: asValue(undefined),
+        });
     }
 
     registerApis() {
@@ -98,6 +100,14 @@ export default class ContainerRegistry {
             bot: asClass(Crons.BaseBot).singleton(),
             gameCron: asClass(Crons.BaseGameCron).singleton().proxy(),
             processBetQueue: asClass(Crons.ProcessBetQueue).singleton().proxy(),
+        });
+    }
+
+    registerRouters() {
+        this.container.register({
+            adminSocketRouter: asClass(Routers.BaseAdminSocketRouter).proxy(),
+            socketRouter: asClass(Routers.BaseSocketRouter).proxy(),
+            httpRouter: asClass(Routers.HttpRouter),
         });
     }
 }

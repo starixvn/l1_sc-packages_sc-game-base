@@ -9,13 +9,12 @@ export default class BaseAdminSocketRouter {
      * @param {Object} dependencies
      * @param {GameDefinition} dependencies.definition
      * @param {GameData} dependencies.gameData
-     * @param {string} dependencies.adminSecretKey
      * @param {AdminAuthenticationConsumer} dependencies.adminAuthenticationConsumer
      * @param {AdminMonitorConsumer} dependencies.adminMonitorConsumer
      * @param {AdminDisconnectConsumer} dependencies.adminDisconnectConsumer
-     * @param {logger} ldependencies.ogService
+     * @param {logger} ldependencies.logService
      */
-    constructor({ definition, adminSecretKey, adminAuthenticationConsumer, adminMonitorConsumer, adminDisconnectConsumer, logService }) {
+    constructor({ definition, gameData, adminAuthenticationConsumer, adminMonitorConsumer, adminDisconnectConsumer, logService }) {
         this.definition = definition;
         this.gameData = gameData;
         this.adminAuthenticationConsumer = adminAuthenticationConsumer;
@@ -36,11 +35,11 @@ export default class BaseAdminSocketRouter {
     async handleMessage(payload) {
         try {
             if (payload.authentication) {
-                this.adminAuthenticationConsumer.consume(this.socketClient, this.gameData, payload.authentication.jwt, this.adminSecretKey);
+                this.adminAuthenticationConsumer.consume(this.socketClient, payload.authentication.jwt);
             }
 
             if (payload[this.definition.name] && payload[this.definition.name].get_new && this.verify()) {
-                await this.adminMonitorConsumer.consume(this.socketClient, this.definition, this.gameData);
+                await this.adminMonitorConsumer.consume(this.socketClient);
             }
 
             if (payload[this.definition.name] && payload[this.definition.name].set_result && this.verify()) {
@@ -58,7 +57,7 @@ export default class BaseAdminSocketRouter {
 
     handleDisconnect() {
         try {
-            this.adminDisconnectConsumer.consume(this.gameData, this.socketClient);
+            this.adminDisconnectConsumer.consume(this.socketClient);
         } catch (err) {
             this.logService.logError(err);
         }
