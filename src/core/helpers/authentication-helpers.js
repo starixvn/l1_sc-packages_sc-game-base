@@ -75,6 +75,8 @@ const init = async (configs) => {
 const post = async (endpoint, params, options) => {
     if (!bearerAuthenticator) {
         logger.logError("authentication-helper has not been initialized properly.");
+
+        return {};
     }
 
     const defaultRequestTimeout = 2500;

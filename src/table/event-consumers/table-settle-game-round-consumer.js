@@ -1,4 +1,10 @@
+import mongoose from "mongoose";
+import { endGame as endGameApi } from "sc-base-apis";
+
 import SettleGameRoundConsumer from "./../../core/event-consumers/settle-game-round-consumer";
+import { RoundResultPublisher, UserBetResultPublisher } from "./../../core/event-publishers";
+import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 
 export default class TableSettleGameRoundConsumer extends SettleGameRoundConsumer {
     defaultWinningStatus = {
@@ -7,9 +13,43 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
         winningByChoices: {},
     };
 
+    /**
+     * @param {Object} dependencies
+     * @param {TableGameDefinition} dependencies.definition
+     * @param {TableGameData} dependencies.gameData
+     * @param {RoundResultPublisher} dependencies.roundResultPublisher
+     * @param {UserBetResultPublisher} dependencies.userBetResultPublisher
+     * @param {endGameApi} dependencies.endGame
+     * @param {mongoose.Model} dependencies.roundRepository
+     * @param {mongoose.Model} dependencies.betRepository
+     * @param {mongoose.Model} dependencies.tempBetRepository
+     */
+    constructor({
+        definition,
+        gameData,
+        roundResultPublisher,
+        userBetResultPublisher,
+        endGame,
+        roundRepository,
+        betRepository,
+        tempBetRepository,
+    }) {
+        super({
+            definition,
+            gameData,
+            roundResultPublisher,
+            userBetResultPublisher,
+            endGame,
+            roundRepository,
+            betRepository,
+        });
+
+        this.tempBetRepository = tempBetRepository;
+    }
+
     async queryBets(roundId) {
-        const realPlayerBets = await this.definition.betRepository.find({ phien: roundId }).exec();
-        const botBets = await this.definition.tempBetRepository.find({ phien: roundId }).exec();
+        const realPlayerBets = await this.betRepository.find({ phien: roundId }).exec();
+        const botBets = await this.tempBetRepository.find({ phien: roundId }).exec();
 
         return realPlayerBets.concat(botBets);
     }
