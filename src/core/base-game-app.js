@@ -1,19 +1,16 @@
+import { AwilixContainer } from "awilix";
 import express from "express";
 
 import BaseStartup from "./base-game-startup";
-import GameData from "./game-data";
-import GameDefinition from "./game-definition";
 
 export default class BaseGameApp {
     /**
-     * @param {Object} appConfigs
-     * @param {GameDefinition} definition
-     * @param {GameData} gameData
+     * @param {AwilixContainer} container
      * @param {BaseStartup} startup
      */
-    constructor(appConfigs, definition, gameData, startup) {
-        this.appConfigs = appConfigs;
-        this.startup = startup ?? new BaseStartup(appConfigs, definition, gameData);
+    constructor(container, startup) {
+        this.container = container;
+        this.startup = startup ?? new BaseStartup(container);
     }
 
     async run() {

@@ -1,44 +1,48 @@
+import { AwilixContainer } from "awilix";
 import bodyParser from "body-parser";
 import express from "express";
 import helmet from "helmet";
 import http from "http";
 import morgan from "morgan";
 import { init as initApis } from "sc-base-apis";
-import { gameConfigs, init as initBaseDatabase } from "sc-base-database";
+import { init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
 import socketIo from "socket.io";
 
-import { BaseGameCron } from "./crons";
-import BaseBot from "./crons/base-bot";
-import * as Bot from "./crons/bot";
-import ProcessBetQueue from "./crons/process-bet-queue";
-import GameData from "./game-data";
-import GameDefinition from "./game-definition";
 import { authenticationHelpers } from "./helpers";
-import { BaseAdminSocketRouter, BaseSocketRouter, HttpRouter } from "./routers";
 
 export default class BaseGameStartup {
+    dependencies = {
+        appConfigs: "appConfigs",
+        definition: "definition",
+        gameData: "gameData",
+        gameCron: "gameCron",
+        processBetQueue: "processBetQueue",
+        socketRouter: "socketRouter",
+        adminSocketRouter: "adminSocketRouter",
+        httpRouter: "httpRouter",
+        gameConfigs: "gameConfigs",
+    };
+
     /**
-     * @param {Object} appConfigs
-     * @param {GameDefinition} definition
-     * @param {GameData} gameData
-     * @param {BaseGameCron} gameCron
-     * @param {ProcessBetQueue} processBetQueue
-     * @param {BaseBot} bot
+     * @param {AwilixContainer} container
      */
-    constructor(appConfigs, definition, gameData, gameCron, processBetQueue, bot = null) {
-        this.appConfigs = appConfigs;
-        this.definition = definition;
-        this.gameData = gameData;
-        this.gameCron = gameCron ?? new BaseGameCron(definition, gameData, bot);
-        this.processBetQueue = processBetQueue ?? new ProcessBetQueue(definition, gameData);
+    //constructor(appConfigs, definition, gameData, gameCron, processBetQueue, bot = null) {
+    constructor(container) {
+        this.container = container;
+
+        this.appConfigs = this.container.resolve(this.dependencies.appConfigs);
+        this.definition = this.container.resolve(this.dependencies.definition);
+        this.gameData = this.container.resolve(this.dependencies.gameData);
+        this.gameCron = this.container.resolve(this.dependencies.gameCron);
+        this.processBetQueue = this.container.resolve(this.dependencies.processBetQueue);
     }
 
     /**
      * @param {socketIo.Socket} socketClient
      */
     initSocketRouter(socketClient) {
-        const router = new BaseSocketRouter({ definition: this.definition, gameData: this.gameData });
+        const router = this.container.resolve(this.container.resolve(this.dependencies.socketRouter));
 
         router.init(socketClient);
     }
@@ -47,18 +51,18 @@ export default class BaseGameStartup {
      * @param {socketIo.Socket} socketClient
      */
     initAdminSocketRouter(socketClient) {
-        const router = new BaseAdminSocketRouter();
+        const router = this.container.resolve(this.container.resolve(this.dependencies.adminSocketRouter));
 
-        router.init(this.definition, this.gameData, socketClient, this.appConfigs.adminSecretKey);
+        router.init(socketClient);
     }
 
     /**
      * @param {express.Express} app
      */
     initHttpRouter(app) {
-        const router = new HttpRouter(this.gameData);
+        const router = this.container.resolve(this.container.resolve(this.dependencies.httpRouter));
 
-        router.init(app, this.appConfigs);
+        router.init(app);
     }
 
     /**
@@ -76,8 +80,6 @@ export default class BaseGameStartup {
 
         await initBaseDatabase(this.appConfigs.database);
         await authenticationHelpers.init(this.appConfigs.mainServerApiSettings);
-
-        await Bot.resetInRoom(this.definition.configName);
         await initApis(this.appConfigs.apiSettings);
     }
 
@@ -129,7 +131,9 @@ export default class BaseGameStartup {
 
     async start() {
         try {
-            this.gameData.gameConfigs = await gameConfigs.findOne({ name: this.definition.configName }).lean().exec();
+            const gameConfigsRepository = this.container.resolve(this.dependencies.gameConfigs);
+
+            this.gameData.gameConfigs = await gameConfigsRepository.findOne({ name: this.definition.configName }).lean().exec();
 
             await this.gameCron.start();
             this.processBetQueue.start();

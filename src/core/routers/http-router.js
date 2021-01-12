@@ -4,18 +4,20 @@ import GameData from "./../game-data";
 
 export default class HttpRouter {
     /**
+     * @param {Object} appConfigs
      * @param {GameData} gameData
      */
-    constructor(gameData) {
+    constructor(appConfigs, gameData) {
+        this.appConfigs = appConfigs;
         this.gameData = gameData;
     }
 
-    init(app, appConfigs) {
+    init(app) {
         app.get(
             "/api/onlineusers",
             utils.authentication.useAuthenticate({
-                authUrl: appConfigs.apiSettings.authUrl,
-                audiences: appConfigs.authenticateSettings.audiences,
+                authUrl: this.appConfigs.apiSettings.authUrl,
+                audiences: this.appConfigs.authenticateSettings.audiences,
             }),
             (_req, res) => this.handleOnlineUsers(res)
         );
