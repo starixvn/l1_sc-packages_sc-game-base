@@ -1,5 +1,5 @@
 import Chance from "chance";
-import { userInfos } from "sc-base-database";
+import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
 import { BaseEventPublisher } from "./../../event-publishers";
@@ -11,11 +11,13 @@ export default class BaseBot {
      * @param {GameDefinition} definition
      * @param {GameData} gameData
      * @param {BaseEventPublisher} publisher
+     * @param {mongoose.Model} userInfos
      */
-    constructor(definition, gameData, publisher = null) {
+    constructor(definition, gameData, publisher, userInfos) {
         this.definition = definition;
         this.gameData = gameData;
-        this.publisher = publisher ?? new BaseEventPublisher(this.definition.name, gameData);
+        this.publisher = publisher;
+        this.userInfos = userInfos;
 
         this.bots = [];
         this.currentBotRatio = 0;
@@ -37,7 +39,7 @@ export default class BaseBot {
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
 
-                const totalBots = await userInfos.countDocuments({ type: true, banned: false }).exec();
+                const totalBots = await this.userInfos.countDocuments({ type: true, banned: false }).exec();
                 this.maxNumberOfBots = Math.floor(totalBots * this.currentBotRatio);
             }
 

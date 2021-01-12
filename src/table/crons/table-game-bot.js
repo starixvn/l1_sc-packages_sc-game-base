@@ -1,18 +1,21 @@
 import Chance from "chance";
-import { userInfos } from "sc-base-database";
+import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
 import { BaseBot } from "./../../core";
 import { BaseEventPublisher } from "./../../core/event-publishers";
 import TableGameData from "./../table-game-data";
+import TableGameDefinition from "./../table-game-definition";
 
 export default class TableGameBot extends BaseBot {
     /**
+     * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
      * @param {BaseEventPublisher} publisher
+     * @param {mongoose.Model} userInfos
      */
-    constructor(definition, gameData, publisher) {
-        super(definition, gameData, publisher);
+    constructor(definition, gameData, publisher, userInfos) {
+        super(definition, gameData, publisher, userInfos);
 
         this.inOutValues = {
             in: 3,
@@ -27,7 +30,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async processDisabledBots() {
-        const disabledBots = await userInfos.find({ type: true, banned: false, disabled: true }).lean().exec();
+        const disabledBots = await this.userInfos.find({ type: true, banned: false, disabled: true }).lean().exec();
 
         await Promise.all(
             disabledBots.map(async (bot) => {
@@ -109,7 +112,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async removeBot(botId) {
-        await userInfos.updateOne({ id: botId }, { inRoom: false, inGameRoom: "" });
+        await this.userInfos.updateOne({ id: botId }, { inRoom: false, inGameRoom: "" });
 
         this.publisher.publishToAllUsers({ outgame: { playerId: botId } });
 
@@ -128,7 +131,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async joinRoom() {
-        const botUsers = await userInfos
+        const botUsers = await this.userInfos
             .find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type")
             .lean()
             .exec();
@@ -150,7 +153,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async botJoinRoom(bot) {
-        await userInfos.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.definition.configName });
+        await this.userInfos.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.definition.configName });
 
         this.resetBot(bot);
 
@@ -168,6 +171,10 @@ export default class TableGameBot extends BaseBot {
         };
 
         this.publisher.publishToAllUsers(payload);
+    }
+
+    async resetInRoom() {
+        await this.userInfos.updateMany({ type: true, inGameRoom: this.definition.configName }, { inRoom: false, inGameRoom: "" });
     }
 
     async leaveRoom() {
@@ -204,7 +211,7 @@ export default class TableGameBot extends BaseBot {
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
-                const user = await userInfos.findOne({ id: bot.id }, "red").exec();
+                const user = await this.userInfos.findOne({ id: bot.id }, "red").exec();
 
                 if (user && user.red > amount) {
                     user.red -= amount;

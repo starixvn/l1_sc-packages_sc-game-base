@@ -47,7 +47,7 @@ export default class HttpRouter {
         const uusUsers = [];
         const realUsers = [];
 
-        players.forEach(function (player) {
+        players.forEach((player) => {
             if (player && player.session && player.socketClient && player.socketClient.connected) {
                 const user = {
                     name: player.session.memberName,
