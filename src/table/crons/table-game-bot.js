@@ -13,9 +13,12 @@ export default class TableGameBot extends Crons.BaseBot {
      * @param {TableGameData} gameData
      * @param {BaseEventPublisher} publisher
      * @param {mongoose.Model} userInfosRepository
+     * @param {mongoose.Model} tempBetRepository
      */
-    constructor(definition, gameData, publisher, userInfosRepository) {
+    constructor(definition, gameData, publisher, userInfosRepository, tempBetRepository) {
         super(definition, gameData, publisher, userInfosRepository);
+
+        this.tempBetRepository = tempBetRepository;
 
         this.inOutValues = {
             in: 3,
@@ -210,7 +213,7 @@ export default class TableGameBot extends Crons.BaseBot {
         const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
 
         if (this.gameData.remainingTime > this.definition.durations.lockingBet) {
-            const currentBet = await this.definition.tempBetRepository.findOne({ uid: bot.id, phien: this.gameData.roundId }).lean().exec();
+            const currentBet = await this.tempBetRepository.findOne({ uid: bot.id, phien: this.gameData.roundId }).lean().exec();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
@@ -267,7 +270,7 @@ export default class TableGameBot extends Crons.BaseBot {
             time: new Date(),
         };
 
-        await this.definition.tempBetRepository.updateOne(
+        await this.tempBetRepository.updateOne(
             { uid: bot.id, phien: this.gameData.roundId },
             { $set: update, $setOnInsert: create },
             { upsert: true, setDefaultsOnInsert: true }
