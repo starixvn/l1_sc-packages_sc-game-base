@@ -1,11 +1,11 @@
-import { AwilixContainer } from "awilix";
+import * as awilix from "awilix";
 import express from "express";
 
 import BaseStartup from "./base-game-startup";
 
 export default class BaseGameApp {
     /**
-     * @param {AwilixContainer} container
+     * @param {awilix.AwilixContainer} container
      * @param {BaseStartup} startup
      */
     constructor(container, startup = null) {

@@ -1,4 +1,4 @@
-import { AwilixContainer } from "awilix";
+import * as awilix from "awilix";
 import bodyParser from "body-parser";
 import express from "express";
 import helmet from "helmet";
@@ -25,7 +25,7 @@ export default class BaseGameStartup {
     };
 
     /**
-     * @param {AwilixContainer} container
+     * @param {awilix.AwilixContainer} container
      */
     //constructor(appConfigs, definition, gameData, gameCron, processBetQueue, bot = null) {
     constructor(container) {

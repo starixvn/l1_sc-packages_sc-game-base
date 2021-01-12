@@ -1,4 +1,4 @@
-import { asClass, asFunction, asValue, createContainer, InjectionMode } from "awilix";
+import awilix from "awilix";
 import { endGame, getBalance, placeBet } from "sc-base-apis";
 import { gameConfigs, userInfos, userSessions } from "sc-base-database";
 import { logger } from "sc-common";
@@ -9,7 +9,10 @@ import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import { authenticationHelpers } from "./helpers";
+import { HistoryQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
+
+const { asClass, asFunction, asValue, createContainer, InjectionMode } = awilix;
 
 export default class ContainerRegistry {
     /**
@@ -59,9 +62,9 @@ export default class ContainerRegistry {
 
     registerApis() {
         this.container.register({
-            endGame: asFunction(endGame).singleton(),
-            getBalance: asFunction(getBalance).singleton(),
-            placeBet: asFunction(placeBet).singleton(),
+            endGame: asValue(endGame),
+            getBalance: asValue(getBalance),
+            placeBet: asValue(placeBet),
             logService: asValue(logger),
             mainServiceCommunicator: asValue(authenticationHelpers),
             roundQuery: asClass(RoundQuery).singleton(),
