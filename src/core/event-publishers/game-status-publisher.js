@@ -10,7 +10,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
     }
 
     publishEnablingGameStatus() {
-        const { gameConfigs, remainingTime, roundId } = this.gameData.gameConfigs;
+        const { gameConfigs, remainingTime, roundId } = this.gameData;
         const configs = {
             minbet: gameConfigs.minbet,
             maxbet: gameConfigs.maxbet,
