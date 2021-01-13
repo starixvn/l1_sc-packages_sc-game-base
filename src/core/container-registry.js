@@ -74,6 +74,7 @@ export default class ContainerRegistry {
 
     registerPublishers() {
         this.container.register({
+            adminPublisher: asClass(EventPublishers.AdminPublisher).singleton(),
             publisher: asClass(EventPublishers.BaseEventPublisher).singleton(),
             gameStatusPublisher: asClass(EventPublishers.GameStatusPublisher).singleton(),
             placeBetPublisher: asClass(EventPublishers.PlaceBetPublisher).singleton(),

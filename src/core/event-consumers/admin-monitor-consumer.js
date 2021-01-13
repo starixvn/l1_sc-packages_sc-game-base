@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { BaseEventPublisher } from "./../event-publishers";
+import { AdminPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
@@ -8,13 +8,13 @@ export default class AdminMonitorConsumer {
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
-     * @param {BaseEventPublisher} publisher
+     * @param {AdminPublisher} adminPublisher
      * @param {mongoose.Model} roundRepository
      */
-    constructor(definition, gameData, publisher, roundRepository) {
+    constructor(definition, gameData, adminPublisher, roundRepository) {
         this.definition = definition;
         this.gameData = gameData;
-        this.publisher = publisher;
+        this.adminPublisher = adminPublisher;
         this.roundRepository = roundRepository;
     }
 
@@ -35,7 +35,7 @@ export default class AdminMonitorConsumer {
                 remainingTime: this.gameData.remainingTime,
             };
 
-            socketClient.emit("message", { [this.definition.name]: payload });
+            this.adminPublisher.publishToAdmin(socketClient, payload);
         }
     }
 }
