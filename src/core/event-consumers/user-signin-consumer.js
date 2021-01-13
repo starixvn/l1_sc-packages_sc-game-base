@@ -6,13 +6,13 @@ import GameData from "./../game-data";
 export default class UserSignInConsumer {
     /**
      * @param {GameData} gameData
-     * @param {UserSignInPublisher} userSigninPublisher
+     * @param {UserSignInPublisher} userSignInPublisher
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(gameData, userSigninPublisher, userInfosRepository, userSessionsRepository) {
+    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository) {
         this.gameData = gameData;
-        this.userSigninPublisher = userSigninPublisher;
+        this.userSignInPublisher = userSignInPublisher;
         this.userInfosRepository = userInfosRepository;
         this.userSessionsRepository = userSessionsRepository;
     }
@@ -64,7 +64,7 @@ export default class UserSignInConsumer {
     }
 
     handleUnauthorizedSignIn(socketClient) {
-        this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
+        this.userSignInPublisher.publishUnauthorizedMessage(socketClient);
         socketClient.disconnect(true);
     }
 }

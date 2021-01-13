@@ -17,13 +17,13 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
             const umMessage = configs?.disabled_message ?? "";
             const notice = { title: helpers.noticeHelper.noticeTitle, text: umMessage, load: false };
 
-            this.userSigninPublisher.publishUmNotice(socketClient, notice);
+            this.userSignInPublisher.publishUmNotice(socketClient, notice);
         }
     }
 
     handleSignInSuccess(socketClient, userInfo, userSession) {
         super.handleSignInSuccess(socketClient, userInfo, userSession);
 
-        this.userSigninPublisher.publishToGameMessage(socketClient, this.definition.name);
+        this.userSignInPublisher.publishToGameMessage(socketClient, this.definition.name);
     }
 }
