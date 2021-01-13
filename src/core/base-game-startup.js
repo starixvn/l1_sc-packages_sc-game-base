@@ -21,7 +21,7 @@ export default class BaseGameStartup {
         socketRouter: "socketRouter",
         adminSocketRouter: "adminSocketRouter",
         httpRouter: "httpRouter",
-        gameConfigs: "gameConfigs",
+        gameConfigsRepository: "gameConfigsRepository",
     };
 
     /**
@@ -131,7 +131,7 @@ export default class BaseGameStartup {
 
     async start() {
         try {
-            const gameConfigsRepository = this.container.resolve(this.dependencies.gameConfigs);
+            const gameConfigsRepository = this.container.resolve(this.dependencies.gameConfigsRepository);
 
             this.gameData.gameConfigs = await gameConfigsRepository.findOne({ name: this.definition.configName }).lean().exec();
 
