@@ -87,7 +87,7 @@ export default class ContainerRegistry {
 
     registerConsumers() {
         this.container.register({
-            adminAuthenticationConsumer: asClass(EventConsumers.AdminAuthenticationConsumer).singleton().proxy(),
+            adminAuthenticationConsumer: asClass(EventConsumers.AdminAuthenticationConsumer).singleton(),
             adminDisconnectConsumer: asClass(EventConsumers.AdminDisconnectConsumer).singleton(),
             adminMonitorConsumer: asClass(EventConsumers.AdminMonitorConsumer).singleton(),
         });
