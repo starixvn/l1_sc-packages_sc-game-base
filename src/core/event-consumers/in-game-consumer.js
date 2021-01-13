@@ -33,7 +33,7 @@ export default class InGameConsumer {
 
         const payload = await this.buildPayload(realPlayer);
 
-        realPlayer.socketClient.emit(this.definition.name, payload);
+        this.publisher.publishToUser(realPlayer.UID, payload);
     }
 
     async buildPayload(realPlayer) {
