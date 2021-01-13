@@ -2,7 +2,6 @@ import Chance from "chance";
 import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
-import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
@@ -10,13 +9,11 @@ export default class BaseBot {
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
-     * @param {BaseEventPublisher} publisher
      * @param {mongoose.Model} userInfosRepository
      */
-    constructor(definition, gameData, publisher, userInfosRepository) {
+    constructor(definition, gameData, userInfosRepository) {
         this.definition = definition;
         this.gameData = gameData;
-        this.publisher = publisher;
         this.userInfosRepository = userInfosRepository;
 
         this.bots = [];

@@ -16,8 +16,9 @@ export default class TableGameBot extends Crons.BaseBot {
      * @param {mongoose.Model} tempBetRepository
      */
     constructor(definition, gameData, publisher, userInfosRepository, tempBetRepository) {
-        super(definition, gameData, publisher, userInfosRepository);
+        super(definition, gameData, userInfosRepository);
 
+        this.publisher = publisher;
         this.tempBetRepository = tempBetRepository;
 
         this.inOutValues = {
