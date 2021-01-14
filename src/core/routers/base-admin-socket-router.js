@@ -34,7 +34,11 @@ export default class BaseAdminSocketRouter {
 
     async handleMessage(payload) {
         try {
+            this.logService.log(JSON.stringify(payload));
+
             if (payload.authentication) {
+                this.logService.log(JSON.stringify(payload.authentication));
+
                 this.adminAuthenticationConsumer.consume(this.socketClient, payload.authentication.jwt);
             }
 
@@ -44,6 +48,8 @@ export default class BaseAdminSocketRouter {
 
             if (payload[this.definition.name] && payload[this.definition.name].set_result && this.verify()) {
                 const { set_result } = payload[this.definition.name];
+
+                this.logService.log(JSON.stringify(set_result));
 
                 this.gameData.settlementResultFromAdmin = {
                     roundId: set_result.roundId,
