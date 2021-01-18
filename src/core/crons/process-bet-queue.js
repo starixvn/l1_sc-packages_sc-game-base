@@ -33,6 +33,7 @@ export default class ProcessBetQueue {
             Object.values(this.gameData.ingame).forEach((playerInGame) => {
                 if (!playerInGame.betProcessing && playerInGame.betQueue && playerInGame.betQueue.length > 0) {
                     const { player, payload } = playerInGame.betQueue.shift();
+                    this.adjustBetTracks(player.profile.name, payload);
 
                     playerInGame.betProcessing = true;
                     this.proceedBet(player, payload)
@@ -44,8 +45,6 @@ export default class ProcessBetQueue {
     }
 
     async proceedBet(player, payload) {
-        this.adjustBetTracks(player.profile.name, payload);
-
         const betInfo = this.formatApiBetInfo(payload);
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
