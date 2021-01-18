@@ -120,6 +120,18 @@ export default class PlaceBetConsumer {
         };
 
         this.gameData.ingame[name] = Object.assign(newPlayer, this.gameData.ingame[name] ?? {});
+
+        this.adjustBetTracks(player.profile.name, payload);
         this.gameData.ingame[name].betQueue.push({ player, payload });
+    }
+
+    adjustBetTracks(playerName, bet) {
+        const { betChoice, amount } = bet;
+
+        if (this.gameData.ingame?.[playerName]) {
+            const playerInGame = this.gameData.ingame[playerName];
+
+            playerInGame.betTracks[betChoice] = (playerInGame.betTracks[betChoice] ?? 0) + amount;
+        }
     }
 }
