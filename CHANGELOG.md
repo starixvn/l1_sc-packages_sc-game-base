@@ -1,3 +1,10 @@
+## [1.17.4](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.3...v1.17.4) (2021-01-18)
+
+
+### Bug Fixes
+
+* adjust bet track before proceed bet ([35947e4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/35947e488c71bd43800c663b4c2d042711bf3bf2))
+
 ## [1.17.3](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.2...v1.17.3) (2021-01-05)
 
 ## [1.17.2](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.1...v1.17.2) (2020-12-25)
