@@ -44,6 +44,8 @@ export default class ProcessBetQueue {
     }
 
     async proceedBet(player, payload) {
+        this.adjustBetTracks(player.profile.name, payload);
+
         const betInfo = this.formatApiBetInfo(payload);
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
@@ -53,7 +55,7 @@ export default class ProcessBetQueue {
             const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
             const notice = apiResult.response.inSufficientBalance ? insufficientNotice : apiResult.response;
 
-            this.handleFailedBet(player, notice);
+            this.handleFailedBet(player, notice, payload);
         }
     }
 
@@ -74,12 +76,13 @@ export default class ProcessBetQueue {
 
         await this.upsertBet(player, roundId, bet);
 
-        this.adjustBetTracks(player.profile.name, bet);
         this.adjustTotalBets(player, bet);
         this.notifyPlacingBetResult(player, balance, bet);
     }
 
-    handleFailedBet(player, notice) {
+    handleFailedBet(player, notice, bet) {
+        this.adjustBetTracks(player.profile.name, bet, true);
+
         if (notice.apiError) {
             this.publisher.publishGameFailedBet(player.UID, { endBet: -1, apiError: notice.apiError });
         } else if (notice.kickedOut) {
@@ -136,13 +139,15 @@ export default class ProcessBetQueue {
         await betLogRepository.create(newBetLog);
     }
 
-    adjustBetTracks(playerName, bet) {
+    adjustBetTracks(playerName, bet, decrease = false) {
         const { betChoice, amount } = bet;
 
         if (this.gameData.ingame?.[playerName]) {
             const playerInGame = this.gameData.ingame[playerName];
 
-            playerInGame.betTracks[betChoice] = (playerInGame.betTracks[betChoice] ?? 0) + amount;
+            playerInGame.betTracks[betChoice] = decrease
+                ? playerInGame.betTracks[betChoice] - amount
+                : (playerInGame.betTracks[betChoice] ?? 0) + amount;
         }
     }
 
