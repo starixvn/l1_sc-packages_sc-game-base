@@ -1,3 +1,11 @@
+## [1.17.5](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.4...v1.17.5) (2021-01-18)
+
+
+### Bug Fixes
+
+* move adjust bet track prior to proceed bet ([98b2e31](https://git3.nexdev.net/sc-packages/sc-game-base/commit/98b2e31e876b72f462073919ad01be97c887dd35))
+* move adjust bet track to place-bet-consumer ([81134e4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/81134e4d1a084ca9447cf31b843a8d9e0acbb99f))
+
 ## [1.17.4](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.3...v1.17.4) (2021-01-18)
 
 
