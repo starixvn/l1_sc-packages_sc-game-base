@@ -44,8 +44,6 @@ export default class ProcessBetQueue {
     }
 
     async proceedBet(player, payload) {
-        this.adjustBetTracks(player.profile.name, payload);
-
         const betInfo = this.formatApiBetInfo(payload);
         const apiResult = await placeBetApi({ id: player.UID, session: player.session }, betInfo);
 
@@ -81,7 +79,7 @@ export default class ProcessBetQueue {
     }
 
     handleFailedBet(player, notice, bet) {
-        this.adjustBetTracks(player.profile.name, bet, true);
+        this.decreaseBetTracks(player.profile.name, bet);
 
         if (notice.apiError) {
             this.publisher.publishGameFailedBet(player.UID, { endBet: -1, apiError: notice.apiError });
@@ -139,15 +137,13 @@ export default class ProcessBetQueue {
         await betLogRepository.create(newBetLog);
     }
 
-    adjustBetTracks(playerName, bet, decrease = false) {
+    decreaseBetTracks(playerName, bet) {
         const { betChoice, amount } = bet;
 
         if (this.gameData.ingame?.[playerName]) {
             const playerInGame = this.gameData.ingame[playerName];
 
-            playerInGame.betTracks[betChoice] = decrease
-                ? playerInGame.betTracks[betChoice] - amount
-                : (playerInGame.betTracks[betChoice] ?? 0) + amount;
+            playerInGame.betTracks[betChoice] -= amount;
         }
     }
 
