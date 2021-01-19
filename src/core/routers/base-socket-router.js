@@ -2,7 +2,7 @@ import { logger } from "sc-common";
 
 import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
-import { HistoryQuery, RoundQuery } from "./../query-apis";
+import { HistoryQuery } from "./../query-apis";
 
 export default class BaseSocketRouter {
     /**
@@ -15,7 +15,6 @@ export default class BaseSocketRouter {
      * @param {UserDisconnectConsumer} dependencies.userDisconnectConsumer
      * @param {UserSignInPublisher} dependencies.userSignInPublisher
      * @param {HistoryQuery} dependencies.historyQuery
-     * @param {RoundQuery} dependencies.roundQuery
      * @param {logger} ldependencies.logService
      */
     constructor({
@@ -27,7 +26,6 @@ export default class BaseSocketRouter {
         userDisconnectConsumer,
         userSignInPublisher,
         historyQuery,
-        roundQuery,
         logService,
     }) {
         this.definition = definition;
@@ -38,7 +36,6 @@ export default class BaseSocketRouter {
         this.userDisconnectConsumer = userDisconnectConsumer;
         this.userSignInPublisher = userSignInPublisher;
         this.historyQuery = historyQuery;
-        this.roundQuery = roundQuery;
         this.logService = logService;
     }
 
