@@ -20,9 +20,9 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
      * @param {RoundResultPublisher} dependencies.roundResultPublisher
      * @param {UserBetResultPublisher} dependencies.userBetResultPublisher
      * @param {endGameApi} dependencies.endGame
-     * @param {mongoose.Model} dependencies.roundRepository
-     * @param {mongoose.Model} dependencies.betRepository
-     * @param {mongoose.Model} dependencies.tempBetRepository
+     * @param {mongoose.Model} dependencies.roundsRepository
+     * @param {mongoose.Model} dependencies.betsRepository
+     * @param {mongoose.Model} dependencies.tempBetsRepository
      */
     constructor({
         definition,
@@ -30,9 +30,9 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
         roundResultPublisher,
         userBetResultPublisher,
         endGame,
-        roundRepository,
-        betRepository,
-        tempBetRepository,
+        roundsRepository,
+        betsRepository,
+        tempBetsRepository,
     }) {
         super({
             definition,
@@ -40,16 +40,16 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
             roundResultPublisher,
             userBetResultPublisher,
             endGame,
-            roundRepository,
-            betRepository,
+            roundsRepository,
+            betsRepository,
         });
 
-        this.tempBetRepository = tempBetRepository;
+        this.tempBetsRepository = tempBetsRepository;
     }
 
     async queryBets(roundId) {
-        const realPlayerBets = await this.betRepository.find({ phien: roundId }).exec();
-        const botBets = await this.tempBetRepository.find({ phien: roundId }).exec();
+        const realPlayerBets = await this.betsRepository.find({ phien: roundId }).exec();
+        const botBets = await this.tempBetsRepository.find({ phien: roundId }).exec();
 
         return realPlayerBets.concat(botBets);
     }

@@ -5,13 +5,13 @@ import RoundQuery from "./round-query";
 export default class HistoryQuery {
     /**
      * @param {RoundQuery} roundQuery
-     * @param {mongoose.Model} betRepository
-     * @param {mongoose.Model} betLogRepository
+     * @param {mongoose.Model} betsRepository
+     * @param {mongoose.Model} betLogsRepository
      */
-    constructor(roundQuery, betRepository, betLogRepository) {
+    constructor(roundQuery, betsRepository, betLogsRepository) {
         this.roundQuery = roundQuery;
-        this.betRepository = betRepository;
-        this.betLogRepository = betLogRepository;
+        this.betsRepository = betsRepository;
+        this.betLogsRepository = betLogsRepository;
     }
 
     convertBet(bet) {
@@ -25,7 +25,7 @@ export default class HistoryQuery {
 
         const filter = { uid: player.UID, thanhtoan: true };
         const numberOfSkippedBets = (page - 1) * pageSize;
-        const total = await this.betRepository.countDocuments(filter).exec();
+        const total = await this.betsRepository.countDocuments(filter).exec();
         const betProjection = {
             _id: false,
             uid: false,
@@ -36,7 +36,7 @@ export default class HistoryQuery {
             __v: false,
             __archive: false,
         };
-        const bets = await this.betRepository
+        const bets = await this.betsRepository
             .find(filter, betProjection, { sort: { _id: -1 }, skip: numberOfSkippedBets, limit: pageSize })
             .lean()
             .exec();
@@ -46,7 +46,7 @@ export default class HistoryQuery {
             betLogs = await Promise.all(
                 bets.map(async (bet) => {
                     const round = await this.roundQuery.getOne(bet.phien, { _id: false });
-                    const betLogDetails = this.betLogRepository ? await this.getBetLogDetails(player, bet.phien) : [];
+                    const betLogDetails = this.betLogsRepository ? await this.getBetLogDetails(player, bet.phien) : [];
 
                     return {
                         ...this.convertBet(bet),
@@ -62,7 +62,7 @@ export default class HistoryQuery {
     }
 
     getBetLogDetails(player, roundId) {
-        return this.betLogRepository
+        return this.betLogsRepository
             .find({ phien: roundId, uid: player.UID }, { _id: false, time: true, choice: true, amount: true }, { sort: { _id: -1 } })
             .lean()
             .exec();

@@ -13,7 +13,7 @@ export default class TableContainerRegistry extends ContainerRegistry {
         super.registerModels();
 
         this.container.register({
-            tempBetRepository: asValue(undefined),
+            tempBetsRepository: asValue(undefined),
         });
     }
 

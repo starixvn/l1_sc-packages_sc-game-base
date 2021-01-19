@@ -20,7 +20,7 @@ export default class BaseGameCron {
      * @param {RunningRoundInfoPublisher} dependencies.runningRoundInfoPublisher
      * @param {logger} dependencies.logService
      * @param {mongoose.Model} dependencies.gameConfigsRepository
-     * @param {mongoose.Model} dependencies.roundRepository
+     * @param {mongoose.Model} dependencies.roundsRepository
      */
     constructor({
         definition,
@@ -31,7 +31,7 @@ export default class BaseGameCron {
         runningRoundInfoPublisher,
         logService,
         gameConfigsRepository,
-        roundRepository,
+        roundsRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -41,11 +41,11 @@ export default class BaseGameCron {
         this.runningRoundInfoPublisher = runningRoundInfoPublisher;
         this.logService = logService;
         this.gameConfigsRepository = gameConfigsRepository;
-        this.roundRepository = roundRepository;
+        this.roundsRepository = roundsRepository;
     }
 
     async start() {
-        const lastRound = await this.roundRepository
+        const lastRound = await this.roundsRepository
             .findOne({}, "id", { sort: { id: -1 } })
             .lean()
             .exec();

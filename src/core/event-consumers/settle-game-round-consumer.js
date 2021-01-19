@@ -13,23 +13,23 @@ export default class SettleGameRoundConsumer {
      * @param {RoundResultPublisher} dependencies.roundResultPublisher
      * @param {UserBetResultPublisher} dependencies.userBetResultPublisher
      * @param {endGameApi} dependencies.endGame
-     * @param {mongoose.Model} dependencies.roundRepository
-     * @param {mongoose.Model} dependencies.betRepository
+     * @param {mongoose.Model} dependencies.roundsRepository
+     * @param {mongoose.Model} dependencies.betsRepository
      */
-    constructor({ definition, gameData, roundResultPublisher, userBetResultPublisher, endGame, roundRepository, betRepository }) {
+    constructor({ definition, gameData, roundResultPublisher, userBetResultPublisher, endGame, roundsRepository, betsRepository }) {
         this.definition = definition;
         this.gameData = gameData;
         this.roundResultPublisher = roundResultPublisher;
         this.userBetResultPublisher = userBetResultPublisher;
         this.endGame = endGame;
-        this.roundRepository = roundRepository;
-        this.betRepository = betRepository;
+        this.roundsRepository = roundsRepository;
+        this.betsRepository = betsRepository;
     }
 
     async settleRound() {
         const result = this.generateResult();
         const settlementResult = this.definition.settle(result);
-        const newRound = await this.roundRepository.create({
+        const newRound = await this.roundsRepository.create({
             result,
             settlementResult,
             time: new Date(),
@@ -56,7 +56,7 @@ export default class SettleGameRoundConsumer {
     }
 
     queryBets(roundId) {
-        return this.betRepository.find({ phien: roundId }).exec();
+        return this.betsRepository.find({ phien: roundId }).exec();
     }
 
     async settleBets({ result, settlementResult, roundId, time }) {

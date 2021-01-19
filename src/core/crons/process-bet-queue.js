@@ -16,17 +16,17 @@ export default class ProcessBetQueue {
      * @param {PlaceBetPublisher} dependencies.placeBetPublisher
      * @param {placeBetApi} dependencies.placeBet
      * @param {logger} dependencies.logService
-     * @param {mongoose.Model} dependencies.betRepository
-     * @param {mongoose.Model} dependencies.betLogRepository
+     * @param {mongoose.Model} dependencies.betsRepository
+     * @param {mongoose.Model} dependencies.betLogsRepository
      */
-    constructor({ definition, gameData, placeBetPublisher, placeBet, logService, betRepository, betLogRepository }) {
+    constructor({ definition, gameData, placeBetPublisher, placeBet, logService, betsRepository, betLogsRepository }) {
         this.definition = definition;
         this.gameData = gameData;
         this.placeBetPublisher = placeBetPublisher;
         this.placeBet = placeBet;
         this.logService = logService;
-        this.betRepository = betRepository;
-        this.betLogRepository = betLogRepository;
+        this.betsRepository = betsRepository;
+        this.betLogsRepository = betLogsRepository;
     }
 
     start() {
@@ -78,7 +78,7 @@ export default class ProcessBetQueue {
     }
 
     async handleSuccessBet(player, balance, roundId, bet) {
-        if (this.betLogRepository) {
+        if (this.betLogsRepository) {
             await this.insertBetLog(player, roundId, bet);
         }
 
@@ -121,7 +121,7 @@ export default class ProcessBetQueue {
             newBet.siteId = player.session.siteId;
         }
 
-        await this.betRepository.updateOne(
+        await this.betsRepository.updateOne(
             existingBetFilter,
             { $inc: existingBetIncrement, $setOnInsert: newBet },
             { upsert: true, setDefaultsOnInsert: true }
@@ -144,7 +144,7 @@ export default class ProcessBetQueue {
             newBetLog.siteId = player.session.siteId;
         }
 
-        await this.betLogRepository.create(newBetLog);
+        await this.betLogsRepository.create(newBetLog);
     }
 
     decreaseBetTracks(playerName, bet) {
