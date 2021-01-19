@@ -12,7 +12,7 @@ import { authenticationHelpers } from "./helpers";
 import { HistoryQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
 
-const { asClass, asFunction, asValue, createContainer, InjectionMode } = awilix;
+const { asClass, asValue, createContainer, InjectionMode } = awilix;
 
 export default class ContainerRegistry {
     /**
@@ -31,6 +31,7 @@ export default class ContainerRegistry {
         this.container.register({
             appConfigs: asValue(appConfigs),
             adminSecretKey: asValue(appConfigs.adminSecretKey),
+            gameId: asValue(definition.id),
             gameName: asValue(definition.name),
             definition: asValue(definition),
             gameData: asValue(gameData),
