@@ -5,6 +5,7 @@
     "main": "./src/index.js",
     "scripts": {
         "test": "jest",
+        "test-coverage": "jest --collect-coverage",
         "reg": "npm set registry http://npm.lumigame.com",
         "verpatch": "npm version patch",
         "verminor": "npm version minor",
