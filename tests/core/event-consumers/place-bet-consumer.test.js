@@ -1,10 +1,11 @@
 import { PlaceBetConsumer } from "../../../src/core/event-consumers";
-import { PlaceBetPublisher } from "../../../src/core/event-publishers";
+import { BaseEventPublisher } from "../../../src/core/event-publishers";
 
+jest.mock("../../../src/core/event-publishers/base-event-publisher");
 describe("init consumer", () => {
     it("should init publisher", () => {
-        new PlaceBetConsumer({}, {});
+        new PlaceBetConsumer({}, {}, new BaseEventPublisher("", {}));
 
-        expect(PlaceBetPublisher).toHaveBeenCalledTimes(1);
+        expect(BaseEventPublisher).toHaveBeenCalledTimes(1);
     });
 });

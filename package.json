@@ -14,6 +14,9 @@
         "unpublish": "npm unpublish --force sc-base-database",
         "semantic-release": "semantic-release"
     },
+    "jest": {
+        "testEnvironment": "node"
+    },
     "author": {
         "email": "pentagon@luminetsoft.com",
         "name": "pentagon"
