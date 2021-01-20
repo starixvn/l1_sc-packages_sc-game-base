@@ -18,7 +18,7 @@ export default class HistoryQuery {
         return bet;
     }
 
-    async queryHistory(player, page, pageSize = 8) {
+    async queryHistory(player, page, pageSize) {
         if (page < 1 || !player) {
             return {};
         }

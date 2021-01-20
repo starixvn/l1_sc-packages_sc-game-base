@@ -89,7 +89,11 @@ export default class BaseSocketRouter {
                 return;
             }
 
-            const history = await this.historyQuery.queryHistory(this.gameData.realPlayers[this.socketClient.id], payload.page);
+            const history = await this.historyQuery.queryHistory(
+                this.gameData.realPlayers[this.socketClient.id],
+                payload.page,
+                this.definition.historyPageSize
+            );
 
             this.socketClient.emit(this.definition.name, history);
         } catch (error) {
