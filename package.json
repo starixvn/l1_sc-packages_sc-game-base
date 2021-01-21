@@ -15,6 +15,11 @@
         "unpublish": "npm unpublish --force sc-base-database",
         "semantic-release": "semantic-release"
     },
+    "jestSonar": {
+        "reportPath": "reports",
+        "reportFile": "test-reporter.xml",
+        "indent": 4
+    },
     "author": {
         "email": "pentagon@luminetsoft.com",
         "name": "pentagon"
@@ -29,6 +34,7 @@
         "cron": "^1.8.2",
         "express": "^4.17.1",
         "helmet": "^3.23.3",
+        "jest-sonar-reporter": "^2.0.0",
         "lodash": "^4.17.19",
         "mongoose": "^5.9.25",
         "morgan": "^1.10.0",
