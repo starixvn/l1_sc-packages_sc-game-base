@@ -130,6 +130,16 @@ export default class SettleGameRoundConsumer {
     }
 
     async callEndGame(bet, roundId, time, betResult) {
+        const { gameInfo, settlementInfo } = this.formatEndGameInfo(bet, roundId, time, betResult);
+
+        const apiResult = await this.endGame(bet.uid, gameInfo, settlementInfo);
+
+        if (!apiResult.isOk) {
+            this.userBetResultPublisher.publishApiError(bet.uid, apiResult.response);
+        }
+    }
+
+    formatEndGameInfo(bet, roundId, time, betResult) {
         const gameInfo = {
             gameId: this.definition.id,
             gameRoundId: roundId,
@@ -154,10 +164,6 @@ export default class SettleGameRoundConsumer {
             settlementInfo.redLost = betResult.totalLost;
         }
 
-        const apiResult = await this.endGame(bet.uid, gameInfo, settlementInfo);
-
-        if (!apiResult.isOk) {
-            this.userBetResultPublisher.publishApiError(bet.uid, apiResult.response);
-        }
+        return { gameInfo, settlementInfo };
     }
 }
