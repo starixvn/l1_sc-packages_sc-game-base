@@ -1,6 +1,7 @@
-import UserDisconnectConsumer from "../../../src/core/event-consumers/user-disconnect-consumer";
-import GameData from "../../../src/core/game-data";
 import { jest } from "@jest/globals";
+
+import UserDisconnectConsumer from "./../../src/core/event-consumers/user-disconnect-consumer";
+import GameData from "./../../src/core/game-data";
 
 jest.useFakeTimers();
 
@@ -15,7 +16,6 @@ describe("consume test", () => {
         const consumer = new UserDisconnectConsumer(gameData);
         consumer.consume({ id: 123 });
         jest.runAllTimers();
-        
         expect(setTimeout).toHaveBeenCalled();
         expect(Object.keys(gameData.realPlayers)).toHaveLength(0);
     });
