@@ -34,7 +34,6 @@
         "cron": "^1.8.2",
         "express": "^4.17.1",
         "helmet": "^3.23.3",
-        "jest-sonar-reporter": "^2.0.0",
         "lodash": "^4.17.19",
         "mongoose": "^5.9.25",
         "morgan": "^1.10.0",
@@ -59,6 +58,8 @@
         "husky": "^4.2.5",
         "install": "^0.13.0",
         "jest": "^26.6.3",
+        "jest-auto-stub": "^1.0.8",
+        "jest-sonar-reporter": "^2.0.0",
         "sc-semantic-release": "^1.2.0",
         "semantic-release": "^17.1.1"
     },
