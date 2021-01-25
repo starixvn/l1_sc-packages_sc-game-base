@@ -28,14 +28,14 @@ export default class UserSignInConsumer {
         }
 
         const userSession = await this.userSessionsRepository.findOne({ sessionId: payload.ss }).lean().exec();
-        const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
 
         if (
-            userInfo &&
             userSession &&
             userSession.username === payload.username &&
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
+            const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
+
             Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
                 if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
                     realPlayer.socketClient.disconnect(true);
@@ -43,7 +43,9 @@ export default class UserSignInConsumer {
                 }
             });
 
-            this.handleSignInSuccess(socketClient, userInfo, userSession);
+            if (userInfo) {
+                this.handleSignInSuccess(socketClient, userInfo, userSession);
+            }
         } else {
             this.handleUnauthorizedSignIn(socketClient);
         }
