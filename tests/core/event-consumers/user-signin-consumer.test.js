@@ -1,10 +1,10 @@
-import { reveal, stub } from "jest-auto-stub";
+import { stub, stubMongooseModel } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import SocketIO from "socket.io";
 
-import GameData from "../../../src/core/game-data";
 import UserSignInConsumer from "./../../../src/core/event-consumers/user-signin-consumer";
 import UserSignInPublisher from "./../../../src/core/event-publishers/user-signin-publisher";
+import GameData from "./../../../src/core/game-data";
 
 describe("user signing in testing", () => {
     const gameData = new GameData(0);
@@ -13,10 +13,10 @@ describe("user signing in testing", () => {
     const userSignInPublisher = stub(UserSignInPublisher);
 
     /** @type {mongoose.Model}*/
-    const userInfosRepository = stub(mongoose.Model.prototype);
+    const userInfosRepository = stubMongooseModel(mongoose.Model);
 
     /** @type {mongoose.Model}*/
-    const userSessionsRepository = stub(mongoose.Model.prototype);
+    const userSessionsRepository = stubMongooseModel(mongoose.Model);
 
     const consumer = new UserSignInConsumer(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository);
 
@@ -53,11 +53,7 @@ describe("user signing in testing", () => {
             ss: "unexisting ID",
         };
 
-        reveal(userSessionsRepository).findOne.mockReturnValueOnce({
-            lean: () => ({
-                exec: () => null,
-            }),
-        });
+        userSessionsRepository.findOne.mockReturnValueOnce(null);
 
         // act
         await consumer.consume(socketClient, payload);
