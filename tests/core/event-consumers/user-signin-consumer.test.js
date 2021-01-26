@@ -1,4 +1,4 @@
-import { stub, stubMongooseModel } from "jest-micro-auto-stub";
+import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import SocketIO from "socket.io";
 
@@ -13,10 +13,10 @@ describe("user signing in testing", () => {
     const userSignInPublisher = stub(UserSignInPublisher);
 
     /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongooseModel(mongoose.Model);
+    const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
 
     /** @type {mongoose.Model}*/
-    const userSessionsRepository = stubMongooseModel(mongoose.Model);
+    const userSessionsRepository = stubMongooseModelStupidly(mongoose.Model);
 
     const consumer = new UserSignInConsumer(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository);
 
@@ -47,7 +47,7 @@ describe("user signing in testing", () => {
         expect(socketClient.disconnect).toHaveBeenCalled();
     });
 
-    it("unexisting session ID makes the consumer publish unauthorized message to client ", async () => {
+    it("unexisting session ID makes the consumer publish unauthorized message to client", async () => {
         // arrange
         const payload = {
             ss: "unexisting ID",
@@ -60,5 +60,20 @@ describe("user signing in testing", () => {
 
         // assert
         expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
+    });
+
+    it("unexisting session ID makes the consumer disconnect the socket", async () => {
+        // arrange
+        const payload = {
+            ss: "unexisting ID",
+        };
+
+        userSessionsRepository.findOne.mockReturnValueOnce(null);
+
+        // act
+        await consumer.consume(socketClient, payload);
+
+        // assert
+        expect(socketClient.disconnect).toHaveBeenCalled();
     });
 });
