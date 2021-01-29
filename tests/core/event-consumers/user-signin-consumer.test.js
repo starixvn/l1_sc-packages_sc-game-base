@@ -1,6 +1,6 @@
 import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
-import SocketIO from "socket.io";
+import socketIO from "socket.io";
 
 import UserSignInConsumer from "./../../../src/core/event-consumers/user-signin-consumer";
 import UserSignInPublisher from "./../../../src/core/event-publishers/user-signin-publisher";
@@ -20,8 +20,8 @@ describe("user signing in testing", () => {
 
     const consumer = new UserSignInConsumer(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository);
 
-    /** @type {SocketIO.Socket} */
-    const socketClient = stub(SocketIO.Socket);
+    /** @type {socketIO.Socket} */
+    const socketClient = stub(socketIO.Socket);
 
     it.each([undefined, null])("undefined/null payload makes the consume return undefined", async (payload) => {
         // act
@@ -49,11 +49,7 @@ describe("user signing in testing", () => {
 
     it("unexisting session ID makes the consumer publish unauthorized message to client", async () => {
         // arrange
-        const payload = {
-            ss: "unexisting ID",
-        };
-
-        userSessionsRepository.findOne.mockReturnValueOnce(null);
+        const payload = arrangeUnexistingSessionId();
 
         // act
         await consumer.consume(socketClient, payload);
@@ -64,11 +60,7 @@ describe("user signing in testing", () => {
 
     it("unexisting session ID makes the consumer disconnect the socket", async () => {
         // arrange
-        const payload = {
-            ss: "unexisting ID",
-        };
-
-        userSessionsRepository.findOne.mockReturnValueOnce(null);
+        const payload = arrangeUnexistingSessionId();
 
         // act
         await consumer.consume(socketClient, payload);
@@ -76,4 +68,155 @@ describe("user signing in testing", () => {
         // assert
         expect(socketClient.disconnect).toHaveBeenCalled();
     });
+
+    const arrangeUnexistingSessionId = () => {
+        const payload = { ss: "unexisting ID" };
+
+        userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
+
+        return payload;
+    };
+
+    it("unexisting userInfo makes the consumer publish unauthorized message to client", async () => {
+        // arrange
+        const payload = arrangeUnexistingUserInfo();
+
+        // act
+        await consumer.consume(socketClient, payload);
+
+        // assert
+        expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
+    });
+
+    it("unexisting userInfo makes the consumer disconnect the socket", async () => {
+        // arrange
+        const payload = arrangeUnexistingUserInfo();
+
+        // act
+        await consumer.consume(socketClient, payload);
+
+        // assert
+        expect(socketClient.disconnect).toHaveBeenCalled();
+    });
+
+    const arrangeUnexistingUserInfo = () => {
+        const payload = { ss: "valid ID but no associated userInfo" };
+
+        userSessionsRepository.findOne().lean().exec.mockReturnValueOnce({ userId: "unexisting user ID" });
+        userInfosRepository.findOne().lean().exec.mockReturnValueOnce(null);
+
+        return payload;
+    };
+
+    it("mismatching username between payload and stored session makes the consumer publish unauthorized message to client", async () => {
+        // arrange
+        const payload = arrangeMismatchUsername();
+
+        // act
+        await consumer.consume(socketClient, payload);
+
+        // assert
+        expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
+    });
+
+    it("mismatching username between payload and stored session makes the consumer disconnect the socket", async () => {
+        // arrange
+        const payload = arrangeMismatchUsername();
+
+        // act
+        await consumer.consume(socketClient, payload);
+
+        // assert
+        expect(socketClient.disconnect).toHaveBeenCalled();
+    });
+
+    const arrangeMismatchUsername = () => {
+        const payload = {
+            ss: "any valid session ID",
+            username: "username A",
+        };
+        const storedSession = {
+            userId: "valid user ID",
+            username: "username B",
+        };
+        const storedUserInfo = { name: "hello worlld" };
+
+        userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(storedSession);
+        userInfosRepository.findOne().lean().exec.mockReturnValueOnce(storedUserInfo);
+
+        return payload;
+    };
+
+    it("mismatching browser agent between payload and stored session makes the consumer publish unauthorized message to client", async () => {
+        // arrange
+        const payload = arrangeMismatchBrowserAgent();
+
+        // act
+        await consumer.consume(socketClient, payload);
+
+        // assert
+        expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
+    });
+
+    it("mismatching browser agent between payload and stored session makes the consumer disconnect the socket", async () => {
+        // arrange
+        const payload = arrangeMismatchBrowserAgent();
+
+        // act
+        await consumer.consume(socketClient, payload);
+
+        // assert
+        expect(socketClient.disconnect).toHaveBeenCalled();
+    });
+
+    const arrangeMismatchBrowserAgent = () => {
+        const payload = {
+            ss: "any valid session ID",
+            username: "username",
+        };
+        const storedSession = {
+            userId: "valid user ID",
+            username: "username",
+            browserUserAgent: "chrome",
+        };
+        const storedUserInfo = { name: "hello worlld" };
+
+        userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(storedSession);
+        userInfosRepository.findOne().lean().exec.mockReturnValueOnce(storedUserInfo);
+
+        socketClient.request = { headers: { "user-agent": "firefox" } };
+
+        return payload;
+    };
+
+    it("valid payload makes the consumer publish signIn message via the socket", async () => {
+        // arrange
+        const payload = arrangeValidSession();
+
+        // act
+        await consumer.consume(socketClient, payload);
+
+        // assert
+        expect(socketClient.emit).toBeCalledWith("signedIn");
+    });
+
+    const arrangeValidSession = (browserAgent = "chrome", storedBrowserAgent = "chrome") => {
+        const payload = {
+            ss: "any valid session ID",
+            username: "username",
+        };
+        const storedSession = {
+            userId: "valid user ID",
+            username: "username",
+            browserUserAgent: storedBrowserAgent,
+        };
+        const storedUserInfo = { name: "hello worlld" };
+
+        userSessionsRepository.findOne().lean().exec.mockReturnValue(storedSession);
+        userInfosRepository.findOne().lean().exec.mockReturnValue(storedUserInfo);
+
+        socketClient.request = { headers: { "user-agent": browserAgent } };
+
+        return payload;
+    };
 });
