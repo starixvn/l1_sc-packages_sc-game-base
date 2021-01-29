@@ -1,3 +1,5 @@
+import "jest-extended";
+
 import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import socketIO from "socket.io";
@@ -191,13 +193,45 @@ describe("user signing in testing", () => {
 
     it("valid payload makes the consumer publish signIn message via the socket", async () => {
         // arrange
-        const payload = arrangeValidSession();
+        const { payload } = arrangeValidSession();
 
         // act
         await consumer.consume(socketClient, payload);
 
         // assert
         expect(socketClient.emit).toBeCalledWith("signedIn");
+    });
+
+    it("valid payload makes the consumer cache user's data and socket to the gameData", async () => {
+        // arrange
+        const { payload } = arrangeValidSession();
+        const socketClientId = "socket id";
+
+        gameData.realPlayers = [];
+        socketClient.id = socketClientId;
+
+        // act
+        await consumer.consume(socketClient, payload);
+
+        // assert
+        expect(gameData.realPlayers).toContainKey(socketClientId);
+    });
+
+    it("valid payload makes the consumer ensure each member only takes one entry in the gameData", async () => {
+        // arrange
+        const { payload, userSession } = arrangeValidSession();
+        const socketClientId = "socket id";
+
+        gameData.realPlayers = [];
+        socketClient.id = socketClientId;
+
+        // act
+        await consumer.consume(socketClient, payload);
+
+        // assert
+        const allCachedRealPlayers = Object.values(gameData.realPlayers);
+
+        expect(allCachedRealPlayers.filter((realPlayer) => realPlayer.UID === userSession.userId).length).toBe(1);
     });
 
     const arrangeValidSession = (browserAgent = "chrome", storedBrowserAgent = "chrome") => {
@@ -217,6 +251,6 @@ describe("user signing in testing", () => {
 
         socketClient.request = { headers: { "user-agent": browserAgent } };
 
-        return payload;
+        return { payload, userSession: storedSession, userInfo: storedUserInfo };
     };
 });
