@@ -222,7 +222,7 @@ describe("user signing in testing", () => {
         const { payload, userSession } = arrangeValidSession();
         const socketClientId = "socket id";
 
-        gameData.realPlayers[socketClientId] = { UID: userSession.userId };
+        gameData.realPlayers[socketClientId] = { UID: userSession.userId, socketClient: {} };
         socketClient.id = socketClientId;
 
         // act
