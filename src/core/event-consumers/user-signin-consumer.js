@@ -52,7 +52,7 @@ export default class UserSignInConsumer {
     handleSignInSuccess(socketClient, userInfo, userSession) {
         const userData = {
             UID: userSession.userId,
-            profile: { name: userInfo.name },
+            profile: { name: userInfo.name, minBet: userInfo.minBet, maxBet: userInfo.maxBet },
             session: userSession,
             socketClient,
         };

@@ -18,6 +18,7 @@ export default class ProcessBetQueue {
      * @param {logger} dependencies.logService
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.betLogsRepository
+     * @param {mongoose.Model} dependencies.betLogsRepository
      */
     constructor({ definition, gameData, placeBetPublisher, placeBet, logService, betsRepository, betLogsRepository }) {
         this.definition = definition;
@@ -26,7 +27,7 @@ export default class ProcessBetQueue {
         this.placeBet = placeBet;
         this.logService = logService;
         this.betsRepository = betsRepository;
-        this.betLogsRepository = betLogsRepository;
+        this.userInfosRepository = userInfosRepository;
     }
 
     start() {
@@ -56,15 +57,33 @@ export default class ProcessBetQueue {
     async proceedBet(player, payload) {
         const betInfo = this.formatApiBetInfo(payload);
         const apiResult = await this.placeBet({ id: player.UID, session: player.session }, betInfo);
+        const realPlayer = Object.values(this.gameData.realPlayers).filter((realPlayer) => realPlayer.profile.name === player.profile.name);
+        const { response } = apiResult;
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, apiResult.response, betInfo.gameRoundId, payload);
+            await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload);
+
+            if (realPlayer.profile.minBet !== response.minBet || realPlayer.profile.maxBet !== response.maxBet) {
+                await updateUserStakeLevel(realPlayer.UID, response.minBet, response.maxBet);
+            }
         } else {
             const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
-            const notice = apiResult.response.inSufficientBalance ? insufficientNotice : apiResult.response;
+            const notice = response.inSufficientBalance ? insufficientNotice : response;
 
             this.handleFailedBet(player, notice, payload);
+
+            if (
+                (realPlayer.profile.minBet !== response.apiError.minBet || realPlayer.profile.maxBet !== response.apiError.maxBet) &&
+                response.apiError.minBet > 0 &&
+                response.apiError.maxBet > 0
+            ) {
+                await updateUserStakeLevel(realPlayer.UID, response.apiError.minBet, response.apiError.maxBet);
+            }
         }
+    }
+
+    async updateUserStakeLevel(userId, minBet, maxBet) {
+        await this.userInfosRepository.updateOne({ id: userId }, { minBet, maxBet });
     }
 
     formatApiBetInfo(payload) {
