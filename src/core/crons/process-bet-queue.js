@@ -18,15 +18,16 @@ export default class ProcessBetQueue {
      * @param {logger} dependencies.logService
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.betLogsRepository
-     * @param {mongoose.Model} dependencies.betLogsRepository
+     * @param {mongoose.Model} dependencies.userInfosRepository
      */
-    constructor({ definition, gameData, placeBetPublisher, placeBet, logService, betsRepository, betLogsRepository }) {
+    constructor({ definition, gameData, placeBetPublisher, placeBet, logService, betsRepository, betLogsRepository, userInfosRepository }) {
         this.definition = definition;
         this.gameData = gameData;
         this.placeBetPublisher = placeBetPublisher;
         this.placeBet = placeBet;
         this.logService = logService;
         this.betsRepository = betsRepository;
+        this.betLogsRepository = betLogsRepository;
         this.userInfosRepository = userInfosRepository;
     }
 
@@ -73,9 +74,9 @@ export default class ProcessBetQueue {
             this.handleFailedBet(player, notice, payload);
 
             if (
-                (realPlayer.profile.minBet !== response.apiError.minBet || realPlayer.profile.maxBet !== response.apiError.maxBet) &&
-                response.apiError.minBet > 0 &&
-                response.apiError.maxBet > 0
+                (realPlayer.profile.minBet !== response.apiError?.minBet || realPlayer.profile.maxBet !== response.apiError?.maxBet) &&
+                response.apiError?.minBet > 0 &&
+                response.apiError?.maxBet > 0
             ) {
                 await updateUserStakeLevel(realPlayer.UID, response.apiError.minBet, response.apiError.maxBet);
             }
