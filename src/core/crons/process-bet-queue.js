@@ -58,14 +58,13 @@ export default class ProcessBetQueue {
     async proceedBet(player, payload) {
         const betInfo = this.formatApiBetInfo(payload);
         const apiResult = await this.placeBet({ id: player.UID, session: player.session }, betInfo);
-        const realPlayer = Object.values(this.gameData.realPlayers).filter((realPlayer) => realPlayer.profile.name === player.profile.name);
         const { response } = apiResult;
 
         if (apiResult.isOk) {
             await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload);
 
-            if (realPlayer.profile.minBet !== response.minBet || realPlayer.profile.maxBet !== response.maxBet) {
-                await updateUserStakeLevel(realPlayer.UID, response.minBet, response.maxBet);
+            if (player.profile.minBet !== response.minBet || player.profile.maxBet !== response.maxBet) {
+                await updateUserStakeLevel(player, response.minBet, response.maxBet);
             }
         } else {
             const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
@@ -74,17 +73,19 @@ export default class ProcessBetQueue {
             this.handleFailedBet(player, notice, payload);
 
             if (
-                (realPlayer.profile.minBet !== response.apiError?.minBet || realPlayer.profile.maxBet !== response.apiError?.maxBet) &&
+                (player.profile.minBet !== response.apiError?.minBet || player.profile.maxBet !== response.apiError?.maxBet) &&
                 response.apiError?.minBet > 0 &&
                 response.apiError?.maxBet > 0
             ) {
-                await updateUserStakeLevel(realPlayer.UID, response.apiError.minBet, response.apiError.maxBet);
+                await updateUserStakeLevel(player, response.apiError.minBet, response.apiError.maxBet);
             }
         }
     }
 
-    async updateUserStakeLevel(userId, minBet, maxBet) {
-        await this.userInfosRepository.updateOne({ id: userId }, { minBet, maxBet });
+    async updateUserStakeLevel(player, minBet, maxBet) {
+        await this.userInfosRepository.updateOne({ id: player.UID }, { minBet, maxBet });
+        player.minBet = minBet;
+        player.maxBet = maxBet;
     }
 
     formatApiBetInfo(payload) {

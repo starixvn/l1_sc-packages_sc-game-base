@@ -45,10 +45,9 @@ export default class PlaceBetConsumer {
         const configs = this.gameData.gameConfigs;
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
         const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
-        const realPlayer = Object.values(this.gameData.realPlayers).filter((realPlayer) => realPlayer.profile.name === player.profile.name);
-        const minBet = Math.max(realPlayer.profile.minBet, configs.minbet);
-        const maxBet = Math.min(realPlayer.profile.maxBet, configs.maxbet);
-        const maxBetPerChoice = Math.min(realPlayer.profile.maxBet, configs.choices_maxbet[betChoice]);
+        const minBet = Math.max(player.profile.minBet, configs.minbet);
+        const maxBet = Math.min(player.profile.maxBet, configs.maxbet);
+        const maxBetPerChoice = Math.min(player.profile.maxBet, configs.choices_maxbet[betChoice]);
 
         return [
             {

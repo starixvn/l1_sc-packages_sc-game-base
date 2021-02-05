@@ -1,5 +1,3 @@
-import { jest } from "@jest/globals";
-
 import UserDisconnectConsumer from "./../../../src/core/event-consumers/user-disconnect-consumer";
 import GameData from "./../../../src/core/game-data";
 
