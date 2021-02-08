@@ -1,4 +1,4 @@
-import { UserSignInPublisher } from "./../../core/event-publishers";
+import UserSignInPublisher from "./../../core/event-publishers/user-signin-publisher";
 
 export default class TableUserSignInPublisher extends UserSignInPublisher {
     publishToGameMessage(socketClient, toGameName) {
