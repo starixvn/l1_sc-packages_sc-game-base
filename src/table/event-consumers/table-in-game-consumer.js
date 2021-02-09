@@ -1,6 +1,6 @@
-import { BaseEventConsumers } from "../../core";
+import InGameConsumer from "../../../src/core/event-consumers/in-game-consumer";
 
-export default class TableInGameConsumer extends BaseEventConsumers.InGameConsumer {
+export default class TableInGameConsumer extends InGameConsumer {
     async consume(realPlayer) {
         const payload = await this.buildPayload(realPlayer);
         const player = {

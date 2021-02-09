@@ -4,11 +4,11 @@ import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import socketIO from "socket.io";
 
-import UserSignInConsumer from "../../../src/core/event-consumers/user-signin-consumer";
-import TableUserSignInConsumer from "../../../src/table/event-consumers/table-user-signin-consumer";
-import TableUserSignInPublisher from "../../../src/table/event-publishers/table-user-signin-publisher";
-import TableGameData from "../../../src/table/table-game-data";
-import TableGameDefinition from "../../../src/table/table-game-definition";
+import UserSignInConsumer from "../../../core/event-consumers/user-signin-consumer";
+import TableUserSignInPublisher from "../../event-publishers/table-user-signin-publisher";
+import TableGameData from "../../table-game-data";
+import TableGameDefinition from "../../table-game-definition";
+import TableUserSignInConsumer from "../table-user-signin-consumer";
 
 describe("table user signin consumer in testing", () => {
     /** @type {TableUserSignInPublisher}*/

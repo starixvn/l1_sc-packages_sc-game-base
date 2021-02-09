@@ -1,7 +1,7 @@
 import "jest-extended";
 
-import UserSignInPublisher from "../../../src/core/event-publishers/user-signin-publisher";
-import TableUserSignInPublisher from "../../../src/table/event-publishers/table-user-signin-publisher";
+import UserSignInPublisher from "../../../core/event-publishers/user-signin-publisher";
+import TableUserSignInPublisher from "../table-user-signin-publisher";
 
 describe("table user signin publisher test", () => {
     const socketClient = {

@@ -2,10 +2,10 @@ import "jest-extended";
 
 import { stub } from "jest-micro-auto-stub";
 
-import UserDisconnectConsumer from "../../../src/core/event-consumers/user-disconnect-consumer";
-import BaseEventPublisher from "../../../src/core/event-publishers/base-event-publisher";
-import TableOutGameConsumer from "../../../src/table/event-consumers/table-out-game-consumer";
-import TableGameData from "../../../src/table/table-game-data";
+import UserDisconnectConsumer from "../../../core/event-consumers/user-disconnect-consumer";
+import BaseEventPublisher from "../../../core/event-publishers/base-event-publisher";
+import TableGameData from "../../table-game-data";
+import TableOutGameConsumer from "../table-out-game-consumer";
 
 describe("table out game consumer test", () => {
     const socketClient = {

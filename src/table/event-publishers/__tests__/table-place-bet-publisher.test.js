@@ -1,8 +1,8 @@
 import "jest-extended";
 
-import PlaceBetPublisher from "../../../src/core/event-publishers/place-bet-publisher";
-import TablePlaceBetPublisher from "../../../src/table/event-publishers/table-place-bet-publisher";
-import TableGameData from "../../../src/table/table-game-data";
+import PlaceBetPublisher from "../../../core/event-publishers/place-bet-publisher";
+import TableGameData from "../../table-game-data";
+import TablePlaceBetPublisher from "../table-place-bet-publisher";
 
 describe("table place bet publisher test", () => {
     const gameData = new TableGameData(0);
