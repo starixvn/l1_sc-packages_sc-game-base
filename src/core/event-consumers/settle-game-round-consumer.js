@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { endGame as endGameApi } from "sc-base-apis";
 
 import { RoundResultPublisher, UserBetResultPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
@@ -12,7 +11,7 @@ export default class SettleGameRoundConsumer {
      * @param {GameData} dependencies.gameData
      * @param {RoundResultPublisher} dependencies.roundResultPublisher
      * @param {UserBetResultPublisher} dependencies.userBetResultPublisher
-     * @param {endGameApi} dependencies.endGame
+     * @param {*} dependencies.endGame
      * @param {mongoose.Model} dependencies.roundsRepository
      * @param {mongoose.Model} dependencies.betsRepository
      */
@@ -119,7 +118,7 @@ export default class SettleGameRoundConsumer {
         return betResult;
     }
 
-    captureBetResult(uid, betResult) {}
+    captureBetResult(uid, betResult) { }
 
     collectRoundResult(result, settlementResult, roundId) {
         return {

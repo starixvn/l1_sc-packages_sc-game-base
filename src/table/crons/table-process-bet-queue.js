@@ -1,6 +1,6 @@
-import { Crons } from "./../../core";
+import ProcessBetQueue from "./../../core/crons/process-bet-queue";
 
-export default class TableProcessBetQueue extends Crons.ProcessBetQueue {
+export default class TableProcessBetQueue extends ProcessBetQueue {
     generatePlacingBetResult(player, balance, bet) {
         const { betChoice, amount } = bet;
         const ownBet = super.generatePlacingBetResult(player, balance, bet);

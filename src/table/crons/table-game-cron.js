@@ -1,6 +1,6 @@
-import { Crons } from "./../../core";
+import BaseGameCron from "./../../core/crons/base-game-cron";
 
-export default class TableGameCron extends Crons.BaseGameCron {
+export default class TableGameCron extends BaseGameCron {
     async start() {
         await this.bot.resetInRoomTrackings();
         await super.start();

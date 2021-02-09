@@ -2,7 +2,7 @@ import cron from "cron";
 import mongoose from "mongoose";
 import { logger } from "sc-common";
 
-import { SettleGameRoundConsumer } from "./../event-consumers";
+import SettleGameRoundConsumer from "./../event-consumers/settle-game-round-consumer";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";

@@ -2,12 +2,12 @@ import Chance from "chance";
 import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
-import { Crons } from "./../../core";
+import BaseBot from "./../../core/crons/base-bot";
 import { BaseEventPublisher } from "./../../core/event-publishers";
 import TableGameData from "./../table-game-data";
 import TableGameDefinition from "./../table-game-definition";
 
-export default class TableGameBot extends Crons.BaseBot {
+export default class TableGameBot extends BaseBot {
     /**
      * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData

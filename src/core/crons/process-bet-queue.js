@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { placeBet as placeBetApi } from "sc-base-apis";
 import { helpers, logger } from "sc-common";
 
 import { PlaceBetPublisher } from "./../event-publishers";
@@ -14,7 +13,7 @@ export default class ProcessBetQueue {
      * @param {GameDefinition} dependencies.definition
      * @param {GameData} dependencies.gameData
      * @param {PlaceBetPublisher} dependencies.placeBetPublisher
-     * @param {placeBetApi} dependencies.placeBet
+     * @param {*} dependencies.placeBet
      * @param {logger} dependencies.logService
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.betLogsRepository
