@@ -191,7 +191,7 @@ export default class ProcessBetQueue {
 
     generatePlacingBetResult(player, balance, bet) {
         const { amount, freeBet } = bet;
-        const { betTracks } = this.gameData.ingame[player.profile.name];
+        const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
 
         return {
             ownBets: betTracks,

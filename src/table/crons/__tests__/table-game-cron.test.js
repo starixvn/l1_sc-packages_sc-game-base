@@ -12,16 +12,26 @@ import TableGameBot from "../table-game-bot";
 import TableGameCron from "../table-game-cron";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../../../core/event-publishers";
 
-jest.mock("../../../core/crons/base-game-cron")
-
 describe("table game cron test", () => {
     const definition = new TableGameDefinition({ name: "game name" });
     const gameData = new TableGameData(0);
+
+    /** @type {TableGameBot}*/
     const bot = stub(TableGameBot);
+
+    /** @type {SettleGameRoundConsumer}*/
     const settleGameRoundConsumer = stub(SettleGameRoundConsumer);
+
+    /** @type {GameStatusPublisher}*/
     const gameStatusPublisher = stub(GameStatusPublisher);
+
+    /** @type {RunningRoundInfoPublisher}*/
     const runningRoundInfoPublisher = stub(RunningRoundInfoPublisher);
+
+
+    /** @type {logger}*/
     const logService = stub(logger);
+
     /** @type {mongoose.Model}*/
     const gameConfigsRepository = stubMongooseModelStupidly(mongoose.Model);
 
@@ -29,23 +39,45 @@ describe("table game cron test", () => {
     const roundsRepository = stubMongooseModelStupidly(mongoose.Model);
 
     /** @type {TableGameCron}*/
-    let tableGameCron;
-    beforeEach(() => {
-        tableGameCron = new TableGameCron({
-            definition: definition,
-            gameData: gameData,
-            bot: bot,
-            settleGameRoundConsumer: settleGameRoundConsumer,
-            gameStatusPublisher: gameStatusPublisher,
-            runningRoundInfoPublisher: runningRoundInfoPublisher,
-            logService: logService,
-            gameConfigsRepository: gameConfigsRepository,
-            roundsRepository: roundsRepository
-        })
+    const tableGameCron = new TableGameCron({
+        definition: definition,
+        gameData: gameData,
+        bot: bot,
+        settleGameRoundConsumer: settleGameRoundConsumer,
+        gameStatusPublisher: gameStatusPublisher,
+        runningRoundInfoPublisher: runningRoundInfoPublisher,
+        logService: logService,
+        gameConfigsRepository: gameConfigsRepository,
+        roundsRepository: roundsRepository
     })
-
 
     it("inherit BaseGameCron", () => {
         expect(tableGameCron instanceof BaseGameCron)
     });
+
+    it("start_always_calls specific methods", async () => {
+        // arrange
+        spyOn(bot, "resetInRoomTrackings");
+        spyOn(BaseGameCron.prototype, "start");
+
+        // act
+        await tableGameCron.start();
+
+        // assert
+        expect(bot.resetInRoomTrackings).toHaveBeenCalled();
+        expect(BaseGameCron.prototype.start).toHaveBeenCalled();
+    })
+
+    it("resetForNewRound_always_calls super", () => {
+        // arrange
+        spyOn(BaseGameCron.prototype, "resetForNewRound");
+
+        // act
+        tableGameCron.resetForNewRound();
+
+        // assert
+        expect(BaseGameCron.prototype.resetForNewRound).toHaveBeenCalled();
+        expect(gameData.chips).toEqual({});
+        expect(gameData.winningPlayers).toEqual({});
+    })
 })

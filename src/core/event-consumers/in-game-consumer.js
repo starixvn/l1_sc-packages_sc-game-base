@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { getBalance as getBalanceApi } from "sc-base-apis";
 
 import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
@@ -12,7 +11,7 @@ export default class InGameConsumer {
      * @param {GameData} gameData
      * @param {RoundQuery} roundQuery
      * @param {BaseEventPublisher} publisher
-     * @param {getBalanceApi} getBalance
+     * @param {*} getBalance
      * @param {mongoose.Model} userInfosRepository
      */
     constructor(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository) {
