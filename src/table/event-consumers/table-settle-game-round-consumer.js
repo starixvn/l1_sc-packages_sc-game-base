@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { endGame as endGameApi } from "sc-base-apis";
 
 import SettleGameRoundConsumer from "./../../core/event-consumers/settle-game-round-consumer";
 import { RoundResultPublisher, UserBetResultPublisher } from "./../../core/event-publishers";
@@ -19,7 +18,7 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
      * @param {TableGameData} dependencies.gameData
      * @param {RoundResultPublisher} dependencies.roundResultPublisher
      * @param {UserBetResultPublisher} dependencies.userBetResultPublisher
-     * @param {endGameApi} dependencies.endGame
+     * @param {*} dependencies.endGame
      * @param {mongoose.Model} dependencies.roundsRepository
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.tempBetsRepository
@@ -48,8 +47,8 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
     }
 
     async queryBets(roundId) {
-        const realPlayerBets = await this.betsRepository.find({ phien: roundId }).exec();
-        const botBets = await this.tempBetsRepository.find({ phien: roundId }).exec();
+        const realPlayerBets = await this.betsRepository.find({ phien: roundId }).lean().exec();
+        const botBets = await this.tempBetsRepository.find({ phien: roundId }).lean().exec();
 
         return realPlayerBets.concat(botBets);
     }
