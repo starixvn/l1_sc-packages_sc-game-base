@@ -1,8 +1,8 @@
-import GameData from "../../../src/core/game-data";
-import PlaceBetConsumer from "../../../src/core/event-consumers/place-bet-consumer";
-import BaseEventPublisher from "../../../src/core/event-publishers/base-event-publisher";
+import GameData from "../../game-data";
+import PlaceBetConsumer from "../place-bet-consumer";
+import BaseEventPublisher from "../../event-publishers/base-event-publisher";
 
-jest.mock("../../../src/core/event-publishers/base-event-publisher");
+jest.mock("../../event-publishers/base-event-publisher");
 
 describe("adjustBetTracks test", () => {
     it("should update bet choice's amount in bet tracks", () => {

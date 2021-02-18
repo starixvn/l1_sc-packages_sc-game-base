@@ -1,5 +1,5 @@
-import AdminPublisher from "../../../src/core/event-publishers/admin-publisher";
-import GameData from "./../../../src/core/game-data";
+import AdminPublisher from "../admin-publisher";
+import GameData from "../../game-data";
 
 describe("publishToAdmin test", () => {
     it("should call emit", () => {

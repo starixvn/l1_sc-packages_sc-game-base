@@ -1,5 +1,5 @@
-import UserDisconnectConsumer from "./../../../src/core/event-consumers/user-disconnect-consumer";
-import GameData from "./../../../src/core/game-data";
+import UserDisconnectConsumer from "../user-disconnect-consumer";
+import GameData from "../../game-data";
 
 jest.useFakeTimers();
 

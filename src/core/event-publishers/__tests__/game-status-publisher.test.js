@@ -1,5 +1,5 @@
-import GameStatusPublisher from "../../../src/core/event-publishers/game-status-publisher";
-import GameData from "./../../../src/core/game-data";
+import GameStatusPublisher from "../game-status-publisher";
+import GameData from "../../game-data";
 
 const gameData = new GameData();
 const gameName = "game";

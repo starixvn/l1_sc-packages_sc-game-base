@@ -1,5 +1,5 @@
-import PlaceBetPublisher from "../../../src/core/event-publishers/place-bet-publisher";
-import GameData from "./../../../src/core/game-data";
+import PlaceBetPublisher from "../place-bet-publisher";
+import GameData from "../../game-data";
 
 describe("publishGameFailedBet test", () => {
     it("should call publishToUser to selected userid", () => {

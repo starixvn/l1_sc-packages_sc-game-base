@@ -1,5 +1,5 @@
-import BaseEventPublisher from "../../../src/core/event-publishers/base-event-publisher";
-import GameData from "./../../../src/core/game-data";
+import BaseEventPublisher from "../base-event-publisher";
+import GameData from "../../game-data";
 
 describe("publishToAllUsers test", () => {
     it("should call emit for all socket clients", () => {

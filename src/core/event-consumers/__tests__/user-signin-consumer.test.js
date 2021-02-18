@@ -4,9 +4,9 @@ import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import socketIO from "socket.io";
 
-import UserSignInConsumer from "./../../../src/core/event-consumers/user-signin-consumer";
-import UserSignInPublisher from "./../../../src/core/event-publishers/user-signin-publisher";
-import GameData from "./../../../src/core/game-data";
+import UserSignInConsumer from "../user-signin-consumer";
+import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
+import GameData from "../../game-data";
 
 describe("user signing in testing", () => {
     const gameData = new GameData(0);
