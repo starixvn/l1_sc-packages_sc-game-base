@@ -7,17 +7,21 @@ describe("table http router test", () => {
     const router = new TableHttpRouter({}, gameData);
 
     it("inherit HttpRouter", () => {
-        expect(router instanceof HttpRouter)
-    })
+        expect(router instanceof HttpRouter);
+    });
 
     it("collectOnlineUsers_always_calls super", () => {
         // arrange
         spyOn(HttpRouter.prototype, "collectOnlineUsers");
+        gameData.players = {
+            1: { name: "bot1", type: true, red: 1000 },
+            2: { name: "bot2", type: true, red: 1000 },
+        };
 
         // act
         router.collectOnlineUsers();
 
         // assert
         expect(HttpRouter.prototype.collectOnlineUsers).toHaveBeenCalled();
-    })
-})
+    });
+});
