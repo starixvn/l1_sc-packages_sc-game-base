@@ -56,4 +56,47 @@ describe("http router test", () => {
             expect(res.send).toHaveBeenCalledWith({ error: true });
         });
     });
+
+    it("collectOnlineUsers_always_returns correct data", () => {
+        // arrange
+        const users = {
+            realUsers: [{ id: 1, name: "user1", currency: "USD" }],
+            uusUsers: [{ id: 2, name: "user2", currency: "UUS" }],
+        };
+        spyOn(router, "mapRealUsers").and.returnValue(users);
+        const expectedResult = {
+            totalRealPlayer: 1,
+            realUsers: [{ id: 1, name: "user1", currency: "USD" }],
+            totalUusPlayer: 1,
+            uusUsers: [{ id: 2, name: "user2", currency: "UUS" }],
+        };
+
+        // act
+        const actualResult = router.collectOnlineUsers();
+
+        // assert
+        expect(actualResult).toEqual(expectedResult);
+    });
+
+    it("mapRealUsers_always_returns correct data", () => {
+        // arrange
+        const socketClient = {
+            connected: true,
+        };
+        const players = [
+            { session: { memberName: "player1", memberId: 1, currency: "USD", characterName: "character1" }, socketClient },
+            { session: { memberName: "player2", memberId: 2, currency: "UUS", characterName: "character2" }, socketClient },
+        ];
+
+        const expectedResult = {
+            uusUsers: [{ name: "player2", id: 2, currency: "UUS", character: "character2" }],
+            realUsers: [{ name: "player1", id: 1, currency: "USD", character: "character1" }],
+        };
+
+        // act
+        const actualResult = router.mapRealUsers(players);
+
+        // assert
+        expect(actualResult).toEqual(expectedResult);
+    });
 });
