@@ -218,7 +218,7 @@ export default class TableGameBot extends BaseBot {
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
-                const user = await this.userInfosRepository.findOne({ id: bot.id }, "red").exec();
+                const user = await this.userInfosRepository.findOne({ id: bot.id }, "red").lean().exec();
 
                 if (user && user.red > amount) {
                     user.red -= amount;

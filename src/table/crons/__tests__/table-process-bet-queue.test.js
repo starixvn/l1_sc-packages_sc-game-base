@@ -26,23 +26,32 @@ describe("table process bet queue test", () => {
     /** @type {mongoose.Model}*/
     const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
 
-    const betQueue = new TableProcessBetQueue({ definition, gameData, placeBetPublisher, placeBet, logService, betsRepository, betLogsRepository, userInfosRepository })
+    const betQueue = new TableProcessBetQueue({
+        definition,
+        gameData,
+        placeBetPublisher,
+        placeBet,
+        logService,
+        betsRepository,
+        betLogsRepository,
+        userInfosRepository,
+    });
 
     it("inherit ProcessBetQueue", () => {
-        expect(betQueue instanceof ProcessBetQueue)
-    })
+        expect(betQueue instanceof ProcessBetQueue);
+    });
 
     it("generatePlacingBetResult_always_calls super", () => {
         // arrange
         const socketClient = {
-            emit: jest.fn()
-        }
+            emit: jest.fn(),
+        };
         const player = {
             UID: "uid",
             profile: {
-                name: "name"
+                name: "name",
             },
-            socketClient
+            socketClient,
         };
         const ownBet = {
             ownBets: {},
@@ -50,6 +59,7 @@ describe("table process bet queue test", () => {
             freeBet: false,
             user: { red: 2000 },
         };
+        gameData.players[player.UID] = player;
         spyOn(ProcessBetQueue.prototype, "generatePlacingBetResult").and.returnValue(ownBet);
 
         // act
@@ -57,5 +67,5 @@ describe("table process bet queue test", () => {
 
         // assert
         expect(ProcessBetQueue.prototype.generatePlacingBetResult).toHaveBeenCalledWith(player, 2000, 10);
-    })
-})
+    });
+});
