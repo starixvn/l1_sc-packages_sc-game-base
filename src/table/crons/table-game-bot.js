@@ -34,7 +34,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async processDisabledBots() {
-        const disabledBots = await this.userInfosRepository.find({ type: true, banned: false, disabled: true }).lean().exec();
+        const disabledBots = await this.userInfosRepository.find({ type: true, banned: false, disabled: true }).exec();
 
         await Promise.all(
             disabledBots.map(async (bot) => {
@@ -137,7 +137,6 @@ export default class TableGameBot extends BaseBot {
     async joinRoom() {
         const botUsers = await this.userInfosRepository
             .find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type")
-            .lean()
             .exec();
         const newBots = this.getBotsToJoin(botUsers);
 
@@ -218,7 +217,7 @@ export default class TableGameBot extends BaseBot {
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
-                const user = await this.userInfosRepository.findOne({ id: bot.id }, "red").lean().exec();
+                const user = await this.userInfosRepository.findOne({ id: bot.id }, "red").exec();
 
                 if (user && user.red > amount) {
                     user.red -= amount;

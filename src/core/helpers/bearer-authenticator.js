@@ -14,7 +14,7 @@ export default class BearerAuthenticator {
 
     async autoUpdateToken() {
         await this.updateToken();
-        setTimeout(this.refresh, timeout);
+        setTimeout(this.refresh.bind(this), timeout);
     }
 
     async refresh() {
@@ -22,7 +22,7 @@ export default class BearerAuthenticator {
             await this.updateToken();
         }
 
-        setTimeout(this.refresh, timeout);
+        setTimeout(this.refresh.bind(this), timeout);
     }
 
     isTokenExpired() {

@@ -15,7 +15,7 @@ describe("table game bot test", () => {
     const publisher = stub(BaseEventPublisher);
 
     /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
+    const userInfosRepository = { find: () => {}, findOne: () => {}, updateOne: () => {}, updateMany: () => {} };
 
     /** @type {mongoose.Model}*/
     const tempBetsRepository = stubMongooseModelStupidly(mongoose.Model);
@@ -54,7 +54,14 @@ describe("table game bot test", () => {
     it("processDisabledBots_exist disabled bot_remove bot", async () => {
         // arrange
         const disabledBots = [{ id: 1, name: "bot1", type: true }];
-        userInfosRepository.find().lean().exec.mockReturnValue(disabledBots);
+        spyOn(userInfosRepository, "find").and.callFake(() => {
+            return {
+                exec: () => {
+                    return disabledBots;
+                },
+            };
+        });
+
         spyOn(tableBot, "removeBot");
         tableBot.botsInRoom[1] = { id: 1, name: "bot1", type: true };
 
@@ -161,6 +168,11 @@ describe("table game bot test", () => {
         // arrange
         spyOn(tableBot, "getBotsToJoin").and.returnValue([{ id: 1, name: "bot1", type: true, red: 2000 }]);
         spyOn(tableBot, "botJoinRoom");
+        spyOn(userInfosRepository, "find").and.callFake(() => {
+            return {
+                exec: () => {},
+            };
+        });
 
         // act
         await tableBot.joinRoom();
@@ -172,6 +184,7 @@ describe("table game bot test", () => {
     it("botJoinRoom_always_update inRoom", async () => {
         // arrange
         const bot = { id: 1, name: "bot1", type: true, red: 2000 };
+        spyOn(userInfosRepository, "updateOne");
 
         // act
         await tableBot.botJoinRoom(bot);
@@ -182,6 +195,9 @@ describe("table game bot test", () => {
     });
 
     it("resetInRoomTrackings_always_calls update many user info", async () => {
+        // arrange
+        spyOn(userInfosRepository, "updateMany");
+
         //act
         await tableBot.resetInRoomTrackings();
 
@@ -204,7 +220,13 @@ describe("table game bot test", () => {
         gameData.remainingTime = 10;
         gameData.gameConfigs = { bot_maxbet: 5000 };
         tempBetsRepository.findOne().lean().exec.mockReturnValue(null);
-        userInfosRepository.findOne().lean().exec.mockReturnValue(bot);
+        spyOn(userInfosRepository, "findOne").and.callFake(() => {
+            return {
+                exec: () => {
+                    return bot;
+                },
+            };
+        });
 
         spyOn(tableBot, "insertOrUpdateBet");
 
