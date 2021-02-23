@@ -1,4 +1,4 @@
-import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stub } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
 import SettleGameRoundConsumer from "../../../core/event-consumers/settle-game-round-consumer";
@@ -20,13 +20,13 @@ describe("table settle game round consumer test", () => {
     const endGame = jest.fn();
 
     /** @type {mongoose.Model}*/
-    const roundsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const roundsRepository = { find: () => {} };
 
     /** @type {mongoose.Model}*/
-    const betsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const betsRepository = { find: () => {} };
 
     /** @type {mongoose.Model}*/
-    const tempBetsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const tempBetsRepository = { find: () => {} };
 
     const consumer = new TableSettleGameRoundConsumer({
         definition,
@@ -47,8 +47,21 @@ describe("table settle game round consumer test", () => {
         // arrange
         const realPlayerBets = [{ round: 1, choice: "odd", amount: 10 }];
         const botBets = [{ round: 1, choice: "even", amount: 1 }];
-        betsRepository.find().lean().exec.mockReturnValue(realPlayerBets);
-        tempBetsRepository.find().lean().exec.mockReturnValue(botBets);
+        spyOn(betsRepository, "find").and.callFake(() => {
+            return {
+                exec: () => {
+                    return realPlayerBets;
+                },
+            };
+        });
+
+        spyOn(tempBetsRepository, "find").and.callFake(() => {
+            return {
+                exec: () => {
+                    return botBets;
+                },
+            };
+        });
 
         // act
         const actualResult = await consumer.queryBets(1);
