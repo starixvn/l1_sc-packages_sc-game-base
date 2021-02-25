@@ -1,5 +1,5 @@
 import awilix from "awilix";
-import { endGame, getBalance, placeBet } from "sc-base-apis";
+import { endGame, getBalance, placeBet, notifyLogin } from "sc-base-apis";
 import { gameConfigs, userInfos, userSessions } from "sc-base-database";
 import { logger } from "sc-common";
 
@@ -70,6 +70,7 @@ export default class ContainerRegistry {
             mainServiceCommunicator: asValue(authenticationHelpers),
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
+            notifyLogin: asValue(notifyLogin)
         });
     }
 

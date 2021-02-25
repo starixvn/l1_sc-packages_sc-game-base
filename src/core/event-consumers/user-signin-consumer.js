@@ -10,11 +10,12 @@ export default class UserSignInConsumer {
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository) {
+    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, notifyLogin) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
         this.userInfosRepository = userInfosRepository;
         this.userSessionsRepository = userSessionsRepository;
+        this.notifyLogin = notifyLogin;
     }
 
     /**
@@ -36,6 +37,8 @@ export default class UserSignInConsumer {
             userSession.username === payload.username &&
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
+            await this.notifyLogin(userSession, userInfos);
+
             Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
                 if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
                     realPlayer.socketClient.disconnect(true);
@@ -46,6 +49,17 @@ export default class UserSignInConsumer {
             this.handleSignInSuccess(socketClient, userInfo, userSession);
         } else {
             this.handleUnauthorizedSignIn(socketClient);
+        }
+    }
+
+    async notifyLogin(userSession, userInfos) {
+        const apiResult = await this.notifyLogin(userSession, userInfo.name, false);
+
+        if (apiResult.isOk) {
+            const { response } = apiResult;
+
+            userInfos.minBet = response.minBet;
+            userInfos.maxBet = response.maxBet;
         }
     }
 
@@ -60,7 +74,7 @@ export default class UserSignInConsumer {
         userSession.characterName = userInfo.name;
         this.gameData.realPlayers[socketClient.id] = userData;
 
-        socketClient.emit("signedIn", {minBet: userInfo.minBet, maxBet: userInfo.maxBet});
+        socketClient.emit("signedIn");
     }
 
     handleUnauthorizedSignIn(socketClient) {
