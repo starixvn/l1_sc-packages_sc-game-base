@@ -59,6 +59,7 @@ export default class UserSignInConsumer {
 
             userInfo.minBet = response.minBet;
             userInfo.maxBet = response.maxBet;
+            socketClient.emit("message", { minBet: response.minBet, maxBet: response.maxBet });
         }
     }
 
@@ -73,8 +74,7 @@ export default class UserSignInConsumer {
         userSession.characterName = userInfo.name;
         this.gameData.realPlayers[socketClient.id] = userData;
 
-        const { minBet, maxBet } = userInfo;
-        socketClient.emit("signedIn", { minBet, maxBet });
+        socketClient.emit("signedIn");
     }
 
     handleUnauthorizedSignIn(socketClient) {
