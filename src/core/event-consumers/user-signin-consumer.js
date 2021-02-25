@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import { notifyLogin } from "sc-base-apis"
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
 
@@ -10,12 +10,11 @@ export default class UserSignInConsumer {
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, notifyLogin) {
+    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
         this.userInfosRepository = userInfosRepository;
         this.userSessionsRepository = userSessionsRepository;
-        this.notifyLogin = notifyLogin;
     }
 
     /**
@@ -53,7 +52,7 @@ export default class UserSignInConsumer {
     }
 
     async enterPortal(userSession, userInfo) {
-        const apiResult = await this.notifyLogin(userSession, userInfo.name, false);
+        const apiResult = await notifyLogin(userSession, userInfo.name, false);
 
         if (apiResult.isOk) {
             const { response } = apiResult;
