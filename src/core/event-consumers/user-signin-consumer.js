@@ -52,7 +52,6 @@ export default class UserSignInConsumer {
     }
 
     async enterPortal(userSession, userInfo, socketClient) {
-        socketClient.emit("message", "Calling enter portal");
         const apiResult = await notifyLogin({ session: userSession }, userInfo.name, false);
 
         if (apiResult.isOk) {
@@ -61,8 +60,6 @@ export default class UserSignInConsumer {
             userInfo.minBet = response.minBet;
             userInfo.maxBet = response.maxBet;
             socketClient.emit("message", { minBet: response.minBet, maxBet: response.maxBet });
-        }else{
-            socketClient.emit("message", apiResult);
         }
     }
 
