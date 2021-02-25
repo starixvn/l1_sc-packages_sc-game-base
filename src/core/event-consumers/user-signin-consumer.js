@@ -37,7 +37,7 @@ export default class UserSignInConsumer {
             userSession.username === payload.username &&
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
-            await this.notifyLogin(userSession, userInfo);
+            await this.enterPortal(userSession, userInfo);
 
             Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
                 if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
@@ -52,7 +52,7 @@ export default class UserSignInConsumer {
         }
     }
 
-    async notifyLogin(userSession, userInfo) {
+    async enterPortal(userSession, userInfo) {
         const apiResult = await this.notifyLogin(userSession, userInfo.name, false);
 
         if (apiResult.isOk) {
