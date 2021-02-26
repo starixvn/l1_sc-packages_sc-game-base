@@ -110,7 +110,8 @@ export default class BaseSocketRouter {
     }
 
     verify(payload) {
-        if (this.gameData.realPlayers[this.socketClient.id]) {
+        const realPlayer = this.gameData.realPlayers[this.socketClient.id];
+        if (realPlayer && !this.gameData.gameConfigs.siteExclusions?.some(x => x === realPlayer.session.siteName)) {
             return true;
         }
 

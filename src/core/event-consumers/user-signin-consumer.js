@@ -35,7 +35,8 @@ export default class UserSignInConsumer {
             userInfo &&
             userSession &&
             userSession.username === payload.username &&
-            userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
+            userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase() &&
+            !this.gameData.gameConfigs.siteExclusions?.some(x => x === userSession.siteName)
         ) {
             await this.enterPortal(userSession, userInfo, socketClient);
 
