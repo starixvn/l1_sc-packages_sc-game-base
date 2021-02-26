@@ -59,7 +59,8 @@ export default class UserSignInConsumer {
 
             userInfo.minBet = response.minBet;
             userInfo.maxBet = response.maxBet;
-            socketClient.emit("message", { minBet: response.minBet, maxBet: response.maxBet });
+            const userStakeLevel = { minBet: response.minBet, maxBet: response.maxBet };
+            socketClient.emit("message", { userStakeLevel });
         }
     }
 
