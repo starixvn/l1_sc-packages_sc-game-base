@@ -57,15 +57,13 @@ export default class UserSignInConsumer {
 
         if (apiResult.isOk) {
             const { response } = apiResult;
-
-            const userStakeLevel = { minBet: response.minBet, maxBet: response.maxBet };
-            socketClient.emit("message", { userStakeLevel });
-
-            if(userInfo.minBet !== response.minBet || userInfo.maxBet !== response.maxBet) {
+            if (response.minBet > 0 && response.maxBet > 0) {
                 userInfo.minBet = response.minBet;
                 userInfo.maxBet = response.maxBet;
-                logger.log(`User ${userSession.memberId}-${userInfo.name} has new stake level ${response.minBet}/${response.maxBet} - received from enter portal`);
             }
+
+            const userStakeLevel = { minBet: userInfo.minBet, maxBet: userInfo.maxBet };
+            socketClient.emit("message", { userStakeLevel });
         }
     }
 

@@ -61,10 +61,6 @@ export default class ProcessBetQueue {
 
         if (apiResult.isOk) {
             await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload);
-
-            if (player.profile.minBet !== response.minBet || player.profile.maxBet !== response.maxBet) {
-                await this.updateUserStakeLevel(player, response.minBet, response.maxBet);
-            }
         } else {
             const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
             const notice = response.inSufficientBalance ? insufficientNotice : response;
