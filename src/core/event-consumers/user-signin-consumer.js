@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { notifyLogin } from "sc-base-apis";
+import { logger } from "sc-common";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
 
@@ -57,10 +58,14 @@ export default class UserSignInConsumer {
         if (apiResult.isOk) {
             const { response } = apiResult;
 
-            userInfo.minBet = response.minBet;
-            userInfo.maxBet = response.maxBet;
             const userStakeLevel = { minBet: response.minBet, maxBet: response.maxBet };
             socketClient.emit("message", { userStakeLevel });
+
+            if(userInfo.minBet !== response.minBet || userInfo.maxBet !== response.maxBet) {
+                userInfo.minBet = response.minBet;
+                userInfo.maxBet = response.maxBet;
+                logger.log(`User ${userSession.memberId}-${userInfo.name} has new stake level ${response.minBet}/${response.maxBet} - received from enter portal`);
+            }
         }
     }
 
