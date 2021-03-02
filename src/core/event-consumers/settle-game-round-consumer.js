@@ -29,6 +29,7 @@ export default class SettleGameRoundConsumer {
         const result = this.generateResult();
         const settlementResult = this.definition.settle(result);
         const newRound = await this.roundsRepository.create({
+            id: this.gameData.roundId,
             result,
             settlementResult,
             time: new Date(),
@@ -118,7 +119,7 @@ export default class SettleGameRoundConsumer {
         return betResult;
     }
 
-    captureBetResult(uid, betResult) { }
+    captureBetResult(uid, betResult) {}
 
     collectRoundResult(result, settlementResult, roundId) {
         return {
