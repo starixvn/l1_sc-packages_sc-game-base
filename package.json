@@ -1,10 +1,11 @@
 {
     "name": "sc-game-base",
-    "version": "1.17.5",
+    "version": "1.18.1-beta.19",
     "description": "SC Game base for game services",
     "main": "./src/index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "jest",
+        "test-coverage": "jest --collect-coverage",
         "reg": "npm set registry http://npm.lumigame.com",
         "verpatch": "npm version patch",
         "verminor": "npm version minor",
@@ -14,6 +15,11 @@
         "unpublish": "npm unpublish --force sc-base-database",
         "semantic-release": "semantic-release"
     },
+    "jestSonar": {
+        "reportPath": "reports",
+        "reportFile": "test-reporter.xml",
+        "indent": 4
+    },
     "author": {
         "email": "pentagon@luminetsoft.com",
         "name": "pentagon"
@@ -21,6 +27,7 @@
     "type": "module",
     "license": "ISC",
     "dependencies": {
+        "awilix": "^4.3.1",
         "axios": "^0.20.0",
         "body-parser": "^1.19.0",
         "chance": "^1.1.7",
@@ -31,12 +38,13 @@
         "mongoose": "^5.9.25",
         "morgan": "^1.10.0",
         "openid-client": "^4.2.0",
-        "sc-base-apis": "^1.8.1",
-        "sc-base-database": "^1.5.0",
+        "sc-base-apis": "^1.9.0",
+        "sc-base-database": "^1.6.0",
         "sc-common": "^1.5.0",
         "socket.io": "^2.3.0"
     },
     "devDependencies": {
+        "@babel/preset-env": "^7.12.11",
         "@commitlint/cli": "^9.1.2",
         "@commitlint/config-conventional": "^9.1.2",
         "@semantic-release/changelog": "^5.0.1",
@@ -45,8 +53,14 @@
         "@semantic-release/gitlab": "^6.0.4",
         "@semantic-release/npm": "^7.0.5",
         "@semantic-release/release-notes-generator": "^9.0.1",
+        "@types/jest": "^26.0.20",
+        "babel-jest": "^26.6.3",
         "husky": "^4.2.5",
         "install": "^0.13.0",
+        "jest": "^26.6.3",
+        "jest-extended": "^0.11.5",
+        "jest-micro-auto-stub": "^1.0.6",
+        "jest-sonar-reporter": "^2.0.0",
         "sc-semantic-release": "^1.2.0",
         "semantic-release": "^17.1.1"
     },

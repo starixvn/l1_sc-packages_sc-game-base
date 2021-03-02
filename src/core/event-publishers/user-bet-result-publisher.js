@@ -1,13 +1,22 @@
 import { logger } from "sc-common";
 
-import * as authenticationHelper from "./../helpers/authentication-helper";
+import GameData from "./../game-data";
+import { authenticationHelpers } from "./../helpers";
 import BaseEventPublisher from "./base-event-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
-    constructor(gameName, gameData) {
+    /**
+     * @param {string} gameName
+     * @param {GameData} gameData
+     * @param {authenticationHelpers} mainServiceCommunicator
+     * @param {logger} logService
+     */
+    constructor(gameName, gameData, mainServiceCommunicator, logService) {
         super(gameName, gameData);
-    }
 
+        this.mainServiceCommunicator = mainServiceCommunicator;
+        this.logService = logService;
+    }
     async publish(userId, betResult) {
         const status = { winningByChoices: betResult.winningByChoices };
 
@@ -36,9 +45,9 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
 
     async refreshBalance(userId) {
         try {
-            await authenticationHelper.post("refreshBalance", { uid: userId });
+            await this.mainServiceCommunicator.post("refreshBalance", { uid: userId });
         } catch (error) {
-            logger.logError(error);
+            this.logService.logError(error);
         }
     }
 }

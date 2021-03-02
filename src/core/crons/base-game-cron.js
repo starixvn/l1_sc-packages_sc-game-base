@@ -1,48 +1,59 @@
 import cron from "cron";
-import { gameConfigs } from "sc-base-database";
+import mongoose from "mongoose";
 import { logger } from "sc-common";
 
-import { SettleGameRoundConsumer } from "./../event-consumers";
+import SettleGameRoundConsumer from "./../event-consumers/settle-game-round-consumer";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import BaseBot from "./bot/base-bot";
+import BaseBot from "./base-bot";
 
 export default class BaseGameCron {
     /**
-     * @param {GameDefinition} definition
-     * @param {GameData} gameData
-     * @param {BaseBot} bot
-     * @param {SettleGameRoundConsumer} settleGameRoundConsumer
-     * @param {GameStatusPublisher} gameStatusPublisher
-     * @param {RunningRoundInfoPublisher} runningRoundInfoPublisher
+     *
+     * @param {Object} dependencies
+     * @param {GameDefinition} dependencies.definition
+     * @param {GameData} dependencies.gameData
+     * @param {BaseBot} dependencies.bot
+     * @param {SettleGameRoundConsumer} dependencies.settleGameRoundConsumer
+     * @param {GameStatusPublisher} dependencies.gameStatusPublisher
+     * @param {RunningRoundInfoPublisher} dependencies.runningRoundInfoPublisher
+     * @param {logger} dependencies.logService
+     * @param {mongoose.Model} dependencies.gameConfigsRepository
+     * @param {mongoose.Model} dependencies.roundsRepository
      */
-    constructor(
+    constructor({
         definition,
         gameData,
-        bot = null,
-        settleGameRoundConsumer = null,
-        gameStatusPublisher = null,
-        runningRoundInfoPublisher = null
-    ) {
+        bot,
+        settleGameRoundConsumer,
+        gameStatusPublisher,
+        runningRoundInfoPublisher,
+        logService,
+        gameConfigsRepository,
+        roundsRepository,
+    }) {
         this.definition = definition;
         this.gameData = gameData;
         this.bot = bot;
-        this.settleGameRoundConsumer = settleGameRoundConsumer ?? new SettleGameRoundConsumer(definition, gameData);
-        this.gameStatusPublisher = gameStatusPublisher ?? new GameStatusPublisher(definition.name, gameData);
-        this.runningRoundInfoPublisher = runningRoundInfoPublisher ?? new RunningRoundInfoPublisher(definition.name, gameData);
+        this.settleGameRoundConsumer = settleGameRoundConsumer;
+        this.gameStatusPublisher = gameStatusPublisher;
+        this.runningRoundInfoPublisher = runningRoundInfoPublisher;
+        this.logService = logService;
+        this.gameConfigsRepository = gameConfigsRepository;
+        this.roundsRepository = roundsRepository;
     }
 
     async start() {
-        const lastRound = await this.definition.roundRepository
+        const lastRound = await this.roundsRepository
             .findOne({}, "id", { sort: { id: -1 } })
             .lean()
             .exec();
         const job = new cron.CronJob(
             "* * * * * *",
-            () => this.proceed().catch(logger.logError),
+            () => this.proceed().catch(this.logService.logError),
             () => {
-                logger.logError(
+                this.logService.logError(
                     `${this.definition.name} unexpectedly stopped at round #${this.gameData.roundId} because some other tasks halt it.`
                 );
                 job.start();
@@ -77,7 +88,7 @@ export default class BaseGameCron {
             await this.settleGameRoundConsumer.settleRound(this.gameData);
         } else if (this.gameData.remainingTime < durations.placingBets) {
             this.bot && (await this.bot.run());
-            this.runningRoundInfoPublisher.publish(this.gameData);
+            this.runningRoundInfoPublisher.publish();
         }
     }
 
@@ -87,7 +98,7 @@ export default class BaseGameCron {
 
     async checkGameStatus() {
         const { configName, durations } = this.definition;
-        const configs = await gameConfigs.findOne({ name: configName }).lean().exec();
+        const configs = await this.gameConfigsRepository.findOne({ name: configName }).lean().exec();
         const previouslyDisabled = this.gameData.disabled;
         const configuredlyDisabled = !configs || !configs.enabled;
 
@@ -104,12 +115,12 @@ export default class BaseGameCron {
 
         if (this.gameData.disabled) {
             this.gameData.remainingTime = durations.wholeRound;
-            this.gameStatusPublisher.publishDisableGameStatus(this.gameData);
-            await gameConfigs.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
+            this.gameStatusPublisher.publishDisableGameStatus();
+            await this.gameConfigsRepository.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
-            this.gameStatusPublisher.publishEnablingGameStatus(this.gameData);
+            this.gameStatusPublisher.publishEnablingGameStatus();
         } else {
-            this.gameStatusPublisher.publishStartGame(this.gameData);
+            this.gameStatusPublisher.publishStartGame();
         }
     }
 

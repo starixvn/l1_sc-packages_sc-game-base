@@ -1,16 +1,21 @@
-import { userInfos, userSessions } from "sc-base-database";
-
+import mongoose from "mongoose";
+import { notifyLogin } from "sc-base-apis";
+import { logger } from "sc-common";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
 
 export default class UserSignInConsumer {
     /**
      * @param {GameData} gameData
-     * @param {UserSignInPublisher} userSigninPublisher
+     * @param {UserSignInPublisher} userSignInPublisher
+     * @param {mongoose.Model} userInfosRepository
+     * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(gameData, userSigninPublisher = null) {
+    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository) {
         this.gameData = gameData;
-        this.userSigninPublisher = userSigninPublisher ?? new UserSignInPublisher();
+        this.userSignInPublisher = userSignInPublisher;
+        this.userInfosRepository = userInfosRepository;
+        this.userSessionsRepository = userSessionsRepository;
     }
 
     /**
@@ -18,14 +23,13 @@ export default class UserSignInConsumer {
      */
     async consume(socketClient, payload) {
         if (!payload) {
-            this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
-            socketClient.disconnect(true);
+            this.handleUnauthorizedSignIn(socketClient);
 
             return;
         }
 
-        const userSession = await userSessions.findOne({ sessionId: payload.ss }).lean().exec();
-        const userInfo = await userInfos.findOne({ id: userSession.userId }).lean().exec();
+        const userSession = await this.userSessionsRepository.findOne({ sessionId: payload.ss }).lean().exec();
+        const userInfo = userSession ? await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec() : null;
 
         if (
             userInfo &&
@@ -33,6 +37,8 @@ export default class UserSignInConsumer {
             userSession.username === payload.username &&
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
+            await this.enterPortal(userSession, userInfo, socketClient);
+
             Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
                 if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
                     realPlayer.socketClient.disconnect(true);
@@ -42,15 +48,29 @@ export default class UserSignInConsumer {
 
             this.handleSignInSuccess(socketClient, userInfo, userSession);
         } else {
-            this.userSigninPublisher.publishUnauthorizedMessage(socketClient);
-            socketClient.disconnect(true);
+            this.handleUnauthorizedSignIn(socketClient);
+        }
+    }
+
+    async enterPortal(userSession, userInfo, socketClient) {
+        const apiResult = await notifyLogin({ session: userSession }, userInfo.name, false);
+
+        if (apiResult.isOk) {
+            const { response } = apiResult;
+            if (response.minBet > 0 && response.maxBet > 0) {
+                userInfo.minBet = response.minBet;
+                userInfo.maxBet = response.maxBet;
+            }
+
+            const userStakeLevel = { minBet: userInfo.minBet, maxBet: userInfo.maxBet };
+            socketClient.emit("message", { userStakeLevel });
         }
     }
 
     handleSignInSuccess(socketClient, userInfo, userSession) {
         const userData = {
             UID: userSession.userId,
-            profile: { name: userInfo.name },
+            profile: { name: userInfo.name, minBet: userInfo.minBet, maxBet: userInfo.maxBet },
             session: userSession,
             socketClient,
         };
@@ -59,5 +79,10 @@ export default class UserSignInConsumer {
         this.gameData.realPlayers[socketClient.id] = userData;
 
         socketClient.emit("signedIn");
+    }
+
+    handleUnauthorizedSignIn(socketClient) {
+        this.userSignInPublisher.publishUnauthorizedMessage(socketClient);
+        socketClient.disconnect(true);
     }
 }

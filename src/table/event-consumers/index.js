@@ -1,6 +1,6 @@
-import InGameConsumer from "./in-game-consumer";
-import OutGameConsumer from "./out-game-consumer";
-import SettleGameRoundConsumer from "./table-settle-game-round-consumer";
-import UserSignInConsumer from "./table-user-signin-consumer";
+import TableInGameConsumer from "./table-in-game-consumer";
+import TableOutGameConsumer from "./table-out-game-consumer";
+import TableSettleGameRoundConsumer from "./table-settle-game-round-consumer";
+import TableUserSignInConsumer from "./table-user-signin-consumer";
 
-export { InGameConsumer, OutGameConsumer, UserSignInConsumer, SettleGameRoundConsumer };
+export { TableInGameConsumer, TableOutGameConsumer, TableUserSignInConsumer, TableSettleGameRoundConsumer };

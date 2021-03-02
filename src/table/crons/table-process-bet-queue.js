@@ -1,18 +1,6 @@
-import { Cron } from "./../../core";
-import { TablePlaceBetPublisher } from "./../event-publishers";
-import TableGameData from "./../table-game-data";
-import TableGameDefinition from "./../table-game-definition";
+import ProcessBetQueue from "./../../core/crons/process-bet-queue";
 
-export default class TableProcessBetQueue extends Cron.ProcessBetQueue {
-    /**
-     * @param {TableGameDefinition} definition
-     * @param {TableGameData} gameData
-     * @param {TablePlaceBetPublisher} publisher
-     */
-    constructor(definition, gameData, publisher = null) {
-        super(definition, gameData, publisher ?? new TablePlaceBetPublisher(definition.name, gameData));
-    }
-
+export default class TableProcessBetQueue extends ProcessBetQueue {
     generatePlacingBetResult(player, balance, bet) {
         const { betChoice, amount } = bet;
         const ownBet = super.generatePlacingBetResult(player, balance, bet);

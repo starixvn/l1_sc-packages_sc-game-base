@@ -6,27 +6,28 @@ import GameDefinition from "./../game-definition";
 
 export default class BaseAdminSocketRouter {
     /**
-     * @param {AdminAuthenticationConsumer} adminAuthenticationConsumer
-     * @param {AdminMonitorConsumer} adminMonitorConsumer
-     * @param {AdminDisconnectConsumer} adminDisconnectConsumer
+     * @param {Object} dependencies
+     * @param {GameDefinition} dependencies.definition
+     * @param {GameData} dependencies.gameData
+     * @param {AdminAuthenticationConsumer} dependencies.adminAuthenticationConsumer
+     * @param {AdminMonitorConsumer} dependencies.adminMonitorConsumer
+     * @param {AdminDisconnectConsumer} dependencies.adminDisconnectConsumer
+     * @param {logger} ldependencies.logService
      */
-    constructor(adminAuthenticationConsumer = null, adminMonitorConsumer = null, adminDisconnectConsumer = null) {
-        this.adminAuthenticationConsumer = adminAuthenticationConsumer ?? new AdminAuthenticationConsumer();
-        this.adminMonitorConsumer = adminMonitorConsumer ?? new AdminMonitorConsumer();
-        this.adminDisconnectConsumer = adminDisconnectConsumer ?? new AdminDisconnectConsumer();
+    constructor({ definition, gameData, adminAuthenticationConsumer, adminMonitorConsumer, adminDisconnectConsumer, logService }) {
+        this.definition = definition;
+        this.gameData = gameData;
+        this.adminAuthenticationConsumer = adminAuthenticationConsumer;
+        this.adminMonitorConsumer = adminMonitorConsumer;
+        this.adminDisconnectConsumer = adminDisconnectConsumer;
+        this.logService = logService;
     }
 
     /**
-     * @param {GameDefinition} definition
-     * @param {GameData} definition
      * @param {SocketIO.Socket} socketClient
-     * @param {string} adminSecretKey
      */
-    init(definition, gameData, socketClient, adminSecretKey) {
-        this.definition = definition;
-        this.gameData = gameData;
+    init(socketClient) {
         this.socketClient = socketClient;
-        this.adminSecretKey = adminSecretKey;
         this.socketClient.on("message", this.handleMessage.bind(this));
         this.socketClient.on("disconnect", this.handleDisconnect.bind(this));
     }
@@ -34,30 +35,31 @@ export default class BaseAdminSocketRouter {
     async handleMessage(payload) {
         try {
             if (payload.authentication) {
-                this.adminAuthenticationConsumer.consume(this.socketClient, this.gameData, payload.authentication.jwt, this.adminSecretKey);
+                this.adminAuthenticationConsumer.consume(this.socketClient, payload.authentication.jwt);
             }
 
             if (payload[this.definition.name] && payload[this.definition.name].get_new && this.verify()) {
-                await this.adminMonitorConsumer.consume(this.socketClient, this.definition, this.gameData);
+                await this.adminMonitorConsumer.consume(this.socketClient);
             }
 
             if (payload[this.definition.name] && payload[this.definition.name].set_result && this.verify()) {
                 const { set_result } = payload[this.definition.name];
+
                 this.gameData.settlementResultFromAdmin = {
                     roundId: set_result.roundId,
                     result: set_result.result,
                 };
             }
         } catch (err) {
-            logger.logError(err);
+            this.logService.logError(err);
         }
     }
 
     handleDisconnect() {
         try {
-            this.adminDisconnectConsumer.consume(this.gameData, this.socketClient);
+            this.adminDisconnectConsumer.consume(this.socketClient);
         } catch (err) {
-            logger.logError(err);
+            this.logService.logError(err);
         }
     }
 
@@ -69,9 +71,7 @@ export default class BaseAdminSocketRouter {
         this.socketClient.emit("message", { unauth: { message: "Unauthorized!" } });
         this.socketClient.disconnect(true);
 
-        logger.setTag({ id: "socket-io-id", value: this.socketClient.id });
-        logger.logError("Admin not found in server storage");
-        logger.setTag({ id: "socket-io-id", value: "" });
+        this.logService.logError("Admin not found in server storage");
 
         return false;
     }

@@ -2,29 +2,41 @@ import { logger } from "sc-common";
 
 import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
-import { HistoryQuery, RoundQuery } from "./../query-apis";
+import { HistoryQuery } from "./../query-apis";
 
 export default class BaseSocketRouter {
+    /**
+     * @param {Object} dependencies
+     * @param {GameDefinition} dependencies.definition
+     * @param {GameData} dependencies.gameData
+     * @param {UserSignInConsumer} dependencies.userSignInConsumer
+     * @param {InGameConsumer} dependencies.inGameConsumer
+     * @param {PlaceBetConsumer} dependencies.placeBetConsumer
+     * @param {UserDisconnectConsumer} dependencies.userDisconnectConsumer
+     * @param {UserSignInPublisher} dependencies.userSignInPublisher
+     * @param {HistoryQuery} dependencies.historyQuery
+     * @param {logger} ldependencies.logService
+     */
     constructor({
         definition,
         gameData,
         userSignInConsumer,
-        userDisconnectConsumer,
         inGameConsumer,
         placeBetConsumer,
+        userDisconnectConsumer,
         userSignInPublisher,
         historyQuery,
-        roundQuery,
+        logService,
     }) {
         this.definition = definition;
         this.gameData = gameData;
-        this.userSignInConsumer = userSignInConsumer ?? new UserSignInConsumer(gameData);
-        this.userDisconnectConsumer = userDisconnectConsumer ?? new UserDisconnectConsumer(gameData);
-        this.inGameConsumer = inGameConsumer ?? new InGameConsumer({ definition, gameData });
-        this.placeBetConsumer = placeBetConsumer ?? new PlaceBetConsumer(definition, gameData);
-        this.userSignInPublisher = userSignInPublisher ?? new UserSignInPublisher();
-        this.roundQuery = roundQuery ?? new RoundQuery(definition);
-        this.historyQuery = historyQuery ?? new HistoryQuery(definition, this.roundQuery);
+        this.userSignInConsumer = userSignInConsumer;
+        this.inGameConsumer = inGameConsumer;
+        this.placeBetConsumer = placeBetConsumer;
+        this.userDisconnectConsumer = userDisconnectConsumer;
+        this.userSignInPublisher = userSignInPublisher;
+        this.historyQuery = historyQuery;
+        this.logService = logService;
     }
 
     /**
@@ -47,7 +59,7 @@ export default class BaseSocketRouter {
 
             this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
         } catch (error) {
-            logger.logError(error);
+            this.logService.logError(error);
         }
     }
 
@@ -55,7 +67,7 @@ export default class BaseSocketRouter {
         try {
             await this.userSignInConsumer.consume(this.socketClient, payload);
         } catch (error) {
-            logger.logError(error);
+            this.logService.logError(error);
         }
     }
 
@@ -67,7 +79,7 @@ export default class BaseSocketRouter {
 
             await this.inGameConsumer.consume(this.gameData.realPlayers[this.socketClient.id]);
         } catch (error) {
-            logger.logError(error);
+            this.logService.logError(error);
         }
     }
 
@@ -77,11 +89,15 @@ export default class BaseSocketRouter {
                 return;
             }
 
-            const history = await this.historyQuery.queryHistory(this.gameData.realPlayers[this.socketClient.id], payload.page);
+            const history = await this.historyQuery.queryHistory(
+                this.gameData.realPlayers[this.socketClient.id],
+                payload.page,
+                this.definition.historyPageSize
+            );
 
             this.socketClient.emit(this.definition.name, history);
         } catch (error) {
-            logger.logError(error);
+            this.logService.logError(error);
         }
     }
 
@@ -89,7 +105,7 @@ export default class BaseSocketRouter {
         try {
             this.userDisconnectConsumer.consume(this.socketClient);
         } catch (error) {
-            logger.logError(error);
+            this.logService.logError(error);
         }
     }
 
@@ -101,11 +117,11 @@ export default class BaseSocketRouter {
         this.userSignInPublisher.publishUnauthorizedMessage(this.socketClient);
         this.socketClient.disconnect(true);
 
-        logger.setTag({ id: "socket-io-id", value: this.socketClient.id });
-        logger.setTag({ id: "username", value: payload?.username });
-        logger.logError("User not found in server storage");
-        logger.setTag({ id: "socket-io-id", value: "" });
-        logger.setTag({ id: "username", value: "" });
+        this.logService.setTag({ id: "socket-io-id", value: this.socketClient.id });
+        this.logService.setTag({ id: "username", value: payload?.username });
+        this.logService.logError("User not found in server storage");
+        this.logService.setTag({ id: "socket-io-id", value: "" });
+        this.logService.setTag({ id: "username", value: "" });
 
         return false;
     }

@@ -1,6 +1,6 @@
 import { helpers } from "sc-common";
 
-import { BasePublisher } from "./../event-publishers";
+import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
@@ -8,13 +8,12 @@ export default class PlaceBetConsumer {
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
-     * @param {BasePublisher} publisher
+     * @param {BaseEventPublisher} publisher
      */
-
-    constructor(definition, gameData, publisher = null) {
+    constructor(definition, gameData, publisher) {
         this.definition = definition;
         this.gameData = gameData;
-        this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
+        this.publisher = publisher;
     }
 
     composeValidationCriteria(player, betChoice, amount, freeBet) {
@@ -46,7 +45,9 @@ export default class PlaceBetConsumer {
         const configs = this.gameData.gameConfigs;
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
         const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
-        const maxBetPerChoice = configs.choices_maxbet[betChoice] || 0;
+        const minBet = Math.max(player.profile.minBet, configs.minbet);
+        const maxBet = Math.min(player.profile.maxBet, configs.maxbet);
+        const maxBetPerChoice = Math.min(player.profile.maxBet, configs.choices_maxbet[betChoice]);
 
         return [
             {
@@ -58,16 +59,16 @@ export default class PlaceBetConsumer {
                 notice: helpers.noticeHelper.maxBetForChoice(maxBetPerChoice),
             },
             {
-                failure: amount < configs.minbet,
-                notice: helpers.noticeHelper.minBet(configs.minbet),
+                failure: amount < minBet,
+                notice: helpers.noticeHelper.minBet(minBet),
             },
             {
-                failure: amount > configs.maxbet,
-                notice: helpers.noticeHelper.maxBet(configs.maxbet),
+                failure: amount > maxBet,
+                notice: helpers.noticeHelper.maxBet(maxBet),
             },
             {
-                failure: totalAmount > configs.maxbet,
-                notice: helpers.noticeHelper.maxBet(configs.maxbet),
+                failure: totalAmount > maxBet,
+                notice: helpers.noticeHelper.maxBet(maxBet),
             },
         ];
     }
@@ -102,7 +103,6 @@ export default class PlaceBetConsumer {
         Object.assign(payload, {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
-            freeSpin: payload.freeSpin ?? false,
         });
 
         const { amount, betChoice, freeBet } = payload;
@@ -112,14 +112,16 @@ export default class PlaceBetConsumer {
             return;
         }
 
-        const newPlayer = {
-            name: player.profile.name,
-            currency: player.session.currency,
-            betTracks: {},
-            betQueue: [],
-        };
+        if (!this.gameData.ingame[name]) {
+            const newPlayer = {
+                name: player.profile.name,
+                currency: player.session.currency,
+                betTracks: {},
+                betQueue: [],
+            };
 
-        this.gameData.ingame[name] = Object.assign(newPlayer, this.gameData.ingame[name] ?? {});
+            this.gameData.ingame[name] = newPlayer;
+        }
 
         this.adjustBetTracks(player.profile.name, payload);
         this.gameData.ingame[name].betQueue.push({ player, payload });

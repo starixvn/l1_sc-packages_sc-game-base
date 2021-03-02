@@ -1,15 +1,26 @@
-import { getBalance } from "sc-base-apis";
-import { userInfos } from "sc-base-database";
+import mongoose from "mongoose";
 
-import { BasePublisher } from "./../event-publishers";
+import { BaseEventPublisher } from "./../event-publishers";
+import GameData from "./../game-data";
+import GameDefinition from "./../game-definition";
 import { RoundQuery } from "./../query-apis";
 
 export default class InGameConsumer {
-    constructor({ definition, gameData, roundQuery, publisher }) {
+    /**
+     * @param {GameDefinition} definition
+     * @param {GameData} gameData
+     * @param {RoundQuery} roundQuery
+     * @param {BaseEventPublisher} publisher
+     * @param {*} getBalance
+     * @param {mongoose.Model} userInfosRepository
+     */
+    constructor(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository) {
         this.definition = definition;
         this.gameData = gameData;
-        this.roundQuery = roundQuery ?? new RoundQuery(definition);
-        this.publisher = publisher ?? new BasePublisher(definition.name, gameData);
+        this.roundQuery = roundQuery;
+        this.publisher = publisher;
+        this.getBalance = getBalance;
+        this.userInfosRepository = userInfosRepository;
     }
 
     async consume(realPlayer) {
@@ -21,7 +32,7 @@ export default class InGameConsumer {
 
         const payload = await this.buildPayload(realPlayer);
 
-        realPlayer.socketClient.emit(this.definition.name, payload);
+        this.publisher.publishToUser(realPlayer.UID, payload);
     }
 
     async buildPayload(realPlayer) {
@@ -31,7 +42,7 @@ export default class InGameConsumer {
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
 
-        await getBalance(realPlayer, true);
+        await this.getBalance(realPlayer, true);
 
         const user = await this.getUserInfo(realPlayer.UID);
 
@@ -45,7 +56,7 @@ export default class InGameConsumer {
     }
 
     getUserInfo(uid) {
-        return userInfos
+        return this.userInfosRepository
             .findOne(
                 { id: uid },
                 {

@@ -1,0 +1,105 @@
+import GameStatusPublisher from "../game-status-publisher";
+import GameData from "../../game-data";
+
+const gameData = new GameData();
+const gameName = "game";
+gameData.realPlayers = {
+    1: {
+        UID: 1,
+        socketClient: {
+            connected: true,
+            emit: jest.fn(),
+        },
+    },
+    2: {
+        UID: 2,
+        socketClient: {
+            connected: true,
+            emit: jest.fn(),
+        },
+    },
+};
+
+gameData.admins = {
+    1: {
+        UID: 1,
+        socketClient: {
+            connected: true,
+            emit: jest.fn(),
+        },
+    },
+    2: {
+        UID: 2,
+        socketClient: {
+            connected: true,
+            emit: jest.fn(),
+        },
+    },
+};
+gameData.remainingTime = 10;
+gameData.roundId = 10;
+gameData.gameConfigs = {
+    minbet: 1,
+    maxbet: 100,
+    choices_maxbet: { big: 100, small: 100 },
+    odds: { big: 2, small: 2 },
+    enableFreeBet: false,
+};
+
+describe("publishEnablingGameStatus test", () => {
+    it("should send to all users and admin clients", () => {
+        // arrange
+        const publisher = new GameStatusPublisher(gameName, gameData);
+        publisher.publishToAllUsers = jest.fn();
+        publisher.publishToAllAdmins = jest.fn();
+
+        // act
+        publisher.publishEnablingGameStatus();
+        // assert
+        expect(publisher.publishToAllUsers).toHaveBeenCalled();
+        expect(publisher.publishToAllAdmins).toHaveBeenCalled();
+    });
+});
+
+describe("publishDisableGameStatus test", () => {
+    it("gameData.disabledMessage is undefined - should send to all users and admin clients with empty string", () => {
+        // arrange
+        const publisher = new GameStatusPublisher(gameName, gameData);
+        publisher.publishToAllUsers = jest.fn();
+        publisher.publishToAllAdmins = jest.fn();
+
+        // act
+        publisher.publishDisableGameStatus();
+        const payload = { um: true, um_message: "" };
+        // assert
+        expect(publisher.publishToAllUsers).toHaveBeenCalledWith(payload);
+        expect(publisher.publishToAllAdmins).toHaveBeenCalledWith(payload);
+    });
+
+    it("gameData disabled_message has value - should send to all users and admin clients with disabled_message", () => {
+        // arrange
+        const publisher = new GameStatusPublisher(gameName, gameData);
+        publisher.publishToAllUsers = jest.fn();
+        publisher.publishToAllAdmins = jest.fn();
+        gameData.gameConfigs.disabled_message = "disabledMessage";
+
+        // act
+        publisher.publishDisableGameStatus();
+        const payload = { um: true, um_message: gameData.gameConfigs.disabled_message };
+        // assert
+        expect(publisher.publishToAllUsers).toHaveBeenCalledWith(payload);
+        expect(publisher.publishToAllAdmins).toHaveBeenCalledWith(payload);
+    });
+});
+
+describe("publishStartGame test", () => {
+    it("should call publishToAllUsers", () => {
+        // arrange
+        const publisher = new GameStatusPublisher(gameName, gameData);
+        publisher.publishToAllUsers = jest.fn();
+        // act
+        publisher.publishStartGame();
+        // assert
+        expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ remainingTime: gameData.remainingTime });
+    });
+});

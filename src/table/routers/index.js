@@ -1,4 +1,3 @@
-import HttpRouter from "./table-http-router";
-import SocketRouter from "./table-socket-router";
+import TableHttpRouter from "./table-http-router";
 
-export { SocketRouter, HttpRouter };
+export { TableHttpRouter };

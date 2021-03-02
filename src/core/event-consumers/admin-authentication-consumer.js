@@ -1,20 +1,30 @@
 import { utils } from "sc-common";
 
+import { AdminPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 
 export default class AdminAuthenticationConsumer {
     /**
-     * @param {SocketIO.Socket} socketClient
      * @param {GameData} gameData
-     * @param {string} token
-     * @param {string} secretKey
+     * @param {String} adminSecretKey
+     * @param {AdminPublisher} adminPublisher
      */
-    consume(socketClient, gameData, token, secretKey) {
-        if (utils.authentication.adminAuthenticate(token, secretKey)) {
-            gameData.admins[socketClient.id] = { socketClient };
-            socketClient.emit("message", { authorized: true });
+    constructor(gameData, adminSecretKey, adminPublisher) {
+        this.gameData = gameData;
+        this.adminSecretKey = adminSecretKey;
+        this.adminPublisher = adminPublisher;
+    }
+
+    /**
+     * @param {SocketIO.Socket} socketClient
+     * @param {string} token
+     */
+    consume(socketClient, token) {
+        if (utils.authentication.adminAuthenticate(token, this.adminSecretKey)) {
+            this.gameData.admins[socketClient.id] = { socketClient };
+            this.adminPublisher.publishAuthorizedMessage(socketClient);
         } else {
-            socketClient.emit("message", { unauth: { message: "Authentication failed!" } });
+            this.adminPublisher.publishUnauthorizedMessage(socketClient);
         }
     }
 }

@@ -1,26 +1,21 @@
+import * as awilix from "awilix";
 import express from "express";
 
 import BaseStartup from "./base-game-startup";
-import GameData from "./game-data";
-import GameDefinition from "./game-definition";
-import * as authenticationHelper from "./helpers/authentication-helper";
 
 export default class BaseGameApp {
     /**
-     * @param {Object} appConfigs
-     * @param {GameDefinition} definition
-     * @param {GameData} gameData
+     * @param {awilix.AwilixContainer} container
      * @param {BaseStartup} startup
      */
-    constructor(appConfigs, definition, gameData, startup) {
-        this.appConfigs = appConfigs;
-        this.startup = startup ?? new BaseStartup(appConfigs, definition, gameData);
+    constructor(container, startup = null) {
+        this.container = container;
+        this.startup = startup ?? new BaseStartup(container);
     }
 
     async run() {
         const app = express();
 
-        await authenticationHelper.init(this.appConfigs.mainServerApiSettings);
         await this.startup.configureServices(app);
         await this.startup.startServer(app);
     }

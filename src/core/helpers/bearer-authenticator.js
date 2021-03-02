@@ -1,4 +1,3 @@
-import Axios from "axios";
 import OpenIdClient from "openid-client";
 import { logger } from "sc-common";
 
@@ -8,22 +7,22 @@ const timeout = 60000;
 
 custom.setHttpOptionsDefaults({ timeout });
 
-export class BearerAuthenticator {
+export default class BearerAuthenticator {
     constructor(authConfigs) {
         this.authConfigs = authConfigs;
     }
 
     async autoUpdateToken() {
-        const refresh = async () => {
-            if (this.isTokenExpired()) {
-                await this.updateToken();
-            }
-
-            setTimeout(refresh, timeout);
-        };
-
         await this.updateToken();
-        setTimeout(refresh, timeout);
+        setTimeout(this.refresh.bind(this), timeout);
+    }
+
+    async refresh() {
+        if (this.isTokenExpired()) {
+            await this.updateToken();
+        }
+
+        setTimeout(this.refresh.bind(this), timeout);
     }
 
     isTokenExpired() {
@@ -61,37 +60,3 @@ export class BearerAuthenticator {
             : null;
     }
 }
-
-let authenticationConfigs;
-let bearerAuthenticator;
-
-export const init = async (configs) => {
-    authenticationConfigs = configs;
-    bearerAuthenticator = new BearerAuthenticator(configs.auth);
-
-    await bearerAuthenticator.autoUpdateToken();
-};
-
-export const post = async (endpoint, params, options) => {
-    if (!bearerAuthenticator) {
-        logger.logError("authentication-helper has not been initialized properly.");
-    }
-
-    const defaultRequestTimeout = 2500;
-    const { url, useAuthenticate, requestTimeout } = authenticationConfigs;
-    const requestConfigs = {
-        timeout: options?.requestTimeout || requestTimeout || defaultRequestTimeout,
-        headers: {},
-    };
-
-    if (params?.languageCode) {
-        requestConfigs.headers.LanguageCode = params.languageCode;
-        delete params.languageCode;
-    }
-
-    if (useAuthenticate) {
-        requestConfigs.headers.Authorization = bearerAuthenticator.token;
-    }
-
-    return (await Axios.post(`${url}/${endpoint}`, params, requestConfigs)).data;
-};

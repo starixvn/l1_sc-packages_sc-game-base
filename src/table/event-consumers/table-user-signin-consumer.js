@@ -1,7 +1,8 @@
+import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
-import { UserSignInConsumer } from "./../../core/event-consumers";
-import { TableUserSignInPublisher } from "./../event-publishers";
+import UserSignInConsumer from "./../../core/event-consumers/user-signin-consumer";
+import TableUserSignInPublisher from "./../event-publishers/table-user-signin-publisher";
 import TableGameData from "./../table-game-data";
 import TableGameDefinition from "./../table-game-definition";
 
@@ -9,13 +10,14 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
     /**
      * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
-     * @param {TableUserSignInPublisher} userSigninPublisher
+     * @param {TableUserSignInPublisher} userSignInPublisher
+     * @param {mongoose.Model} userInfosRepository
+     * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(definition, gameData, userSigninPublisher = null) {
-        super(gameData, userSigninPublisher);
+    constructor(definition, gameData, userSignInPublisher, userInfosRepository, userSessionsRepository) {
+        super(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository);
 
         this.definition = definition;
-        this.userSigninPublisher = userSigninPublisher ?? new TableUserSignInPublisher();
     }
 
     /**
@@ -30,15 +32,15 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
             await super.consume(socketClient, payload);
         } else {
             const umMessage = configs?.disabled_message ?? "";
-            const notice = { title: helpers.noticeHelper.noticeTitle, text: umMessage, load: false };
+            const notice = { title: helpers.noticeHelper.notice, text: umMessage, load: false };
 
-            this.userSigninPublisher.publishUmNotice(socketClient, notice);
+            this.userSignInPublisher.publishUmNotice(socketClient, notice);
         }
     }
 
     handleSignInSuccess(socketClient, userInfo, userSession) {
         super.handleSignInSuccess(socketClient, userInfo, userSession);
 
-        this.userSigninPublisher.publishToGameMessage(socketClient, this.definition.name);
+        this.userSignInPublisher.publishToGameMessage(socketClient, this.definition.name);
     }
 }
