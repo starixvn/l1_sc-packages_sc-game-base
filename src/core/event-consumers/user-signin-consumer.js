@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { notifyLogin } from "sc-base-apis";
-import { logger } from "sc-common";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
 

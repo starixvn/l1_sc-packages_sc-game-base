@@ -8,6 +8,18 @@ import UserSignInConsumer from "../user-signin-consumer";
 import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
 
+jest.mock("sc-base-apis", () => ({
+    notifyLogin: function () {
+        return {
+            isOk: true,
+            response: {
+                minBet: 1,
+                maxBet: 100,
+            },
+        };
+    },
+}));
+
 describe("user signing in testing", () => {
     const gameData = new GameData(0);
 
