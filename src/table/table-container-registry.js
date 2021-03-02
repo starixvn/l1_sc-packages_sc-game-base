@@ -1,12 +1,10 @@
-import awilix from "awilix";
+import { asClass, asValue } from "awilix";
 
 import { ContainerRegistry } from "./../core";
 import * as Crons from "./crons";
 import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
 import * as Routers from "./routers";
-
-const { asClass, asValue } = awilix;
 
 export default class TableContainerRegistry extends ContainerRegistry {
     registerModels() {

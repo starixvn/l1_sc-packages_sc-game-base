@@ -1,5 +1,5 @@
-import awilix from "awilix";
-import { endGame, getBalance, placeBet, notifyLogin } from "sc-base-apis";
+import { asClass, asValue, createContainer, InjectionMode } from "awilix";
+import { endGame, getBalance, notifyLogin, placeBet } from "sc-base-apis";
 import { gameConfigs, userInfos, userSessions } from "sc-base-database";
 import { logger } from "sc-common";
 
@@ -11,8 +11,6 @@ import GameDefinition from "./game-definition";
 import { authenticationHelpers } from "./helpers";
 import { HistoryQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
-
-const { asClass, asValue, createContainer, InjectionMode } = awilix;
 
 export default class ContainerRegistry {
     /**
@@ -70,7 +68,7 @@ export default class ContainerRegistry {
             mainServiceCommunicator: asValue(authenticationHelpers),
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
-            notifyLogin: asValue(notifyLogin)
+            notifyLogin: asValue(notifyLogin),
         });
     }
 
