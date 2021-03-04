@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 import RoundQuery from "./round-query";
 
 export default class HistoryQuery {
@@ -62,7 +61,7 @@ export default class HistoryQuery {
     }
 
     getBetLogDetails(player, roundId) {
-        return this.betLogsRepository
+        return this.betsRepository
             .find({ phien: roundId, uid: player.UID }, { _id: false, time: true, choice: true, amount: true }, { sort: { _id: -1 } })
             .lean()
             .exec();
