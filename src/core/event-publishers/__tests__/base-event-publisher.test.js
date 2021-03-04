@@ -97,7 +97,6 @@ describe("publishToUser test", () => {
                     emit: jest.fn(),
                 },
             },
-
         };
 
         const publisher = new BaseEventPublisher(gameName, gameData);
@@ -138,5 +137,36 @@ describe("publishToAllAdmins test", () => {
         // assert
         expect(gameData.admins[1].socketClient.emit).toHaveBeenCalled();
         expect(gameData.admins[2].socketClient.emit).toHaveBeenCalled();
+    });
+});
+
+describe("publishApiError test", () => {
+    it("should call publish to user", () => {
+        // arrange
+        const gameData = new GameData();
+        const gameName = "game";
+        gameData.realPlayers = {
+            1: {
+                UID: 1,
+                socketClient: {
+                    connected: true,
+                    emit: jest.fn(),
+                },
+            },
+            2: {
+                UID: 2,
+                socketClient: {
+                    connected: true,
+                    emit: jest.fn(),
+                },
+            },
+        };
+
+        const publisher = new BaseEventPublisher(gameName, gameData);
+        // act
+        jest.spyOn(publisher, "publishToUser");
+        publisher.publishApiError(1, {});
+        // assert
+        expect(publisher.publishToUser).toHaveBeenCalled();
     });
 });

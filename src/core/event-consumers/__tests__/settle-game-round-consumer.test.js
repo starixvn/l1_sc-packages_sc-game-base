@@ -130,13 +130,66 @@ describe("settleBets test", () => {
             betsRepository,
         });
         consumer.callEndGame = jest.fn();
-        consumer.queryBets = jest.fn(() => [{ odd: 100, save: jest.fn() }, { even: 200, freeBet: true, save: jest.fn() }]);
+        consumer.queryBets = jest.fn(() => [
+            { odd: 100, save: jest.fn() },
+            { even: 200, freeBet: true, save: jest.fn() },
+        ]);
 
         await consumer.settleBets({ result, settlementResult, roundId: 1, time: new Date() });
 
         expect(consumer.callEndGame).toHaveBeenCalled();
         expect(userBetResultPublisher.publish).toHaveBeenCalled();
         expect(roundResultPublisher.publishRoundResult).toHaveBeenCalled();
+    });
+});
+
+describe("callEndGame test", () => {
+    it("should not publish to game client when api result is ok", async () => {
+        const consumer = new SettleGameRoundConsumer({
+            definition,
+            gameData,
+            roundResultPublisher,
+            userBetResultPublisher,
+            endGame,
+            roundsRepository,
+            betsRepository,
+        });
+
+        endGame.mockReturnValue({ isOk: true, response: {} });
+
+        await consumer.callEndGame({ even: 200, freeBet: false, memberId: 1, siteId: 1 }, 1, new Date(), {
+            totalBetAmount: 0,
+            totalWin: 0,
+            netWin: 0,
+            totalLost: 0,
+            winningByChoices: {},
+        });
+
+        expect(userBetResultPublisher.publishApiError).not.toHaveBeenCalled();
+    });
+
+    it("should not publish to game client when api result is ok", async () => {
+        const consumer = new SettleGameRoundConsumer({
+            definition,
+            gameData,
+            roundResultPublisher,
+            userBetResultPublisher,
+            endGame,
+            roundsRepository,
+            betsRepository,
+        });
+
+        endGame.mockReturnValue({ isOk: true, response: {} });
+
+        await consumer.callEndGame({ even: 200, freeBet: false, memberId: 1, siteId: 1 }, 1, new Date(), {
+            totalBetAmount: 0,
+            totalWin: 400,
+            netWin: 200,
+            totalLost: 0,
+            winningByChoices: {},
+        });
+
+        expect(userBetResultPublisher.publishApiError).not.toHaveBeenCalled();
     });
 });
 

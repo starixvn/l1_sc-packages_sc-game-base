@@ -64,4 +64,40 @@ describe("round query test", () => {
             expect(roundQuery.convertSettlementResult).not.toHaveBeenCalled();
         });
     });
+
+    describe("getOne test", () => {
+        it.each([
+            [null, null],
+            [undefined, undefined],
+        ])(
+            "result/settlement is null/undefined, should calls convertResult && convertSettlementResult",
+            async (result, settlementResult) => {
+                // arrange
+                const round = { id: 1, result, settlementResult };
+                roundsRepository.findOne().lean().exec.mockReturnValueOnce(round);
+
+                // act
+                await roundQuery.getOne(1);
+                // assert
+                expect(roundQuery.convertResult).toHaveBeenCalled();
+                expect(roundQuery.convertSettlementResult).toHaveBeenCalled();
+            }
+        );
+
+        it("result/settlementResult is valid, return them without converting", async () => {
+            // arrange
+            const result = { red1: true, red2: false };
+            const settlementResult = { odd: true, even: false };
+            const round = { id: 1, result, settlementResult };
+            roundsRepository.findOne().lean().exec.mockReturnValueOnce(round);
+
+            // act
+            var actualResult = await roundQuery.getOne(1);
+            // assert
+            expect(roundQuery.convertResult).not.toHaveBeenCalled();
+            expect(roundQuery.convertSettlementResult).not.toHaveBeenCalled();
+
+            expect(actualResult).toEqual(round);
+        });
+    });
 });
