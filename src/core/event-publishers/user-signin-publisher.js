@@ -6,6 +6,6 @@ export default class UserSignInPublisher {
     }
 
     publishNotPermittedToPlayMessage(socketClient, gameName) {
-        socketClient.emit("message", { notPermittedToPlay: true, message: noticeHelper.notPermittedToPlay(gameName) });
+        socketClient.emit(gameName, { notPermittedToPlay: true, message: noticeHelper.notPermittedToPlay(gameName) });
     }
 }
