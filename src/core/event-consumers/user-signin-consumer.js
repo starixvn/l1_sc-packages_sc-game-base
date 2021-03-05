@@ -11,12 +11,12 @@ export default class UserSignInConsumer {
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, gameName) {
+    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, definition) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
         this.userInfosRepository = userInfosRepository;
         this.userSessionsRepository = userSessionsRepository;
-        this.gameName = gameName;
+        this.definition = definition;
     }
 
     /**
@@ -91,7 +91,7 @@ export default class UserSignInConsumer {
 
     hasPlayingPermission(userSession, socketClient) {
         if (this.gameData.gameConfigs.siteExclusions?.some((x) => x === userSession.siteName)) {
-            this.userSignInPublisher.publishNotPermittedToPlayMessage(socketClient, this.gameName);
+            this.userSignInPublisher.publishNotPermittedToPlayMessage(socketClient, this.definition.name);
             return false;
         }
 
