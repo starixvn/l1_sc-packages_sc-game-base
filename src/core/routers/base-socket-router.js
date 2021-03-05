@@ -117,7 +117,7 @@ export default class BaseSocketRouter {
                 return true;
             }
 
-            return false
+            return false;
         }
 
         this.userSignInPublisher.publishUnauthorizedMessage(this.socketClient);

@@ -36,19 +36,20 @@ export default class UserSignInConsumer {
             userInfo &&
             userSession &&
             userSession.username === payload.username &&
-            userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase() &&
-            this.hasPlayingPermission(userSession, socketClient)
+            userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
-            await this.enterPortal(userSession, userInfo, socketClient);
+            if (this.hasPlayingPermission(userSession, socketClient)) {
+                await this.enterPortal(userSession, userInfo, socketClient);
 
-            Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
-                if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
-                    realPlayer.socketClient.disconnect(true);
-                    delete this.gameData.realPlayers[realPlayer.socketClient.id];
-                }
-            });
+                Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
+                    if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
+                        realPlayer.socketClient.disconnect(true);
+                        delete this.gameData.realPlayers[realPlayer.socketClient.id];
+                    }
+                });
 
-            this.handleSignInSuccess(socketClient, userInfo, userSession);
+                this.handleSignInSuccess(socketClient, userInfo, userSession);
+            }
         } else {
             this.handleUnauthorizedSignIn(socketClient);
         }
