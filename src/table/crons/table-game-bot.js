@@ -14,9 +14,10 @@ export default class TableGameBot extends BaseBot {
      * @param {BaseEventPublisher} publisher
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} tempBetsRepository
+     * @param {BetPatternConsumer} dependencies.betPatternConsumer
      */
-    constructor(definition, gameData, publisher, userInfosRepository, tempBetsRepository) {
-        super(definition, gameData, userInfosRepository);
+    constructor(definition, gameData, publisher, userInfosRepository, tempBetsRepository, betPatternConsumer) {
+        super(definition, gameData, userInfosRepository, betPatternConsumer);
 
         this.publisher = publisher;
         this.tempBetsRepository = tempBetsRepository;
@@ -31,6 +32,7 @@ export default class TableGameBot extends BaseBot {
         this.chance = new Chance();
         this.minBotsAtTheTable = 8;
         this.botsInRoom = {};
+        this.smartBots = [];
     }
 
     async processDisabledBots() {
@@ -63,6 +65,25 @@ export default class TableGameBot extends BaseBot {
         Object.keys(this.botsInRoom).forEach((id) => this.resetBot(this.botsInRoom[id]));
     }
 
+    async resetSmartPatterns() {
+        if (this.iBots.length === 0 && this.gameData.gameConfigs?.smartBotEnabled) {
+            const isExpired = await this.betPatternConsumer.resetAndUpdatePatterns();
+
+            if (this.smartBots.length === 0 || isExpired) {
+                if (isExpired) {
+                    //TODO remove bot has expired pattern
+                }
+                this.smartBots = await this.userInfosRepository
+                    .find(
+                        { type: true, inRoom: true, inGameRoom: this.definition.configName, patternId: { $gt: 0 } },
+                        "-_id id name red avatarId type"
+                    )
+                    .lean()
+                    .exec();
+            }
+        }
+    }
+
     async run() {
         if (this.gameData.gameConfigs?.botenabled && this.gameData.remainingTime > this.definition.durations.lockingBet) {
             const random = this.chance.integer({ min: 0, max: 5 });
@@ -82,14 +103,17 @@ export default class TableGameBot extends BaseBot {
     }
 
     shouldAddBot(random) {
-        return random === this.inOutValues.in && Object.keys(this.botsInRoom).length <= this.maxNumberOfBots;
+        return random === this.inOutValues.in && this.getTotalNumberOfBots() <= this.maxNumberOfBots;
     }
 
     shouldRemoveBot(random) {
-        const totalBots = Object.keys(this.botsInRoom).length;
         const numberBotsAtTable = Math.min(this.maxNumberOfBots, this.minBotsAtTheTable);
 
-        return random === this.inOutValues.out && totalBots > numberBotsAtTable;
+        return random === this.inOutValues.out && this.getTotalNumberOfBots() > numberBotsAtTable;
+    }
+
+    getTotalNumberOfBots() {
+        return Object.keys(this.botsInRoom).length + this.smartBots.length;
     }
 
     getBotsToBet() {
@@ -137,6 +161,7 @@ export default class TableGameBot extends BaseBot {
     async joinRoom() {
         const botUsers = await this.userInfosRepository
             .find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type")
+            .lean()
             .exec();
         const newBots = this.getBotsToJoin(botUsers);
 
@@ -144,6 +169,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     getBotsToJoin(botUsers) {
+        //TODO smart bot join room
         const remaining = this.maxNumberOfBots - Object.keys(this.botsInRoom).length;
         const maxBotRandom =
             remaining > 0
@@ -281,5 +307,24 @@ export default class TableGameBot extends BaseBot {
         return {
             playerChip: { playerId, betChoice: choice, amount, red: balance },
         };
+    }
+
+    // async placeBetFollowPattern(bot) {
+    //     if (this.gameData.remainingTime > this.definition.durations.lockingBet && bot.betActions?.length > 0) {
+    //         const betActions = bot.betActions.filter((betAction) => betAction.second === this.gameData.remainingTime) ?? [];
+
+    //         await Promise.all(betActions.map((betAction) => this.placeBetFollowPattern(bot, betAction)));
+    //     }
+    // }
+
+    async placeBetByAction(bot, betAction) {
+        // const { choiceId, amount } = betAction ?? { choice: null, amount: 0 };
+        // const choice = this.convertBetChoice(choiceId);
+        // if (choice && amount > 0) {
+        //     const betAmount = this.reduceAmountIfOverMaxBet(choice, amount);
+        //     await this.insertBetLog(bot, choiceId, betAmount, betAction.second);
+        //     this.updateTotalBetsAndChips(choice, betAmount);
+        //     this.publisher.publishToAllUsers(this.generatePlaceBetPayload(bot.id, choice, betAmount, bot.red));
+        // }
     }
 }

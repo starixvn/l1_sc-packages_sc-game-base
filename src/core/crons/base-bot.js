@@ -10,11 +10,13 @@ export default class BaseBot {
      * @param {GameDefinition} definition
      * @param {GameData} gameData
      * @param {mongoose.Model} userInfosRepository
+     * @param {BetPatternConsumer} dependencies.betPatternConsumer
      */
-    constructor(definition, gameData, userInfosRepository) {
+    constructor(definition, gameData, userInfosRepository, betPatternConsumer) {
         this.definition = definition;
         this.gameData = gameData;
         this.userInfosRepository = userInfosRepository;
+        this.betPatternConsumer = betPatternConsumer;
 
         this.bots = [];
         this.currentBotRatio = 0;
@@ -36,17 +38,20 @@ export default class BaseBot {
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
 
-                const totalBots = await this.userInfosRepository.countDocuments({ type: true, banned: false }).exec();
+                const totalBots = await this.userInfosRepository.countDocuments({ type: true, disabled: false }).exec();
                 this.maxNumberOfBots = Math.floor(totalBots * this.currentBotRatio);
             }
 
             await this.processDisabledBots();
+            await this.resetSmartPatterns();
         } else {
             await this.removeAllBots();
         }
 
         this.resetAllBotData();
     }
+
+    async resetSmartPatterns() {}
 
     async run() {
         if (

@@ -13,7 +13,7 @@ export default class BotBetPatternConsumer {
      * @param {mongoose.Model} betPatternRepository
      * @param {mongoose.Model} betActionRepository
      */
-    constructor(definition, gameData, userInfosRepository, betPatternRepository, betActionRepository) {
+    constructor({ definition, gameData, userInfosRepository, betPatternRepository, betActionRepository }) {
         this.definition = definition;
         this.gameData = gameData;
         this.userInfosRepository = userInfosRepository;
@@ -28,35 +28,47 @@ export default class BotBetPatternConsumer {
         this.chance = new Chance();
     }
 
-    async reset() {
+    async resetAndUpdatePatterns() {
         if (this.gameData.gameConfigs?.smartBotEnabled) {
             const currentTime = moment.utc();
-
-            await this.generateGroupedPatterns(currentTime, this.definition.botPatternExpiredInHours);
+            const isExpired = this.isExpired(currentTime, this.definition.botPatternExpiredInHours);
+            if (isExpired) {
+                await this.generateGroupedPatterns();
+            }
 
             if (this.currentRatioOfGroups !== this.gameData.gameConfigs.smartBotTotalGroup) {
                 this.patterns = await this.randomPickedByGroup(this.followingDatePattern);
                 this.currentRatioOfGroups = this.gameData.gameConfigs.smartBotTotalGroup;
-                await this.assignBotsForGroupPattern(this.patterns.length);
+
+                await this.assignPatterns();
             }
 
-            await this.assignBetPattern(currentTime);
+            await this.getBetActionsInTimeFrame(currentTime);
+
+            return isExpired;
         } else {
             this.patterns = [];
             this.betActions = [];
-            this.bots = [];
         }
+
+        return false;
     }
 
-    async generateGroupedPatterns(currentTime, botPatternExpiredInHours) {
+    isExpired(currentTime, botPatternExpiredInHours) {
         if (this.expiredTime < currentTime) {
+            //TODO reset expiredTime at beginning of the day
             this.expiredTime = moment.utc().add(botPatternExpiredInHours, "hours");
 
-            const highStakePatternsByDate = await this.betPatternRepository.aggregate([{ $sample: { size: 1 } }]).exec();
-            this.followingDatePattern = highStakePatternsByDate[0].time;
-            this.bots = [];
-            this.betActions = [];
+            return true;
         }
+
+        return false;
+    }
+
+    async generateGroupedPatterns() {
+        const highStakePatternsByDate = await this.betPatternRepository.aggregate([{ $sample: { size: 1 } }]).exec();
+        this.followingDatePattern = highStakePatternsByDate[0].time;
+        this.betActions = [];
     }
 
     async randomPickedByGroup(time) {
@@ -70,13 +82,7 @@ export default class BotBetPatternConsumer {
         return allGroups.filter((pattern) => pickedGroups.includes(pattern.group));
     }
 
-    async assignBotsForGroupPattern(totalBot) {
-        if (this.bots.length === 0) {
-            //Assign pattern id to specific bot
-        }
-    }
-
-    async assignBetPattern(currentTime) {
+    async getBetActionsInTimeFrame(currentTime) {
         if (this.patterns.length > 0) {
             const startTime = currentTime.valueOf() % (24 * 3600 * 1000);
             const endTime = startTime + this.definition.durations.wholeRound * 1000;
@@ -92,14 +98,13 @@ export default class BotBetPatternConsumer {
                     .find({ time: { $in: times } })
                     .lean()
                     .exec();
-
-                for (let index = 0; index < this.patterns.length; index++) {
-                    if (this.bots[index]) {
-                        this.bots[index].patternId = this.patterns[index]._id;
-                        this.bots[index].betActions = this.betActions.filter((action) => action.patId === this.patterns[index]._id) ?? [];
-                    }
-                }
             }
         }
     }
+
+    getCurrentBetActions() {
+        return this.betActions;
+    }
+
+    async assignPatterns() {}
 }
