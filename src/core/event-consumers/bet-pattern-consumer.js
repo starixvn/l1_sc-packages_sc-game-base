@@ -102,8 +102,8 @@ export default class BotBetPatternConsumer {
         }
     }
 
-    getCurrentBetActions() {
-        return this.betActions;
+    getBetActions(patternId) {
+        return this.betActions.filter((action) => action.patId === patternId);
     }
 
     async assignPatterns() {}

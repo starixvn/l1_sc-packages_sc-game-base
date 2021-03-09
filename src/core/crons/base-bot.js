@@ -19,6 +19,7 @@ export default class BaseBot {
         this.betPatternConsumer = betPatternConsumer;
 
         this.bots = [];
+        this.smartBots = [];
         this.currentBotRatio = 0;
         this.maxNumberOfBots = 0;
 
@@ -75,10 +76,26 @@ export default class BaseBot {
             indicesOfBotsToBeRemoved.forEach((index) => {
                 this.bots.splice(index, 1);
             });
+
+            await this.assignBetActionAndPlaceBet();
+        }
+    }
+
+    async assignBetActionAndPlaceBet() {
+        this.smartBots.forEach((smartBot) => {
+            smartBot.betActions = this.betPatternConsumer.getBetActions(smartBot.patternId);
+        });
+
+        for (const smartBot of this.smartBotstBotsToBet) {
+            const actionsInSecond = smartBot.betActions.filter((betAction) => betAction.second === this.gameData.remainingTime) ?? [];
+            for (const action of actionsInSecond) {
+                await this.placeBet(smartBot, action);
+            }
         }
     }
 
     async removeAllBots() {
+        //TODO remove smart bots?
         this.bots = [];
         this.currentBotRatio = 0;
         this.maxNumberOfBots = 0;
@@ -96,7 +113,7 @@ export default class BaseBot {
 
     resetBot(bot) {}
 
-    async placeBet(bot) {}
+    async placeBet(bot, betAction = null) {}
 
     getBetChoice(bot) {}
 
