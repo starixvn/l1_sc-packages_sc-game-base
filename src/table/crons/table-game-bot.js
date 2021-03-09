@@ -14,13 +14,15 @@ export default class TableGameBot extends BaseBot {
      * @param {BaseEventPublisher} publisher
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} tempBetsRepository
-     * @param {BetPatternConsumer} dependencies.betPatternConsumer
+     * @param {BetPatternConsumer} betPatternConsumer
+     * @param {mongoose.Model} smartBotBetLogsRepository
      */
-    constructor(definition, gameData, publisher, userInfosRepository, tempBetsRepository, betPatternConsumer) {
+    constructor(definition, gameData, publisher, userInfosRepository, tempBetsRepository, betPatternConsumer, smartBotBetLogsRepository) {
         super(definition, gameData, userInfosRepository, betPatternConsumer);
 
         this.publisher = publisher;
         this.tempBetsRepository = tempBetsRepository;
+        this.smartBotBetLogsRepository = smartBotBetLogsRepository;
 
         this.inOutValues = {
             in: 3,
@@ -332,8 +334,8 @@ export default class TableGameBot extends BaseBot {
     }
 
     async insertBetLog(bot, choiceId, amount, second) {
-        if (this.definition.smartBotBetLogRepository) {
-            await this.definition.smartBotBetLogRepository.create({
+        if (this.smartBotBetLogsRepository) {
+            await this.smartBotBetLogsRepository.create({
                 uid: bot.id,
                 name: bot.name,
                 patternId: bot.patternId,
@@ -347,7 +349,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     convertBetChoice(choiceId) {
-        return choiceId > 0 ? this.choiceIdMapper[choiceId - 1] : null;
+        return choiceId > 0 ? this.definition.choices[choiceId - 1] : null;
     }
 
     reduceAmountIfOverMaxBet(choice, amount) {

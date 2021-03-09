@@ -10,7 +10,7 @@ export default class BaseBot {
      * @param {GameDefinition} definition
      * @param {GameData} gameData
      * @param {mongoose.Model} userInfosRepository
-     * @param {BetPatternConsumer} dependencies.betPatternConsumer
+     * @param {BetPatternConsumer} betPatternConsumer
      */
     constructor(definition, gameData, userInfosRepository, betPatternConsumer) {
         this.definition = definition;
