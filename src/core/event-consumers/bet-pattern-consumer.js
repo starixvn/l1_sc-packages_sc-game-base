@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
-export default class BotBetPatternConsumer {
+export default class BetPatternConsumer {
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
