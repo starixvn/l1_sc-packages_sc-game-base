@@ -2,8 +2,8 @@ import Chance from "chance";
 import moment from "moment";
 import mongoose from "mongoose";
 
-import GameData from "./../../game-data";
-import GameDefinition from "./../../game-definition";
+import GameData from "./../game-data";
+import GameDefinition from "./../game-definition";
 
 export default class BotBetPatternConsumer {
     /**
