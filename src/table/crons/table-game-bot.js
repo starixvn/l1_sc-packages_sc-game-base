@@ -67,7 +67,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async resetSmartPatterns() {
-        if (this.iBots.length === 0 && this.gameData.gameConfigs?.smartBotEnabled) {
+        if (this.smartBots.length === 0 && this.gameData.gameConfigs?.smartBotEnabled) {
             const isExpired = await this.betPatternConsumer.resetAndUpdatePatterns();
 
             if (this.smartBots.length === 0 || isExpired) {
