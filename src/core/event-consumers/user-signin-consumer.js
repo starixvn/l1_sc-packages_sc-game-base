@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { notifyLogin } from "sc-base-apis";
+import { getBetLimit } from "sc-base-apis";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
 
@@ -38,7 +38,7 @@ export default class UserSignInConsumer {
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
             if (this.hasPlayingPermission(userSession, socketClient)) {
-                await this.enterPortal(userSession, userInfo, socketClient);
+                await this.getUserBetLimit(userSession, userInfo, socketClient);
 
                 Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
                     if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
@@ -54,8 +54,8 @@ export default class UserSignInConsumer {
         }
     }
 
-    async enterPortal(userSession, userInfo, socketClient) {
-        const apiResult = await notifyLogin({ session: userSession }, userInfo.name, false);
+    async getUserBetLimit(userSession, userInfo, socketClient) {
+        const apiResult = await getBetLimit({ session: userSession });
 
         if (apiResult.isOk) {
             const { response } = apiResult;
