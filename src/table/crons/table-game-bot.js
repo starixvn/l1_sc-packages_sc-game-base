@@ -203,7 +203,6 @@ export default class TableGameBot extends BaseBot {
                 red: bot.red,
                 avatarId: bot.avatarId,
                 type: isSmartBot ? true : bot.type,
-                patternId: patternId,
             },
         };
 
