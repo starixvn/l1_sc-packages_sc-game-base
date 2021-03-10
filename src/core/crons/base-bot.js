@@ -77,7 +77,9 @@ export default class BaseBot {
                 this.bots.splice(index, 1);
             });
 
-            await this.assignBetActionAndPlaceBet();
+            if (this.gameData.gameConfigs?.smartBotEnabled) {
+                await this.assignBetActionAndPlaceBet();
+            }
         }
     }
 

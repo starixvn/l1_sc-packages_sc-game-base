@@ -34,6 +34,7 @@ export default class TableGameBot extends BaseBot {
         this.chance = new Chance();
         this.minBotsAtTheTable = 8;
         this.botsInRoom = {};
+        this.isExpiredSmartBot = false;
     }
 
     async processDisabledBots() {
@@ -68,10 +69,10 @@ export default class TableGameBot extends BaseBot {
 
     async resetSmartPatterns() {
         if (this.smartBots.length === 0 && this.gameData.gameConfigs?.smartBotEnabled) {
-            const isExpired = await this.betPatternConsumer.resetAndUpdatePatterns();
+            this.isExpiredSmartBot = await this.betPatternConsumer.resetAndUpdatePatterns();
 
-            if (this.smartBots.length === 0 || isExpired) {
-                if (isExpired) {
+            if (this.smartBots.length === 0 || this.isExpiredSmartBot) {
+                if (this.isExpiredSmartBot) {
                     //TODO remove bot has expired pattern
                 }
                 this.smartBots = await this.userInfosRepository
@@ -100,6 +101,10 @@ export default class TableGameBot extends BaseBot {
             const botsToBet = this.getBotsToBet();
 
             await Promise.all(botsToBet.map((bot) => this.placeBet(bot)));
+
+            if (this.gameData.gameConfigs?.smartBotEnabled) {
+                await this.assignBetActionAndPlaceBet();
+            }
         }
     }
 
@@ -161,7 +166,11 @@ export default class TableGameBot extends BaseBot {
 
         await Promise.all(newBots.map((bot) => this.botJoinRoom(bot)));
 
-        this.smartBots.forEach((smartBot) => this.addToPlayersAndPublishJoinRoom(smartBot));
+        if (this.isExpiredSmartBot) {
+            this.smartBots.forEach((smartBot) => this.addToPlayersAndPublishJoinRoom(smartBot));
+            this.isExpiredSmartBot = false;
+        }
+
         //TODO should increase amount for smart bots?
     }
 
@@ -182,7 +191,7 @@ export default class TableGameBot extends BaseBot {
         this.resetBot(bot);
 
         this.botsInRoom[bot.id] = bot;
-        this.addToPlayersAndPublishJoinRoom();
+        this.addToPlayersAndPublishJoinRoom(bot);
     }
 
     addToPlayersAndPublishJoinRoom(bot) {
@@ -234,7 +243,7 @@ export default class TableGameBot extends BaseBot {
             return this.chance.pickset(Object.keys(this.botsInRoom).slice(0, 8), this.chance.integer({ min: 1, max: 3 }));
         }
 
-        return this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval);
+        return Object.keys(this.botsInRoom).length > 0 ? this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval) : [];
     }
 
     async placeBet(bot, betAction = null) {
@@ -247,7 +256,7 @@ export default class TableGameBot extends BaseBot {
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet || betAction) {
                 const user = await this.userInfosRepository
                     .findOneAndUpdate({ id: bot.id, red: { $gt: amount } }, { $inc: { red: amount } }, { new: true })
-                    .exec();
+                    .lean();
 
                 if (user) {
                     await this.insertOrUpdateBet(bot, choice, amount, currentBet);
