@@ -26,12 +26,13 @@ export default class BetPatternConsumer {
         this.betActions = [];
         this.expiredTime = moment.utc();
         this.chance = new Chance();
+        this.patternExpiryTime = 24;
     }
 
     async resetAndUpdatePatterns() {
         if (this.gameData.gameConfigs?.smartBotEnabled) {
             const currentTime = moment.utc();
-            const isExpired = this.isExpired(currentTime, this.definition.botPatternExpiredInHours);
+            const isExpired = this.isExpired(currentTime, this.patternExpiryTime);
             if (isExpired) {
                 await this.generateGroupedPatterns();
             }
