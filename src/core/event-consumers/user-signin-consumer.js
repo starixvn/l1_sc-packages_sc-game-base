@@ -90,7 +90,7 @@ export default class UserSignInConsumer {
     }
 
     hasPlayingPermission(userSession, socketClient) {
-        if (this.gameData.gameConfigs.siteExclusions?.some((x) => x === userSession.siteName)) {
+        if (this.gameData.gameConfigs.siteExclusions?.some((x) => x.toLowerCase() === userSession.siteName.toLowerCase())) {
             this.userSignInPublisher.publishNotPermittedToPlayMessage(socketClient, this.definition.id);
             return false;
         }

@@ -133,7 +133,7 @@ export default class BaseSocketRouter {
     }
 
     hasPlayingPermission(userSession) {
-        if (this.gameData.gameConfigs.siteExclusions?.some((x) => x === userSession.siteName)) {
+        if (this.gameData.gameConfigs.siteExclusions?.some((x) => x.toLowerCase() === userSession.siteName.toLowerCase())) {
             this.userSignInPublisher.publishNotPermittedToPlayMessage(this.socketClient, this.definition.id);
             return false;
         }
