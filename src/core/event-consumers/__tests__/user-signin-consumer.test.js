@@ -9,7 +9,7 @@ import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
 
 jest.mock("sc-base-apis", () => ({
-    notifyLogin: function () {
+    getBetLimit: function () {
         return {
             isOk: true,
             response: {
