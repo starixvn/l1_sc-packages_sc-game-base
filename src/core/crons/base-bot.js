@@ -88,7 +88,7 @@ export default class BaseBot {
             smartBot.betActions = this.betPatternConsumer.getBetActions(smartBot.patternId);
         });
 
-        for (const smartBot of this.smartBotstBotsToBet) {
+        for (const smartBot of this.smartBots) {
             const actionsInSecond = smartBot.betActions.filter((betAction) => betAction.second === this.gameData.remainingTime) ?? [];
             for (const action of actionsInSecond) {
                 await this.placeBet(smartBot, action);
