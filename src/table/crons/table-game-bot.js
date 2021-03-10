@@ -167,7 +167,7 @@ export default class TableGameBot extends BaseBot {
         await Promise.all(newBots.map((bot) => this.botJoinRoom(bot)));
 
         if (this.isExpiredSmartBot) {
-            this.smartBots.forEach((smartBot) => this.addToPlayersAndPublishJoinRoom(smartBot));
+            this.smartBots.forEach((smartBot) => this.addToPlayersAndPublishJoinRoom(smartBot, true));
             this.isExpiredSmartBot = false;
         }
 
@@ -194,7 +194,7 @@ export default class TableGameBot extends BaseBot {
         this.addToPlayersAndPublishJoinRoom(bot);
     }
 
-    addToPlayersAndPublishJoinRoom(bot) {
+    addToPlayersAndPublishJoinRoom(bot, isSmartBot = false) {
         this.gameData.players[bot.id] = bot;
         const payload = {
             player: {
@@ -202,7 +202,8 @@ export default class TableGameBot extends BaseBot {
                 name: bot.name,
                 red: bot.red,
                 avatarId: bot.avatarId,
-                type: bot.type,
+                type: isSmartBot ? true : bot.type,
+                patternId: patternId,
             },
         };
 
