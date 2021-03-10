@@ -210,7 +210,7 @@ export default class TableGameBot extends BaseBot {
     async resetInRoomTrackings() {
         await this.userInfosRepository.updateMany(
             { type: true, inGameRoom: this.definition.configName },
-            { inRoom: false, inGameRoom: "" }
+            { inRoom: false, inGameRoom: "", patternId: 0 }
         );
     }
 
