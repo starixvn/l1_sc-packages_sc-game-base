@@ -61,7 +61,7 @@ export default class HistoryQuery {
     }
 
     getBetLogDetails(player, roundId) {
-        return this.betsRepository
+        return this.betLogsRepository
             .find({ phien: roundId, uid: player.UID }, { _id: false, time: true, choice: true, amount: true }, { sort: { _id: -1 } })
             .lean()
             .exec();
