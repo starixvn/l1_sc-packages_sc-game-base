@@ -73,7 +73,7 @@ export default class TableGameBot extends BaseBot {
 
             if (this.smartBots.length === 0 || this.isExpiredSmartBot) {
                 if (this.isExpiredSmartBot) {
-                    //TODO remove bot has expired pattern
+                    await Promise.all(this.smartBots.map((bot) => this.removeBot(bot.id)));
                 }
                 this.smartBots = await this.userInfosRepository
                     .find(
@@ -268,10 +268,7 @@ export default class TableGameBot extends BaseBot {
                         this.gameData.players[bot.id].red = user.red;
                     }
 
-                    if (betAction === null) {
-                        this.updateBotInRoomData(bot, choice, amount, user.red);
-                        this.totalTickets += 1;
-                    }
+                    await this.captureBetDetails(betAction, bot, choice, amount, user.red);
                 }
             }
         }
@@ -365,5 +362,14 @@ export default class TableGameBot extends BaseBot {
         const maxBetPerChoice = this.gameData.gameConfigs.choices_maxbet[choice] || 0;
 
         return Math.min(amount, maxBetPerChoice);
+    }
+
+    async captureBetDetails(betAction, bot, choice, amount, balance) {
+        if (betAction === null) {
+            this.updateBotInRoomData(bot, choice, amount, balance);
+            this.totalTickets += 1;
+        } else {
+            await this.insertBetLog(bot, betAction.choiceId, amount, betAction.second);
+        }
     }
 }

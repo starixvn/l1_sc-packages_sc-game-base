@@ -37,9 +37,9 @@ export default class BetPatternConsumer {
                 await this.generateGroupedPatterns();
             }
 
-            if (this.currentRatioOfGroups !== this.gameData.gameConfigs.smartBotTotalGroup) {
+            if (this.currentRatioOfGroups !== this.gameData.gameConfigs.smartBotGroupRatio) {
                 this.patterns = await this.randomPickedByGroup(this.followingDatePattern);
-                this.currentRatioOfGroups = this.gameData.gameConfigs.smartBotTotalGroup;
+                this.currentRatioOfGroups = this.gameData.gameConfigs.smartBotGroupRatio;
 
                 await this.assignPatterns();
             }
@@ -77,7 +77,7 @@ export default class BetPatternConsumer {
         const distinctGroups = [...new Set(allGroups.map((pattern) => pattern.group))];
         const pickedGroups = this.chance.pickset(
             distinctGroups,
-            Math.round(distinctGroups.length * this.gameData.gameConfigs.smartBotTotalGroup)
+            Math.round(distinctGroups.length * this.gameData.gameConfigs.smartBotGroupRatio)
         );
 
         return allGroups.filter((pattern) => pickedGroups.includes(pattern.group));
