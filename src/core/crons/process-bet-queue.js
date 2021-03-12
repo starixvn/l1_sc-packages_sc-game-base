@@ -78,9 +78,12 @@ export default class ProcessBetQueue {
     }
 
     async updateUserStakeLevel(player, minBet, maxBet) {
-        await this.userInfosRepository.updateOne({ id: player.UID }, { minBet, maxBet });
+        await this.userInfosRepository.updateOne({ id: player.UID }, { minBet, maxBet, betLimitModifiedDate: new Date() });
         player.profile.minBet = minBet;
         player.profile.maxBet = maxBet;
+
+        const userStakeLevel = { minBet, maxBet };
+        socketClient.emit("message", { userStakeLevel });
     }
 
     formatApiBetInfo(payload) {
