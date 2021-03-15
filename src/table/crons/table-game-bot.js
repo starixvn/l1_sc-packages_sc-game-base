@@ -68,13 +68,14 @@ export default class TableGameBot extends BaseBot {
     }
 
     async resetSmartPatterns() {
-        if (this.smartBots.length === 0 && this.gameData.gameConfigs?.smartBotEnabled) {
+        if (this.gameData.gameConfigs?.smartBotEnabled) {
             this.isExpiredSmartBot = await this.betPatternConsumer.resetAndUpdatePatterns();
 
-            if (this.smartBots.length === 0 || this.isExpiredSmartBot) {
-                if (this.isExpiredSmartBot) {
-                    await Promise.all(this.smartBots.map((bot) => this.removeBot(bot.id)));
-                }
+            if (this.isExpiredSmartBot) {
+                await this.removeAllSmartBots();
+            }
+
+            if (this.smartBots.length === 0) {
                 this.smartBots = await this.userInfosRepository
                     .find(
                         { type: true, inRoom: true, inGameRoom: this.definition.configName, patternId: { $gt: 0 } },
@@ -83,7 +84,14 @@ export default class TableGameBot extends BaseBot {
                     .lean()
                     .exec();
             }
+        } else {
+            await this.removeAllSmartBots();
         }
+    }
+
+    async removeAllSmartBots() {
+        await Promise.all(this.smartBots.map((bot) => this.removeBot(bot.id)));
+        this.smartBots = [];
     }
 
     async run() {
@@ -146,7 +154,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async removeBot(botId) {
-        await this.userInfosRepository.updateOne({ id: botId }, { inRoom: false, inGameRoom: "" });
+        await this.userInfosRepository.updateOne({ id: botId }, { inRoom: false, inGameRoom: "", patternId: 0 });
 
         this.publisher.publishToAllUsers({ outgame: { playerId: botId } });
 
@@ -170,8 +178,6 @@ export default class TableGameBot extends BaseBot {
             this.smartBots.forEach((smartBot) => this.addToPlayersAndPublishJoinRoom(smartBot, true));
             this.isExpiredSmartBot = false;
         }
-
-        //TODO should increase amount for smart bots?
     }
 
     getBotsToJoin(botUsers) {
