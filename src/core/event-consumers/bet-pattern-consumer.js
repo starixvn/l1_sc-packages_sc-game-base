@@ -32,12 +32,12 @@ export default class BetPatternConsumer {
     async resetAndUpdatePatterns() {
         if (this.gameData.gameConfigs?.smartBotEnabled) {
             const currentTime = moment.utc();
-            const isExpired = this.isExpired(currentTime, this.patternExpiryTime);
+            const isExpired =
+                this.isExpired(currentTime, this.patternExpiryTime) ||
+                this.currentRatioOfGroups !== this.gameData.gameConfigs.smartBotGroupRatio;
+
             if (isExpired) {
                 await this.generateGroupedPatterns();
-            }
-
-            if (this.currentRatioOfGroups !== this.gameData.gameConfigs.smartBotGroupRatio) {
                 this.patterns = await this.randomPickedByGroup(this.followingDatePattern);
                 this.currentRatioOfGroups = this.gameData.gameConfigs.smartBotGroupRatio;
 
