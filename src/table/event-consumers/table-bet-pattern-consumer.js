@@ -12,6 +12,7 @@ export default class TableBetPatternConsumer extends BetPatternConsumer {
         const bots = await this.userInfosRepository.aggregate([
             {
                 $match: {
+                    type: true,
                     inRoom: false,
                     inGameRoom: "",
                     disabled: false,
