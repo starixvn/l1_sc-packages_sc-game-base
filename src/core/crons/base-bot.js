@@ -39,7 +39,7 @@ export default class BaseBot {
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
 
-                const totalBots = await this.userInfosRepository.countDocuments({ type: true, disabled: false }).exec();
+                const totalBots = await this.userInfosRepository.countDocuments({ type: true, banned: false }).exec();
                 this.maxNumberOfBots = Math.floor(totalBots * this.currentBotRatio);
             }
 
