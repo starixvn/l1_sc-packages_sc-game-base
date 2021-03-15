@@ -23,7 +23,7 @@ export default class TableInGameConsumer extends InGameConsumer {
         const payload = await super.buildPayload(realPlayer);
         const { remainingTime, chips } = this.gameData;
 
-        const players = this.gameData.players.reduce((playerList, player) => {
+        const players = Object.values(this.gameData.players).reduce((playerList, player) => {
             const { id, name, red, avatarId, type, patternId } = player;
 
             playerList[id] = {
