@@ -201,18 +201,19 @@ export default class TableGameBot extends BaseBot {
     }
 
     addToPlayersAndPublishJoinRoom(bot, isSmartBot = false) {
-        this.gameData.players[bot.id] = bot;
-        const payload = {
-            player: {
-                id: bot.id,
-                name: bot.name,
-                red: bot.red,
-                avatarId: bot.avatarId,
-                type: isSmartBot ? false : bot.type,
-            },
+        const botPayload = {
+            id: bot.id,
+            name: bot.name,
+            red: bot.red,
+            avatarId: bot.avatarId,
+            type: isSmartBot ? false : bot.type,
         };
 
-        this.publisher.publishToAllUsers(payload);
+        this.gameData.players[bot.id] = botPayload;
+
+        this.publisher.publishToAllUsers({
+            player: botPayload,
+        });
     }
 
     resetBot(bot) {
