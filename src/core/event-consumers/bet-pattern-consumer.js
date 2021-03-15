@@ -57,7 +57,7 @@ export default class BetPatternConsumer {
 
     isExpired(currentTime, botPatternExpiredInHours) {
         if (this.expiredTime < currentTime) {
-            this.expiredTime = moment.startOf("day").add(botPatternExpiredInHours, "hours");
+            this.expiredTime = moment().startOf("day").add(botPatternExpiredInHours, "hours");
 
             return true;
         }
