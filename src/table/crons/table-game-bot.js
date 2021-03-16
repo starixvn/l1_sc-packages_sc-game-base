@@ -95,20 +95,22 @@ export default class TableGameBot extends BaseBot {
     }
 
     async run() {
-        if (this.gameData.gameConfigs?.botenabled && this.gameData.remainingTime > this.definition.durations.lockingBet) {
-            const random = this.chance.integer({ min: 0, max: 5 });
+        if (this.gameData.remainingTime > this.definition.durations.lockingBet) {
+            if (this.gameData.gameConfigs?.botenabled) {
+                const random = this.chance.integer({ min: 0, max: 5 });
 
-            if (this.shouldAddBot(random)) {
-                await this.joinRoom();
+                if (this.shouldAddBot(random)) {
+                    await this.joinRoom();
+                }
+
+                if (this.shouldRemoveBot(random)) {
+                    await this.leaveRoom();
+                }
+
+                const botsToBet = this.getBotsToBet();
+
+                await Promise.all(botsToBet.map((bot) => this.placeBet(bot)));
             }
-
-            if (this.shouldRemoveBot(random)) {
-                await this.leaveRoom();
-            }
-
-            const botsToBet = this.getBotsToBet();
-
-            await Promise.all(botsToBet.map((bot) => this.placeBet(bot)));
 
             if (this.gameData.gameConfigs?.smartBotEnabled) {
                 await this.assignBetActionAndPlaceBet();
@@ -262,7 +264,7 @@ export default class TableGameBot extends BaseBot {
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet || betAction) {
                 const user = await this.userInfosRepository
-                    .findOneAndUpdate({ id: bot.id, red: { $gt: amount } }, { $inc: { red: amount } }, { new: true })
+                    .findOneAndUpdate({ id: bot.id, red: { $gt: amount } }, { $inc: { red: -amount } }, { new: true })
                     .lean();
 
                 if (user) {
