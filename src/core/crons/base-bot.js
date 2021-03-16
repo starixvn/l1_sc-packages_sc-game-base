@@ -44,12 +44,12 @@ export default class BaseBot {
             }
 
             await this.processDisabledBots();
-            await this.resetSmartPatterns();
         } else {
             await this.removeAllBots();
         }
 
         this.resetAllBotData();
+        await this.resetSmartPatterns();
     }
 
     async resetSmartPatterns() {}
@@ -97,7 +97,6 @@ export default class BaseBot {
     }
 
     async removeAllBots() {
-        //TODO remove smart bots?
         this.bots = [];
         this.currentBotRatio = 0;
         this.maxNumberOfBots = 0;
