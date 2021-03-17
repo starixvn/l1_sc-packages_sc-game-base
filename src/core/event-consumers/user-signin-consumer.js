@@ -11,11 +11,12 @@ export default class UserSignInConsumer {
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository) {
+    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, definition) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
         this.userInfosRepository = userInfosRepository;
         this.userSessionsRepository = userSessionsRepository;
+        this.definition = definition;
     }
 
     /**
@@ -37,16 +38,18 @@ export default class UserSignInConsumer {
             userSession.username === payload.username &&
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
-            await this.enterPortal(userSession, userInfo, socketClient);
+            if (this.hasPlayingPermission(userSession, socketClient)) {
+                await this.enterPortal(userSession, userInfo, socketClient);
 
-            Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
-                if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
-                    realPlayer.socketClient.disconnect(true);
-                    delete this.gameData.realPlayers[realPlayer.socketClient.id];
-                }
-            });
+                Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
+                    if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
+                        realPlayer.socketClient.disconnect(true);
+                        delete this.gameData.realPlayers[realPlayer.socketClient.id];
+                    }
+                });
 
-            this.handleSignInSuccess(socketClient, userInfo, userSession);
+                this.handleSignInSuccess(socketClient, userInfo, userSession);
+            }
         } else {
             this.handleUnauthorizedSignIn(socketClient);
         }
@@ -84,5 +87,14 @@ export default class UserSignInConsumer {
     handleUnauthorizedSignIn(socketClient) {
         this.userSignInPublisher.publishUnauthorizedMessage(socketClient);
         socketClient.disconnect(true);
+    }
+
+    hasPlayingPermission(userSession, socketClient) {
+        if (this.gameData.gameConfigs.siteExclusions?.some((x) => x.toLowerCase() === userSession.siteName.toLowerCase())) {
+            this.userSignInPublisher.publishNotPermittedToPlayMessage(socketClient, this.definition.id);
+            return false;
+        }
+
+        return true;
     }
 }

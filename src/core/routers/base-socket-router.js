@@ -110,8 +110,14 @@ export default class BaseSocketRouter {
     }
 
     verify(payload) {
-        if (this.gameData.realPlayers[this.socketClient.id]) {
-            return true;
+        const realPlayer = this.gameData.realPlayers[this.socketClient.id];
+
+        if (realPlayer) {
+            if(this.hasPlayingPermission(realPlayer.session)) {
+                return true;
+            }
+
+            return false;
         }
 
         this.userSignInPublisher.publishUnauthorizedMessage(this.socketClient);
@@ -124,5 +130,14 @@ export default class BaseSocketRouter {
         this.logService.setTag({ id: "username", value: "" });
 
         return false;
+    }
+
+    hasPlayingPermission(userSession) {
+        if (this.gameData.gameConfigs.siteExclusions?.some((x) => x.toLowerCase() === userSession.siteName.toLowerCase())) {
+            this.userSignInPublisher.publishNotPermittedToPlayMessage(this.socketClient, this.definition.id);
+            return false;
+        }
+
+        return true;
     }
 }
