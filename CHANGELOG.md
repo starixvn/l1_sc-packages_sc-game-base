@@ -1,3 +1,21 @@
+# [1.19.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.18.0...v1.19.0) (2021-03-17)
+
+
+### Bug Fixes
+
+* publishNotPermittedToPlayMessage - pass game Id ([4f13a8f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/4f13a8f1489cd0f62841d9fc9562af63f77f59f9))
+* site permission checking - ignore case comparison ([91e1798](https://git3.nexdev.net/sc-packages/sc-game-base/commit/91e17987a2e2758168e5c41e9b6522ff32800029))
+* upgrade sc base packages ([366f982](https://git3.nexdev.net/sc-packages/sc-game-base/commit/366f98280d21410ad1b291e6d8bb621e926c945a))
+
+
+### Features
+
+* publishNotPermittedToPlayMessage - update path name ([beec7e1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/beec7e12fe82e9b0b6d560837ba7bd2fc2df48e6))
+* update user-signin-consumer constructor ([e193c6f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e193c6f242df6d6b7938d9efdb1d55f7ee2754af))
+* update verify game permission ([469b984](https://git3.nexdev.net/sc-packages/sc-game-base/commit/469b98408e0efb1c167d5d12ffea313c13a53274))
+* verify playing permission by site name ([634aecd](https://git3.nexdev.net/sc-packages/sc-game-base/commit/634aecd2ed8b67e144e4794dc44ae8949a76f893))
+* verify user's site name  when playing game ([399ebdd](https://git3.nexdev.net/sc-packages/sc-game-base/commit/399ebdda0d6533fc87613c6ff072a8386bc52876))
+
 # [1.18.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.17.5...v1.18.0) (2021-03-02)
 
 
