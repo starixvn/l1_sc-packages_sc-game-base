@@ -87,7 +87,7 @@ export default class ProcessBetQueue {
         player.profile.maxBet = maxBet;
 
         const userStakeLevel = { minBet, maxBet };
-        socketClient.emit("message", { userStakeLevel });
+        this.placeBetPublisher.publishToUser(player.UID, { userStakeLevel }, "message");
     }
 
     formatApiBetInfo(payload) {
