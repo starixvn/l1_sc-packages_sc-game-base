@@ -1,0 +1,7 @@
+**/.vscode
+**/*.test.js
+.prettierignore
+.prettierrc
+.gitlab-ci.yml
+babel.config.js
+jest.config.cjs
