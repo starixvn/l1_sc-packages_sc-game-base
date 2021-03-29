@@ -1,12 +1,12 @@
 import BetPatternConsumer from "../../../src/core/event-consumers/bet-pattern-consumer";
 
 export default class TableBetPatternConsumer extends BetPatternConsumer {
-    async assignPatterns() {
+    async assignPatterns(configName) {
         const maxInitializeAmount = 88000;
         const minInitializeAmount = 36000;
 
         await this.userInfosRepository.updateMany(
-            { type: true, inRoom: true, inGameRoom: this.definition.configName, patternId: { $gt: 0 } },
+            { type: true, inRoom: true, inGameRoom: configName, patternId: { $gt: 0 } },
             { patternId: 0 }
         );
 
@@ -30,7 +30,7 @@ export default class TableBetPatternConsumer extends BetPatternConsumer {
 
                 await this.userInfosRepository.updateOne(
                     { id: bot.id, inRoom: false, inGameRoom: "", disabled: false },
-                    { patternId: pattern._id, inRoom: true, inGameRoom: this.definition.configName, red: amount }
+                    { patternId: pattern._id, inRoom: true, inGameRoom: configName, red: amount }
                 );
             }
         }
