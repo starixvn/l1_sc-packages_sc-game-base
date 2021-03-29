@@ -10,16 +10,13 @@ export default class BaseBot {
      * @param {GameDefinition} definition
      * @param {GameData} gameData
      * @param {mongoose.Model} userInfosRepository
-     * @param {BetPatternConsumer} betPatternConsumer
      */
-    constructor(definition, gameData, userInfosRepository, betPatternConsumer) {
+    constructor(definition, gameData, userInfosRepository) {
         this.definition = definition;
         this.gameData = gameData;
         this.userInfosRepository = userInfosRepository;
-        this.betPatternConsumer = betPatternConsumer;
 
         this.bots = [];
-        this.smartBots = [];
         this.currentBotRatio = 0;
         this.maxNumberOfBots = 0;
 
@@ -49,10 +46,7 @@ export default class BaseBot {
         }
 
         this.resetAllBotData();
-        await this.resetSmartPatterns();
     }
-
-    async resetSmartPatterns() {}
 
     async run() {
         if (
@@ -76,23 +70,6 @@ export default class BaseBot {
             indicesOfBotsToBeRemoved.forEach((index) => {
                 this.bots.splice(index, 1);
             });
-
-            if (this.gameData.gameConfigs?.smartBotEnabled) {
-                await this.assignBetActionAndPlaceBet();
-            }
-        }
-    }
-
-    async assignBetActionAndPlaceBet() {
-        this.smartBots.forEach((smartBot) => {
-            smartBot.betActions = this.betPatternConsumer.getBetActions(smartBot.patternId);
-        });
-
-        for (const smartBot of this.smartBots) {
-            const actionsInSecond = smartBot.betActions.filter((betAction) => betAction.second === this.gameData.remainingTime) ?? [];
-            for (const action of actionsInSecond) {
-                await this.placeBet(smartBot, action);
-            }
         }
     }
 
@@ -114,7 +91,7 @@ export default class BaseBot {
 
     resetBot(bot) {}
 
-    async placeBet(bot, betAction = null) {}
+    async placeBet(bot) {}
 
     getBetChoice(bot) {}
 

@@ -1,25 +1,6 @@
-import mongoose from "mongoose";
-
 import BaseSmartBot from "./../../core/crons/base-smart-bot";
-import TableGameData from "./../table-game-data";
-import TableGameDefinition from "./../table-game-definition";
 
 export default class TableGameSmartBot extends BaseSmartBot {
-    /**
-     * @param {TableGameDefinition} definition
-     * @param {TableGameData} gameData
-     * @param {mongoose.Model} userInfosRepository
-     * @param {BetPatternConsumer} betPatternConsumer
-     * @param {mongoose.Model} smartBotBetLogsRepository
-     */
-
-    constructor(definition, gameData, betPatternConsumer, smartBotBetLogsRepository, userInfosRepository) {
-        super(definition, gameData, betPatternConsumer, smartBotBetLogsRepository);
-
-        this.userInfosRepository = userInfosRepository;
-        this.maxBetOfChoices = null;
-    }
-
     async reset(smartBotEnabled, maxBetOfChoices) {
         if (smartBotEnabled) {
             this.maxBetOfChoices = maxBetOfChoices;
