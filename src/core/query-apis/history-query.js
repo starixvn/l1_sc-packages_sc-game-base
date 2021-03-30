@@ -22,27 +22,18 @@ export default class HistoryQuery {
     }
 
     async queryHistoryBySession(session, page, pageSize) {
-        if (session?.ss) {
-            const userSession = await this.userSessionsRepository.findOne({ sessionId: session.ss }).lean().exec();
-            const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
+        const userSession = await this.userSessionsRepository.findOne({ sessionId: session }).lean().exec();
+        const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
 
-            if (
-                userSession &&
-                userSession.username === session.username &&
-                userSession.browserUserAgent.toUpperCase() === session.userAgent.toUpperCase()
-            ) {
-                const result = await this.queryHistory(
-                    {
-                        UID: userInfo.id,
-                    },
-                    page,
-                    pageSize
-                );
-                return result;
-            }
-        }
+        const result = await this.queryHistory(
+            {
+                UID: userInfo.id,
+            },
+            page,
+            pageSize
+        );
 
-        return {};
+        return result;
     }
 
     async queryHistory(player, page, pageSize) {

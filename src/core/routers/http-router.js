@@ -1,15 +1,20 @@
 import { logger, utils } from "sc-common";
-
+import mongoose from "mongoose";
 import GameData from "./../game-data";
+import { HistoryQuery } from "../query-apis";
 
 export default class HttpRouter {
     /**
      * @param {Object} appConfigs
-     * @param {GameData} gameData
+     * @param {GameData} gameData]
+     * @param {HistoryQuery}
+     * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(appConfigs, gameData) {
+    constructor(appConfigs, gameData, historyQuery, userSessionsRepository) {
         this.appConfigs = appConfigs;
         this.gameData = gameData;
+        this.historyQuery = historyQuery;
+        this.userSessionsRepository = userSessionsRepository;
     }
 
     init(app) {
@@ -24,24 +29,26 @@ export default class HttpRouter {
 
         app.get(
             "/api/history",
-            utils.authentication.useAuthenticate({
-                authUrl: this.appConfigs.apiSettings.authUrl,
-                audiences: this.appConfigs.authenticateSettings.audiences,
-            }),
+            (_req, res, next) => this.verifySession(_req, res, next),
             (_req, res) => this.handleHistoryRequest(_req, res)
         );
     }
 
+    async verifySession(req, res, next) {
+        const { session, username } = req.query;
+        const userAgent = req.headers["user-agent"];
+        const userSession = await this.userSessionsRepository.findOne({ sessionId: session }).lean().exec();
+
+        if (userSession && userSession.username === username && userSession.browserUserAgent.toUpperCase() === userAgent.toUpperCase()) {
+            next();
+        } else {
+            res.sendStatus(401);
+        }
+    }
+
     async handleHistoryRequest(req, res) {
         try {
-            const { ss, username, page, pageSize } = req.query;
-            const userAgent = req.headers["user-agent"];
-
-            const session = {
-                ss,
-                username,
-                userAgent,
-            };
+            const { session, page, pageSize } = req.query;
 
             const result = await this.historyQuery.queryHistoryBySession(session, +page, +pageSize);
 
