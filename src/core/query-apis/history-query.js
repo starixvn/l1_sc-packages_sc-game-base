@@ -6,15 +6,43 @@ export default class HistoryQuery {
      * @param {RoundQuery} roundQuery
      * @param {mongoose.Model} betsRepository
      * @param {mongoose.Model} betLogsRepository
+     * @param {mongoose.Model} userInfosRepository
+     * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(roundQuery, betsRepository, betLogsRepository) {
+    constructor(roundQuery, betsRepository, betLogsRepository, userInfosRepository, userSessionsRepository) {
         this.roundQuery = roundQuery;
         this.betsRepository = betsRepository;
         this.betLogsRepository = betLogsRepository;
+        this.userInfosRepository = userInfosRepository;
+        this.userSessionsRepository = userSessionsRepository;
     }
 
     convertBet(bet) {
         return bet;
+    }
+
+    async queryHistoryBySession(session, page, pageSize) {
+        if (session?.ss) {
+            const userSession = await this.userSessionsRepository.findOne({ sessionId: session.ss }).lean().exec();
+            const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
+
+            if (
+                userSession &&
+                userSession.username === session.username &&
+                userSession.browserUserAgent.toUpperCase() === session.userAgent.toUpperCase()
+            ) {
+                const result = await this.queryHistory(
+                    {
+                        UID: userInfo.id,
+                    },
+                    page,
+                    pageSize
+                );
+                return result;
+            }
+        }
+
+        return {};
     }
 
     async queryHistory(player, page, pageSize) {

@@ -21,6 +21,35 @@ export default class HttpRouter {
             }),
             (_req, res) => this.handleOnlineUsers(res)
         );
+
+        app.get(
+            "/api/history",
+            utils.authentication.useAuthenticate({
+                authUrl: this.appConfigs.apiSettings.authUrl,
+                audiences: this.appConfigs.authenticateSettings.audiences,
+            }),
+            (_req, res) => this.handleHistoryRequest(_req, res)
+        );
+    }
+
+    async handleHistoryRequest(req, res) {
+        try {
+            const { ss, username, page, pageSize } = req.query;
+            const userAgent = req.headers["user-agent"];
+
+            const session = {
+                ss,
+                username,
+                userAgent,
+            };
+
+            const result = await this.historyQuery.queryHistoryBySession(session, +page, +pageSize);
+
+            res.send(result);
+        } catch (error) {
+            logger.logError(error);
+            res.send({ error: true });
+        }
     }
 
     handleOnlineUsers(res) {
