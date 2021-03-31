@@ -22,28 +22,30 @@ export default class BaseSmartBot {
         this.beforeRemovingAll = null;
     }
 
-    async reset(smartBotEnabled, maxBetOfChoices, configName) {
+    async reset({ smartBotEnabled, maxBetOfChoices }, customFilters, customProjections) {
+        const filters = { ...customFilters, patternId: { $gt: 0 } };
+        const projections = { ...customProjections, patternId: true };
+
         if (smartBotEnabled) {
             this.maxBetOfChoices = maxBetOfChoices;
             this.isExpired = await this.betPatternConsumer.resetAndUpdatePatterns();
 
             if (this.isExpired) {
-                this.removeAll();
+                await this.removeAll();
             }
 
             if (this.smartBots.length === 0) {
-                this.smartBots = await this.userInfosRepository
-                    .find({ type: true, inGameRoom: configName, patternId: { $gt: 0 } }, "-_id id name red avatarId type patternId")
-                    .lean()
-                    .exec();
+                this.smartBots = await this.userInfosRepository.find(filters, projections).lean().exec();
             }
         } else {
-            this.removeAll();
+            await this.removeAll();
         }
+
+        return this.smartBots;
     }
 
-    removeAll() {
-        this.beforeRemovingAll(this.smartBots);
+    async removeAll() {
+        await this.beforeRemovingAll(this.smartBots);
         this.smartBots = [];
     }
 
@@ -94,5 +96,9 @@ export default class BaseSmartBot {
                 second,
             });
         }
+    }
+
+    getSmartBots() {
+        return this.smartBots;
     }
 }

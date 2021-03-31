@@ -1,29 +1,6 @@
 import BaseSmartBot from "./../../core/crons/base-smart-bot";
 
 export default class TableGameSmartBot extends BaseSmartBot {
-    async reset(smartBotEnabled, maxBetOfChoices) {
-        if (smartBotEnabled) {
-            this.maxBetOfChoices = maxBetOfChoices;
-            this.isExpired = await this.betPatternConsumer.resetAndUpdatePatterns();
-
-            if (this.isExpired) {
-                await this.removeAll();
-            }
-
-            if (this.smartBots.length === 0) {
-                this.smartBots = await this.userInfosRepository
-                    .find(
-                        { type: true, inRoom: true, inGameRoom: this.definition.configName, patternId: { $gt: 0 } },
-                        "-_id id name red avatarId type patternId"
-                    )
-                    .lean()
-                    .exec();
-            }
-        } else {
-            await this.removeAll();
-        }
-    }
-
     async placeBet(bot, betAction, roundId) {
         if (!betAction) {
             return;
