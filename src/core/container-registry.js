@@ -101,7 +101,6 @@ export default class ContainerRegistry {
             settleGameRoundConsumer: asClass(EventConsumers.SettleGameRoundConsumer).singleton().proxy(),
             userDisconnectConsumer: asClass(EventConsumers.UserDisconnectConsumer).singleton(),
             userSignInConsumer: asClass(EventConsumers.UserSignInConsumer).singleton(),
-            betPatternConsumer: asClass(EventConsumers.BetPatternConsumer).singleton().proxy(),
         });
     }
 
