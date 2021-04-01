@@ -46,12 +46,15 @@ export default class TableGameBot extends BaseBot {
                 {
                     userResetFilters: { inRoom: true, inGameRoom: name },
                     userUpdateFilters: { inRoom: false, inGameRoom: "", disabled: false },
-                    userUpdates: { inGameRoom: name },
+                    userUpdates: { inGameRoom: name, inRoom: true },
+                    userProjections: { id: true, name: true, red: true, avatarId: true }, // id name red avatarId type
                 }
             );
 
             if (smartBots?.length > 0) {
-                await Promise.all(smartBots.map((bot) => this.botJoinRoom(bot)));
+                smartBots.forEach((smartBot) => {
+                    this.addToPlayersAndPublish(smartBot);
+                });
 
                 this.maxNumberOfBots -= smartBots.length;
             }
@@ -105,11 +108,9 @@ export default class TableGameBot extends BaseBot {
             await Promise.all(botsToBet.map((bot) => this.placeBet(bot)));
         }
 
-        await this.smartBot.run(
-            this.gameData.gameConfigs.smartBotEnabled,
-            this.gameData.remainingTime,
-            this.definition.durations.lockingBet
-        );
+        if (this.gameData.gameConfigs?.smartBotEnabled && this.gameData.remainingTime > this.definition.durations.lockingBet) {
+            await this.smartBot.run(this.gameData.roundId, this.gameData.remainingTime);
+        }
     }
 
     shouldAddBot(random) {
@@ -190,10 +191,13 @@ export default class TableGameBot extends BaseBot {
         await this.userInfosRepository.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.definition.configName });
 
         this.resetBot(bot);
-
         this.botsInRoom[bot.id] = bot;
-        this.gameData.players[bot.id] = bot;
 
+        this.addToPlayersAndPublish(bot);
+    }
+
+    addToPlayersAndPublish(bot) {
+        this.gameData.players[bot.id] = bot;
         this.publisher.publishToAllUsers({ player: bot });
     }
 
@@ -249,7 +253,7 @@ export default class TableGameBot extends BaseBot {
 
                     this.updateTotalBetsAndChips(choice, amount);
                     this.updateBotInRoomData(bot, choice, amount, user.red);
-                    this.updateBalanceAndPublishBetPayload(bot.id, choice, amount, balance);
+                    this.updateBalanceAndPublishBetPayload(bot.id, choice, amount, user.red);
                 }
             }
         }

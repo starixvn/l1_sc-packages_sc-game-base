@@ -24,7 +24,7 @@ export default class BaseSmartBot {
 
     async reset(
         { smartBotEnabled, maxBetOfChoices, smartBotGroupRatio, wholeRound },
-        { userResetFilters, userUpdateFilters, userUpdates }
+        { userResetFilters, userUpdateFilters, userUpdates, userProjections }
     ) {
         if (smartBotEnabled) {
             this.maxBetOfChoices = maxBetOfChoices;
@@ -35,10 +35,11 @@ export default class BaseSmartBot {
             }
 
             if (this.smartBots.length === 0) {
-                this.smartBots = this.assignPatterns(
+                this.smartBots = await this.assignPatterns(
                     userResetFilters,
                     userUpdateFilters,
                     userUpdates,
+                    userProjections,
                     this.betPatternConsumer.getPatterns()
                 );
             }
@@ -49,7 +50,7 @@ export default class BaseSmartBot {
         return this.smartBots;
     }
 
-    async assignPatterns(customResetFilters, customUpdateFilters, customUpdates, patterns) {
+    async assignPatterns(customResetFilters, customUpdateFilters, customUpdates, userProjections, patterns) {
         const maxInitializeAmount = 88000;
         const minInitializeAmount = 36000;
 
@@ -65,6 +66,7 @@ export default class BaseSmartBot {
                 },
             },
             { $sample: { size: patterns.length } },
+            { $project: userProjections },
         ]);
 
         for (let index = 0; index < patterns.length; index++) {
@@ -77,6 +79,8 @@ export default class BaseSmartBot {
                 const updates = { ...customUpdates, patternId: pattern._id, red: amount };
 
                 await this.userInfosRepository.updateOne(updateFilters, updates);
+
+                bot.patternId = pattern._id;
             }
         }
 
@@ -91,17 +95,15 @@ export default class BaseSmartBot {
         this.smartBots = [];
     }
 
-    async run({ smartBotEnabled, remainingTime, lockingBet }) {
-        if (this.smartBots.length && smartBotEnabled && remainingTime > lockingBet) {
-            this.smartBots.forEach((smartBot) => {
-                smartBot.betActions = this.betPatternConsumer.getBetActions(smartBot.patternId);
-            });
+    async run(roundId, remainingTime) {
+        this.smartBots.forEach((smartBot) => {
+            smartBot.betActions = this.betPatternConsumer.getBetActions(smartBot.patternId);
+        });
 
-            for (const smartBot of this.smartBots) {
-                const actionsInSecond = smartBot.betActions.filter((betAction) => betAction.second === remainingTime) ?? [];
-                for (const action of actionsInSecond) {
-                    await this.placeBet(smartBot, action);
-                }
+        for (const smartBot of this.smartBots) {
+            const actionsInSecond = smartBot.betActions.filter((betAction) => betAction.second === remainingTime) ?? [];
+            for (const action of actionsInSecond) {
+                await this.placeBet(smartBot, action, roundId);
             }
         }
     }

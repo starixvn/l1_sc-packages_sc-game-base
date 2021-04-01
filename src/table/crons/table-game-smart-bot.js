@@ -8,17 +8,15 @@ export default class TableGameSmartBot extends BaseSmartBot {
 
         const { choice, amount } = this.generateChoiceAndAmount(betAction);
 
-        if (this.gameData.remainingTime > this.definition.durations.lockingBet) {
-            const user = await this.userInfosRepository
-                .findOneAndUpdate({ id: bot.id, red: { $gt: amount } }, { $inc: { red: -amount } }, { new: true })
-                .lean();
+        const user = await this.userInfosRepository
+            .findOneAndUpdate({ id: bot.id, red: { $gt: amount } }, { $inc: { red: -amount } }, { new: true })
+            .lean();
 
-            if (user) {
-                await this.insertBetActionLogs(bot, { choiceId: betAction.choiceId, amount, second: betAction.second, roundId });
+        if (user) {
+            await this.insertBetActionLogs(bot, { choiceId: betAction.choiceId, amount, second: betAction.second, roundId });
 
-                if (this.afterPlacingBet) {
-                    this.afterPlacingBet(bot, botAmount, choice, amount);
-                }
+            if (this.afterPlacingBet) {
+                this.afterPlacingBet(bot, user.red, choice, amount);
             }
         }
     }
