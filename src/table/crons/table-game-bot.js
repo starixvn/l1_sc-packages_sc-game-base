@@ -2,7 +2,6 @@ import Chance from "chance";
 import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
-import { TableGameSmartBot } from ".";
 import BaseBot from "./../../core/crons/base-bot";
 import { BaseEventPublisher } from "./../../core/event-publishers";
 import TableGameData from "./../table-game-data";
@@ -15,15 +14,12 @@ export default class TableGameBot extends BaseBot {
      * @param {BaseEventPublisher} publisher
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} tempBetsRepository
-     * @param {TableGameSmartBot} smartBot
      */
-    constructor(definition, gameData, publisher, userInfosRepository, tempBetsRepository, smartBot) {
+    constructor(definition, gameData, publisher, userInfosRepository, tempBetsRepository) {
         super(definition, gameData, userInfosRepository);
 
         this.publisher = publisher;
         this.tempBetsRepository = tempBetsRepository;
-        this.smartBot = smartBot;
-
         this.inOutValues = {
             in: 3,
             out: 4,
@@ -34,38 +30,6 @@ export default class TableGameBot extends BaseBot {
         this.chance = new Chance();
         this.minBotsAtTheTable = 8;
         this.botsInRoom = {};
-    }
-
-    async reset() {
-        await super.reset();
-
-        const { smartBotEnabled, choices_maxbet: maxBetOfChoices, name, smartBotGroupRatio } = this.gameData.gameConfigs;
-        if (smartBotEnabled) {
-            this.smartBot.setAfterPlacingBet(this.updateBalanceAndPublishBetPayload);
-            this.smartBot.setBeforeRemovingAll(this.removeAllSmartBots);
-
-            const smartBots = await this.smartBot.reset(
-                { smartBotEnabled, maxBetOfChoices, smartBotGroupRatio, wholeRound: this.definition.durations.wholeRound },
-                {
-                    userResetFilters: { inRoom: true, inGameRoom: name },
-                    userUpdateFilters: { inRoom: false, inGameRoom: "", disabled: false },
-                    userUpdates: { inGameRoom: name, inRoom: true },
-                    userProjections: { id: true, name: true, red: true, avatarId: true }, // id name red avatarId type
-                }
-            );
-
-            if (smartBots?.length > 0) {
-                smartBots.forEach((smartBot) => {
-                    this.addToPlayersAndPublish(smartBot);
-                });
-
-                this.maxNumberOfBots -= smartBots.length;
-            }
-        }
-    }
-
-    async removeAllSmartBots(smartBots) {
-        await Promise.all(smartBots.map((bot) => this.removeBot(bot.id)));
     }
 
     async processDisabledBots() {
@@ -113,10 +77,6 @@ export default class TableGameBot extends BaseBot {
             const botsToBet = this.getBotsToBet();
 
             await Promise.all(botsToBet.map((bot) => this.placeBet(bot)));
-        }
-
-        if (this.gameData.gameConfigs?.smartBotEnabled && this.gameData.remainingTime > this.definition.durations.lockingBet) {
-            await this.smartBot.run(this.gameData.roundId, this.gameData.remainingTime);
         }
     }
 

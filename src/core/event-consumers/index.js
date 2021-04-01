@@ -1,7 +1,6 @@
 import AdminAuthenticationConsumer from "./admin-authentication-consumer";
 import AdminDisconnectConsumer from "./admin-disconnect-consumer";
 import AdminMonitorConsumer from "./admin-monitor-consumer";
-import BetPatternConsumer from "./bet-pattern-consumer";
 import InGameConsumer from "./in-game-consumer";
 import PlaceBetConsumer from "./place-bet-consumer";
 import SettleGameRoundConsumer from "./settle-game-round-consumer";
@@ -17,5 +16,4 @@ export {
     InGameConsumer,
     PlaceBetConsumer,
     SettleGameRoundConsumer,
-    BetPatternConsumer,
 };
