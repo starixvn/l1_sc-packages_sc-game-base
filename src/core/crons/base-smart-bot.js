@@ -15,7 +15,7 @@ export default class BaseSmartBot {
         this.smartBots = [];
         this.chance = new Chance();
         this.isExpired = false;
-        this.choiceMapper = definition.choicesMapper;
+        this.choiceMapper = definition.choices;
 
         this.maxBetOfChoices = null;
         this.afterPlacingBet = null;
