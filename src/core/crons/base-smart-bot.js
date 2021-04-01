@@ -7,7 +7,7 @@ export default class BaseSmartBot {
      * @param {mongoose.Model} smartBotBetLogsRepository
      */
 
-    constructor(choiceMapper, betPatternConsumer, smartBotBetLogsRepository, userInfosRepository) {
+    constructor(definition, betPatternConsumer, smartBotBetLogsRepository, userInfosRepository) {
         this.betPatternConsumer = betPatternConsumer;
         this.smartBotBetLogsRepository = smartBotBetLogsRepository;
         this.userInfosRepository = userInfosRepository;
@@ -15,7 +15,7 @@ export default class BaseSmartBot {
         this.smartBots = [];
         this.chance = new Chance();
         this.isExpired = false;
-        this.choiceMapper = choiceMapper;
+        this.choiceMapper = definition.choicesMapper;
 
         this.maxBetOfChoices = null;
         this.afterPlacingBet = null;
@@ -35,7 +35,12 @@ export default class BaseSmartBot {
             }
 
             if (this.smartBots.length === 0) {
-                this.smartBots = this.assignPatterns(userResetFilters, userUpdateFilters, userUpdates);
+                this.smartBots = this.assignPatterns(
+                    userResetFilters,
+                    userUpdateFilters,
+                    userUpdates,
+                    this.betPatternConsumer.getPatterns()
+                );
             }
         } else {
             await this.removeAll();
@@ -44,7 +49,7 @@ export default class BaseSmartBot {
         return this.smartBots;
     }
 
-    async assignPatterns(customResetFilters, customUpdateFilters, customUpdates) {
+    async assignPatterns(customResetFilters, customUpdateFilters, customUpdates, patterns) {
         const maxInitializeAmount = 88000;
         const minInitializeAmount = 36000;
 
@@ -59,11 +64,11 @@ export default class BaseSmartBot {
                     type: true,
                 },
             },
-            { $sample: { size: this.patterns.length } },
+            { $sample: { size: patterns.length } },
         ]);
 
-        for (let index = 0; index < this.patterns.length; index++) {
-            const pattern = this.patterns[index];
+        for (let index = 0; index < patterns.length; index++) {
+            const pattern = patterns[index];
             const bot = bots[index];
 
             if (bot) {
@@ -79,7 +84,10 @@ export default class BaseSmartBot {
     }
 
     async removeAll() {
-        await this.beforeRemovingAll(this.smartBots);
+        if (this.beforeRemovingAll) {
+            await this.beforeRemovingAll(this.smartBots);
+        }
+
         this.smartBots = [];
     }
 

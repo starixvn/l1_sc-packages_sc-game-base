@@ -16,7 +16,9 @@ export default class TableGameSmartBot extends BaseSmartBot {
             if (user) {
                 await this.insertBetActionLogs(bot, { choiceId: betAction.choiceId, amount, second: betAction.second, roundId });
 
-                this.afterPlaceBet(bot, botAmount, choice, amount);
+                if (this.afterPlacingBet) {
+                    this.afterPlacingBet(bot, botAmount, choice, amount);
+                }
             }
         }
     }
