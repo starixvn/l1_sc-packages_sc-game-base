@@ -22,26 +22,60 @@ export default class BaseSmartBot {
         this.beforeRemovingAll = null;
     }
 
-    async reset({ smartBotEnabled, maxBetOfChoices }, customFilters, customProjections) {
-        const filters = { ...customFilters, patternId: { $gt: 0 } };
-        const projections = { ...customProjections, patternId: true };
-
+    async reset(
+        { smartBotEnabled, maxBetOfChoices, smartBotGroupRatio, wholeRound },
+        { userResetFilters, userUpdateFilters, userUpdates }
+    ) {
         if (smartBotEnabled) {
             this.maxBetOfChoices = maxBetOfChoices;
-            this.isExpired = await this.betPatternConsumer.resetAndUpdatePatterns();
+            this.isExpired = await this.betPatternConsumer.resetAndUpdatePatterns({ smartBotEnabled, smartBotGroupRatio }, wholeRound);
 
             if (this.isExpired) {
                 await this.removeAll();
             }
 
             if (this.smartBots.length === 0) {
-                this.smartBots = await this.userInfosRepository.find(filters, projections).lean().exec();
+                this.smartBots = this.assignPatterns(userResetFilters, userUpdateFilters, userUpdates);
             }
         } else {
             await this.removeAll();
         }
 
         return this.smartBots;
+    }
+
+    async assignPatterns(customResetFilters, customUpdateFilters, customUpdates) {
+        const maxInitializeAmount = 88000;
+        const minInitializeAmount = 36000;
+
+        const resetFilters = { ...customResetFilters, type: true, patternId: { $gt: 0 } };
+
+        await this.userInfosRepository.updateMany(resetFilters, { patternId: 0 });
+
+        const bots = await this.userInfosRepository.aggregate([
+            {
+                $match: {
+                    ...customUpdateFilters,
+                    type: true,
+                },
+            },
+            { $sample: { size: this.patterns.length } },
+        ]);
+
+        for (let index = 0; index < this.patterns.length; index++) {
+            const pattern = this.patterns[index];
+            const bot = bots[index];
+
+            if (bot) {
+                const amount = this.chance.integer({ min: minInitializeAmount, max: maxInitializeAmount });
+                const updateFilters = { ...customUpdateFilters, id: bot.id, type: true };
+                const updates = { ...customUpdates, patternId: pattern._id, red: amount };
+
+                await this.userInfosRepository.updateOne(updateFilters, updates);
+            }
+        }
+
+        return bots;
     }
 
     async removeAll() {

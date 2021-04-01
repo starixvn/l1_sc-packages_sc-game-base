@@ -31,8 +31,6 @@ export default class BetPatternConsumer {
                 await this.generateGroupedPatterns();
                 this.patterns = await this.randomPickedByGroup(this.followingDatePattern, smartBotGroupRatio);
                 this.currentRatioOfGroups = smartBotGroupRatio;
-
-                await this.assignPatterns();
             }
 
             await this.getBetActionsInTimeFrame(currentTime, wholeRound);
@@ -94,5 +92,7 @@ export default class BetPatternConsumer {
         return this.betActions.filter((action) => action.patId === patternId);
     }
 
-    async assignPatterns(configName) {}
+    getPatterns() {
+        return this.patterns;
+    }
 }

@@ -39,12 +39,14 @@ export default class TableGameBot extends BaseBot {
     async reset() {
         await super.reset();
 
-        const { smartBotEnabled, choices_maxbet, name } = this.gameData.gameConfigs;
+        const { smartBotEnabled, choices_maxbet, name, smartBotGroupRatio } = this.gameData.gameConfigs;
         const smartBots = await this.smartBot.reset(
-            smartBotEnabled,
-            choices_maxbet,
-            { inGameRoom: name, disabled: false, type: true },
-            { id: true, name: true, red: true, avatarId: true, type: true }
+            { smartBotEnabled, choices_maxbet, smartBotGroupRatio, wholeRound: this.definition.durations.wholeRound },
+            {
+                userResetFilters: { inRoom: true, inGameRoom: name },
+                userUpdateFilters: { inRoom: false, inGameRoom: "", disabled: false },
+                userUpdates: { inGameRoom: name },
+            }
         );
 
         await Promise.all(smartBots.map((bot) => this.botJoinRoom(bot)));
