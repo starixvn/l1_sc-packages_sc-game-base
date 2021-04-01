@@ -33,7 +33,6 @@ export default class TableContainerRegistry extends ContainerRegistry {
             userDisconnectConsumer: asClass(EventConsumers.TableOutGameConsumer).singleton(),
             settleGameRoundConsumer: asClass(EventConsumers.TableSettleGameRoundConsumer).singleton().proxy(),
             userSignInConsumer: asClass(EventConsumers.TableUserSignInConsumer).singleton(),
-            betPatternConsumer: asClass(EventConsumers.TableBetPatternConsumer).singleton().proxy(),
         });
     }
 
