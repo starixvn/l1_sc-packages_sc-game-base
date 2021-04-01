@@ -145,4 +145,12 @@ export default class BaseSmartBot {
     getSmartBots() {
         return this.smartBots;
     }
+
+    setAfterPlacingBet(func) {
+        this.afterPlacingBet = func;
+    }
+
+    setBeforeRemovingAll(func) {
+        this.beforeRemovingAll = func;
+    }
 }

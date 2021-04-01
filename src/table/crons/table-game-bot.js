@@ -41,6 +41,9 @@ export default class TableGameBot extends BaseBot {
 
         const { smartBotEnabled, choices_maxbet: maxBetOfChoices, name, smartBotGroupRatio } = this.gameData.gameConfigs;
         if (smartBotEnabled) {
+            this.smartBot.setAfterPlacingBet(this.updateBalanceAndPublishBetPayload);
+            this.smartBot.setBeforeRemovingAll(this.removeAllSmartBots);
+
             const smartBots = await this.smartBot.reset(
                 { smartBotEnabled, maxBetOfChoices, smartBotGroupRatio, wholeRound: this.definition.durations.wholeRound },
                 {
@@ -59,6 +62,10 @@ export default class TableGameBot extends BaseBot {
                 this.maxNumberOfBots -= smartBots.length;
             }
         }
+    }
+
+    async removeAllSmartBots(smartBots) {
+        await Promise.all(smartBots.map((bot) => this.removeBot(bot.id)));
     }
 
     async processDisabledBots() {
@@ -148,7 +155,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async removeBot(botId) {
-        await this.userInfosRepository.updateOne({ id: botId }, { inRoom: false, inGameRoom: "" });
+        await this.userInfosRepository.updateOne({ id: botId }, { inRoom: false, inGameRoom: "", patternId: 0 });
 
         this.publisher.publishToAllUsers({ outgame: { playerId: botId } });
 
