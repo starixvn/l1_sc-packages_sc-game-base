@@ -195,7 +195,9 @@ export default class TableGameBot extends BaseBot {
             return this.chance.pickset(Object.keys(this.botsInRoom).slice(0, 8), this.chance.integer({ min: 1, max: 3 }));
         }
 
-        return this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval);
+        const botIds = Object.keys(this.botsInRoom);
+
+        return botIds?.length > totalRemoval ? this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval) : botIds;
     }
 
     async placeBet(bot) {
@@ -229,7 +231,6 @@ export default class TableGameBot extends BaseBot {
     convertAmountToChip(amount) {
         return amount;
     }
-
     updateBalanceAndPublishBetPayload(botId, choice, amount, balance) {
         if (this.gameData.players[botId]) {
             this.gameData.players[botId].red = balance;
