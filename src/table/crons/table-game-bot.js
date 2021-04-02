@@ -33,7 +33,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async processDisabledBots() {
-        const disabledBots = await this.userInfosRepository.find({ type: true, disabled: true }).exec();
+        const disabledBots = await this.userInfosRepository.find({ type: true, disabled: true }).lean().exec();
 
         await Promise.all(
             disabledBots.map(async (bot) => {
@@ -136,7 +136,7 @@ export default class TableGameBot extends BaseBot {
     async joinRoom() {
         const botUsers = await this.userInfosRepository
             .find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type")
-            .exec();
+            .lean();
         const newBots = this.getBotsToJoin(botUsers);
 
         await Promise.all(newBots.map((bot) => this.botJoinRoom(bot)));
@@ -165,7 +165,16 @@ export default class TableGameBot extends BaseBot {
 
     addToPlayersAndPublish(bot) {
         this.gameData.players[bot.id] = bot;
-        this.publisher.publishToAllUsers({ player: bot });
+        const payload = {
+            player: {
+                id: bot.id,
+                name: bot.name,
+                red: bot.red,
+                avatarId: bot.avatarId,
+                type: bot.type,
+            },
+        };
+        this.publisher.publishToAllUsers(payload);
     }
 
     async resetInRoomTrackings() {
