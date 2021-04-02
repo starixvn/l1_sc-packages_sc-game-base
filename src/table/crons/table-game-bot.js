@@ -189,13 +189,14 @@ export default class TableGameBot extends BaseBot {
     }
 
     getRemovalBotIds(totalRemoval) {
+        const botIds = Object.keys(this.botsInRoom);
         if (!this.removeBotAtTheTable && this.gameData.roundId % this.removeBotAtTheTableRoundFrequency === 0) {
             this.removeBotAtTheTable = true;
 
-            return this.chance.pickset(Object.keys(this.botsInRoom).slice(0, 8), this.chance.integer({ min: 1, max: 3 }));
-        }
+            const botsOnTable = botIds?.length > 8 ? botIds?.length.slice(0, 8) : botIds;
 
-        const botIds = Object.keys(this.botsInRoom);
+            return botsOnTable?.length > 3 ? this.chance.pickset(botsOnTable, this.chance.integer({ min: 1, max: 3 })) : botsOnTable;
+        }
 
         return botIds?.length > totalRemoval ? this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval) : botIds;
     }
@@ -231,6 +232,7 @@ export default class TableGameBot extends BaseBot {
     convertAmountToChip(amount) {
         return amount;
     }
+
     updateBalanceAndPublishBetPayload(botId, choice, amount, balance) {
         if (this.gameData.players[botId]) {
             this.gameData.players[botId].red = balance;
