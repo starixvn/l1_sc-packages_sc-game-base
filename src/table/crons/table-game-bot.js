@@ -202,7 +202,7 @@ export default class TableGameBot extends BaseBot {
         if (!this.removeBotAtTheTable && this.gameData.roundId % this.removeBotAtTheTableRoundFrequency === 0) {
             this.removeBotAtTheTable = true;
 
-            const botsOnTable = botIds?.length > 8 ? botIds?.length.slice(0, 8) : botIds;
+            const botsOnTable = botIds?.length > 8 ? botIds.slice(0, 8) : botIds;
 
             return botsOnTable?.length > 3 ? this.chance.pickset(botsOnTable, this.chance.integer({ min: 1, max: 3 })) : botsOnTable;
         }
