@@ -1,3 +1,26 @@
+# [1.20.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.19.0...v1.20.0) (2021-04-06)
+
+
+### Bug Fixes
+
+* change pathname when sending userStakeLevel ([b0bdca1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b0bdca1137608f5c37bb47a81b356340314a73cc))
+* implement check authorize for query api ([43d481f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/43d481f713ab001c222cc20698e57b74ae5f3dcc))
+* implement http router query history ([8180f9b](https://git3.nexdev.net/sc-packages/sc-game-base/commit/8180f9b8a0dc17cf33592472db403f58f285da01))
+* process-bet-queue ([135b002](https://git3.nexdev.net/sc-packages/sc-game-base/commit/135b002ea18e6f6d3246ddc263cae44375836f8b))
+* remove mongoose-auto-increment-reworked ([f9fb94e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f9fb94eee814dde224130e4e77e8c11d399c2573))
+* revert getBetLogDetails ([369eb01](https://git3.nexdev.net/sc-packages/sc-game-base/commit/369eb010738662ae975fe815154a8a39298236c8))
+* send userStakeLevel via socket when updating user bet limit ([01e9351](https://git3.nexdev.net/sc-packages/sc-game-base/commit/01e9351de9ddd5fc21bad5b73202ace5a0b41d40))
+* update container registry ([2173473](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2173473133c740a79d6f0ac010e7922886946253))
+* update min/max bet when placing bet successfully ([28d6a15](https://git3.nexdev.net/sc-packages/sc-game-base/commit/28d6a153560fe4f41fc9a59cfe9ac113ea995642))
+* update packages ([af20603](https://git3.nexdev.net/sc-packages/sc-game-base/commit/af206035a81760697201bb1c3f9771875c90d82c))
+
+
+### Features
+
+* replace enterportal with getbetlimit api when user sign in ([922224d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/922224ddffc57fc5a432dd9edb6c3bb12a13cbc8))
+* update packages ([e93f03e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e93f03e8a745486f2447fe432f0fc83359e3ba24))
+* update packages ([d02e68f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d02e68f5f05b5c2dc5160b87ab13877048afe549))
+
 # [1.19.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.18.0...v1.19.0) (2021-03-17)
 
 
