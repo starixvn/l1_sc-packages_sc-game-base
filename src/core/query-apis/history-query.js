@@ -21,6 +21,10 @@ export default class HistoryQuery {
         return bet;
     }
 
+    convertBetLogs(betLogDetails) {
+        return betLogDetails;
+    }
+
     async queryHistoryBySession(session, page, pageSize) {
         const userSession = await this.userSessionsRepository.findOne({ sessionId: session }).lean().exec();
         const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
@@ -70,7 +74,7 @@ export default class HistoryQuery {
                         ...this.convertBet(bet),
                         result: round.result,
                         settlementResult: round.settlementResult,
-                        betLogDetails,
+                        ...this.convertBetLogs(betLogDetails),
                     };
                 })
             );
@@ -81,7 +85,11 @@ export default class HistoryQuery {
 
     getBetLogDetails(player, roundId) {
         return this.betLogsRepository
-            .find({ phien: roundId, uid: player.UID }, { _id: false, time: true, choice: true, amount: true }, { sort: { _id: -1 } })
+            .find(
+                { phien: roundId, uid: player.UID },
+                { _id: false, time: true, choice: true, amount: true, select: true, bet: true },
+                { sort: { _id: -1 } }
+            )
             .lean()
             .exec();
     }
