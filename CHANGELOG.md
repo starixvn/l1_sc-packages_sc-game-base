@@ -1,3 +1,11 @@
+## [1.20.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.20.0...v1.20.1) (2021-04-08)
+
+
+### Bug Fixes
+
+* update function retrieve old bet log data ([af86c96](https://git3.nexdev.net/sc-packages/sc-game-base/commit/af86c96ab03431ed7195deaf91f4ad6ff6922d79))
+* update projection betlogs ([848ef0f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/848ef0f9d68c2acec27fae606c2ec7446df6e60e))
+
 # [1.20.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.19.0...v1.20.0) (2021-04-06)
 
 
