@@ -26,21 +26,6 @@ export default class HistoryQuery {
         return betLogDetails;
     }
 
-    async queryHistoryBySession(session, page, pageSize) {
-        const userSession = await this.userSessionsRepository.findOne({ sessionId: session }).lean().exec();
-        const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
-
-        const result = await this.queryHistory(
-            {
-                UID: userInfo.id,
-            },
-            page,
-            pageSize
-        );
-
-        return result;
-    }
-
     async queryHistory(player, page, pageSize) {
         if (page < 1 || !player) {
             return {};

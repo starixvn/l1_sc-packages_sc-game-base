@@ -50,7 +50,8 @@ export default class HttpRouter {
         try {
             const { session, page, pageSize } = req.query;
 
-            const result = await this.historyQuery.queryHistoryBySession(session, +page, +pageSize);
+            const userSession = await this.userSessionsRepository.findOne({ sessionId: session }).lean().exec();
+            const result = await this.historyQuery.queryHistory({ UID: userSession.userId }, +page, +pageSize);
 
             res.send(result);
         } catch (error) {
