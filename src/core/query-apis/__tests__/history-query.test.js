@@ -1,8 +1,8 @@
-import RoundQuery from "../round-query";
 import { stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
 import HistoryQuery from "../history-query";
+import RoundQuery from "../round-query";
 
 jest.mock("../round-query");
 
@@ -50,6 +50,7 @@ describe("history quer test", () => {
             expect(actualResult.history.pageSize).toEqual(10);
             expect(actualResult.history.total).toEqual(1);
             expect(actualResult.history.betLogs).toHaveLength(1);
+            expect(actualResult.history.betLogs[0].betLogDetails).toHaveLength(2);
         });
     });
 });

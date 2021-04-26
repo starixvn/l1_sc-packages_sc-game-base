@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 import RoundQuery from "./round-query";
 
 export default class HistoryQuery {
@@ -74,7 +75,7 @@ export default class HistoryQuery {
                         ...this.convertBet(bet),
                         result: round.result,
                         settlementResult: round.settlementResult,
-                        ...this.convertBetLogs(betLogDetails),
+                        betLogDetails: this.convertBetLogs(betLogDetails),
                     };
                 })
             );
