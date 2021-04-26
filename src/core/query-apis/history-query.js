@@ -38,7 +38,6 @@ export default class HistoryQuery {
             _id: false,
             uid: false,
             thanhtoan: false,
-            odds: false,
             siteId: false,
             memberId: false,
             __v: false,
