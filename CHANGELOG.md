@@ -1,3 +1,11 @@
+## [1.20.3](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.20.2...v1.20.3) (2021-04-26)
+
+
+### Bug Fixes
+
+* update betLogDetails for history ([34dfa34](https://git3.nexdev.net/sc-packages/sc-game-base/commit/34dfa3435b783962e5a8dd923f39d4f466537b92))
+* update unit tests ([799713d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/799713d931ff11061362a1ac51c3753793e08125))
+
 ## [1.20.2](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.20.1...v1.20.2) (2021-04-20)
 
 
