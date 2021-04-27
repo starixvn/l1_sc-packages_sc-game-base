@@ -148,6 +148,7 @@ describe("proceedBet tests", () => {
         expect(player.profile.maxBet).toEqual(3000);
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
             endBet: -1,
+            betChoice: "red2",
             apiError: placeBetResponse.response.apiError,
         });
     });
@@ -176,6 +177,7 @@ describe("proceedBet tests", () => {
         expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
             endBet: -1,
+            betChoice: "red2",
             notice: noticeHelper.notEnoughMoney,
         });
     });
@@ -202,7 +204,7 @@ describe("proceedBet tests", () => {
         await proceedBetQueue.proceedBet(player, payload);
 
         expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
-        expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, { endBet: -1, kickedOut: true });
+        expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, { endBet: -1, betChoice: "red2", kickedOut: true });
     });
 
     afterEach(() => {

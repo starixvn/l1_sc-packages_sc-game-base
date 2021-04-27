@@ -112,14 +112,15 @@ export default class ProcessBetQueue {
     }
 
     handleFailedBet(player, notice, bet) {
+        const { betChoice } = bet;
         this.decreaseBetTracks(player.profile.name, bet);
 
         if (notice.apiError) {
-            this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, apiError: notice.apiError });
+            this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, betChoice, apiError: notice.apiError });
         } else if (notice.kickedOut) {
-            this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, kickedOut: notice.kickedOut });
+            this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, betChoice, kickedOut: notice.kickedOut });
         } else {
-            this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, notice });
+            this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, betChoice, notice });
         }
     }
 
@@ -193,12 +194,13 @@ export default class ProcessBetQueue {
     }
 
     generatePlacingBetResult(player, balance, bet) {
-        const { amount, freeBet } = bet;
+        const { amount, freeBet, betChoice } = bet;
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
 
         return {
             ownBets: betTracks,
             endBet: amount,
+            betChoice,
             freeBet,
             user: { ...balance },
         };
