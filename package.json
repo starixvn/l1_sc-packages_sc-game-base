@@ -1,6 +1,6 @@
 {
     "name": "sc-game-base",
-    "version": "1.20.3",
+    "version": "1.20.5-beta.0",
     "description": "SC Game base for game services",
     "main": "./src/index.js",
     "scripts": {
@@ -37,8 +37,8 @@
         "mongoose": "^5.9.25",
         "morgan": "^1.10.0",
         "openid-client": "^4.2.0",
-        "sc-base-apis": "^1.11.1",
-        "sc-base-database": "^1.8.1",
+        "sc-base-apis": "^1.11.2",
+        "sc-base-database": "^1.8.2",
         "sc-common": "^1.6.0",
         "socket.io": "^2.3.0"
     },

@@ -22,7 +22,20 @@ export default class TableInGameConsumer extends InGameConsumer {
     async buildPayload(realPlayer) {
         const payload = await super.buildPayload(realPlayer);
         const { remainingTime, chips } = this.gameData;
-        const players = { ...this.gameData.players };
+
+        const players = Object.values(this.gameData.players).reduce((playerList, player) => {
+            const { id, name, red, avatarId, type, patternId } = player;
+
+            playerList[id] = {
+                id,
+                name,
+                red,
+                avatarId,
+                type: patternId > 0 ? false : type,
+            };
+
+            return playerList;
+        }, {});
 
         delete players[realPlayer.UID];
 

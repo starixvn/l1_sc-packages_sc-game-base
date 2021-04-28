@@ -21,6 +21,7 @@ export default class BaseGameCron {
      * @param {logger} dependencies.logService
      * @param {mongoose.Model} dependencies.gameConfigsRepository
      * @param {mongoose.Model} dependencies.roundsRepository
+     * @param {BotBetPatternConsumer} dependencies.botBetPatternConsumer
      */
     constructor({
         definition,

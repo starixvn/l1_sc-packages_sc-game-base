@@ -20,7 +20,6 @@ export default class TableGameBot extends BaseBot {
 
         this.publisher = publisher;
         this.tempBetsRepository = tempBetsRepository;
-
         this.inOutValues = {
             in: 3,
             out: 4,
@@ -34,7 +33,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async processDisabledBots() {
-        const disabledBots = await this.userInfosRepository.find({ type: true, banned: false, disabled: true }).exec();
+        const disabledBots = await this.userInfosRepository.find({ type: true, disabled: true }).lean().exec();
 
         await Promise.all(
             disabledBots.map(async (bot) => {
@@ -116,7 +115,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async removeBot(botId) {
-        await this.userInfosRepository.updateOne({ id: botId }, { inRoom: false, inGameRoom: "" });
+        await this.userInfosRepository.updateOne({ id: botId }, { inRoom: false, inGameRoom: "", patternId: 0 });
 
         this.publisher.publishToAllUsers({ outgame: { playerId: botId } });
 
@@ -137,7 +136,7 @@ export default class TableGameBot extends BaseBot {
     async joinRoom() {
         const botUsers = await this.userInfosRepository
             .find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type")
-            .exec();
+            .lean();
         const newBots = this.getBotsToJoin(botUsers);
 
         await Promise.all(newBots.map((bot) => this.botJoinRoom(bot)));
@@ -159,10 +158,13 @@ export default class TableGameBot extends BaseBot {
         await this.userInfosRepository.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.definition.configName });
 
         this.resetBot(bot);
-
         this.botsInRoom[bot.id] = bot;
-        this.gameData.players[bot.id] = bot;
 
+        this.addToPlayersAndPublish(bot);
+    }
+
+    addToPlayersAndPublish(bot) {
+        this.gameData.players[bot.id] = bot;
         const payload = {
             player: {
                 id: bot.id,
@@ -172,7 +174,6 @@ export default class TableGameBot extends BaseBot {
                 type: bot.type,
             },
         };
-
         this.publisher.publishToAllUsers(payload);
     }
 
@@ -197,13 +198,16 @@ export default class TableGameBot extends BaseBot {
     }
 
     getRemovalBotIds(totalRemoval) {
+        const botIds = Object.keys(this.botsInRoom);
         if (!this.removeBotAtTheTable && this.gameData.roundId % this.removeBotAtTheTableRoundFrequency === 0) {
             this.removeBotAtTheTable = true;
 
-            return this.chance.pickset(Object.keys(this.botsInRoom).slice(0, 8), this.chance.integer({ min: 1, max: 3 }));
+            const botsOnTable = botIds?.length > 8 ? botIds.slice(0, 8) : botIds;
+
+            return botsOnTable?.length > 3 ? this.chance.pickset(botsOnTable, this.chance.integer({ min: 1, max: 3 })) : botsOnTable;
         }
 
-        return this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval);
+        return botIds?.length > totalRemoval ? this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval) : botIds;
     }
 
     async placeBet(bot) {
@@ -217,22 +221,18 @@ export default class TableGameBot extends BaseBot {
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
-                const user = await this.userInfosRepository.findOne({ id: bot.id }, "red").exec();
+                const user = await this.userInfosRepository
+                    .findOneAndUpdate({ id: bot.id, red: { $gt: amount } }, { $inc: { red: -amount } }, { new: true })
+                    .lean();
 
-                if (user && user.red > amount) {
-                    user.red -= amount;
-
-                    await user.save();
+                if (user) {
                     await this.insertOrUpdateBet(bot, choice, amount, currentBet);
 
                     this.totalTickets += 1;
-                    if (this.gameData.players[bot.id]) {
-                        this.gameData.players[bot.id].red = user.red;
-                    }
 
                     this.updateTotalBetsAndChips(choice, amount);
                     this.updateBotInRoomData(bot, choice, amount, user.red);
-                    this.publisher.publishToAllUsers(this.generatePlaceBetPayload(bot.id, choice, amount, user.red));
+                    this.updateBalanceAndPublishBetPayload(bot.id, choice, amount, user.red);
                 }
             }
         }
@@ -240,6 +240,14 @@ export default class TableGameBot extends BaseBot {
 
     convertAmountToChip(amount) {
         return amount;
+    }
+
+    updateBalanceAndPublishBetPayload(botId, choice, amount, balance) {
+        if (this.gameData.players[botId]) {
+            this.gameData.players[botId].red = balance;
+        }
+
+        this.publisher.publishToAllUsers(this.generatePlaceBetPayload(botId, choice, amount, balance));
     }
 
     updateTotalBetsAndChips(choice, amount) {
@@ -262,7 +270,6 @@ export default class TableGameBot extends BaseBot {
     async insertOrUpdateBet(bot, choice, amount, currentBet) {
         const currentAmount = currentBet ? currentBet[choice] : 0;
         const update = { [choice]: amount + currentAmount };
-
         const create = {
             uid: bot.id,
             name: bot.name,

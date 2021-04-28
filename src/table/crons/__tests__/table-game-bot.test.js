@@ -15,7 +15,7 @@ describe("table game bot test", () => {
     const publisher = stub(BaseEventPublisher);
 
     /** @type {mongoose.Model}*/
-    const userInfosRepository = { find: () => {}, findOne: () => {}, updateOne: () => {}, updateMany: () => {} };
+    const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
 
     /** @type {mongoose.Model}*/
     const tempBetsRepository = stubMongooseModelStupidly(mongoose.Model);
@@ -54,13 +54,7 @@ describe("table game bot test", () => {
     it("processDisabledBots_exist disabled bot_remove bot", async () => {
         // arrange
         const disabledBots = [{ id: 1, name: "bot1", type: true }];
-        spyOn(userInfosRepository, "find").and.callFake(() => {
-            return {
-                exec: () => {
-                    return disabledBots;
-                },
-            };
-        });
+        userInfosRepository.find().lean().exec.mockReturnValue(disabledBots);
 
         spyOn(tableBot, "removeBot");
         tableBot.botsInRoom[1] = { id: 1, name: "bot1", type: true };
@@ -160,7 +154,7 @@ describe("table game bot test", () => {
         await tableBot.removeBot(1);
 
         // assert
-        expect(userInfosRepository.updateOne).toHaveBeenCalledWith({ id: 1 }, { inRoom: false, inGameRoom: "" });
+        expect(userInfosRepository.updateOne).toHaveBeenCalledWith({ id: 1 }, { inRoom: false, inGameRoom: "", patternId: 0 });
         expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ outgame: { playerId: 1 } });
     });
 

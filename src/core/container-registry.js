@@ -56,6 +56,9 @@ export default class ContainerRegistry {
             roundsRepository: asValue(undefined),
             betsRepository: asValue(undefined),
             betLogsRepository: asValue(undefined),
+            betPatternRepository: asValue(undefined),
+            betActionRepository: asValue(undefined),
+            smartBotBetLogsRepository: asValue(undefined),
         });
     }
 
