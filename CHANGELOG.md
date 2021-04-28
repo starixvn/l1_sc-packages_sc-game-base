@@ -1,3 +1,56 @@
+# [1.21.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.20.3...v1.21.0) (2021-04-28)
+
+
+### Bug Fixes
+
+* add callbacks for placbet and remove all ([ce1f881](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ce1f881b196673428e7bc21d0dc73c5246db8cbf))
+* add smart bot as type is false to treat them as real players ([34e79c8](https://git3.nexdev.net/sc-packages/sc-game-base/commit/34e79c8e57369f16b0fd72728999f98bfd80b626))
+* add smart bot with type is false to treat them as real player ([d914314](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d91431443eee30b197d94353a6d2112468b6ed84))
+* capture bot bet details, remove smart bot if reset ([2a6f522](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2a6f522fca5c4dc5269968b9abf7548982593dce))
+* correct callbacks for place bet and out room ([dc5ee75](https://git3.nexdev.net/sc-packages/sc-game-base/commit/dc5ee7515f521b955a7fef93387f21f8e9c17eae))
+* correct choice mapper ([ac9233f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ac9233f9c83a52281c9c8d870c8020865d76e656))
+* correct container registry ([2630e4d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2630e4de76380575851bfe5f84c150f14d091148))
+* correct imports ([f8cbeb4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f8cbeb4cc9cb7d8c7fcf98140874eef2d9204b78))
+* correct imports in bet-pattern-consumer ([a5f2194](https://git3.nexdev.net/sc-packages/sc-game-base/commit/a5f2194b9dbd8619aced0500843f541efb7485d7))
+* correct injection mode of table bet pattern ([f06a639](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f06a639a96b7db5a21ea37d99488a2c8a70cc64b))
+* correct mapping ingame players ([cf196b7](https://git3.nexdev.net/sc-packages/sc-game-base/commit/cf196b731552fc43d6baad7a5eff9a2be39a9cb0))
+* correct naming ([33bfe5a](https://git3.nexdev.net/sc-packages/sc-game-base/commit/33bfe5a60d193305b8d5cb97044e18b4e90c81ac))
+* correct removal bot ids ([ac68e2c](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ac68e2cbd6947b56b944e7f599a5a3d5ed2b5574))
+* decrease amount of bot ([c55ddf4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/c55ddf418f4756dc625d1c26f48c49e8d70b36be))
+* format smart bot data before adding to players ([fac60e1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/fac60e191b9e5121c6089cabb03345f9d2f670bd))
+* get total bot and exclude banned ([191744d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/191744d900ecba26806a39a0431554c594fd7436))
+* implement ibots ([86439ae](https://git3.nexdev.net/sc-packages/sc-game-base/commit/86439ae03b08d42c632e0022e7bc411506b3539d))
+* implement smart bot place bet ([7938eeb](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7938eeb4d425fa6d080f137b2a42788089ddcd14))
+* init pattern expiry time ([f0092ff](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f0092ff4e40b5fa49c9f371e0e57c6bcff332837))
+* init smart bot amount ([f8c113f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f8c113f904287b493a967b607cd7104d3120fd96))
+* inject smartbot ([ef028eb](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ef028eb31c5b330856cc84908e1a923ca3b41ce4))
+* not pickset empty array ([7f30818](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7f30818653dedee27235ff201db0c4c21c6ded73))
+* not pickset empty array ([83cb885](https://git3.nexdev.net/sc-packages/sc-game-base/commit/83cb885d615d6ab25ab4bc7dbc2804e7718763a6))
+* random init amount for high stake bot, remap players data for online users ([063c46d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/063c46dc78a8030cf643615b193235e9394aba55))
+* random select bots to assign patterns ([688e4ad](https://git3.nexdev.net/sc-packages/sc-game-base/commit/688e4ad9e50aec1f2fec7dff9dd5c07248f65ba9))
+* register smart bot repositories ([f9ce2a6](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f9ce2a653c5a86d7a20e97dab56e6555634f9061))
+* remove all related smartbot ([42e020e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/42e020ea1c23c0f3e0a248c7ab333620addd7930))
+* remove all related smartbot ([e8978ae](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e8978ae19486fd1ae66e7536882eff56c3c60958))
+* remove dependency of game data and definition in smart bot ([46e85f3](https://git3.nexdev.net/sc-packages/sc-game-base/commit/46e85f3b65ba6cb4d6d22bce9a6ae3f123ef64c7))
+* remove dependency of game data and definition in smart bot (cont.) ([4d93805](https://git3.nexdev.net/sc-packages/sc-game-base/commit/4d938052ffb597e9df55447ef78d0d346fa48574))
+* remove dependency of game data and definition in smart bot (cont.) ([fd754a6](https://git3.nexdev.net/sc-packages/sc-game-base/commit/fd754a643fac8f6afcbd40316e52d0db052e8443))
+* remove unnecessary patternId ([9cecd61](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9cecd61a03a00858d6a2a0eff97335e6571d4fb8))
+* reset patternId ([db45d1b](https://git3.nexdev.net/sc-packages/sc-game-base/commit/db45d1b0a230e01173e4823a85e0f02a2ff7177e))
+* reset smart bot not base on bot configuration ([d197efa](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d197efaaf8c6318402b75d3ab6df297b4561119a))
+* reset smart bot patterns if ratio of groups was changed ([1f937af](https://git3.nexdev.net/sc-packages/sc-game-base/commit/1f937afdbebabdd55bccc516f13d1e2b23245eaf))
+* update bot info ([da0b934](https://git3.nexdev.net/sc-packages/sc-game-base/commit/da0b934cd9f9a0786405e71abc5bdee3997da406))
+* update expired ibots and remove if disabled ([02b9a19](https://git3.nexdev.net/sc-packages/sc-game-base/commit/02b9a19baf90270ac484c9c593ba1dcf140ceeb7))
+* update expired time of smart bots ([e326461](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e32646167350251e5a07baa0da29660bdbe62896))
+* update smart bot ([8310ce7](https://git3.nexdev.net/sc-packages/sc-game-base/commit/8310ce738a39cdee8ddbfd6e5366d86f756a60f6))
+* update smartbot projections, publish message join room ([47b11c1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/47b11c1af1b7ec68b0d8e31879a3ece3a7ea7b1d))
+* update table game bot ([17d71bc](https://git3.nexdev.net/sc-packages/sc-game-base/commit/17d71bcd578eed7b610eae9b0d0aa714f45a425c))
+* update unit tests ([570fd46](https://git3.nexdev.net/sc-packages/sc-game-base/commit/570fd46e206c403b2e5d20aa2849ffd0776013bd))
+
+
+### Features
+
+* init bot-bet-pattern-consumer ([b4125d8](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b4125d85e15f97a0a313a77cd0072b137d8f0010))
+
 ## [1.20.3](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.20.2...v1.20.3) (2021-04-26)
 
 
