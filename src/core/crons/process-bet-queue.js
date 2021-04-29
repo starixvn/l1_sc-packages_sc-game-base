@@ -62,7 +62,7 @@ export default class ProcessBetQueue {
         if (apiResult.isOk) {
             await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload);
 
-            if (player.profile.minBet !== response.minBet || player.profile.maxBet !== response.maxBet) {
+            if (!payload.freeBet && (player.profile.minBet !== response.minBet || player.profile.maxBet !== response.maxBet)) {
                 await this.updateUserStakeLevel(player, response.minBet, response.maxBet);
             }
         } else {
