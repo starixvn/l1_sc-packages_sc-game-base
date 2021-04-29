@@ -1,3 +1,10 @@
+## [1.21.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.21.0...v1.21.1) (2021-04-29)
+
+
+### Bug Fixes
+
+* not update bet limit when freeBet = true ([1da11d3](https://git3.nexdev.net/sc-packages/sc-game-base/commit/1da11d374860ab1ab491051018a611755bdc171b))
+
 # [1.21.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.20.3...v1.21.0) (2021-04-28)
 
 
