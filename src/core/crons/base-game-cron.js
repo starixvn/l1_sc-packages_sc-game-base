@@ -22,6 +22,7 @@ export default class BaseGameCron {
      * @param {mongoose.Model} dependencies.gameConfigsRepository
      * @param {mongoose.Model} dependencies.roundsRepository
      * @param {BotBetPatternConsumer} dependencies.botBetPatternConsumer
+     * @param {mongoose.Model} dependencies.archiveStatusesRepository
      */
     constructor({
         definition,
@@ -33,6 +34,7 @@ export default class BaseGameCron {
         logService,
         gameConfigsRepository,
         roundsRepository,
+        archiveStatusesRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -43,6 +45,7 @@ export default class BaseGameCron {
         this.logService = logService;
         this.gameConfigsRepository = gameConfigsRepository;
         this.roundsRepository = roundsRepository;
+        this.archiveStatusesRepository = archiveStatusesRepository;
     }
 
     async start() {
@@ -63,6 +66,11 @@ export default class BaseGameCron {
 
         if (lastRound) {
             this.gameData.roundId = lastRound.id + 1;
+        } else {
+            const { configName } = this.definition;
+            const archiveStatus = await this.archiveStatusesRepository.findOne({ name: configName }, "last_round_id").lean().exec();
+
+            this.gameData.roundId = archiveStatus.last_round_id + 1;
         }
 
         job.start();
