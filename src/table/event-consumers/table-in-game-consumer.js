@@ -1,7 +1,15 @@
 import InGameConsumer from "../../../src/core/event-consumers/in-game-consumer";
+import { Systems } from "../../constants";
 
 export default class TableInGameConsumer extends InGameConsumer {
     async consume(realPlayer) {
+        const { session } = realPlayer;
+        const { gameConfigs } = this.gameData;
+        if (session.system === Systems.Mobi && (!gameConfigs || !gameConfigs.enabled)) {
+            super.consume(realPlayer);
+            return;
+        }
+
         const payload = await this.buildPayload(realPlayer);
         const player = {
             id: realPlayer.UID,
