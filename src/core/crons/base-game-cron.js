@@ -67,9 +67,9 @@ export default class BaseGameCron {
             this.gameData.roundId = lastRound.id + 1;
         } else {
             const { configName } = this.definition;
-            const archiveStatus = await this.archiveStatusesRepository.findOne({ name: configName }, "last_round_id").lean().exec();
+            const archiveStatus = await this.archiveStatusesRepository.findOne({ name: configName }, "lastArcRoundId").lean().exec();
 
-            this.gameData.roundId = archiveStatus.last_round_id + 1;
+            this.gameData.roundId = archiveStatus ? archiveStatus.lastArcRoundId + 1 : 1;
         }
 
         job.start();
