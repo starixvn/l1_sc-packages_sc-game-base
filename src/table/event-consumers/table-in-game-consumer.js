@@ -2,7 +2,7 @@ import InGameConsumer from "../../../src/core/event-consumers/in-game-consumer";
 
 export default class TableInGameConsumer extends InGameConsumer {
     async consume(realPlayer) {
-        const { gameConfigs } = this.gameData;
+        const { remainingTime, gameConfigs } = this.gameData;
         const disabled = !gameConfigs || !gameConfigs.enabled;
         if (disabled) {
             const disabledMessage = gameConfigs?.disabled_message ?? "";
