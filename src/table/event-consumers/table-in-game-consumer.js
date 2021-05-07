@@ -1,13 +1,13 @@
 import InGameConsumer from "../../../src/core/event-consumers/in-game-consumer";
-import { Systems } from "../../constants";
 
 export default class TableInGameConsumer extends InGameConsumer {
     async consume(realPlayer) {
-        const { session } = realPlayer;
         const { gameConfigs } = this.gameData;
-        if (session.system === Systems.Mobi && (!gameConfigs || !gameConfigs.enabled)) {
-            super.consume(realPlayer);
-            return;
+        const disabled = !gameConfigs || !gameConfigs.enabled;
+        if (disabled) {
+            const disabledMessage = gameConfigs?.disabled_message ?? "";
+
+            realPlayer.socketClient.emit(this.definition.name, { remainingTime, um: disabled, um_message: disabledMessage });
         }
 
         const payload = await this.buildPayload(realPlayer);
