@@ -66,13 +66,17 @@ export default class BaseGameCron {
         if (lastRound) {
             this.gameData.roundId = lastRound.id + 1;
         } else {
-            const { configName } = this.definition;
-            const archiveStatus = await this.archiveStatusesRepository.findOne({ name: configName }, "lastArcRoundId").lean().exec();
-
-            this.gameData.roundId = archiveStatus ? archiveStatus.lastArcRoundId + 1 : 1;
+            this.gameData.roundId = await this.getLastArchiveRound();
         }
 
         job.start();
+    }
+
+    async getLastArchiveRound() {
+        const { configName } = this.definition;
+        const archiveStatus = await this.archiveStatusesRepository.findOne({ name: configName }, "lastArcId").lean().exec();
+
+        return archiveStatus ? archiveStatus.lastArcId["_phiens"] + 1 : 1;
     }
 
     async proceed() {
