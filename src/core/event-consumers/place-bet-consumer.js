@@ -30,13 +30,13 @@ export default class PlaceBetConsumer {
         return [
             {
                 failure: !configs.enabled,
-                notice: helpers.noticeHelper.placeBetNextRound,
+                notice: this.getNoticeObj(helpers.noticeHelper.placeBetNextRound),
             },
             {
                 failure:
                     this.gameData.remainingTime < this.definition.durations.lockingBet ||
                     this.gameData.remainingTime >= this.definition.durations.placingBets,
-                notice: helpers.noticeHelper.placeBetNextRound,
+                notice: this.getNoticeObj(helpers.noticeHelper.placeBetNextRound),
             },
         ];
     }
@@ -52,32 +52,39 @@ export default class PlaceBetConsumer {
         return [
             {
                 failure: freeBet && !configs.enableFreeBet,
-                notice: helpers.noticeHelper.invalidBet,
+                notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
             },
             {
                 failure: amount > maxBetPerChoice || betTracks[betChoice] + amount > maxBetPerChoice,
-                notice: helpers.noticeHelper.maxBetForChoice(maxBetPerChoice),
+                notice: this.getNoticeObj(helpers.noticeHelper.maxBetForChoice),
             },
             {
                 failure: amount < minBet,
-                notice: helpers.noticeHelper.minBet(minBet),
+                notice: this.getNoticeObj(helpers.noticeHelper.minBet),
             },
             {
                 failure: amount > maxBet,
-                notice: helpers.noticeHelper.maxBet(maxBet),
+                notice: this.getNoticeObj(helpers.noticeHelper.maxBet),
             },
             {
                 failure: totalAmount > maxBet,
-                notice: helpers.noticeHelper.maxBet(maxBet),
+                notice: this.getNoticeObj(helpers.noticeHelper.maxBet),
             },
         ];
+    }
+
+    getNoticeObj(errorCode, extraData) {
+        return {
+            errorCode,
+            ...extraData,
+        };
     }
 
     composeBetChoiceValidationCriteria(betChoice) {
         return [
             {
                 failure: !this.definition.choices.includes(betChoice),
-                notice: helpers.noticeHelper.invalidBet,
+                notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
             },
         ];
     }
