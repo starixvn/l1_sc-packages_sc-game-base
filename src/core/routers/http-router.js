@@ -1,7 +1,8 @@
-import { logger, utils } from "sc-common";
 import mongoose from "mongoose";
-import GameData from "./../game-data";
+import { logger, utils } from "sc-common";
+
 import { HistoryQuery } from "../query-apis";
+import GameData from "./../game-data";
 
 export default class HttpRouter {
     /**
@@ -93,6 +94,7 @@ export default class HttpRouter {
                     id: player.session.memberId,
                     currency: player.session.currency,
                     character: player.session.characterName,
+                    system: player.session.system
                 };
 
                 if (player.session.currency && player.session.currency.toUpperCase() === "UUS") {
