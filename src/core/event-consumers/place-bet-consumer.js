@@ -56,7 +56,7 @@ export default class PlaceBetConsumer {
             },
             {
                 failure: amount > maxBetPerChoice || betTracks[betChoice] + amount > maxBetPerChoice,
-                notice: this.getNoticeObj(helpers.noticeHelper.maxBetForChoice),
+                notice: this.getNoticeObj(helpers.noticeHelper.maxBetForChoice, { maxBet: maxBetPerChoice }),
             },
             {
                 failure: amount < minBet,
