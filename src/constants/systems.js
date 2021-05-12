@@ -1,4 +1,4 @@
 export class Systems {
-    static Cocos = 0;
-    static Mobi = 1;
+    static Cocos = 1;
+    static Mobi = 2;
 }
