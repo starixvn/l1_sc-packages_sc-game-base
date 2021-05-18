@@ -22,6 +22,7 @@ export default class BaseGameCron {
      * @param {mongoose.Model} dependencies.gameConfigsRepository
      * @param {mongoose.Model} dependencies.roundsRepository
      * @param {mongoose.Model} dependencies.archiveStatusesRepository
+     * @param {mongoose.Model} dependencies.notificationRepository
      */
     constructor({
         definition,
@@ -45,6 +46,7 @@ export default class BaseGameCron {
         this.gameConfigsRepository = gameConfigsRepository;
         this.roundsRepository = roundsRepository;
         this.archiveStatusesRepository = archiveStatusesRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     async start() {
@@ -122,6 +124,9 @@ export default class BaseGameCron {
             }
         }
 
+        this.gameData.umMessages =
+            (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
+            
         this.gameData.gameConfigs = configs ?? {};
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
 

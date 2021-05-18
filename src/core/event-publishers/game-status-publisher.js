@@ -2,7 +2,7 @@ import BaseEventPublisher from "./base-event-publisher";
 
 export default class GameStatusPublisher extends BaseEventPublisher {
     publishDisableGameStatus() {
-        const disabledMessage = this.gameData.gameConfigs.disabled_message ?? "";
+        const disabledMessage = this.gameData.umMessages ?? {};
         const payload = { um: true, um_message: disabledMessage };
 
         this.publishToAllUsers(payload);

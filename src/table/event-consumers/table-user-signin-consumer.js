@@ -37,10 +37,7 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
         if (!disabled) {
             await super.consume(socketClient, payload);
         } else {
-            const umMessage = configs?.disabled_message ?? "";
-            const notice = { title: helpers.noticeHelper.notice, text: umMessage, load: false };
-
-            this.userSignInPublisher.publishUmNotice(socketClient, notice);
+            this.userSignInPublisher.publishUmNotice(socketClient, this.gameData.umMessages);
         }
     }
 

@@ -2,12 +2,10 @@ import InGameConsumer from "../../../src/core/event-consumers/in-game-consumer";
 
 export default class TableInGameConsumer extends InGameConsumer {
     async consume(realPlayer) {
-        const { remainingTime, gameConfigs } = this.gameData;
+        const { remainingTime, gameConfigs, umMessages } = this.gameData;
         const disabled = !gameConfigs || !gameConfigs.enabled;
         if (disabled) {
-            const disabledMessage = gameConfigs?.disabled_message ?? "";
-
-            realPlayer.socketClient.emit(this.definition.name, { remainingTime, um: disabled, um_message: disabledMessage });
+            realPlayer.socketClient.emit(this.definition.name, { remainingTime, um: disabled, um_message: umMessages });
         }
 
         const payload = await this.buildPayload(realPlayer);
