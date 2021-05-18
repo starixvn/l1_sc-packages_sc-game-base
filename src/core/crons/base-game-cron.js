@@ -35,6 +35,7 @@ export default class BaseGameCron {
         gameConfigsRepository,
         roundsRepository,
         archiveStatusesRepository,
+        notificationRepository
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -126,7 +127,7 @@ export default class BaseGameCron {
 
         this.gameData.umMessages =
             (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
-            
+
         this.gameData.gameConfigs = configs ?? {};
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
 
