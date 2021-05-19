@@ -1,3 +1,14 @@
+## [1.22.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.22.0...v1.22.1) (2021-05-19)
+
+
+### Bug Fixes
+
+* add archive status repository ([a9b3893](https://git3.nexdev.net/sc-packages/sc-game-base/commit/a9b3893337064b93ed237e3e6673ac070960d98b))
+* rename lastArcRoundId ([9d02ff6](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9d02ff6f7e23f11521041d9225ee77f268be4f3c))
+* rename lastRoundId ([480ee3b](https://git3.nexdev.net/sc-packages/sc-game-base/commit/480ee3b53566474a80b7fd32af65ddc22c199b69))
+* set default round id if archive status null ([cc38257](https://git3.nexdev.net/sc-packages/sc-game-base/commit/cc382574fc78ecdd15fd98dd0a3c9e1c74c4ea6c))
+* update last arc round id ([83d15f4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/83d15f4e42712bda5441a29675cb3da0f030fbd1))
+
 # [1.22.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.21.1...v1.22.0) (2021-05-19)
 
 
