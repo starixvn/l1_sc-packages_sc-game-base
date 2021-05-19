@@ -21,7 +21,7 @@ export default class BaseGameCron {
      * @param {logger} dependencies.logService
      * @param {mongoose.Model} dependencies.gameConfigsRepository
      * @param {mongoose.Model} dependencies.roundsRepository
-     * @param {BotBetPatternConsumer} dependencies.botBetPatternConsumer
+     * @param {mongoose.Model} dependencies.archiveStatusesRepository
      */
     constructor({
         definition,
@@ -33,6 +33,7 @@ export default class BaseGameCron {
         logService,
         gameConfigsRepository,
         roundsRepository,
+        archiveStatusesRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -43,6 +44,7 @@ export default class BaseGameCron {
         this.logService = logService;
         this.gameConfigsRepository = gameConfigsRepository;
         this.roundsRepository = roundsRepository;
+        this.archiveStatusesRepository = archiveStatusesRepository;
     }
 
     async start() {
@@ -63,9 +65,18 @@ export default class BaseGameCron {
 
         if (lastRound) {
             this.gameData.roundId = lastRound.id + 1;
+        } else {
+            this.gameData.roundId = await this.getLastArchiveRound();
         }
 
         job.start();
+    }
+
+    async getLastArchiveRound() {
+        const { configName } = this.definition;
+        const archiveStatus = await this.archiveStatusesRepository.findOne({ name: configName }, "lastArcId").lean().exec();
+
+        return archiveStatus ? archiveStatus.lastArcId["_phiens"] + 1 : 1;
     }
 
     async proceed() {
