@@ -1,3 +1,26 @@
+# [1.22.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.21.1...v1.22.0) (2021-05-19)
+
+
+### Bug Fixes
+
+* add bet choice to endBet message ([18c8198](https://git3.nexdev.net/sc-packages/sc-game-base/commit/18c8198a1d2feb85a0e56c78935b21bd5c2b1650))
+* add cors for api request ([0c30caa](https://git3.nexdev.net/sc-packages/sc-game-base/commit/0c30caad50ce526eabcb9e9fa899610dcff9ade0))
+* add odds info to history query ([c46a615](https://git3.nexdev.net/sc-packages/sc-game-base/commit/c46a615bb44aeaf818fbd37b79518cc1acb8aa32))
+* change hisotry api method to post ([dbdd7d1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/dbdd7d1e03b96ba5258292c2167aa23fd80462ed))
+* disable mobi ([7e5110c](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7e5110ca8159ad765b8e9984b8bb3d00b5a3d479))
+* enhance code ([414ad37](https://git3.nexdev.net/sc-packages/sc-game-base/commit/414ad37ba6b2326ef51861137428136f3b75bace))
+* return system info to  monitoring page ([1eba133](https://git3.nexdev.net/sc-packages/sc-game-base/commit/1eba133a81d01c5339c2f6844bea03560a449ff8))
+* update system ([837b770](https://git3.nexdev.net/sc-packages/sc-game-base/commit/837b770f2aed2c87e741f758f54b2a513075f88b))
+* update version ([de71aea](https://git3.nexdev.net/sc-packages/sc-game-base/commit/de71aea19eef4e20f7dea345ed0ddbbb413555f0))
+
+
+### Features
+
+* add system to online user response ([2f32209](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2f32209861ade43f1d0919867860c78304e96758))
+* disable mobi ([f7a85fe](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f7a85fec33df1f0487e225dbbc0c916d5afd7de8))
+* update ingame consumer for mobi ([b6d912d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b6d912d2216b3ad0c660042871126886b8a7d011))
+* update signin consumer for Mobi ([1ad5867](https://git3.nexdev.net/sc-packages/sc-game-base/commit/1ad58679cc0e58f63069ff59b07e2ddb3b3b4147))
+
 ## [1.21.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.21.0...v1.21.1) (2021-04-29)
 
 
