@@ -1,3 +1,1 @@
-import GameTypes from "./game-types";
-
-export { GameTypes };
+export * from "./systems"

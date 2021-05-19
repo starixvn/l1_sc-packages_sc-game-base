@@ -8,6 +8,7 @@ import { init as initApis } from "sc-base-apis";
 import { init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
 import socketIo from "socket.io";
+import cors from "cors";
 
 import { authenticationHelpers } from "./helpers";
 
@@ -69,6 +70,17 @@ export default class BaseGameStartup {
      * @param {express.Express} app
      */
     async configureServices(app) {
+        const corsOptions = {
+            origin: (origin, callback) => {
+                if (this.appConfigs.corsUrls.includes(origin) || !origin) {
+                    callback(null, true);
+                } else {
+                    callback(new Error(`Not allowed by CORS ${origin}`));
+                }
+            },
+        };
+
+        app.use(cors(corsOptions));
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: false }));
         app.use(morgan("combined"));

@@ -27,7 +27,7 @@ export default class HttpRouter {
             (_req, res) => this.handleOnlineUsers(res)
         );
 
-        app.get(
+        app.post(
             "/api/history",
             (_req, res, next) => this.verifySession(_req, res, next),
             (_req, res) => this.handleHistoryRequest(_req, res)
@@ -35,7 +35,7 @@ export default class HttpRouter {
     }
 
     async verifySession(req, res, next) {
-        const { session, username } = req.query;
+        const { session, username } = req.body;
         const userAgent = req.headers["user-agent"];
         const userSession = await this.userSessionsRepository.findOne({ sessionId: session }).lean().exec();
 
@@ -48,9 +48,10 @@ export default class HttpRouter {
 
     async handleHistoryRequest(req, res) {
         try {
-            const { session, page, pageSize } = req.query;
+            const { session, page, pageSize } = req.body;
 
-            const result = await this.historyQuery.queryHistoryBySession(session, +page, +pageSize);
+            const userSession = await this.userSessionsRepository.findOne({ sessionId: session }).lean().exec();
+            const result = await this.historyQuery.queryHistory({ UID: userSession.userId }, +page, +pageSize);
 
             res.send(result);
         } catch (error) {
@@ -92,6 +93,7 @@ export default class HttpRouter {
                     id: player.session.memberId,
                     currency: player.session.currency,
                     character: player.session.characterName,
+                    system: player.session.system,
                 };
 
                 if (player.session.currency && player.session.currency.toUpperCase() === "UUS") {
