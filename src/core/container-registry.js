@@ -37,6 +37,7 @@ export default class ContainerRegistry {
             gameData: asValue(gameData),
         });
 
+        this.registerMetrics();
         this.registerModels();
         this.registerApis();
         this.registerPublishers();
