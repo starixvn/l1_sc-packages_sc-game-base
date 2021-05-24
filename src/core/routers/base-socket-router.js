@@ -37,6 +37,7 @@ export default class BaseSocketRouter {
         this.userSignInPublisher = userSignInPublisher;
         this.historyQuery = historyQuery;
         this.logService = logService;
+        this.metricQuery = metricQuery;
     }
 
     /**
@@ -113,7 +114,7 @@ export default class BaseSocketRouter {
         const realPlayer = this.gameData.realPlayers[this.socketClient.id];
 
         if (realPlayer) {
-            if(this.hasPlayingPermission(realPlayer.session)) {
+            if (this.hasPlayingPermission(realPlayer.session)) {
                 return true;
             }
 
