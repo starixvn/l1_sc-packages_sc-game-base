@@ -25,7 +25,7 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
      * @param {SocketIO.Socket} socketClient
      */
     async consume(socketClient, payload) {
-        if (payload.system === Systems.Mobi) {
+        if (payload?.system === Systems.Mobi) {
             await super.consume(socketClient, payload);
             return;
         }
