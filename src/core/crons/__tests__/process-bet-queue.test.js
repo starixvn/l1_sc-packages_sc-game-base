@@ -225,11 +225,12 @@ describe("proceedBet tests", () => {
     });
 
     it("placeBet api return winLimitHit error, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
+        const placeBetError = jest.fn();
         const proceedBetQueue = new ProcessBetQueue({
             definition,
             gameData,
             placeBetPublisher,
-            placeBet,
+            placeBet: placeBetError,
             logService,
             betsRepository,
             betLogsRepository,
@@ -249,7 +250,7 @@ describe("proceedBet tests", () => {
             isOk: true,
             response: {},
         });
-        placeBet.mockReturnValueOnce(placeBetResponse);
+        placeBetError.mockReturnValueOnce(placeBetResponse);
 
         await proceedBetQueue.proceedBet(player, payload);
 
