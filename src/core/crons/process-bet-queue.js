@@ -71,8 +71,9 @@ export default class ProcessBetQueue {
         const balanceResult = await this.validateBalance({ id: player.UID, session: player.session }, betInfo);
 
         if (!balanceResult.isOk) {
+            const { response: balanceResponse } = balanceResult;
             const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
-            const notice = response.inSufficientBalance ? insufficientNotice : response;
+            const notice = balanceResponse.inSufficientBalance ? insufficientNotice : balanceResponse;
 
             this.handleFailedBet(player, notice, payload);
 
@@ -136,7 +137,7 @@ export default class ProcessBetQueue {
         this.adjustTotalBets(player, bet);
         this.notifyPlacingBetResult(player, balance, bet);
 
-        if (!payload.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
+        if (!bet.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
             await this.updateUserStakeLevel(player, balance.minBet, balance.maxBet);
         }
     }
