@@ -18,8 +18,19 @@ export default class ProcessBetQueue {
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.betLogsRepository
      * @param {mongoose.Model} dependencies.userInfosRepository
+     * @param {*} dependencies.validateBalance
      */
-    constructor({ definition, gameData, placeBetPublisher, placeBet, logService, betsRepository, betLogsRepository, userInfosRepository }) {
+    constructor({
+        definition,
+        gameData,
+        placeBetPublisher,
+        placeBet,
+        logService,
+        betsRepository,
+        betLogsRepository,
+        userInfosRepository,
+        validateBalance,
+    }) {
         this.definition = definition;
         this.gameData = gameData;
         this.placeBetPublisher = placeBetPublisher;
@@ -28,6 +39,7 @@ export default class ProcessBetQueue {
         this.betsRepository = betsRepository;
         this.betLogsRepository = betLogsRepository;
         this.userInfosRepository = userInfosRepository;
+        this.validateBalance = validateBalance;
     }
 
     start() {
@@ -55,7 +67,20 @@ export default class ProcessBetQueue {
     }
 
     async proceedBet(player, payload) {
+        const betInfo = this.formatApiBetInfo(payload);
+        const balanceResult = await this.validateBalance({ id: player.UID, session: player.session }, betInfo);
+
+        if (!balanceResult.isOk) {
+            const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
+            const notice = response.inSufficientBalance ? insufficientNotice : response;
+
+            this.handleFailedBet(player, notice, payload);
+
+            return;
+        }
+
         if (
+            payload.roundId !== this.gameData.roundId ||
             this.gameData.remainingTime < this.definition.durations.lockingBet ||
             this.gameData.remainingTime >= this.definition.durations.placingBets
         ) {
@@ -64,17 +89,13 @@ export default class ProcessBetQueue {
             return;
         }
 
-        const betInfo = this.formatApiBetInfo(payload);
         const apiResult = await this.placeBet({ id: player.UID, session: player.session }, betInfo);
         const { response } = apiResult;
 
         if (apiResult.isOk) {
             await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload);
         } else {
-            const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
-            const notice = response.inSufficientBalance ? insufficientNotice : response;
-
-            this.handleFailedBet(player, notice, payload);
+            this.handleFailedBet(player, response, payload);
 
             if (
                 (player.profile.minBet !== response.apiError?.minBet || player.profile.maxBet !== response.apiError?.maxBet) &&
@@ -99,7 +120,7 @@ export default class ProcessBetQueue {
         return {
             amount: payload.amount,
             gameId: this.definition.id,
-            gameRoundId: this.gameData.roundId,
+            gameRoundId: payload.roundId,
             choiceId: this.definition.choicesMapper[payload.betChoice],
             freeBet: payload.freeBet,
         };

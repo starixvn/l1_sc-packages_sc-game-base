@@ -1,5 +1,5 @@
 import { asClass, asValue, createContainer, InjectionMode } from "awilix";
-import { endGame, getBalance, notifyLogin, placeBet } from "sc-base-apis";
+import { endGame, getBalance, notifyLogin, placeBet, validateBalance } from "sc-base-apis";
 import { gameConfigs, userInfos, userSessions } from "sc-base-database";
 import { logger } from "sc-common";
 
@@ -74,6 +74,7 @@ export default class ContainerRegistry {
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
             notifyLogin: asValue(notifyLogin),
+            validateBalance: asValue(validateBalance),
         });
     }
 

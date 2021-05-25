@@ -103,6 +103,7 @@ export default class PlaceBetConsumer {
         Object.assign(payload, {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
+            roundId: this.gameData.roundId,
         });
 
         const { amount, betChoice, freeBet } = payload;
@@ -125,6 +126,7 @@ export default class PlaceBetConsumer {
         }
 
         this.adjustBetTracks(player.profile.name, payload);
+
         this.gameData.ingame[name].betQueue.push({ player, payload });
     }
 
