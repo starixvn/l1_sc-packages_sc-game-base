@@ -15,7 +15,7 @@ describe("http router test", () => {
         },
     };
     const gameData = new GameData(0);
-    const app = { get: jest.fn() };
+    const app = { get: jest.fn(), post: jest.fn() };
     const router = new HttpRouter(appConfigs, gameData);
     logger.logError.mockReturnValue(jest.fn());
 
