@@ -118,6 +118,8 @@ export default class HttpRouter {
 
             if (secretKey) {
                 res.send(this.metricQuery.getMetrics(secretKey));
+
+                return;
             }
 
             res.send({ error: true });
