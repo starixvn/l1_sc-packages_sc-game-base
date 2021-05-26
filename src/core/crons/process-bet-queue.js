@@ -85,7 +85,7 @@ export default class ProcessBetQueue {
             this.gameData.remainingTime < this.definition.durations.lockingBet ||
             this.gameData.remainingTime >= this.definition.durations.placingBets
         ) {
-            this.handleFailedBet(player, { notice: helpers.noticeHelper.placeBetNextRound }, payload);
+            this.handleFailedBet(player, helpers.noticeHelper.placeBetNextRound, payload);
 
             return;
         }

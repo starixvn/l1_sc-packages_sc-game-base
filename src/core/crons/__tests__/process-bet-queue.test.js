@@ -10,7 +10,7 @@ import ProcessBetQueue from "../process-bet-queue";
 
 jest.mock("../../event-publishers/place-bet-publisher");
 
-const gameData = new GameData(3);
+const gameData = new GameData(10);
 gameData.gameConfigs = {
     odds: {
         red2: 2.4,
@@ -224,7 +224,71 @@ describe("proceedBet tests", () => {
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, { endBet: -1, betChoice: "red2", kickedOut: true });
     });
 
+    it("dequeue bet in blocking time, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
+        gameData.remainingTime = 3;
+        const proceedBetQueue = new ProcessBetQueue({
+            definition,
+            gameData,
+            placeBetPublisher,
+            placeBet,
+            logService,
+            betsRepository,
+            betLogsRepository,
+            userInfosRepository,
+            validateBalance,
+        });
+        const balanceResponse = {
+            isOk: true,
+            response: {},
+        };
+        placeBet.mockReturnValueOnce({});
+        validateBalance.mockReturnValueOnce(balanceResponse);
+
+        await proceedBetQueue.proceedBet(player, payload);
+
+        expect(placeBet).not.toHaveBeenCalled();
+        expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
+        expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
+            endBet: -1,
+            betChoice: "red2",
+            notice: noticeHelper.placeBetNextRound,
+        });
+    });
+
+    it("dequeue bet of settled round, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
+        gameData.roundId = 2;
+        const proceedBetQueue = new ProcessBetQueue({
+            definition,
+            gameData,
+            placeBetPublisher,
+            placeBet,
+            logService,
+            betsRepository,
+            betLogsRepository,
+            userInfosRepository,
+            validateBalance,
+        });
+        const balanceResponse = {
+            isOk: true,
+            response: {},
+        };
+        placeBet.mockReturnValueOnce({});
+        validateBalance.mockReturnValueOnce(balanceResponse);
+
+        await proceedBetQueue.proceedBet(player, payload);
+
+        expect(placeBet).not.toHaveBeenCalled();
+        expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
+        expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
+            endBet: -1,
+            betChoice: "red2",
+            notice: noticeHelper.placeBetNextRound,
+        });
+    });
+
     it("placeBet api return winLimitHit error, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
+        gameData.remainingTime = 10;
+        gameData.roundId = 1;
         const placeBetError = jest.fn();
         const proceedBetQueue = new ProcessBetQueue({
             definition,
