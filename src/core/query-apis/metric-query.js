@@ -11,6 +11,6 @@ export default class MetricQuery {
     }
 
     getMetrics(metricSecretKey) {
-        return metricSecretKey === this.appConfigs.metrics?.secretKey ? baseMetrics.getMetrics() : "";
+        return metricSecretKey === this.appConfigs.metrics?.secretKey ? this.baseMetrics.getMetrics() : "";
     }
 }

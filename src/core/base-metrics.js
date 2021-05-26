@@ -7,7 +7,7 @@ export default class BaseMetrics {
     }
 
     init(socketServer) {
-        const metrics = this.appConfigs?.metrics ?? { enable: false, secrectKey: "" };
+        const metrics = this.appConfigs?.metrics ?? { enable: false, secretKey: "" };
         if (metrics.enable) {
             this.socketIOMetrics = prometheus.metrics(socketServer, {
                 collectDefaultMetrics: true,
