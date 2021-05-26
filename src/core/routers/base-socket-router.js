@@ -37,7 +37,6 @@ export default class BaseSocketRouter {
         this.userSignInPublisher = userSignInPublisher;
         this.historyQuery = historyQuery;
         this.logService = logService;
-        this.metricQuery = metricQuery;
     }
 
     /**
