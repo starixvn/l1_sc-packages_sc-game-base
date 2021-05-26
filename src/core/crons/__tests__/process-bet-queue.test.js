@@ -16,18 +16,7 @@ gameData.gameConfigs = {
         red2: 2.4,
     },
 };
-gameData.ingame = {
-    player01: {
-        name: "player01",
-        betTracks: { red2: 100 },
-        betQueue: [
-            {
-                player: {},
-                payload: {},
-            },
-        ],
-    },
-};
+
 const definition = new GameDefinition({
     id: 1,
     name: "game name",
@@ -48,6 +37,21 @@ betLogsRepository.create = jest.fn();
 /** @type {mongoose.Model}*/
 const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
 userInfosRepository.updateOne = jest.fn();
+
+beforeEach(() => {
+    gameData.ingame = {
+        player01: {
+            name: "player01",
+            betTracks: { red2: 100 },
+            betQueue: [
+                {
+                    player: {},
+                    payload: {},
+                },
+            ],
+        },
+    };
+});
 
 describe("dequeueBets tests", () => {
     it("get data from inGame, pop item from betQueue, then proceed", () => {
@@ -229,6 +233,28 @@ describe("proceedBet placebet error tests", () => {
 
         expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, { endBet: -1, betChoice: "red2", apiError });
+    });
+
+    it("placeBet api return winLimitHit error, should decrease bet tracks", async () => {
+        const apiError = {
+            message: "Win limit hit! Please contact your upline, thank you",
+        };
+        const placeBet = jest.fn();
+        placeBet.mockReturnValueOnce({
+            isOk: false,
+            response: {
+                apiError,
+            },
+        });
+
+        const validateBalance = jest.fn();
+        validateBalance.mockReturnValueOnce({ isOk: true, response: {} });
+        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
+
+        const player = mockPlayer();
+        await proceedBetQueue.proceedBet(player, mockPayload());
+
+        expect(gameData.ingame.player01.betTracks["red2"]).toBe(0);
     });
 
     afterEach(() => {
