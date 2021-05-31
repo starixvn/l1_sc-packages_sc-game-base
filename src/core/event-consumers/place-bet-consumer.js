@@ -60,15 +60,15 @@ export default class PlaceBetConsumer {
             },
             {
                 failure: amount < minBet,
-                notice: this.getNoticeObj(helpers.noticeHelper.minBet),
+                notice: this.getNoticeObj(helpers.noticeHelper.minBet, { minBet }),
             },
             {
                 failure: amount > maxBet,
-                notice: this.getNoticeObj(helpers.noticeHelper.maxBet),
+                notice: this.getNoticeObj(helpers.noticeHelper.maxBet, { maxBet }),
             },
             {
                 failure: totalAmount > maxBet,
-                notice: this.getNoticeObj(helpers.noticeHelper.maxBet),
+                notice: this.getNoticeObj(helpers.noticeHelper.maxBet, { maxBet }),
             },
         ];
     }
