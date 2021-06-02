@@ -72,7 +72,9 @@ export default class ProcessBetQueue {
 
         if (!balanceResult.isOk) {
             const { response: balanceResponse } = balanceResult;
-            const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
+            const insufficientNotice = {
+                errorCode: payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney,
+            };
             const notice = balanceResponse.inSufficientBalance ? insufficientNotice : balanceResponse;
 
             this.handleFailedBet(player, notice, payload);
@@ -85,7 +87,7 @@ export default class ProcessBetQueue {
             this.gameData.remainingTime < this.definition.durations.lockingBet ||
             this.gameData.remainingTime >= this.definition.durations.placingBets
         ) {
-            this.handleFailedBet(player, helpers.noticeHelper.placeBetNextRound, payload);
+            this.handleFailedBet(player, { errorCode: helpers.noticeHelper.placeBetNextRound }, payload);
 
             return;
         }
