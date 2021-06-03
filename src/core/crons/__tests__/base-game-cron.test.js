@@ -31,6 +31,12 @@ gameConfigsRepository.updateOne = jest.fn();
 /** @type {mongoose.Model}*/
 const roundsRepository = stubMongooseModelStupidly(mongoose.Model);
 
+/** @type {mongoose.Model}*/
+const notificationRepository = stubMongooseModelStupidly(mongoose.Model);
+
+/** @type {mongoose.Model}*/
+const archiveRepository = stubMongooseModelStupidly(mongoose.Model);
+
 describe("proceed tests", () => {
     it("should call checkGameStatus after each round", async () => {
         gameData.disabled = false;
@@ -46,6 +52,8 @@ describe("proceed tests", () => {
             logService,
             gameConfigsRepository,
             roundsRepository,
+            archiveRepository,
+            notificationRepository
         });
 
         baseGameCron.checkGameStatus = jest.fn();
@@ -69,6 +77,8 @@ describe("proceed tests", () => {
             logService,
             gameConfigsRepository,
             roundsRepository,
+            archiveRepository,
+            notificationRepository
         });
 
         jest.spyOn(baseGameCron, "resetForNewRound");
@@ -93,6 +103,8 @@ describe("proceed tests", () => {
             logService,
             gameConfigsRepository,
             roundsRepository,
+            archiveRepository,
+            notificationRepository
         });
 
         await baseGameCron.proceed();
@@ -114,7 +126,9 @@ describe("proceed tests", () => {
             runningRoundInfoPublisher,
             logService,
             gameConfigsRepository,
-            roundsRepository,
+            roundsRepository,  
+            archiveRepository,
+            notificationRepository
         });
 
         baseGameCron.checkGameStatus = jest.fn();
@@ -143,7 +157,9 @@ describe("checkGameStatus tests", () => {
             runningRoundInfoPublisher,
             logService,
             gameConfigsRepository,
-            roundsRepository,
+            roundsRepository,            
+            archiveRepository,
+            notificationRepository
         });
 
 
@@ -169,6 +185,8 @@ describe("checkGameStatus tests", () => {
             logService,
             gameConfigsRepository,
             roundsRepository,
+            archiveRepository,
+            notificationRepository
         });
 
 
@@ -196,6 +214,8 @@ describe("checkGameStatus tests", () => {
             logService,
             gameConfigsRepository,
             roundsRepository,
+            archiveRepository,
+            notificationRepository
         });
 
 

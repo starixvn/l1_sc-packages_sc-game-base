@@ -24,9 +24,9 @@ describe("table user signin publisher test", () => {
 
     it("publishUmNotice", () => {
         // act
-        publisher.publishUmNotice(socketClient, "notice");
+        publisher.publishUmNotice(socketClient, {"en-US": "UM"});
 
         // assert
-        expect(socketClient.emit).toHaveBeenCalledWith("message", { notice: "notice", um: true });
+        expect(socketClient.emit).toHaveBeenCalledWith("message", { um_message: {"en-US": "UM"}, um: true });
     });
 });

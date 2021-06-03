@@ -46,6 +46,8 @@ gameData.gameConfigs = {
     enableFreeBet: false,
 };
 
+gameData.umMessages = { "en-US": "UM" };
+
 describe("publishEnablingGameStatus test", () => {
     it("should send to all users and admin clients", () => {
         // arrange
@@ -70,7 +72,7 @@ describe("publishDisableGameStatus test", () => {
 
         // act
         publisher.publishDisableGameStatus();
-        const payload = { um: true, um_message: "" };
+        const payload = { um: true, um_message: gameData.umMessages };
         // assert
         expect(publisher.publishToAllUsers).toHaveBeenCalledWith(payload);
         expect(publisher.publishToAllAdmins).toHaveBeenCalledWith(payload);
@@ -81,11 +83,10 @@ describe("publishDisableGameStatus test", () => {
         const publisher = new GameStatusPublisher(gameName, gameData);
         publisher.publishToAllUsers = jest.fn();
         publisher.publishToAllAdmins = jest.fn();
-        gameData.gameConfigs.disabled_message = "disabledMessage";
 
         // act
         publisher.publishDisableGameStatus();
-        const payload = { um: true, um_message: gameData.gameConfigs.disabled_message };
+        const payload = { um: true, um_message: gameData.umMessages };
         // assert
         expect(publisher.publishToAllUsers).toHaveBeenCalledWith(payload);
         expect(publisher.publishToAllAdmins).toHaveBeenCalledWith(payload);
