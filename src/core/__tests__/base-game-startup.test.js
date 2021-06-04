@@ -10,6 +10,7 @@ import BaseSocketRouter from "../routers/base-socket-router";
 import HttpRouter from "../routers/http-router";
 
 jest.mock("sc-common");
+jest.mock("sc-base-database");
 jest.mock("../helpers");
 
 describe("base game startup test", () => {
@@ -47,19 +48,6 @@ describe("base game startup test", () => {
         expect(router.init).toHaveBeenCalled();
     });
 
-    it("initAdminSocketRouter_always_init router", () => {
-        /** @type {BaseAdminSocketRouter} */
-        const router = stub(BaseAdminSocketRouter);
-        spyOn(container, "resolve").and.returnValue(router);
-        const baseGameStartup = new BaseGameStartup(container);
-
-        //act
-        baseGameStartup.initAdminSocketRouter(socketClient);
-
-        // assert
-        expect(router.init).toHaveBeenCalled();
-    });
-
     it("initHttpRouter_always_init router", () => {
         /** @type {HttpRouter} */
         const router = stub(HttpRouter);
@@ -75,7 +63,12 @@ describe("base game startup test", () => {
 
     describe("configureServices_", () => {
         // arrange
-        const appConfigs = {};
+        const appConfigs = {
+            database: {
+                url: "",
+                options: {},
+            },
+        };
         /** @type {BaseGameStartup} */
         let baseGameStartup;
         const app = express();
