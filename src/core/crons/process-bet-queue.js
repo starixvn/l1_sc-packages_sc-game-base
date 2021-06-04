@@ -106,7 +106,7 @@ export default class ProcessBetQueue {
 
     async composeValidationCriteria(player, payload) {
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
-        const betAmountValidationCriteria = (await this.composeBetAmountValidationCriteria(player, payload.freeBet)) || [];
+        const betAmountValidationCriteria = (await this.composeBetAmountValidationCriteria(player, payload)) || [];
 
         return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
     }

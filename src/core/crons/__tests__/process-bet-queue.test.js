@@ -93,6 +93,32 @@ describe("proceedBet balance error tests", () => {
         });
     });
 
+    it("validateBalance api return insufficientBalance for freeBet, should call handleFailedBet with notEnoughScoin", async () => {
+        const placeBet = jest.fn();
+        placeBet.mockReturnValueOnce({});
+
+        const validateBalance = jest.fn();
+        validateBalance.mockReturnValueOnce({
+            isOk: false,
+            response: {
+                inSufficientBalance: true,
+            },
+        });
+
+        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
+        const player = mockPlayer();
+
+        await proceedBetQueue.proceedBet(player, mockPayload(1, true));
+
+        expect(placeBet).not.toHaveBeenCalled();
+        expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
+        expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
+            endBet: -1,
+            betChoice: "red2",
+            apiError: { errorCode: noticeHelper.notEnoughScoin },
+        });
+    });
+
     it("validateBalance api return kickedOut, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
         const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({});
@@ -318,9 +344,9 @@ const mockPlayer = () => {
     };
 };
 
-const mockPayload = (roundId = 1) => {
+const mockPayload = (roundId = 1, freeBet = false) => {
     return {
-        freeBet: false,
+        freeBet,
         amount: 100,
         betChoice: "red2",
         roundId,
