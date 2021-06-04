@@ -132,11 +132,11 @@ export default class ProcessBetQueue {
         return [
             {
                 failure: !balanceResult.isOk && balanceResult.response.inSufficientBalance && payload.freeBet,
-                notice: { apiError: { errorCode: helpers.noticeHelper.notEnoughScoin } },
+                notice: { errorCode: helpers.noticeHelper.notEnoughScoin },
             },
             {
                 failure: !balanceResult.isOk && balanceResult.response.inSufficientBalance && !payload.freeBet,
-                notice: { apiError: { errorCode: helpers.noticeHelper.notEnoughMoney } },
+                notice: { errorCode: helpers.noticeHelper.notEnoughMoney },
             },
             {
                 failure: !balanceResult.isOk && !balanceResult.response.inSufficientBalance,

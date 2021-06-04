@@ -89,7 +89,7 @@ describe("proceedBet balance error tests", () => {
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
             endBet: -1,
             betChoice: "red2",
-            apiError: { errorCode: noticeHelper.notEnoughMoney },
+            notice: { errorCode: noticeHelper.notEnoughMoney },
         });
     });
 
@@ -115,7 +115,7 @@ describe("proceedBet balance error tests", () => {
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
             endBet: -1,
             betChoice: "red2",
-            apiError: { errorCode: noticeHelper.notEnoughScoin },
+            notice: { errorCode: noticeHelper.notEnoughScoin },
         });
     });
 
