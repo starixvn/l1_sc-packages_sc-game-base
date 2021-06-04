@@ -68,27 +68,8 @@ export default class ProcessBetQueue {
 
     async proceedBet(player, payload) {
         const betInfo = this.formatApiBetInfo(payload);
-        const balanceResult = await this.validateBalance({ id: player.UID, session: player.session }, betInfo);
 
-        if (!balanceResult.isOk) {
-            const { response: balanceResponse } = balanceResult;
-            const insufficientNotice = {
-                errorCode: payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney,
-            };
-            const notice = balanceResponse.inSufficientBalance ? insufficientNotice : balanceResponse;
-
-            this.handleFailedBet(player, notice, payload);
-
-            return;
-        }
-
-        if (
-            payload.roundId !== this.gameData.roundId ||
-            this.gameData.remainingTime < this.definition.durations.lockingBet ||
-            this.gameData.remainingTime >= this.definition.durations.placingBets
-        ) {
-            this.handleFailedBet(player, { errorCode: helpers.noticeHelper.placeBetNextRound }, payload);
-
+        if (!(await this.validateBetRequest(player, payload))) {
             return;
         }
 
@@ -108,6 +89,60 @@ export default class ProcessBetQueue {
                 await this.updateUserStakeLevel(player, response.apiError.minBet, response.apiError.maxBet);
             }
         }
+    }
+
+    async validateBetRequest(player, payload) {
+        const criteria = await this.composeValidationCriteria(player, payload);
+        const failedCriterion = criteria.find((criterion) => criterion.failure);
+
+        if (failedCriterion) {
+            this.handleFailedBet(player, failedCriterion.notice, payload);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    async composeValidationCriteria(player, payload) {
+        const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
+        const betAmountValidationCriteria = (await this.composeBetAmountValidationCriteria(player, payload.freeBet)) || [];
+
+        return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
+    }
+
+    composeBettingTimeValidationCriteria(roundId) {
+        return [
+            {
+                failure: roundId !== this.gameData.roundId,
+                notice: { errorCode: helpers.noticeHelper.placeBetNextRound },
+            },
+            {
+                failure:
+                    this.gameData.remainingTime < this.definition.durations.lockingBet ||
+                    this.gameData.remainingTime >= this.definition.durations.placingBets,
+                notice: { errorCode: helpers.noticeHelper.placeBetNextRound },
+            },
+        ];
+    }
+
+    async composeBetAmountValidationCriteria(player, payload) {
+        const balanceResult = await this.validateBalance({ id: player.UID, session: player.session }, payload);
+
+        return [
+            {
+                failure: !balanceResult.isOk && balanceResult.response.inSufficientBalance && payload.freeBet,
+                notice: { apiError: { errorCode: helpers.noticeHelper.notEnoughScoin } },
+            },
+            {
+                failure: !balanceResult.isOk && balanceResult.response.inSufficientBalance && !payload.freeBet,
+                notice: { apiError: { errorCode: helpers.noticeHelper.notEnoughMoney } },
+            },
+            {
+                failure: !balanceResult.isOk && !balanceResult.response.inSufficientBalance,
+                notice: balanceResult.response,
+            },
+        ];
     }
 
     async updateUserStakeLevel(player, minBet, maxBet) {

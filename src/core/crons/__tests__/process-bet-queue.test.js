@@ -89,7 +89,7 @@ describe("proceedBet balance error tests", () => {
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
             endBet: -1,
             betChoice: "red2",
-            notice: noticeHelper.notEnoughMoney,
+            apiError: { errorCode: noticeHelper.notEnoughMoney },
         });
     });
 
@@ -141,7 +141,7 @@ describe("proceedBet in blocking time tests", () => {
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
             endBet: -1,
             betChoice: "red2",
-            notice: noticeHelper.placeBetNextRound,
+            notice: { errorCode: noticeHelper.placeBetNextRound },
         });
     });
 
@@ -165,7 +165,7 @@ describe("proceedBet in blocking time tests", () => {
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
             endBet: -1,
             betChoice: "red2",
-            notice: noticeHelper.placeBetNextRound,
+            notice: { errorCode: noticeHelper.placeBetNextRound },
         });
     });
 
