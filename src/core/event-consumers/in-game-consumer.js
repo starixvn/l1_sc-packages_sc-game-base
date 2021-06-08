@@ -36,7 +36,7 @@ export default class InGameConsumer {
 
     async buildPayload(realPlayer) {
         const { minbet, maxbet, choices_maxbet, odds, enableFreeBet } = this.gameData.gameConfigs;
-        const { totalBets } = this.gameData;
+        const { totalBets, roundId } = this.gameData;
         const gameConfigs = { minbet, maxbet, choices_maxbet, odds, enableFreeBet };
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
@@ -46,6 +46,7 @@ export default class InGameConsumer {
         const user = await this.getUserInfo(realPlayer.UID);
 
         return {
+            roundId,
             gameConfigs,
             roundHistory,
             ownBets,
