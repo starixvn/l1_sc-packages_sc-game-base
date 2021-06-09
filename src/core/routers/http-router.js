@@ -11,13 +11,15 @@ export default class HttpRouter {
      * @param {HistoryQuery} historyQuery
      * @param {mongoose.Model} userSessionsRepository
      * @param {MetricQuery} metricQuery
+     * @param {logger} ldependencies.logService
      */
-    constructor(appConfigs, gameData, historyQuery, userSessionsRepository, metricQuery) {
+    constructor(appConfigs, gameData, historyQuery, userSessionsRepository, metricQuery, logService) {
         this.appConfigs = appConfigs;
         this.gameData = gameData;
         this.historyQuery = historyQuery;
         this.userSessionsRepository = userSessionsRepository;
         this.metricQuery = metricQuery;
+        this.logService = logService;
     }
 
     init(app) {
@@ -60,7 +62,7 @@ export default class HttpRouter {
 
             res.send(result);
         } catch (error) {
-            logger.logError(error);
+            logService.logError(error);
             res.send({ error: true });
         }
     }
@@ -71,7 +73,7 @@ export default class HttpRouter {
 
             res.send(onlineUsers);
         } catch (error) {
-            logger.logError(error);
+            logService.logError(error);
             res.send({ error: true });
         }
     }
@@ -124,7 +126,7 @@ export default class HttpRouter {
 
             res.send({ error: true });
         } catch (error) {
-            logger.logError(error);
+            logService.logError(error);
             res.send({ error: true });
         }
     }
