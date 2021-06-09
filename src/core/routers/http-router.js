@@ -116,7 +116,7 @@ export default class HttpRouter {
 
     handleMetrics(req, res) {
         try {
-            const { secretKey } = req.query;
+            const { secretKey } = req?.query || {};
 
             if (secretKey) {
                 res.send(this.metricQuery.getMetrics(secretKey));
