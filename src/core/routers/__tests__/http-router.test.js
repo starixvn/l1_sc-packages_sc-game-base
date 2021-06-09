@@ -1,7 +1,10 @@
+import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import mongoose from "mongoose";
 import { logger } from "sc-common";
 
 import { HttpRouter } from "..";
 import GameData from "../../game-data";
+import { HistoryQuery, MetricQuery } from "../../query-apis";
 
 jest.mock("sc-common");
 
@@ -16,8 +19,16 @@ describe("http router test", () => {
     };
     const gameData = new GameData(0);
     const app = { get: jest.fn(), post: jest.fn() };
-    const router = new HttpRouter(appConfigs, gameData);
-    logger.logError.mockReturnValue(jest.fn());
+    /** @type {HistoryQuery} */
+    const historyQuery = stub(HistoryQuery);
+    /** @type {logger} */
+    const logService = stub(logger);
+    /** @type {mongoose.Model}*/
+    const userSessionsRepository = stubMongooseModelStupidly(mongoose.Model);
+    /** @type {MetricQuery} */
+    const metricQuery = stub(MetricQuery);
+
+    const router = new HttpRouter(appConfigs, gameData, historyQuery, userSessionsRepository, metricQuery, logService);
 
     it("init_always_calls app.get", () => {
         // act
@@ -52,7 +63,7 @@ describe("http router test", () => {
             router.handleOnlineUsers(res);
 
             // assert
-            expect(logger.logError).toHaveBeenCalled();
+            expect(logService.logError).toHaveBeenCalled();
             expect(res.send).toHaveBeenCalledWith({ error: true });
         });
     });

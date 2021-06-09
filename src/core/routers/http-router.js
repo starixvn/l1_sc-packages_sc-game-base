@@ -62,7 +62,7 @@ export default class HttpRouter {
 
             res.send(result);
         } catch (error) {
-            logService.logError(error);
+            this.logService.logError(error);
             res.send({ error: true });
         }
     }
@@ -73,7 +73,7 @@ export default class HttpRouter {
 
             res.send(onlineUsers);
         } catch (error) {
-            logService.logError(error);
+            this.logService.logError(error);
             res.send({ error: true });
         }
     }
@@ -126,7 +126,7 @@ export default class HttpRouter {
 
             res.send({ error: true });
         } catch (error) {
-            logService.logError(error);
+            this.logService.logError(error);
             res.send({ error: true });
         }
     }
