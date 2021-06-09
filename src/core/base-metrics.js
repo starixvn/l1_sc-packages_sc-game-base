@@ -1,3 +1,4 @@
+import socketIo from "socket.io";
 import * as prometheus from "socket.io-prometheus-metrics";
 
 export default class BaseMetrics {
@@ -6,6 +7,9 @@ export default class BaseMetrics {
         this.socketIOMetrics = null;
     }
 
+    /**
+     * @param {socketIo} socketServer
+     */
     init(socketServer) {
         const metrics = this.appConfigs?.metrics ?? { enable: false, secretKey: "" };
         if (metrics.enable) {
