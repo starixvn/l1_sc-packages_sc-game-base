@@ -18,8 +18,19 @@ export default class ProcessBetQueue {
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.betLogsRepository
      * @param {mongoose.Model} dependencies.userInfosRepository
+     * @param {*} dependencies.validateBalance
      */
-    constructor({ definition, gameData, placeBetPublisher, placeBet, logService, betsRepository, betLogsRepository, userInfosRepository }) {
+    constructor({
+        definition,
+        gameData,
+        placeBetPublisher,
+        placeBet,
+        logService,
+        betsRepository,
+        betLogsRepository,
+        userInfosRepository,
+        validateBalance,
+    }) {
         this.definition = definition;
         this.gameData = gameData;
         this.placeBetPublisher = placeBetPublisher;
@@ -28,6 +39,7 @@ export default class ProcessBetQueue {
         this.betsRepository = betsRepository;
         this.betLogsRepository = betLogsRepository;
         this.userInfosRepository = userInfosRepository;
+        this.validateBalance = validateBalance;
     }
 
     start() {
@@ -56,20 +68,18 @@ export default class ProcessBetQueue {
 
     async proceedBet(player, payload) {
         const betInfo = this.formatApiBetInfo(payload);
+
+        if (!(await this.validateBetRequest(player, payload))) {
+            return;
+        }
+
         const apiResult = await this.placeBet({ id: player.UID, session: player.session }, betInfo);
         const { response } = apiResult;
 
         if (apiResult.isOk) {
             await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload);
-
-            if (!payload.freeBet && (player.profile.minBet !== response.minBet || player.profile.maxBet !== response.maxBet)) {
-                await this.updateUserStakeLevel(player, response.minBet, response.maxBet);
-            }
         } else {
-            const insufficientNotice = payload.freeBet ? helpers.noticeHelper.notEnoughScoin : helpers.noticeHelper.notEnoughMoney;
-            const notice = response.inSufficientBalance ? insufficientNotice : response;
-
-            this.handleFailedBet(player, notice, payload);
+            this.handleFailedBet(player, response, payload);
 
             if (
                 (player.profile.minBet !== response.apiError?.minBet || player.profile.maxBet !== response.apiError?.maxBet) &&
@@ -79,6 +89,60 @@ export default class ProcessBetQueue {
                 await this.updateUserStakeLevel(player, response.apiError.minBet, response.apiError.maxBet);
             }
         }
+    }
+
+    async validateBetRequest(player, payload) {
+        const criteria = await this.composeValidationCriteria(player, payload);
+        const failedCriterion = criteria.find((criterion) => criterion.failure);
+
+        if (failedCriterion) {
+            this.handleFailedBet(player, failedCriterion.notice, payload);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    async composeValidationCriteria(player, payload) {
+        const betAmountValidationCriteria = (await this.composeBetAmountValidationCriteria(player, payload)) || [];
+        const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
+
+        return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
+    }
+
+    composeBettingTimeValidationCriteria(roundId) {
+        return [
+            {
+                failure: roundId !== this.gameData.roundId,
+                notice: { errorCode: helpers.noticeHelper.placeBetNextRound },
+            },
+            {
+                failure:
+                    this.gameData.remainingTime < this.definition.durations.lockingBet ||
+                    this.gameData.remainingTime >= this.definition.durations.placingBets,
+                notice: { errorCode: helpers.noticeHelper.placeBetNextRound },
+            },
+        ];
+    }
+
+    async composeBetAmountValidationCriteria(player, payload) {
+        const balanceResult = await this.validateBalance({ id: player.UID, session: player.session }, payload);
+
+        return [
+            {
+                failure: !balanceResult.isOk && balanceResult.response.inSufficientBalance && payload.freeBet,
+                notice: { errorCode: helpers.noticeHelper.notEnoughScoin },
+            },
+            {
+                failure: !balanceResult.isOk && balanceResult.response.inSufficientBalance && !payload.freeBet,
+                notice: { errorCode: helpers.noticeHelper.notEnoughMoney },
+            },
+            {
+                failure: !balanceResult.isOk && !balanceResult.response.inSufficientBalance,
+                notice: balanceResult.response,
+            },
+        ];
     }
 
     async updateUserStakeLevel(player, minBet, maxBet) {
@@ -94,7 +158,7 @@ export default class ProcessBetQueue {
         return {
             amount: payload.amount,
             gameId: this.definition.id,
-            gameRoundId: this.gameData.roundId,
+            gameRoundId: payload.roundId,
             choiceId: this.definition.choicesMapper[payload.betChoice],
             freeBet: payload.freeBet,
         };
@@ -109,6 +173,10 @@ export default class ProcessBetQueue {
 
         this.adjustTotalBets(player, bet);
         this.notifyPlacingBetResult(player, balance, bet);
+
+        if (!bet.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
+            await this.updateUserStakeLevel(player, balance.minBet, balance.maxBet);
+        }
     }
 
     handleFailedBet(player, notice, bet) {

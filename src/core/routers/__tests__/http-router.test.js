@@ -1,7 +1,10 @@
+import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import mongoose from "mongoose";
 import { logger } from "sc-common";
 
 import { HttpRouter } from "..";
 import GameData from "../../game-data";
+import { HistoryQuery, MetricQuery } from "../../query-apis";
 
 jest.mock("sc-common");
 
@@ -15,9 +18,17 @@ describe("http router test", () => {
         },
     };
     const gameData = new GameData(0);
-    const app = { get: jest.fn() };
-    const router = new HttpRouter(appConfigs, gameData);
-    logger.logError.mockReturnValue(jest.fn());
+    const app = { get: jest.fn(), post: jest.fn() };
+    /** @type {HistoryQuery} */
+    const historyQuery = stub(HistoryQuery);
+    /** @type {logger} */
+    const logService = stub(logger);
+    /** @type {mongoose.Model}*/
+    const userSessionsRepository = stubMongooseModelStupidly(mongoose.Model);
+    /** @type {MetricQuery} */
+    const metricQuery = stub(MetricQuery);
+
+    const router = new HttpRouter(appConfigs, gameData, historyQuery, userSessionsRepository, metricQuery, logService);
 
     it("init_always_calls app.get", () => {
         // act
@@ -52,7 +63,7 @@ describe("http router test", () => {
             router.handleOnlineUsers(res);
 
             // assert
-            expect(logger.logError).toHaveBeenCalled();
+            expect(logService.logError).toHaveBeenCalled();
             expect(res.send).toHaveBeenCalledWith({ error: true });
         });
     });
@@ -98,5 +109,58 @@ describe("http router test", () => {
 
         // assert
         expect(actualResult).toEqual(expectedResult);
+    });
+
+    describe("handleMetrics", () => {
+        const res = {
+            send: jest.fn(),
+        };
+
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it("should return error if missing secret key", () => {
+            // arrange
+            const req = {
+                query: jest.fn(),
+            };
+
+            // act
+            router.handleMetrics(req, res);
+
+            // assert
+            expect(res.send).toHaveBeenCalledWith({ error: true });
+        });
+
+        it("should return error and logError if metricQuery throws exception", () => {
+            // arrange
+            const req = {
+                query: { secretKey: "secret" },
+            };
+            spyOn(metricQuery, "getMetrics").and.throwError("error");
+
+            // act
+            router.handleMetrics(req, res);
+
+            // assert
+            expect(logService.logError).toHaveBeenCalled();
+            expect(res.send).toHaveBeenCalledWith({ error: true });
+        });
+
+        it("should return metrics response", () => {
+            // arrange
+            const req = {
+                query: { secretKey: "secret" },
+            };
+            const metricsResponse = { metrics: "test" };
+            spyOn(metricQuery, "getMetrics").and.returnValue(metricsResponse);
+
+            // act
+            router.handleMetrics(req, res);
+
+            // assert
+            expect(res.send).toHaveBeenCalledWith(metricsResponse);
+        });
     });
 });

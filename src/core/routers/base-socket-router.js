@@ -113,7 +113,7 @@ export default class BaseSocketRouter {
         const realPlayer = this.gameData.realPlayers[this.socketClient.id];
 
         if (realPlayer) {
-            if(this.hasPlayingPermission(realPlayer.session)) {
+            if (this.hasPlayingPermission(realPlayer.session)) {
                 return true;
             }
 

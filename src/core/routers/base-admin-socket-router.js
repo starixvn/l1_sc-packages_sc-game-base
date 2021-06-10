@@ -12,7 +12,7 @@ export default class BaseAdminSocketRouter {
      * @param {AdminAuthenticationConsumer} dependencies.adminAuthenticationConsumer
      * @param {AdminMonitorConsumer} dependencies.adminMonitorConsumer
      * @param {AdminDisconnectConsumer} dependencies.adminDisconnectConsumer
-     * @param {logger} ldependencies.logService
+     * @param {logger} dependencies.logService
      */
     constructor({ definition, gameData, adminAuthenticationConsumer, adminMonitorConsumer, adminDisconnectConsumer, logService }) {
         this.definition = definition;

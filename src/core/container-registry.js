@@ -1,16 +1,17 @@
 import { asClass, asValue, createContainer, InjectionMode } from "awilix";
-import { endGame, getBalance, notifyLogin, placeBet } from "sc-base-apis";
+import { endGame, getBalance, notifyLogin, placeBet, validateBalance } from "sc-base-apis";
 import { gameConfigs, userInfos, userSessions } from "sc-base-database";
 import { logger } from "sc-common";
 
+import BaseMetrics from "./base-metrics";
 import * as Crons from "./crons";
 import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import { authenticationHelpers } from "./helpers";
-import { ArchiveStatuses } from "./models";
-import { HistoryQuery, RoundQuery } from "./query-apis";
+import { ArchiveStatuses, Notifications } from "./models";
+import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
 
 export default class ContainerRegistry {
@@ -36,6 +37,7 @@ export default class ContainerRegistry {
             gameData: asValue(gameData),
         });
 
+        this.registerMetrics();
         this.registerModels();
         this.registerApis();
         this.registerPublishers();
@@ -51,6 +53,7 @@ export default class ContainerRegistry {
             gameConfigsRepository: asValue(gameConfigs),
             userInfosRepository: asValue(userInfos),
             userSessionsRepository: asValue(userSessions),
+            notificationRepository: asValue(Notifications),
         });
 
         this.container.register({
@@ -74,6 +77,8 @@ export default class ContainerRegistry {
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
             notifyLogin: asValue(notifyLogin),
+            validateBalance: asValue(validateBalance),
+            metricQuery: asClass(MetricQuery).singleton(),
         });
     }
 
@@ -119,6 +124,12 @@ export default class ContainerRegistry {
             adminSocketRouter: asClass(Routers.BaseAdminSocketRouter).proxy(),
             socketRouter: asClass(Routers.BaseSocketRouter).proxy(),
             httpRouter: asClass(Routers.HttpRouter),
+        });
+    }
+
+    registerMetrics() {
+        this.container.register({
+            baseMetrics: asClass(BaseMetrics).singleton(),
         });
     }
 }

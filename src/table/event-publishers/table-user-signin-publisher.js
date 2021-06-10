@@ -5,7 +5,7 @@ export default class TableUserSignInPublisher extends UserSignInPublisher {
         socketClient.emit("message", { toGame: toGameName });
     }
 
-    publishUmNotice(socketClient, notice) {
-        socketClient.emit("message", { notice: notice, um: true });
+    publishUmNotice(socketClient, umMessages) {
+        socketClient.emit("message", { um_message: umMessages, um: true });
     }
 }

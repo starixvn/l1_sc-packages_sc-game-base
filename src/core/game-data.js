@@ -10,5 +10,6 @@ export default class GameData {
         this.ingame = {};
         this.admins = {};
         this.settlementResultFromAdmin = {};
+        this.umMessages = {};
     }
 }

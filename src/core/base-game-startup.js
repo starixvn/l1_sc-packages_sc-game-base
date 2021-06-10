@@ -1,5 +1,6 @@
 import * as awilix from "awilix";
 import bodyParser from "body-parser";
+import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import http from "http";
@@ -8,7 +9,6 @@ import { init as initApis } from "sc-base-apis";
 import { init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
 import socketIo from "socket.io";
-import cors from "cors";
 
 import { authenticationHelpers } from "./helpers";
 
@@ -23,6 +23,7 @@ export default class BaseGameStartup {
         adminSocketRouter: "adminSocketRouter",
         httpRouter: "httpRouter",
         gameConfigsRepository: "gameConfigsRepository",
+        baseMetrics: "baseMetrics",
     };
 
     /**
@@ -37,6 +38,7 @@ export default class BaseGameStartup {
         this.gameData = this.container.resolve(this.dependencies.gameData);
         this.gameCron = this.container.resolve(this.dependencies.gameCron);
         this.processBetQueue = this.container.resolve(this.dependencies.processBetQueue);
+        this.baseMetrics = this.container.resolve(this.dependencies.baseMetrics);
     }
 
     /**
@@ -139,6 +141,8 @@ export default class BaseGameStartup {
         });
 
         middlewares.processErrorHandler.handle(httpServer, process);
+
+        this.baseMetrics.init(socketServer);
     }
 
     async start() {
