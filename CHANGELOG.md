@@ -1,3 +1,40 @@
+# [1.23.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.22.1...v1.23.0) (2021-06-10)
+
+
+### Bug Fixes
+
+* add unit tests for metric query ([a97f0f6](https://git3.nexdev.net/sc-packages/sc-game-base/commit/a97f0f6206968190fd51462ea65e3364b16a977a))
+* also return roundId for ingame ([7681543](https://git3.nexdev.net/sc-packages/sc-game-base/commit/76815439c6bd2f7caf45606bb35b2e13cc765349))
+* change order of balance validation ([b6fbe22](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b6fbe226c636db7dc7d5ab3203f4c038aa87417f))
+* check null when get system info ([ee6edea](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ee6edeaef78ac0705a1af8540275f9f7251508fd))
+* code smell ([ff32aed](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ff32aed8d37e1a61426abe13f39ad13341044eb2))
+* expose betting time validation to override ([d472f0d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d472f0db26d2e1724fa01bc4e41359e1a6d8fe60))
+* game cron constructor ([ffbb22d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ffbb22d8a78b79b774e9b4d8c869113e1afd6149))
+* inject logger instead of using directly ([7d4f218](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7d4f2183caffb5ae758ee30ea6f31e2b442f174d))
+* install io prometheus metrics ([7106616](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7106616dc3032eaf1bb7bcac8fbe6c455be18fee))
+* not return apiError if insufficient balance ([2226c9a](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2226c9aa67573f9b0681c0985f2e14634ea92291))
+* register metrics and update metrics configs ([b976907](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b976907feba38c1cdcb102bb948e9d695d5593ef))
+* remove metric query in socket router ([c766ced](https://git3.nexdev.net/sc-packages/sc-game-base/commit/c766cede2669f2e4fbbab61729b2787385f341bd))
+* separate validate balance before sending bet ([d7400d6](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d7400d6024dddc59b774923b49c14ac8bc927450))
+* update error message for failed bet ([0e6b361](https://git3.nexdev.net/sc-packages/sc-game-base/commit/0e6b361df9e804fe6aeba9475e3b234617e33fde))
+* update failed bet error ([e0989b0](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e0989b0029f388e3dc1a3f6596c9708f148c79c1))
+* update metrics query ([0b0121e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/0b0121e1ca5636458f94258a93650a82099e6ba4))
+* update metrics query ([e41565f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e41565fc889ed0ff7edb2c0ce958a6f69452edf6))
+* update process-bet-queue ([e8d4107](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e8d41070af185161d0b959a34e8276386bb25e64))
+* update process-bet-queue ([5b2406e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/5b2406e8ff85060785cb9d7bc70336059e4dac34))
+* update unit test ([d41d495](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d41d495dbeadb77d6abfe2cbb50247d20beea859))
+* update unit tests ([ddef3a5](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ddef3a5893ec81c9a5e0dd258d4b8e7904e6105a))
+* upgrade sc-base-api ([e92392a](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e92392abe77644d5734f2159efccf450f4520317))
+* validate betting time when dequeue bet ([9ad7629](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9ad76293fcc4b827fc942aff34b56c56ac1d997d))
+
+
+### Features
+
+* add metrics http query ([45f0243](https://git3.nexdev.net/sc-packages/sc-game-base/commit/45f0243aef267834bff58ec8ac9d054e399bbac1))
+* add min/max bet to extraData in place-bet-consumer ([7e429a9](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7e429a9c1814b7d4ea4d9ebf82dcf9cca4fc35b8))
+* add notification repository ([678e54c](https://git3.nexdev.net/sc-packages/sc-game-base/commit/678e54ce5bf5bf2fbcddad34ca5a86a2aa57c385))
+* return extra maxBet on Choice ([af8d928](https://git3.nexdev.net/sc-packages/sc-game-base/commit/af8d928c387a7ee2b7d0f1769f44257100294fc8))
+
 ## [1.22.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.22.0...v1.22.1) (2021-05-19)
 
 
