@@ -93,12 +93,12 @@ export default class PlaceBetConsumer {
         ];
     }
 
-    validateBetRequest(player, betChoice, amount, freeBet) {
+    validateBetRequest(player, betChoice, amount, freeBet, roundId) {
         if (!amount || !betChoice) {
             return false;
         }
 
-        const criteria = this.composeValidationCriteria(player, betChoice, amount, freeBet);
+        const criteria = this.composeValidationCriteria(player, betChoice, amount, freeBet, roundId);
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
