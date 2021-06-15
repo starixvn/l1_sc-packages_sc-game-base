@@ -173,6 +173,7 @@ describe("proceedBet in blocking time tests", () => {
 
     it("dequeue bet of settled round, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
         gameData.roundId = 2;
+        gameData.remainingTime = 10;
         const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({});
 

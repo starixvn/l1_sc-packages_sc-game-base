@@ -16,21 +16,25 @@ export default class PlaceBetConsumer {
         this.publisher = publisher;
     }
 
-    composeValidationCriteria(player, betChoice, amount, freeBet) {
-        const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria() ?? [];
+    composeValidationCriteria(player, betChoice, amount, freeBet, roundId) {
+        const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(roundId) ?? [];
         const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) || [];
         const betChoiceValidationCriteria = this.composeBetChoiceValidationCriteria(betChoice) || [];
 
         return bettingTimeValidationCriteria.concat(betChoiceValidationCriteria, betAmountValidationCriteria);
     }
 
-    composeBettingTimeValidationCriteria() {
+    composeBettingTimeValidationCriteria(roundId) {
         const configs = this.gameData.gameConfigs;
 
         return [
             {
                 failure: !configs.enabled,
-                notice: this.getNoticeObj(helpers.noticeHelper.placeBetNextRound),
+                notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
+            },
+            {
+                failure: roundId !== this.gameData.roundId,
+                notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
             },
             {
                 failure:
@@ -110,13 +114,13 @@ export default class PlaceBetConsumer {
         Object.assign(payload, {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
-            roundId: this.gameData.roundId,
+            roundId: payload.roundId ?? this.gameData.roundId,
         });
 
-        const { amount, betChoice, freeBet } = payload;
+        const { amount, betChoice, freeBet, roundId } = payload;
         const name = player.profile.name;
 
-        if (!this.validateBetRequest(player, betChoice, amount, freeBet)) {
+        if (!this.validateBetRequest(player, betChoice, amount, freeBet, roundId)) {
             return;
         }
 
