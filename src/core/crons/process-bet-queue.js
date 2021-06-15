@@ -161,6 +161,7 @@ export default class ProcessBetQueue {
             gameRoundId: payload.roundId,
             choiceId: this.definition.choicesMapper[payload.betChoice],
             freeBet: payload.freeBet,
+            clientSentTime: payload.time ?? new Date(),
         };
     }
 
@@ -229,6 +230,8 @@ export default class ProcessBetQueue {
             choice: bet.betChoice,
             amount: bet.amount,
             freeBet: bet.freeBet,
+            clientSentTime: bet.clientSentTime,
+            receivedTime: bet.receivedTime,
         };
 
         if (player.session) {

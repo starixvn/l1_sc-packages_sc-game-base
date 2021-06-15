@@ -115,6 +115,7 @@ export default class PlaceBetConsumer {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
             roundId: payload.roundId ?? this.gameData.roundId,
+            receivedTime: new Date(),
         });
 
         const { amount, betChoice, freeBet, roundId } = payload;
