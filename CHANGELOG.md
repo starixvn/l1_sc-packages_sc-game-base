@@ -1,3 +1,19 @@
+# [1.24.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.23.0...v1.24.0) (2021-06-16)
+
+
+### Bug Fixes
+
+* add roundId as extra data of place bet notice ([e18b870](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e18b8704952a6960c4767f33f4035f1ec01bdf4b))
+* add time info to betlog ([dd46bc4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/dd46bc49d85b0be12e22f576d6a3e1ff675af17e))
+* get roundId from placebet payload and validate ([abd5ec2](https://git3.nexdev.net/sc-packages/sc-game-base/commit/abd5ec2dfd4318a733b2fe59ba9c4df22c1bae80))
+* inject roundId ([ba0dee6](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ba0dee63ea6a7b5ac3d038fced0d2c2ad6f65e09))
+* update gameRoundId name ([887d13b](https://git3.nexdev.net/sc-packages/sc-game-base/commit/887d13b72ea6b09752bb94db115b6b4bdc0cd189))
+
+
+### Features
+
+* change validation criteron order ([2451d3d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2451d3dac424ac8f64b2e67f03a7df3d18420c40))
+
 # [1.23.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.22.1...v1.23.0) (2021-06-10)
 
 
