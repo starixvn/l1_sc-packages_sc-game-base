@@ -34,7 +34,7 @@ export default class PlaceBetConsumer {
             },
             {
                 failure: roundId !== this.gameData.roundId,
-                notice: this.getNoticeObj(helpers.noticeHelper.invalidBet, { roundId }),
+                notice: this.getNoticeObj(helpers.noticeHelper.invalidBet, { gameRoundId: roundId }),
             },
             {
                 failure:
