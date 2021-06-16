@@ -263,17 +263,18 @@ describe("composeBettingTimeValidationCriteria tests", () => {
 
     it("return invalidBet notice if round id is different with running round", () => {
         // arrange
+        const betRoundId = 2;
         const publisher = new BaseEventPublisher(gameDefinition.name, gameData);
         const placeBetConsumer = new PlaceBetConsumer(gameDefinition, gameData, publisher);
 
         // act
-        var actualResult = placeBetConsumer.composeBettingTimeValidationCriteria(2);
+        var actualResult = placeBetConsumer.composeBettingTimeValidationCriteria(betRoundId);
 
         // assert
         expect(actualResult.filter((x) => x.failure).length).toBe(1);
         expect(actualResult.filter((x) => x.failure)[0]).toStrictEqual({
             failure: true,
-            notice: { errorCode: helpers.noticeHelper.invalidBet },
+            notice: { errorCode: helpers.noticeHelper.invalidBet, roundId: betRoundId },
         });
     });
 
