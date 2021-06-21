@@ -41,7 +41,7 @@ export default class BaseGameApp {
             console.log(`Express server started and running on port ${app.get("port")}!`);
         });
 
-        middlewares.processErrorHandler.handle(this.httpServer, process);
+        middlewares.processErrorHandler.handle(httpServer, process);
 
         this.app = app;
         this.socketServer = socketServer;
