@@ -7,7 +7,7 @@ import GameData from "./../game-data";
 export default class HttpRouter {
     /**
      * @param {Object} appConfigs
-     * @param {GameData} gameData]
+     * @param {GameData} gameData
      * @param {HistoryQuery} historyQuery
      * @param {mongoose.Model} userSessionsRepository
      * @param {MetricQuery} metricQuery
@@ -37,8 +37,6 @@ export default class HttpRouter {
             (_req, res, next) => this.verifySession(_req, res, next),
             (_req, res) => this.handleHistoryRequest(_req, res)
         );
-
-        app.get("/api/metrics", (_req, res) => this.handleMetrics(_req, res));
     }
 
     async verifySession(req, res, next) {
@@ -112,22 +110,5 @@ export default class HttpRouter {
         });
 
         return { uusUsers, realUsers };
-    }
-
-    handleMetrics(req, res) {
-        try {
-            const { secretKey } = req?.query || {};
-
-            if (secretKey) {
-                res.send(this.metricQuery.getMetrics(secretKey));
-
-                return;
-            }
-
-            res.send({ error: true });
-        } catch (error) {
-            this.logService.logError(error);
-            res.send({ error: true });
-        }
     }
 }
