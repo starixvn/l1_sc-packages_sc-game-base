@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { logger, utils } from "sc-common";
 
-import { HistoryQuery, MetricQuery } from "../query-apis";
+import { HistoryQuery } from "../query-apis";
 import GameData from "./../game-data";
 
 export default class HttpRouter {
@@ -10,15 +10,13 @@ export default class HttpRouter {
      * @param {GameData} gameData
      * @param {HistoryQuery} historyQuery
      * @param {mongoose.Model} userSessionsRepository
-     * @param {MetricQuery} metricQuery
      * @param {logger} ldependencies.logService
      */
-    constructor(appConfigs, gameData, historyQuery, userSessionsRepository, metricQuery, logService) {
+    constructor(appConfigs, gameData, historyQuery, userSessionsRepository, logService) {
         this.appConfigs = appConfigs;
         this.gameData = gameData;
         this.historyQuery = historyQuery;
         this.userSessionsRepository = userSessionsRepository;
-        this.metricQuery = metricQuery;
         this.logService = logService;
     }
 

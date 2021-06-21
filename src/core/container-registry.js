@@ -10,7 +10,7 @@ import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import { authenticationHelpers } from "./helpers";
 import { ArchiveStatuses, Notifications } from "./models";
-import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
+import { HistoryQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
 
 export default class ContainerRegistry {
@@ -75,7 +75,7 @@ export default class ContainerRegistry {
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
             notifyLogin: asValue(notifyLogin),
-            metricQuery: asClass(MetricQuery).singleton(),
+            validateBalance: asValue(validateBalance),
         });
     }
 

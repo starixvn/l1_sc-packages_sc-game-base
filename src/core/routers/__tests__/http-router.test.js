@@ -4,7 +4,7 @@ import { logger } from "sc-common";
 
 import { HttpRouter } from "..";
 import GameData from "../../game-data";
-import { HistoryQuery, MetricQuery } from "../../query-apis";
+import { HistoryQuery } from "../../query-apis";
 
 jest.mock("sc-common");
 
@@ -25,10 +25,8 @@ describe("http router test", () => {
     const logService = stub(logger);
     /** @type {mongoose.Model}*/
     const userSessionsRepository = stubMongooseModelStupidly(mongoose.Model);
-    /** @type {MetricQuery} */
-    const metricQuery = stub(MetricQuery);
 
-    const router = new HttpRouter(appConfigs, gameData, historyQuery, userSessionsRepository, metricQuery, logService);
+    const router = new HttpRouter(appConfigs, gameData, historyQuery, userSessionsRepository, logService);
 
     it("init_always_calls app.get", () => {
         // act
