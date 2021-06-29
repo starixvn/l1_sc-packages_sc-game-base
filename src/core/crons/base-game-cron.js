@@ -35,7 +35,7 @@ export default class BaseGameCron {
         gameConfigsRepository,
         roundsRepository,
         archiveStatusesRepository,
-        notificationRepository,
+        notificationRepository
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -51,6 +51,10 @@ export default class BaseGameCron {
     }
 
     async start() {
+        const lastRound = await this.roundsRepository
+            .findOne({}, "id", { sort: { id: -1 } })
+            .lean()
+            .exec();
         const job = new cron.CronJob(
             "* * * * * *",
             () => this.proceed().catch(this.logService.logError),
@@ -62,18 +66,13 @@ export default class BaseGameCron {
             }
         );
 
-        this.gameData.roundId = await this.getStartRoundId();
+        if (lastRound) {
+            this.gameData.roundId = lastRound.id + 1;
+        } else {
+            this.gameData.roundId = await this.getLastArchiveRound();
+        }
 
         job.start();
-    }
-
-    async getStartRoundId() {
-        const lastRound = await this.roundsRepository
-            .findOne({}, "id", { sort: { id: -1 } })
-            .lean()
-            .exec();
-
-        return lastRound ? lastRound.id + 1 : this.getLastArchiveRound();
     }
 
     async getLastArchiveRound() {
