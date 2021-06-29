@@ -48,10 +48,8 @@ export default class BaseGameApp {
     }
 
     handleMetrics(req, res) {
-        console.log("handleMetrics");
         try {
             const { secretKey } = req?.query || {};
-            console.log(secretKey);
 
             if (secretKey) {
                 const metrics = secretKey === this.appConfigs.metrics?.secretKey ? this.baseMetrics.getMetrics() : "";
