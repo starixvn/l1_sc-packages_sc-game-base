@@ -79,23 +79,12 @@ export default class BaseGameApp {
      */
     initSocketServer(httpServer) {
         const { socketOptions, enableCorsWs, corsUrls } = this.appConfigs;
-        const socketServer = new Server(httpServer, socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 });
+        const opts = socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 };
+        opts.cors = {
+            origin: enableCorsWs ? corsUrls : "*",
+        };
 
-        socketServer.origins((origin, callback) => {
-            if (!enableCorsWs) {
-                callback(null, true);
-
-                return;
-            }
-
-            if ((corsUrls && corsUrls.indexOf(origin) !== -1) || !origin) {
-                callback(null, true);
-            } else {
-                callback(`Not allowed by CORS ${origin}`, false);
-            }
-        });
-
-        return socketServer;
+        return new Server(httpServer, opts);
     }
 
     async configureServices(app) {
