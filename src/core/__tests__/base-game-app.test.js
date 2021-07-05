@@ -2,7 +2,6 @@ import express from "express";
 import { logger } from "sc-common";
 
 import BaseGameApp from "../base-game-app";
-import BaseMetrics from "../base-metrics";
 
 jest.mock("sc-common");
 jest.mock("sc-base-database");
@@ -43,69 +42,6 @@ describe("base game app test", () => {
 
             // assert
             expect(logger.start).toHaveBeenCalled();
-        });
-    });
-
-    describe("handleMetrics", () => {
-        const res = {
-            send: jest.fn(),
-        };
-        const baseMetrics = new BaseMetrics(appConfigs);
-
-        beforeEach(() => {
-            jest.clearAllMocks();
-        });
-
-        it("should return error if missing secret key", () => {
-            // arrange
-            const req = {
-                query: jest.fn(),
-            };
-            const baseGameApp = new BaseGameApp("service name", appConfigs, baseMetrics);
-
-            // act
-            baseGameApp.handleMetrics(req, res);
-
-            // assert
-            expect(res.send).toHaveBeenCalledWith({ error: true });
-        });
-
-        it("should return error and logError if metricQuery throws exception", () => {
-            // arrange
-            const req = {
-                query: { secretKey: "secret" },
-            };
-            appConfigs.metrics = {
-                secretKey: "secret",
-            };
-            spyOn(baseMetrics, "getMetrics").and.throwError("error");
-            const baseGameApp = new BaseGameApp("service name", appConfigs, baseMetrics);
-
-            // act
-            baseGameApp.handleMetrics(req, res);
-
-            // assert
-            expect(logger.logError).toHaveBeenCalled();
-            expect(res.send).toHaveBeenCalledWith({ error: true });
-        });
-
-        it("should return metrics response", () => {
-            // arrange
-            const req = {
-                query: { secretKey: "secret" },
-            };
-            appConfigs.metrics = {
-                secretKey: "secret",
-            };
-            const metricsResponse = { metrics: "test" };
-            spyOn(baseMetrics, "getMetrics").and.returnValue(metricsResponse);
-            const baseGameApp = new BaseGameApp("service name", appConfigs, baseMetrics);
-
-            // act
-            baseGameApp.handleMetrics(req, res);
-
-            // assert
-            expect(res.send).toHaveBeenCalledWith(metricsResponse);
         });
     });
 

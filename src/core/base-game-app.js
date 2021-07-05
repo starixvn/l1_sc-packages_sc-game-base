@@ -1,3 +1,4 @@
+import { instrument } from "@socket.io/admin-ui";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -9,7 +10,6 @@ import { logger, middlewares } from "sc-common";
 import { Server } from "socket.io";
 
 import { BaseStartup } from ".";
-import BaseMetrics from "./base-metrics";
 import { authenticationHelpers } from "./helpers";
 
 export default class BaseGameApp {
@@ -17,12 +17,10 @@ export default class BaseGameApp {
      *
      * @param {string} serviceName
      * @param {*} appConfigs
-     * @param {BaseMetrics} baseMetrics
      */
-    constructor(serviceName, appConfigs, baseMetrics) {
+    constructor(serviceName, appConfigs) {
         this.serviceName = serviceName;
         this.appConfigs = appConfigs;
-        this.baseMetrics = baseMetrics ?? new BaseMetrics(this.appConfigs);
     }
 
     async run() {
@@ -34,8 +32,6 @@ export default class BaseGameApp {
 
         const httpServer = http.createServer(app);
         const socketServer = this.initSocketServer(httpServer);
-        this.baseMetrics.init(socketServer);
-        app.get("/api/metrics", (_req, res) => this.handleMetrics(_req, res));
 
         httpServer.listen(app.get("port"), async () => {
             console.log(`Express server started and running on port ${app.get("port")}!`);
@@ -45,24 +41,6 @@ export default class BaseGameApp {
 
         this.app = app;
         this.socketServer = socketServer;
-    }
-
-    handleMetrics(req, res) {
-        try {
-            const { secretKey } = req?.query || {};
-
-            if (secretKey) {
-                const metrics = secretKey === this.appConfigs.metrics?.secretKey ? this.baseMetrics.getMetrics() : "";
-                res.send(metrics);
-
-                return;
-            }
-
-            res.send({ error: true });
-        } catch (error) {
-            logger.logError(error);
-            res.send({ error: true });
-        }
     }
 
     /**
@@ -82,9 +60,14 @@ export default class BaseGameApp {
         const opts = socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 };
         opts.cors = {
             origin: enableCorsWs ? corsUrls : "*",
+            credentials: true,
         };
 
-        return new Server(httpServer, opts);
+        const socketServer = new Server(httpServer, opts);
+
+        instrument(socketServer, { auth: false });
+
+        return socketServer;
     }
 
     async configureServices(app) {
