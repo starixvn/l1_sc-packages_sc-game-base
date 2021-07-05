@@ -6,7 +6,7 @@ import morgan from "morgan";
 import { init as initApis } from "sc-base-apis";
 import { init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
-import socketIo from "socket.io";
+import { Server } from "socket.io";
 
 import { BaseStartup } from ".";
 import BaseMetrics from "./base-metrics";
@@ -79,7 +79,7 @@ export default class BaseGameApp {
      */
     initSocketServer(httpServer) {
         const { socketOptions, enableCorsWs, corsUrls } = this.appConfigs;
-        const socketServer = socketIo(httpServer, socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 });
+        const socketServer = new Server(httpServer, socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 });
 
         socketServer.origins((origin, callback) => {
             if (!enableCorsWs) {

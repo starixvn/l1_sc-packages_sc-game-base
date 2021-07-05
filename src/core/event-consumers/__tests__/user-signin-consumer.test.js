@@ -2,11 +2,11 @@ import "jest-extended";
 
 import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
-import socketIO from "socket.io";
+import { Socket } from "socket.io";
 
-import UserSignInConsumer from "../user-signin-consumer";
 import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
+import UserSignInConsumer from "../user-signin-consumer";
 
 jest.mock("sc-base-apis", () => ({
     getBetLimit: function () {
@@ -34,8 +34,8 @@ describe("user signing in testing", () => {
 
     const consumer = new UserSignInConsumer(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository);
 
-    /** @type {socketIO.Socket} */
-    const socketClient = stub(socketIO.Socket);
+    /** @type {Socket} */
+    const socketClient = stub(Socket);
 
     it.each([undefined, null])("undefined/null payload makes the consume return undefined", async (payload) => {
         // act
@@ -234,7 +234,7 @@ describe("user signing in testing", () => {
         const { payload, userSession } = arrangeValidSession();
         const socketClientId = "socket id";
 
-        gameData.realPlayers[socketClientId] = { UID: userSession.userId, socketClient: stub(socketIO.Socket) };
+        gameData.realPlayers[socketClientId] = { UID: userSession.userId, socketClient: stub(Socket) };
         socketClient.id = socketClientId;
 
         // act

@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { getBetLimit } from "sc-base-apis";
+import { Socket } from "socket.io";
+
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
 
@@ -19,7 +21,7 @@ export default class UserSignInConsumer {
     }
 
     /**
-     * @param {SocketIO.Socket} socketClient
+     * @param {Socket} socketClient
      */
     async consume(socketClient, payload) {
         if (!payload) {

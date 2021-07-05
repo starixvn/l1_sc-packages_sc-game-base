@@ -1,7 +1,7 @@
 import * as awilix from "awilix";
 import express from "express";
 import { logger } from "sc-common";
-import socketIo from "socket.io";
+import { Server, Socket } from "socket.io";
 
 export default class BaseGameStartup {
     dependencies = {
@@ -29,7 +29,7 @@ export default class BaseGameStartup {
     }
 
     /**
-     * @param {socketIo.Socket} socketClient
+     * @param {Socket} socketClient
      */
     initSocketRouter(socketClient) {
         const router = this.container.resolve(this.dependencies.socketRouter);
@@ -38,7 +38,7 @@ export default class BaseGameStartup {
     }
 
     /**
-     * @param {socketIo.Socket} socketClient
+     * @param {Socket} socketClient
      */
     initAdminSocketRouter(socketClient) {
         const router = this.container.resolve(this.dependencies.adminSocketRouter);
@@ -58,7 +58,7 @@ export default class BaseGameStartup {
     /**
      *
      * @param {express.Express} app
-     * @param {socketIo} socketServer
+     * @param {Server} socketServer
      */
     async start(app, socketServer) {
         const gameNameInSocketNamespace = this.definition.name.toLowerCase();

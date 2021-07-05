@@ -1,4 +1,5 @@
-import { Systems } from "../../constants/systems";
+import { Socket } from "socket.io";
+
 import UserDisconnectConsumer from "../../core/event-consumers/user-disconnect-consumer";
 import BaseEventPublisher from "../../core/event-publishers/base-event-publisher";
 import TableGameData from "../table-game-data";
@@ -15,7 +16,7 @@ export default class TableOutGameConsumer extends UserDisconnectConsumer {
     }
 
     /**
-     * @param {SocketIO.Socket} socketClient
+     * @param {Socket} socketClient
      */
     consume(socketClient) {
         const realPlayer = this.gameData.realPlayers[socketClient.id];

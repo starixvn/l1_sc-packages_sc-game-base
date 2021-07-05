@@ -1,12 +1,12 @@
 import { stub } from "jest-micro-auto-stub";
-import socketIo from "socket.io";
+import { Server } from "socket.io";
 import * as prometheus from "socket.io-prometheus-metrics";
 
 import BaseMetrics from "../base-metrics";
 
 describe("BaseMetrics test", () => {
     const appConfigs = {};
-    const socketServer = stub(socketIo);
+    const socketServer = stub(Server);
     const prometheusSocket = stub(prometheus);
 
     it("BaseMetrics should not init if missing configuration", () => {
