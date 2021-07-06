@@ -12,7 +12,6 @@ describe("table in game consumer test", () => {
     const definition = new TableGameDefinition({ id: 1, name: "name" });
     const gameData = new TableGameData(0);
 
-
     /** @type {mongoose.Model}*/
     const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
     const roundQuery = stub(RoundQuery);
@@ -22,8 +21,8 @@ describe("table in game consumer test", () => {
     const consumer = new TableInGameConsumer(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository);
 
     it("inherit InGameConsumer", () => {
-        expect(consumer instanceof InGameConsumer)
-    })
+        expect(consumer instanceof InGameConsumer);
+    });
 
     it("buildPayload_always_calls Super", async () => {
         // arrange
@@ -33,26 +32,25 @@ describe("table in game consumer test", () => {
         await consumer.buildPayload({ UID: "uid" });
 
         expect(InGameConsumer.prototype.buildPayload).toHaveBeenCalled();
-    })
-
+    });
 
     it("consume_always_calls specific methods", async () => {
         // arrange
         const socketClient = {
-            emit: jest.fn()
-        }
+            emit: jest.fn(),
+        };
         const user = {
             red: 1000,
             avatarId: 1,
-            type: false
-        }
+            type: false,
+        };
         spyOn(consumer, "buildPayload").and.returnValue({ user });
         const realPlayer = {
             UID: "uid",
             profile: {
-                name: "name"
+                name: "name",
             },
-            socketClient
+            socketClient,
         };
 
         // act
@@ -61,7 +59,6 @@ describe("table in game consumer test", () => {
         // assert
         expect(consumer.buildPayload).toHaveBeenCalled();
         expect(socketClient.emit).toHaveBeenCalled();
-        expect(publisher.publishToAllUsersExcept).toHaveBeenCalled();
-    })
-
+        expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalled();
+    });
 });

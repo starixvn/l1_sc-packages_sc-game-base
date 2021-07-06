@@ -48,7 +48,7 @@ describe("table out game consumer test", () => {
             consumer.consume({ id: socketId });
 
             // assert
-            expect(publisher.publishToAllUsers).toHaveBeenCalled();
+            expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalled();
         });
     });
 });

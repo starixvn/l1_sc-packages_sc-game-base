@@ -23,13 +23,13 @@ export default class TableInGameConsumer extends InGameConsumer {
         }
 
         realPlayer.socketClient.emit(this.definition.name, payload);
-        this.publisher.publishToAllUsersExceptSystem(Systems.Mobi, playerId, { player });
+        this.publisher.publishToAllUsersExceptSystem(Systems.Mobi, realPlayer.UID, { player });
     }
 
     async buildPayload(realPlayer) {
         const payload = await super.buildPayload(realPlayer);
         const { remainingTime, chips } = this.gameData;
-        const players = realPlayer.session?.system === Systems.Mobi ? [] : this.buildPlayersPayload();
+        const players = realPlayer.session?.system === Systems.Mobi ? [] : this.buildPlayersPayload(realPlayer);
 
         return {
             ...payload,
@@ -39,7 +39,7 @@ export default class TableInGameConsumer extends InGameConsumer {
         };
     }
 
-    buildPlayersPayload() {
+    buildPlayersPayload(realPlayer) {
         const players = Object.values(this.gameData.players).reduce((playerList, player) => {
             const { id, name, red, avatarId, type, patternId } = player;
 
