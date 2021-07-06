@@ -29,7 +29,7 @@ export default class TableInGameConsumer extends InGameConsumer {
     async buildPayload(realPlayer) {
         const payload = await super.buildPayload(realPlayer);
         const { remainingTime, chips } = this.gameData;
-        const players = realPlayer.session?.system === Systems.Mobi ? [] : this.buildPlayersPayload(realPlayer);
+        const players = realPlayer.session?.system === Systems.Mobi ? {} : this.buildPlayersPayload(realPlayer);
 
         return {
             ...payload,

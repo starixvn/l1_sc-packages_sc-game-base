@@ -92,6 +92,15 @@ describe("publishToAllUsersExceptSystem test", () => {
                     emit: jest.fn(),
                 },
             },
+            4: {
+                UID: 1,
+                session: {
+                    system: Systems.Mobi,
+                },
+                socketClient: {
+                    emit: jest.fn(),
+                },
+            },
         };
         const publisher = new BaseEventPublisher(gameName, gameData);
         const payload = { bet: 1 };
@@ -103,6 +112,7 @@ describe("publishToAllUsersExceptSystem test", () => {
         expect(gameData.realPlayers[1].socketClient.emit).not.toHaveBeenCalled();
         expect(gameData.realPlayers[2].socketClient.emit).not.toHaveBeenCalled();
         expect(gameData.realPlayers[3].socketClient.emit).toHaveBeenCalledWith(gameName, payload);
+        expect(gameData.realPlayers[4].socketClient.emit).not.toHaveBeenCalled();
     });
 });
 

@@ -93,6 +93,7 @@ export default class HttpRouter {
         const uusUsers = [];
         const realUsers = [];
 
+        console.log(players);
         players.forEach((player) => {
             if (player && player.session && player.socketClient && player.socketClient.connected) {
                 const user = {
