@@ -18,19 +18,8 @@ export default class ProcessBetQueue {
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.betLogsRepository
      * @param {mongoose.Model} dependencies.userInfosRepository
-     * @param {*} dependencies.validateBalance
      */
-    constructor({
-        definition,
-        gameData,
-        placeBetPublisher,
-        placeBet,
-        logService,
-        betsRepository,
-        betLogsRepository,
-        userInfosRepository,
-        validateBalance,
-    }) {
+    constructor({ definition, gameData, placeBetPublisher, placeBet, logService, betsRepository, betLogsRepository, userInfosRepository }) {
         this.definition = definition;
         this.gameData = gameData;
         this.placeBetPublisher = placeBetPublisher;
@@ -39,7 +28,6 @@ export default class ProcessBetQueue {
         this.betsRepository = betsRepository;
         this.betLogsRepository = betLogsRepository;
         this.userInfosRepository = userInfosRepository;
-        this.validateBalance = validateBalance;
     }
 
     start() {
@@ -105,7 +93,7 @@ export default class ProcessBetQueue {
     }
 
     async composeValidationCriteria(player, payload) {
-        const betAmountValidationCriteria = (await this.composeBetAmountValidationCriteria(player, payload)) || [];
+        const betAmountValidationCriteria = (await this.composeBalanceValidationCriteria(player, payload)) || [];
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
 
         return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
@@ -126,23 +114,25 @@ export default class ProcessBetQueue {
         ];
     }
 
-    async composeBetAmountValidationCriteria(player, payload) {
-        const balanceResult = await this.validateBalance({ id: player.UID, session: player.session }, payload);
+    async composeBalanceValidationCriteria(player, payload) {
+        if (payload.freeBet) {
+            const coins = await this.getCoinBalance(player);
 
-        return [
-            {
-                failure: !balanceResult.isOk && balanceResult.response.inSufficientBalance && payload.freeBet,
-                notice: { errorCode: helpers.noticeHelper.notEnoughScoin },
-            },
-            {
-                failure: !balanceResult.isOk && balanceResult.response.inSufficientBalance && !payload.freeBet,
-                notice: { errorCode: helpers.noticeHelper.notEnoughMoney },
-            },
-            {
-                failure: !balanceResult.isOk && !balanceResult.response.inSufficientBalance,
-                notice: balanceResult.response,
-            },
-        ];
+            return [
+                {
+                    failure: coins < payload.amount,
+                    notice: { errorCode: helpers.noticeHelper.notEnoughScoin },
+                },
+            ];
+        }
+
+        return [];
+    }
+
+    async getCoinBalance(player) {
+        const userInfo = await this.userInfosRepository.findOne({ id: player.UID }, "scoins").lean().exec();
+
+        return userInfo.scoins ?? 0;
     }
 
     async updateUserStakeLevel(player, minBet, maxBet) {
