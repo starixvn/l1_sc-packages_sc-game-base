@@ -29,11 +29,6 @@ export default class BaseEventPublisher {
     }
 
     publishToAllUsersExceptSystem(system, userId, payload) {
-        const filteredPlayers = Object.values(this.gameData.realPlayers).filter(
-            (player) => player.session?.system !== system && player.UID !== userId
-        );
-        console.log(filteredPlayers);
-
         const socketPlayers = Object.values(this.gameData.realPlayers)
             .filter((player) => player.session?.system !== system && player.UID !== userId)
             .map((player) => player.socketClient);
