@@ -1,6 +1,7 @@
 import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
+import { Systems } from "../../../constants/systems";
 import BaseBot from "../../../core/crons/base-bot";
 import BaseEventPublisher from "../../../core/event-publishers/base-event-publisher";
 import TableGameData from "../../table-game-data";
@@ -155,7 +156,7 @@ describe("table game bot test", () => {
 
         // assert
         expect(userInfosRepository.updateOne).toHaveBeenCalledWith({ id: 1 }, { inRoom: false, inGameRoom: "", patternId: 0 });
-        expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ outgame: { playerId: 1 } });
+        expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalledWith(Systems.Mobi, null, { outgame: { playerId: 1 } });
     });
 
     it("joinRoom_exist bot_calls botJoinRoom", async () => {
@@ -185,7 +186,7 @@ describe("table game bot test", () => {
 
         // assert
         expect(userInfosRepository.updateOne).toHaveBeenCalled();
-        expect(publisher.publishToAllUsers).toHaveBeenCalled();
+        expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalled();
     });
 
     it("resetInRoomTrackings_always_calls update many user info", async () => {
