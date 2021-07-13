@@ -31,7 +31,7 @@ export default class BaseMetrics {
     }
 
     initBetProcessedTimeMetrics() {
-        this.socketIOMetrics.metrics.betProcessedTime = new prom.Histogram({
+        this.socketIOMetrics.metrics.betProcessedTime = new prom.Gauge({
             name: "bet_process_duration_seconds",
             help: "Total seconds for processing bet",
         });
@@ -39,7 +39,7 @@ export default class BaseMetrics {
 
     collectBetProcessedTime(totalTime) {
         if (this.socketIOMetrics) {
-            this.socketIOMetrics.metrics.betProcessedTime.collect(totalTime);
+            this.socketIOMetrics.metrics.betProcessedTime.set(totalTime);
         }
     }
 }
