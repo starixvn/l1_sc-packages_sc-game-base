@@ -58,6 +58,7 @@ export default class BaseGameApp {
     initSocketServer(httpServer) {
         const { socketOptions, enableCorsWs, corsUrls } = this.appConfigs;
         const opts = socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 };
+        opts.allowEIO3 = true;
         opts.cors = {
             origin: enableCorsWs ? corsUrls : "*",
             credentials: true,
