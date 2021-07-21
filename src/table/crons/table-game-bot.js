@@ -2,6 +2,7 @@ import Chance from "chance";
 import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
+import { Systems } from "../../constants/systems";
 import BaseBot from "./../../core/crons/base-bot";
 import { BaseEventPublisher } from "./../../core/event-publishers";
 import TableGameData from "./../table-game-data";
@@ -117,7 +118,7 @@ export default class TableGameBot extends BaseBot {
     async removeBot(botId) {
         await this.userInfosRepository.updateOne({ id: botId }, { inRoom: false, inGameRoom: "", patternId: 0 });
 
-        this.publisher.publishToAllUsers({ outgame: { playerId: botId } });
+        this.publisher.publishToAllUsersExceptSystem(Systems.Mobi, null, { outgame: { playerId: botId } });
 
         delete this.gameData.players[botId];
     }
@@ -174,7 +175,8 @@ export default class TableGameBot extends BaseBot {
                 type: bot.type,
             },
         };
-        this.publisher.publishToAllUsers(payload);
+
+        this.publisher.publishToAllUsersExceptSystem(Systems.Mobi, null, payload);
     }
 
     async resetInRoomTrackings() {
@@ -247,7 +249,7 @@ export default class TableGameBot extends BaseBot {
             this.gameData.players[botId].red = balance;
         }
 
-        this.publisher.publishToAllUsers(this.generatePlaceBetPayload(botId, choice, amount, balance));
+        this.publisher.publishToAllUsersExceptSystem(Systems.Mobi, null, this.generatePlaceBetPayload(botId, choice, amount, balance));
     }
 
     updateTotalBetsAndChips(choice, amount) {

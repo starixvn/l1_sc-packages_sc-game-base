@@ -1,3 +1,4 @@
+import { Systems } from "../../constants/systems";
 import { PlaceBetPublisher } from "./../../core/event-publishers";
 
 export default class TablePlaceBetPublisher extends PlaceBetPublisher {
@@ -10,6 +11,6 @@ export default class TablePlaceBetPublisher extends PlaceBetPublisher {
             ...payload.user,
         };
 
-        this.publishToAllUsersExcept(playerId, { playerChip: otherUsersPayload });
+        this.publishToAllUsersExceptSystem(Systems.Mobi, playerId, { playerChip: otherUsersPayload });
     }
 }

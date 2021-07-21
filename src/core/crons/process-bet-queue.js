@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { helpers, logger } from "sc-common";
 
+import BaseMetrics from "../base-metrics";
 import { PlaceBetPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
@@ -18,7 +19,7 @@ export default class ProcessBetQueue {
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.betLogsRepository
      * @param {mongoose.Model} dependencies.userInfosRepository
-     * @param {*} dependencies.validateBalance
+     * @param {BaseMetrics} dependencies.baseMetrics
      */
     constructor({
         definition,
@@ -29,7 +30,7 @@ export default class ProcessBetQueue {
         betsRepository,
         betLogsRepository,
         userInfosRepository,
-        validateBalance,
+        baseMetrics,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -39,7 +40,7 @@ export default class ProcessBetQueue {
         this.betsRepository = betsRepository;
         this.betLogsRepository = betLogsRepository;
         this.userInfosRepository = userInfosRepository;
-        this.validateBalance = validateBalance;
+        this.baseMetrics = baseMetrics;
     }
 
     start() {
@@ -89,6 +90,9 @@ export default class ProcessBetQueue {
                 await this.updateUserStakeLevel(player, response.apiError.minBet, response.apiError.maxBet);
             }
         }
+
+        const totalProcessedTime = (new Date() - payload.receivedTime) / 1000;
+        this.baseMetrics.collectBetProcessedTime(totalProcessedTime);
     }
 
     async validateBetRequest(player, payload) {
@@ -105,7 +109,7 @@ export default class ProcessBetQueue {
     }
 
     async composeValidationCriteria(player, payload) {
-        const betAmountValidationCriteria = (await this.composeBetAmountValidationCriteria(player, payload)) || [];
+        const betAmountValidationCriteria = (await this.composeBalanceValidationCriteria(player, payload)) || [];
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
 
         return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
@@ -126,23 +130,25 @@ export default class ProcessBetQueue {
         ];
     }
 
-    async composeBetAmountValidationCriteria(player, payload) {
-        const balanceResult = await this.validateBalance({ id: player.UID, session: player.session }, payload);
+    async composeBalanceValidationCriteria(player, payload) {
+        if (payload.freeBet) {
+            const coins = await this.getCoinBalance(player);
 
-        return [
-            {
-                failure: !balanceResult.isOk && balanceResult.response.inSufficientBalance && payload.freeBet,
-                notice: { errorCode: helpers.noticeHelper.notEnoughScoin },
-            },
-            {
-                failure: !balanceResult.isOk && balanceResult.response.inSufficientBalance && !payload.freeBet,
-                notice: { errorCode: helpers.noticeHelper.notEnoughMoney },
-            },
-            {
-                failure: !balanceResult.isOk && !balanceResult.response.inSufficientBalance,
-                notice: balanceResult.response,
-            },
-        ];
+            return [
+                {
+                    failure: coins < payload.amount,
+                    notice: { errorCode: helpers.noticeHelper.notEnoughScoin },
+                },
+            ];
+        }
+
+        return [];
+    }
+
+    async getCoinBalance(player) {
+        const userInfo = await this.userInfosRepository.findOne({ id: player.UID }, "scoins").lean().exec();
+
+        return userInfo.scoins ?? 0;
     }
 
     async updateUserStakeLevel(player, minBet, maxBet) {

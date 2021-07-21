@@ -28,6 +28,16 @@ export default class BaseEventPublisher {
         });
     }
 
+    publishToAllUsersExceptSystem(system, userId, payload) {
+        const socketPlayers = Object.values(this.gameData.realPlayers)
+            .filter((player) => player.session?.system !== system && player.UID !== userId)
+            .map((player) => player.socketClient);
+
+        socketPlayers.forEach((socket) => {
+            socket && socket.emit(this.gameName, payload);
+        });
+    }
+
     publishToUser(userId, payload, path = this.gameName) {
         const realPlayer = Object.values(this.gameData.realPlayers).find(
             (player) => player.UID === userId && player.socketClient && player.socketClient.connected

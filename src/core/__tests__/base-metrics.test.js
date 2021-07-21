@@ -42,7 +42,7 @@ describe("BaseMetrics test", () => {
             enable: true,
         };
         const baseMetrics = new BaseMetrics(appConfigs);
-        spyOn(prometheusSocket, "metrics").and.returnValue({});
+        spyOn(prometheusSocket, "metrics").and.returnValue({ metrics: {} });
 
         // act
         baseMetrics.init(socketServer);

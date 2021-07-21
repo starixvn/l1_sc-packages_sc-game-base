@@ -274,7 +274,7 @@ describe("composeBettingTimeValidationCriteria tests", () => {
         expect(actualResult.filter((x) => x.failure).length).toBe(1);
         expect(actualResult.filter((x) => x.failure)[0]).toStrictEqual({
             failure: true,
-            notice: { errorCode: helpers.noticeHelper.invalidBet, roundId: betRoundId },
+            notice: { errorCode: helpers.noticeHelper.invalidBet, gameRoundId: betRoundId },
         });
     });
 

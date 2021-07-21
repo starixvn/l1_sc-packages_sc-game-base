@@ -1,4 +1,5 @@
 import InGameConsumer from "../../../src/core/event-consumers/in-game-consumer";
+import { Systems } from "../../constants/systems";
 
 export default class TableInGameConsumer extends InGameConsumer {
     async consume(realPlayer) {
@@ -22,13 +23,23 @@ export default class TableInGameConsumer extends InGameConsumer {
         }
 
         realPlayer.socketClient.emit(this.definition.name, payload);
-        this.publisher.publishToAllUsersExcept(realPlayer.UID, { player });
+        this.publisher.publishToAllUsersExceptSystem(Systems.Mobi, realPlayer.UID, { player });
     }
 
     async buildPayload(realPlayer) {
         const payload = await super.buildPayload(realPlayer);
         const { remainingTime, chips } = this.gameData;
+        const players = realPlayer.session?.system === Systems.Mobi ? {} : this.buildPlayersPayload(realPlayer);
 
+        return {
+            ...payload,
+            remainingTime,
+            players,
+            chips,
+        };
+    }
+
+    buildPlayersPayload(realPlayer) {
         const players = Object.values(this.gameData.players).reduce((playerList, player) => {
             const { id, name, red, avatarId, type, patternId } = player;
 
@@ -45,11 +56,6 @@ export default class TableInGameConsumer extends InGameConsumer {
 
         delete players[realPlayer.UID];
 
-        return {
-            ...payload,
-            remainingTime,
-            players,
-            chips,
-        };
+        return players;
     }
 }

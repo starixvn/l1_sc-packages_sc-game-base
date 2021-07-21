@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import noticeHelper from "sc-common/helpers/notice-helper";
 import logger from "sc-common/logger";
 
+import BaseMetrics from "../../base-metrics";
 import PlaceBetPublisher from "../../event-publishers/place-bet-publisher";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
@@ -38,6 +39,8 @@ betLogsRepository.create = jest.fn();
 const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
 userInfosRepository.updateOne = jest.fn();
 
+const baseMetrics = stub(BaseMetrics);
+
 beforeEach(() => {
     gameData.ingame = {
         player01: {
@@ -55,61 +58,35 @@ beforeEach(() => {
 
 describe("dequeueBets tests", () => {
     it("get data from inGame, pop item from betQueue, then proceed", () => {
+        // arange
         const placeBet = jest.fn();
-        const validateBalance = jest.fn();
-        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
+        const proceedBetQueue = initBetQueue(placeBet);
         proceedBetQueue.proceedBet = jest.fn().mockResolvedValueOnce({});
 
+        // act
         proceedBetQueue.dequeueBets();
 
+        // assert
         expect(proceedBetQueue.proceedBet).toHaveBeenCalled();
     });
 });
 
-describe("proceedBet balance error tests", () => {
-    it("validateBalance api return insufficientBalance, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
+describe("proceed freeBet", () => {
+    it("should call handleFailedBet with notEnoughScoin when insufficient coins", async () => {
+        // arange
         const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({});
-
-        const validateBalance = jest.fn();
-        validateBalance.mockReturnValueOnce({
-            isOk: false,
-            response: {
-                inSufficientBalance: true,
-            },
+        userInfosRepository.findOne().lean().exec.mockReturnValueOnce({
+            scoins: 0,
         });
 
-        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
+        const proceedBetQueue = initBetQueue(placeBet);
         const player = mockPlayer();
 
-        await proceedBetQueue.proceedBet(player, mockPayload());
-
-        expect(placeBet).not.toHaveBeenCalled();
-        expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
-        expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
-            endBet: -1,
-            betChoice: "red2",
-            notice: { errorCode: noticeHelper.notEnoughMoney },
-        });
-    });
-
-    it("validateBalance api return insufficientBalance for freeBet, should call handleFailedBet with notEnoughScoin", async () => {
-        const placeBet = jest.fn();
-        placeBet.mockReturnValueOnce({});
-
-        const validateBalance = jest.fn();
-        validateBalance.mockReturnValueOnce({
-            isOk: false,
-            response: {
-                inSufficientBalance: true,
-            },
-        });
-
-        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
-        const player = mockPlayer();
-
+        // act
         await proceedBetQueue.proceedBet(player, mockPayload(1, true));
 
+        // assert
         expect(placeBet).not.toHaveBeenCalled();
         expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
@@ -119,27 +96,6 @@ describe("proceedBet balance error tests", () => {
         });
     });
 
-    it("validateBalance api return kickedOut, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
-        const placeBet = jest.fn();
-        placeBet.mockReturnValueOnce({});
-
-        const validateBalance = jest.fn();
-        validateBalance.mockReturnValueOnce({
-            isOk: false,
-            response: {
-                kickedOut: true,
-            },
-        });
-
-        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
-        const player = mockPlayer();
-        await proceedBetQueue.proceedBet(player, mockPayload());
-
-        expect(placeBet).not.toHaveBeenCalled();
-        expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
-        expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, { endBet: -1, betChoice: "red2", kickedOut: true });
-    });
-
     afterEach(() => {
         jest.clearAllMocks();
     });
@@ -147,21 +103,17 @@ describe("proceedBet balance error tests", () => {
 
 describe("proceedBet in blocking time tests", () => {
     it("dequeue bet in blocking time, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
+        // arange
         gameData.remainingTime = 3;
-
         const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({});
-
-        const validateBalance = jest.fn();
-        validateBalance.mockReturnValueOnce({
-            isOk: true,
-            response: {},
-        });
-        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
-
+        const proceedBetQueue = initBetQueue(placeBet);
         const player = mockPlayer();
+
+        // act
         await proceedBetQueue.proceedBet(player, mockPayload());
 
+        // assert
         expect(placeBet).not.toHaveBeenCalled();
         expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
@@ -172,21 +124,18 @@ describe("proceedBet in blocking time tests", () => {
     });
 
     it("dequeue bet of settled round, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
+        // arange
         gameData.roundId = 2;
         gameData.remainingTime = 10;
         const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({});
-
-        const validateBalance = jest.fn();
-        validateBalance.mockReturnValueOnce({
-            isOk: true,
-            response: {},
-        });
-        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
-
+        const proceedBetQueue = initBetQueue(placeBet);
         const player = mockPlayer();
+
+        // act
         await proceedBetQueue.proceedBet(player, mockPayload());
 
+        // assert
         expect(placeBet).not.toHaveBeenCalled();
         expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
@@ -208,6 +157,7 @@ describe("proceedBet placebet error tests", () => {
     });
 
     it("place bet api return apiError, should call handleFailedBet, placeBetPublisher.publishGameFailedBet and update user stake level", async () => {
+        // arange
         const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({
             isOk: false,
@@ -218,14 +168,13 @@ describe("proceedBet placebet error tests", () => {
                 },
             },
         });
-
-        const validateBalance = jest.fn();
-        validateBalance.mockReturnValueOnce({ isOk: true, response: {} });
-        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
-
+        const proceedBetQueue = initBetQueue(placeBet);
         const player = mockPlayer();
+
+        // act
         await proceedBetQueue.proceedBet(player, mockPayload());
 
+        // assert
         expect(userInfosRepository.updateOne).toHaveBeenCalled();
         expect(player.profile.minBet).toEqual(1);
         expect(player.profile.maxBet).toEqual(3000);
@@ -240,6 +189,7 @@ describe("proceedBet placebet error tests", () => {
     });
 
     it("placeBet api return winLimitHit error, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
+        // arange
         const apiError = {
             message: "Win limit hit! Please contact your upline, thank you",
         };
@@ -250,19 +200,19 @@ describe("proceedBet placebet error tests", () => {
                 apiError,
             },
         });
-
-        const validateBalance = jest.fn();
-        validateBalance.mockReturnValueOnce({ isOk: true, response: {} });
-        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
-
+        const proceedBetQueue = initBetQueue(placeBet);
         const player = mockPlayer();
+
+        // act
         await proceedBetQueue.proceedBet(player, mockPayload());
 
+        // assert
         expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
         expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, { endBet: -1, betChoice: "red2", apiError });
     });
 
     it("placeBet api return winLimitHit error, should decrease bet tracks", async () => {
+        // arange
         const apiError = {
             message: "Win limit hit! Please contact your upline, thank you",
         };
@@ -273,14 +223,13 @@ describe("proceedBet placebet error tests", () => {
                 apiError,
             },
         });
-
-        const validateBalance = jest.fn();
-        validateBalance.mockReturnValueOnce({ isOk: true, response: {} });
-        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
-
+        const proceedBetQueue = initBetQueue(placeBet);
         const player = mockPlayer();
+
+        // act
         await proceedBetQueue.proceedBet(player, mockPayload());
 
+        // assert
         expect(gameData.ingame.player01.betTracks["red2"]).toBe(0);
     });
 
@@ -296,16 +245,16 @@ describe("proceedBet successful tests", () => {
     });
 
     it("place bet successfully, insert new betlog, upsert bet, update total bet and call notifyPlacingBetResult", async () => {
+        // arange
         const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({ isOk: true, response: {} });
-
-        const validateBalance = jest.fn();
-        validateBalance.mockReturnValueOnce({ isOk: true, response: {} });
-        const proceedBetQueue = initBetQueue(validateBalance, placeBet);
-
+        const proceedBetQueue = initBetQueue(placeBet);
         const player = mockPlayer();
+
+        // act
         await proceedBetQueue.proceedBet(player, mockPayload());
 
+        // assert
         expect(betLogsRepository.create).toHaveBeenCalled();
         expect(betsRepository.updateOne).toHaveBeenCalled();
         expect(placeBetPublisher.publishSuccessBet).toHaveBeenCalled();
@@ -316,7 +265,7 @@ describe("proceedBet successful tests", () => {
     });
 });
 
-const initBetQueue = (validateBalance, placeBet) => {
+const initBetQueue = (placeBet) => {
     return new ProcessBetQueue({
         definition,
         gameData,
@@ -326,7 +275,7 @@ const initBetQueue = (validateBalance, placeBet) => {
         betsRepository,
         betLogsRepository,
         userInfosRepository,
-        validateBalance,
+        baseMetrics,
     });
 };
 
@@ -351,5 +300,6 @@ const mockPayload = (roundId = 1, freeBet = false) => {
         amount: 100,
         betChoice: "red2",
         roundId,
+        receivedTime: new Date(),
     };
 };

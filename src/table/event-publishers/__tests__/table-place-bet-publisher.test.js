@@ -10,7 +10,7 @@ describe("table place bet publisher test", () => {
 
     beforeEach(() => {
         spyOn(PlaceBetPublisher.prototype, "publishSuccessBet");
-        spyOn(publisher, "publishToAllUsersExcept");
+        spyOn(publisher, "publishToAllUsersExceptSystem");
     });
 
     it("inherit PlaceBetPublisher", () => {
@@ -26,8 +26,8 @@ describe("table place bet publisher test", () => {
             expect(PlaceBetPublisher.prototype.publishSuccessBet).toHaveBeenCalled();
         });
 
-        it("calls publishToAllUsersExcept", () => {
-            expect(publisher.publishToAllUsersExcept).toHaveBeenCalled();
+        it("calls publishToAllUsersExceptSystem", () => {
+            expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalled();
         });
     });
 });

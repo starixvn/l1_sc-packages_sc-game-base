@@ -1,5 +1,6 @@
-import BaseEventPublisher from "../base-event-publisher";
+import { Systems } from "../../../constants/systems";
 import GameData from "../../game-data";
+import BaseEventPublisher from "../base-event-publisher";
 
 describe("publishToAllUsers test", () => {
     it("should call emit for all socket clients", () => {
@@ -51,6 +52,75 @@ describe("publishToAllUsersExcept test", () => {
         // assert
         expect(gameData.realPlayers[1].socketClient.emit).not.toHaveBeenCalled();
         expect(gameData.realPlayers[2].socketClient.emit).toHaveBeenCalledWith(gameName, payload);
+    });
+});
+
+describe("publishToAllUsersExceptSystem test", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it("should not call emit for selected user and system", () => {
+        // arrange
+        const gameData = new GameData();
+        const gameName = "game";
+        gameData.realPlayers = {
+            1: {
+                UID: 1,
+                session: {
+                    system: Systems.Mobi,
+                },
+                socketClient: {
+                    emit: jest.fn(),
+                },
+            },
+            2: {
+                UID: 2,
+                session: {
+                    system: Systems.Cocos,
+                },
+                socketClient: {
+                    emit: jest.fn(),
+                },
+            },
+            3: {
+                UID: 3,
+                session: {
+                    system: Systems.Cocos,
+                },
+                socketClient: {
+                    emit: jest.fn(),
+                },
+            },
+            4: {
+                UID: 1,
+                session: {
+                    system: Systems.Mobi,
+                },
+                socketClient: {
+                    emit: jest.fn(),
+                },
+            },
+            5: {
+                UID: 1,
+                session: {},
+                socketClient: {
+                    emit: jest.fn(),
+                },
+            },
+        };
+        const publisher = new BaseEventPublisher(gameName, gameData);
+        const payload = { bet: 1 };
+
+        // act
+        publisher.publishToAllUsersExceptSystem(Systems.Mobi, 2, payload);
+
+        // assert
+        expect(gameData.realPlayers[1].socketClient.emit).not.toHaveBeenCalled();
+        expect(gameData.realPlayers[2].socketClient.emit).not.toHaveBeenCalled();
+        expect(gameData.realPlayers[3].socketClient.emit).toHaveBeenCalledWith(gameName, payload);
+        expect(gameData.realPlayers[4].socketClient.emit).not.toHaveBeenCalled();
+        expect(gameData.realPlayers[5].socketClient.emit).toHaveBeenCalledWith(gameName, payload);
     });
 });
 
