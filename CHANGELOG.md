@@ -1,3 +1,17 @@
+## [1.24.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.24.0...v1.24.1) (2021-07-21)
+
+
+### Bug Fixes
+
+* add metric betProcessedTime ([66bf52e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/66bf52eeb6b6d4041998fedf627bf2c99d3e2890))
+* expose Constants ([69f212f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/69f212fafe2d0eaf6ec024bdd2ce015cb93beb3b))
+* not return unnecessary payload to mobi players ([6760eb2](https://git3.nexdev.net/sc-packages/sc-game-base/commit/6760eb22bc1897e948fbac26efd605f1c83c6865))
+* not return unnecessary payload to mobi players ([fca4a46](https://git3.nexdev.net/sc-packages/sc-game-base/commit/fca4a469ee6d5ea545459b3648c20800835eb2d1))
+* not send bot data to mobi players ([f9fe66e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f9fe66ebb00e37e863b4c912745340328778d55f))
+* remove getBalance in process bet ([5061afc](https://git3.nexdev.net/sc-packages/sc-game-base/commit/5061afccffcc7a163cc705d05314ef7e662b9722))
+* update ingame payload ([3aa65e1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/3aa65e17c7a33339c19d08021bb59929e4498b97))
+* update metrics type ([91473e9](https://git3.nexdev.net/sc-packages/sc-game-base/commit/91473e9303ec1c7d63676a09300c48e6c9d62f17))
+
 # [1.24.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.23.0...v1.24.0) (2021-06-16)
 
 
