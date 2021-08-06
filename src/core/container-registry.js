@@ -75,7 +75,6 @@ export default class ContainerRegistry {
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
             notifyLogin: asValue(notifyLogin),
-            validateBalance: asValue(validateBalance),
         });
     }
 

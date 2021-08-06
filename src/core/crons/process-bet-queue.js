@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { helpers, logger } from "sc-common";
 
-import BaseMetrics from "../base-metrics";
 import { PlaceBetPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
@@ -19,19 +18,8 @@ export default class ProcessBetQueue {
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.betLogsRepository
      * @param {mongoose.Model} dependencies.userInfosRepository
-     * @param {BaseMetrics} dependencies.baseMetrics
      */
-    constructor({
-        definition,
-        gameData,
-        placeBetPublisher,
-        placeBet,
-        logService,
-        betsRepository,
-        betLogsRepository,
-        userInfosRepository,
-        baseMetrics,
-    }) {
+    constructor({ definition, gameData, placeBetPublisher, placeBet, logService, betsRepository, betLogsRepository, userInfosRepository }) {
         this.definition = definition;
         this.gameData = gameData;
         this.placeBetPublisher = placeBetPublisher;
@@ -40,7 +28,6 @@ export default class ProcessBetQueue {
         this.betsRepository = betsRepository;
         this.betLogsRepository = betLogsRepository;
         this.userInfosRepository = userInfosRepository;
-        this.baseMetrics = baseMetrics;
     }
 
     start() {
@@ -90,9 +77,6 @@ export default class ProcessBetQueue {
                 await this.updateUserStakeLevel(player, response.apiError.minBet, response.apiError.maxBet);
             }
         }
-
-        const totalProcessedTime = (new Date() - payload.receivedTime) / 1000;
-        this.baseMetrics.collectBetProcessedTime(totalProcessedTime);
     }
 
     async validateBetRequest(player, payload) {
