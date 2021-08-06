@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import noticeHelper from "sc-common/helpers/notice-helper";
 import logger from "sc-common/logger";
 
+import BaseMetrics from "../../base-metrics";
 import PlaceBetPublisher from "../../event-publishers/place-bet-publisher";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
@@ -37,6 +38,8 @@ betLogsRepository.create = jest.fn();
 /** @type {mongoose.Model}*/
 const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
 userInfosRepository.updateOne = jest.fn();
+
+const baseMetrics = stub(BaseMetrics);
 
 beforeEach(() => {
     gameData.ingame = {
@@ -272,6 +275,7 @@ const initBetQueue = (placeBet) => {
         betsRepository,
         betLogsRepository,
         userInfosRepository,
+        baseMetrics,
     });
 };
 

@@ -10,6 +10,7 @@ import { logger, middlewares } from "sc-common";
 import { Server } from "socket.io";
 
 import { BaseStartup } from ".";
+import BaseMetrics from "./base-metrics";
 import { authenticationHelpers } from "./helpers";
 
 export default class BaseGameApp {
@@ -17,10 +18,12 @@ export default class BaseGameApp {
      *
      * @param {string} serviceName
      * @param {*} appConfigs
+     * @param {BaseMetrics} baseMetrics
      */
-    constructor(serviceName, appConfigs) {
+    constructor(serviceName, appConfigs, baseMetrics = null) {
         this.serviceName = serviceName;
         this.appConfigs = appConfigs;
+        this.baseMetrics = baseMetrics ?? new BaseMetrics(appConfigs);
     }
 
     async run() {
@@ -32,6 +35,7 @@ export default class BaseGameApp {
 
         const httpServer = http.createServer(app);
         const socketServer = this.initSocketServer(httpServer);
+        this.baseMetrics.init(socketServer);
 
         httpServer.listen(app.get("port"), async () => {
             console.log(`Express server started and running on port ${app.get("port")}!`);
