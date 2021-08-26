@@ -153,7 +153,7 @@ describe("user signing in testing", () => {
             userId: "valid user ID",
             username: "username B",
         };
-        const storedUserInfo = { name: "hello worlld" };
+        const storedUserInfo = { name: "hello world" };
 
         userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(storedSession);
         userInfosRepository.findOne().lean().exec.mockReturnValueOnce(storedUserInfo);
