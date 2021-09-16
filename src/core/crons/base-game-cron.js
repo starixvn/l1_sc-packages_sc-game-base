@@ -35,7 +35,7 @@ export default class BaseGameCron {
         gameConfigsRepository,
         roundsRepository,
         archiveStatusesRepository,
-        notificationRepository
+        notificationRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -100,6 +100,7 @@ export default class BaseGameCron {
 
         if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
+
             await this.settleGameRoundConsumer.settleRound(this.gameData);
         } else if (this.gameData.remainingTime < durations.placingBets) {
             this.bot && (await this.bot.run());
@@ -134,6 +135,7 @@ export default class BaseGameCron {
         if (this.gameData.disabled) {
             this.gameData.remainingTime = durations.wholeRound;
             this.gameStatusPublisher.publishDisableGameStatus();
+
             await this.gameConfigsRepository.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
             this.gameStatusPublisher.publishEnablingGameStatus();
