@@ -1,4 +1,5 @@
 import { utils } from "sc-common";
+import { Socket } from "socket.io";
 
 import { AdminPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
@@ -16,7 +17,7 @@ export default class AdminAuthenticationConsumer {
     }
 
     /**
-     * @param {SocketIO.Socket} socketClient
+     * @param {Socket} socketClient
      * @param {string} token
      */
     consume(socketClient, token) {

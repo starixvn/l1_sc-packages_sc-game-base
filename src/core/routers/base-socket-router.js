@@ -1,4 +1,5 @@
 import { logger } from "sc-common";
+import { Socket } from "socket.io";
 
 import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
@@ -40,7 +41,7 @@ export default class BaseSocketRouter {
     }
 
     /**
-     * @param {SocketIO.Socket} socketClient
+     * @param {Socket} socketClient
      */
     init(socketClient) {
         this.socketClient = socketClient;

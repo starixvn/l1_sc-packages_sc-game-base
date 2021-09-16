@@ -1,4 +1,5 @@
 import { logger } from "sc-common";
+import { Socket } from "socket.io";
 
 import { AdminAuthenticationConsumer, AdminDisconnectConsumer, AdminMonitorConsumer } from "./../event-consumers";
 import GameData from "./../game-data";
@@ -24,7 +25,7 @@ export default class BaseAdminSocketRouter {
     }
 
     /**
-     * @param {SocketIO.Socket} socketClient
+     * @param {Socket} socketClient
      */
     init(socketClient) {
         this.socketClient = socketClient;

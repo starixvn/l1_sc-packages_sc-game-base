@@ -1,3 +1,5 @@
+import { Socket } from "socket.io";
+
 import GameData from "./../game-data";
 
 export default class AdminDisconnectConsumer {
@@ -9,7 +11,7 @@ export default class AdminDisconnectConsumer {
     }
 
     /**
-     * @param {SocketIO.Socket} socketClient
+     * @param {Socket} socketClient
      */
     consume(socketClient) {
         setTimeout(() => {

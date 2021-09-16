@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Socket } from "socket.io";
 
 import { AdminPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
@@ -19,7 +20,7 @@ export default class AdminMonitorConsumer {
     }
 
     /**
-     * @param {SocketIO.Socket} socketClient
+     * @param {Socket} socketClient
      */
     async consume(socketClient) {
         const lastRound = await this.roundsRepository

@@ -1,20 +1,10 @@
 import * as awilix from "awilix";
-import bodyParser from "body-parser";
-import cors from "cors";
 import express from "express";
-import helmet from "helmet";
-import http from "http";
-import morgan from "morgan";
-import { init as initApis } from "sc-base-apis";
-import { init as initBaseDatabase } from "sc-base-database";
-import { logger, middlewares } from "sc-common";
-import socketIo from "socket.io";
-
-import { authenticationHelpers } from "./helpers";
+import { logger } from "sc-common";
+import { Server, Socket } from "socket.io";
 
 export default class BaseGameStartup {
     dependencies = {
-        appConfigs: "appConfigs",
         definition: "definition",
         gameData: "gameData",
         gameCron: "gameCron",
@@ -23,7 +13,6 @@ export default class BaseGameStartup {
         adminSocketRouter: "adminSocketRouter",
         httpRouter: "httpRouter",
         gameConfigsRepository: "gameConfigsRepository",
-        baseMetrics: "baseMetrics",
     };
 
     /**
@@ -33,16 +22,14 @@ export default class BaseGameStartup {
     constructor(container) {
         this.container = container;
 
-        this.appConfigs = this.container.resolve(this.dependencies.appConfigs);
         this.definition = this.container.resolve(this.dependencies.definition);
         this.gameData = this.container.resolve(this.dependencies.gameData);
         this.gameCron = this.container.resolve(this.dependencies.gameCron);
         this.processBetQueue = this.container.resolve(this.dependencies.processBetQueue);
-        this.baseMetrics = this.container.resolve(this.dependencies.baseMetrics);
     }
 
     /**
-     * @param {socketIo.Socket} socketClient
+     * @param {Socket} socketClient
      */
     initSocketRouter(socketClient) {
         const router = this.container.resolve(this.dependencies.socketRouter);
@@ -51,7 +38,7 @@ export default class BaseGameStartup {
     }
 
     /**
-     * @param {socketIo.Socket} socketClient
+     * @param {Socket} socketClient
      */
     initAdminSocketRouter(socketClient) {
         const router = this.container.resolve(this.dependencies.adminSocketRouter);
@@ -69,48 +56,12 @@ export default class BaseGameStartup {
     }
 
     /**
+     *
      * @param {express.Express} app
+     * @param {Server} socketServer
      */
-    async configureServices(app) {
-        const corsOptions = {
-            origin: (origin, callback) => {
-                if (this.appConfigs.corsUrls.includes(origin) || !origin) {
-                    callback(null, true);
-                } else {
-                    callback(new Error(`Not allowed by CORS ${origin}`));
-                }
-            },
-        };
-
-        app.use(cors(corsOptions));
-        app.use(bodyParser.json());
-        app.use(bodyParser.urlencoded({ extended: false }));
-        app.use(morgan("combined"));
-        app.use(helmet());
-
-        if (this.appConfigs.enabledLogs) {
-            logger.start(this.appConfigs.sentry);
-        }
-
-        await initBaseDatabase(this.appConfigs.database);
-        await authenticationHelpers.init(this.appConfigs.mainServerApiSettings);
-        await initApis(this.appConfigs.apiSettings);
-    }
-
-    /**
-     * @param {express.Express} app
-     */
-    async startServer(app) {
-        const httpServer = http.createServer(app);
-        const { hostingPort, socketOptions } = this.appConfigs;
+    async start(app, socketServer) {
         const gameNameInSocketNamespace = this.definition.name.toLowerCase();
-        const socketServer = socketIo(httpServer, socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 });
-
-        app.set("port", process.env.PORT || hostingPort);
-        app.get("/", (req, res, next) => {
-            res.send(`I'm ${this.definition.name}. You'd better not touch me, babe!`);
-        });
-
         this.initHttpRouter(app);
 
         socketServer.of(`/user/${gameNameInSocketNamespace}`).on("connection", (socketClient) => {
@@ -121,31 +72,6 @@ export default class BaseGameStartup {
             this.initAdminSocketRouter(socketClient);
         });
 
-        socketServer.origins((origin, callback) => {
-            if (!this.appConfigs.enableCorsWs) {
-                callback(null, true);
-
-                return;
-            }
-
-            if ((this.appConfigs.corsUrls && this.appConfigs.corsUrls.indexOf(origin) !== -1) || !origin) {
-                callback(null, true);
-            } else {
-                callback(`Not allowed by CORS ${origin}`, false);
-            }
-        });
-
-        httpServer.listen(app.get("port"), async () => {
-            console.log(`Express server started and running on port ${hostingPort}!`);
-            await this.start();
-        });
-
-        middlewares.processErrorHandler.handle(httpServer, process);
-
-        this.baseMetrics.init(socketServer);
-    }
-
-    async start() {
         try {
             const gameConfigsRepository = this.container.resolve(this.dependencies.gameConfigsRepository);
 

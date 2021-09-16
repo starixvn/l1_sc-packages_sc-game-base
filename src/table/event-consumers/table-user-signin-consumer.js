@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { helpers } from "sc-common";
+import { Socket } from "socket.io";
 
 import { Systems } from "../../constants";
 import UserSignInConsumer from "./../../core/event-consumers/user-signin-consumer";
@@ -22,7 +22,7 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
     }
 
     /**
-     * @param {SocketIO.Socket} socketClient
+     * @param {Socket} socketClient
      */
     async consume(socketClient, payload) {
         if (payload?.system === Systems.Mobi) {

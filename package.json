@@ -1,6 +1,6 @@
 {
     "name": "sc-game-base",
-    "version": "1.24.1",
+    "version": "2.0.0-beta.16",
     "description": "SC Game base for game services",
     "main": "./src/index.js",
     "scripts": {
@@ -26,6 +26,7 @@
     "type": "module",
     "license": "ISC",
     "dependencies": {
+        "@socket.io/admin-ui": "^0.2.0",
         "awilix": "^4.3.1",
         "axios": "^0.20.0",
         "body-parser": "^1.19.0",
@@ -41,8 +42,8 @@
         "sc-base-apis": "^1.12.0",
         "sc-base-database": "^1.8.2",
         "sc-common": "^1.7.0",
-        "socket.io": "^2.3.0",
-        "socket.io-prometheus-metrics": "^1.0.6"
+        "socket.io": "^4.1.2",
+        "socket.io-prom-metrics": "^1.0.3"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.12.11",

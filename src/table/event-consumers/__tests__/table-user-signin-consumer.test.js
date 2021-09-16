@@ -2,7 +2,7 @@ import "jest-extended";
 
 import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
-import socketIO from "socket.io";
+import { Socket } from "socket.io";
 
 import UserSignInConsumer from "../../../core/event-consumers/user-signin-consumer";
 import TableUserSignInPublisher from "../../event-publishers/table-user-signin-publisher";
@@ -21,8 +21,8 @@ describe("table user signin consumer in testing", () => {
     const userSessionsRepository = stubMongooseModelStupidly(mongoose.Model);
     const definition = new TableGameDefinition({ name: "game name" });
 
-    /** @type {socketIO.Socket} */
-    const socketClient = stub(socketIO.Socket);
+    /** @type {Socket} */
+    const socketClient = stub(Socket);
 
     let gameData;
     let consumer;

@@ -1,22 +1,60 @@
-import { createContainer } from "awilix";
-import { stub } from "jest-micro-auto-stub";
+import express from "express";
+import { logger } from "sc-common";
 
 import BaseGameApp from "../base-game-app";
-import BaseGameStartup from "../base-game-startup";
+
+jest.mock("sc-common");
+jest.mock("sc-base-database");
+jest.mock("../helpers");
+const appConfigs = {
+    database: {
+        url: "",
+        options: {},
+    },
+    hostingPort: 500,
+};
+const app = express();
 
 describe("base game app test", () => {
-    const container = createContainer();
-    /** @type {BaseGameStartup} */
-    const startup = stub(BaseGameStartup);
+    logger.start.mockReturnValue(jest.fn());
+    logger.logError.mockReturnValue(jest.fn());
+    describe("configureServices_", () => {
+        // arrange
+        it("disabledLogs_not start logger", async () => {
+            // arrange
+            appConfigs.enabledLogs = false;
+            const baseGameApp = new BaseGameApp("serviceName", appConfigs);
 
-    const baseGameApp = new BaseGameApp(container, startup);
+            // act
+            await baseGameApp.configureServices(app);
+
+            // assert
+            expect(logger.start).not.toHaveBeenCalled();
+        });
+
+        it("enabledLogs_start logger", async () => {
+            // arrange
+            appConfigs.enabledLogs = true;
+            const baseGameApp = new BaseGameApp("serviceName", appConfigs);
+
+            // act
+            await baseGameApp.configureServices(app);
+
+            // assert
+            expect(logger.start).toHaveBeenCalled();
+        });
+    });
 
     it("run_always_calls specific methods", async () => {
+        const baseGameApp = new BaseGameApp("serviceName", appConfigs);
+        spyOn(baseGameApp, "configureServices");
+        spyOn(baseGameApp, "initSocketServer");
+
         // act
         await baseGameApp.run();
 
         // assert
-        expect(startup.configureServices).toHaveBeenCalled();
-        expect(startup.startServer).toHaveBeenCalled();
+        expect(baseGameApp.configureServices).toHaveBeenCalled();
+        expect(baseGameApp.initSocketServer).toHaveBeenCalled();
     });
 });

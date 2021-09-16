@@ -1,6 +1,6 @@
 import { stub } from "jest-micro-auto-stub";
 import socketIo from "socket.io";
-import * as prometheus from "socket.io-prometheus-metrics";
+import * as prometheus from "socket.io-prom-metrics";
 
 import BaseMetrics from "../base-metrics";
 

@@ -25,7 +25,7 @@ export default class InGameConsumer {
 
     async consume(realPlayer) {
         const { remainingTime, gameConfigs } = this.gameData;
-        const disabled = !gameConfigs || !gameConfigs.enabled;
+        const disabled = !gameConfigs || !gameConfigs.enabled || this.gameData.delayStartTime > 0;
 
         realPlayer.socketClient.emit(this.definition.name, { remainingTime, um: disabled, um_message: this.gameData.umMessages });
 

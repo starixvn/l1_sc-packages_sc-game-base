@@ -1,6 +1,6 @@
 import * as prom from "prom-client";
-import socketIo from "socket.io";
-import * as prometheus from "socket.io-prometheus-metrics";
+import { Server } from "socket.io";
+import * as prometheus from "socket.io-prom-metrics";
 
 export default class BaseMetrics {
     constructor(appConfigs) {
@@ -10,7 +10,7 @@ export default class BaseMetrics {
     }
 
     /**
-     * @param {socketIo} socketServer
+     * @param {Server} socketServer
      */
     init(socketServer) {
         const metrics = this.appConfigs?.metrics ?? { enable: false, secretKey: "" };

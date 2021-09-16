@@ -1,5 +1,4 @@
 import { createContainer } from "awilix";
-import express from "express";
 import { stub } from "jest-micro-auto-stub";
 import { logger } from "sc-common";
 
@@ -59,44 +58,5 @@ describe("base game startup test", () => {
 
         // assert
         expect(router.init).toHaveBeenCalled();
-    });
-
-    describe("configureServices_", () => {
-        // arrange
-        const appConfigs = {
-            database: {
-                url: "",
-                options: {},
-            },
-        };
-        /** @type {BaseGameStartup} */
-        let baseGameStartup;
-        const app = express();
-        beforeEach(() => {
-            spyOn(container, "resolve").and.returnValue(appConfigs);
-            baseGameStartup = new BaseGameStartup(container);
-        });
-
-        it("disabledLogs_not start logger", async () => {
-            // arrange
-            appConfigs.enabledLogs = false;
-
-            // act
-            await baseGameStartup.configureServices(app);
-
-            // assert
-            expect(logger.start).not.toHaveBeenCalled();
-        });
-
-        it("enabledLogs_start logger", async () => {
-            // arrange
-            appConfigs.enabledLogs = true;
-
-            // act
-            await baseGameStartup.configureServices(app);
-
-            // assert
-            expect(logger.start).toHaveBeenCalled();
-        });
     });
 });
