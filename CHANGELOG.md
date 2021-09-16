@@ -1,3 +1,30 @@
+# [1.25.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.24.1...v1.25.0) (2021-09-16)
+
+
+### Bug Fixes
+
+* check delayStartTime for inGame event ([0a5ffa5](https://git3.nexdev.net/sc-packages/sc-game-base/commit/0a5ffa5da72200b70b6fb57ee6dea255fd1c133b))
+* cors option ([32bec6d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/32bec6d60cc88d6d400f35c9f62d11ac091e8873))
+* readd metrics ([dde330a](https://git3.nexdev.net/sc-packages/sc-game-base/commit/dde330a06be52b36fa5713c3e5ee56a0716dcca4))
+* rebase code ([cff189f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/cff189f2516de3528046153609ac890d3c7ab6d2))
+* update base metrics ([5ac25cc](https://git3.nexdev.net/sc-packages/sc-game-base/commit/5ac25cc96cbf8871fdb2c731d0e32d22183affe4))
+* update game app ([594e5cb](https://git3.nexdev.net/sc-packages/sc-game-base/commit/594e5cb27c3483989f96d37319b4935f0055c553))
+
+
+### Features
+
+* add allowEIO3 ([a5552cc](https://git3.nexdev.net/sc-packages/sc-game-base/commit/a5552ccfe08f32b45ad22d41c9728e213cf2dfc1))
+* remove MetricQuery ([6d4dd56](https://git3.nexdev.net/sc-packages/sc-game-base/commit/6d4dd5648d5e00c8deb8b3c2a9b7383ce5826c50))
+* remove prometheus-metrics, add socket admin UI ([74023c9](https://git3.nexdev.net/sc-packages/sc-game-base/commit/74023c96ab66fe1b17a73c6402ae3906f975a85c))
+* support multiple games ([a427b66](https://git3.nexdev.net/sc-packages/sc-game-base/commit/a427b663e5cebd975764e65a7d547fd51150f725))
+* update base game cron ([d23d63e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d23d63eb506c02a610c6936efbcb6c4b4d1e55d8))
+* upgrade socket.io ([e305ae8](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e305ae802080e400301298207f4c30d6a36c58de))
+
+
+### Reverts
+
+* Revert "feat: update base game cron" ([3aa4a4f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/3aa4a4f51fed13381e47fcd09824872d0fc3ff07))
+
 ## [1.24.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.24.0...v1.24.1) (2021-07-21)
 
 
