@@ -1,3 +1,13 @@
+# [2.0.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.25.0...v2.0.0) (2021-09-16)
+
+
+* feat!: upgrade socketio 4.0 (cont.) ([2e54c77](https://git3.nexdev.net/sc-packages/sc-game-base/commit/2e54c7774400933135b030408a2483d10a3fe460))
+
+
+### BREAKING CHANGES
+
+* upgrade socket.io
+
 # [1.25.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.24.1...v1.25.0) (2021-09-16)
 
 
