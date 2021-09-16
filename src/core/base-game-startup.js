@@ -74,7 +74,6 @@ export default class BaseGameStartup {
 
         try {
             const gameConfigsRepository = this.container.resolve(this.dependencies.gameConfigsRepository);
-
             this.gameData.gameConfigs = await gameConfigsRepository.findOne({ name: this.definition.configName }).lean().exec();
 
             await this.gameCron.start();
