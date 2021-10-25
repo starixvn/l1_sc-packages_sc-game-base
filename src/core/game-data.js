@@ -11,5 +11,6 @@ export default class GameData {
         this.admins = {};
         this.settlementResultFromAdmin = {};
         this.umMessages = {};
+        this.exchangeRates = {};
     }
 }

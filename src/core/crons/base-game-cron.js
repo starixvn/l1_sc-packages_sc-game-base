@@ -23,6 +23,7 @@ export default class BaseGameCron {
      * @param {mongoose.Model} dependencies.roundsRepository
      * @param {mongoose.Model} dependencies.archiveStatusesRepository
      * @param {mongoose.Model} dependencies.notificationRepository
+     * @param {mongoose.Model} dependencies.exchangeRatesRepository
      */
     constructor({
         definition,
@@ -36,6 +37,7 @@ export default class BaseGameCron {
         roundsRepository,
         archiveStatusesRepository,
         notificationRepository,
+        exchangeRatesRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -48,6 +50,7 @@ export default class BaseGameCron {
         this.roundsRepository = roundsRepository;
         this.archiveStatusesRepository = archiveStatusesRepository;
         this.notificationRepository = notificationRepository;
+        this.exchangeRatesRepository = exchangeRatesRepository;
     }
 
     async start() {
@@ -71,6 +74,8 @@ export default class BaseGameCron {
         } else {
             this.gameData.roundId = await this.getLastArchiveRound();
         }
+
+        await this.updateExchangeRates();
 
         job.start();
     }
@@ -132,6 +137,12 @@ export default class BaseGameCron {
         this.gameData.gameConfigs = configs ?? {};
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
 
+        if (this.gameData.gameConfigs.exchangeReload) {
+            await this.updateExchangeRates();
+            await this.gameConfigsRepository.updateOne({ name: configName }, { exchangeReload: false });
+            this.gameData.gameConfigs.exchangeReload = false;
+        }
+
         if (this.gameData.disabled) {
             this.gameData.remainingTime = durations.wholeRound;
             this.gameStatusPublisher.publishDisableGameStatus();
@@ -148,5 +159,12 @@ export default class BaseGameCron {
         this.gameData.ingame = {};
         this.gameData.totalBets = {};
         this.gameData.settlementResultFromAdmin = {};
+    }
+
+    async updateExchangeRates() {
+        this.gameData.exchangeRates = await this.exchangeRatesRepository
+            .findOne({}, "exId code", { sort: { exId: -1 } })
+            .lean()
+            .exec();
     }
 }

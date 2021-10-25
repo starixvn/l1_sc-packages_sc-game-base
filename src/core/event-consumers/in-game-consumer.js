@@ -13,14 +13,17 @@ export default class InGameConsumer {
      * @param {BaseEventPublisher} publisher
      * @param {*} getBalance
      * @param {mongoose.Model} userInfosRepository
+     * @param {mongoose.Model} currencyGroupGamesRepository
+     * @param {mongoose.Model} exchangeRatesRepository
      */
-    constructor(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository) {
+    constructor(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository, currencyGroupGamesRepository) {
         this.definition = definition;
         this.gameData = gameData;
         this.roundQuery = roundQuery;
         this.publisher = publisher;
         this.getBalance = getBalance;
         this.userInfosRepository = userInfosRepository;
+        this.currencyGroupGamesRepository = currencyGroupGamesRepository;
     }
 
     async consume(realPlayer) {
@@ -35,9 +38,15 @@ export default class InGameConsumer {
     }
 
     async buildPayload(realPlayer) {
-        const { minbet, maxbet, choices_maxbet, odds, enableFreeBet } = this.gameData.gameConfigs;
-        const { totalBets, roundId } = this.gameData;
-        const gameConfigs = { minbet, maxbet, choices_maxbet, odds, enableFreeBet };
+        const { odds, enableFreeBet } = this.gameData.gameConfigs;
+        const { totalBets, roundId, exchangeRates } = this.gameData;
+        const { session } = realPlayer;
+        const rate = exchangeRates.code[session.currencyCode] * session.multiplier;
+        const settings = await this.currencyGroupGamesRepository
+            .findOne({ groupId: session.currencyGroupId }, "minBet maxBet maxBetPerChoices chips")
+            .lean()
+            .exec();
+        const gameConfigs = { ...settings, odds, enableFreeBet };
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
 
@@ -51,7 +60,7 @@ export default class InGameConsumer {
             roundHistory,
             ownBets,
             totalBets,
-            user,
+            user: { ...user, rate },
         };
     }
 

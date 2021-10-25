@@ -218,6 +218,9 @@ export default class ProcessBetQueue {
         if (player.session) {
             newBet.memberId = player.session.memberId;
             newBet.siteId = player.session.siteId;
+            newBet.partnerId = player.session.partnerId;
+            newBet.currency = player.session.currencyName;
+            newBet.rate = player.session.multiplier * this.gameData.exchangeRates.code[player.session.currencyCode];
         }
 
         await this.betsRepository.updateOne(
@@ -243,6 +246,9 @@ export default class ProcessBetQueue {
         if (player.session) {
             newBetLog.memberId = player.session.memberId;
             newBetLog.siteId = player.session.siteId;
+            newBetLog.partnerId = player.session.partnerId;
+            newBetLog.currency = player.session.currencyName;
+            newBetLog.rate = player.session.multiplier * this.gameData.exchangeRates.code[player.session.currencyCode];
         }
 
         await this.betLogsRepository.create(newBetLog);

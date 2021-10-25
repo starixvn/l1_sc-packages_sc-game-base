@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
 import { BaseEventPublisher } from "./../event-publishers";
@@ -9,16 +10,18 @@ export default class PlaceBetConsumer {
      * @param {GameDefinition} definition
      * @param {GameData} gameData
      * @param {BaseEventPublisher} publisher
+     * @param {mongoose.Model} currencyGroupGamesRepository
      */
-    constructor(definition, gameData, publisher) {
+    constructor(definition, gameData, publisher, currencyGroupGamesRepository) {
         this.definition = definition;
         this.gameData = gameData;
         this.publisher = publisher;
+        this.currencyGroupGamesRepository = currencyGroupGamesRepository;
     }
 
-    composeValidationCriteria(player, betChoice, amount, freeBet, roundId) {
+    async composeValidationCriteria(player, betChoice, amount, freeBet, roundId) {
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(roundId) ?? [];
-        const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) || [];
+        const betAmountValidationCriteria = (await this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet)) || [];
         const betChoiceValidationCriteria = this.composeBetChoiceValidationCriteria(betChoice) || [];
 
         return bettingTimeValidationCriteria.concat(betChoiceValidationCriteria, betAmountValidationCriteria);
@@ -45,13 +48,18 @@ export default class PlaceBetConsumer {
         ];
     }
 
-    composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) {
+    async composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) {
+        const settings = await this.currencyGroupGamesRepository
+            .findOne({ groupId: player.session.currencyGroupId }, "minBet maxBet maxBetPerChoices")
+            .lean()
+            .exec();
+
         const configs = this.gameData.gameConfigs;
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
         const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
-        const minBet = Math.max(player.profile.minBet, configs.minbet);
-        const maxBet = Math.min(player.profile.maxBet, configs.maxbet);
-        const maxBetPerChoice = Math.min(player.profile.maxBet, configs.choices_maxbet[betChoice]);
+        const minBet = Math.max(player.profile.minBet, settings.minBet);
+        const maxBet = Math.min(player.profile.maxBet, settings.maxBet);
+        const maxBetPerChoice = Math.min(player.profile.maxBet, settings.maxBetPerChoices[betChoice]);
 
         return [
             {
@@ -93,12 +101,12 @@ export default class PlaceBetConsumer {
         ];
     }
 
-    validateBetRequest(player, betChoice, amount, freeBet, roundId) {
+    async validateBetRequest(player, betChoice, amount, freeBet, roundId) {
         if (!amount || !betChoice) {
             return false;
         }
 
-        const criteria = this.composeValidationCriteria(player, betChoice, amount, freeBet, roundId);
+        const criteria = await this.composeValidationCriteria(player, betChoice, amount, freeBet, roundId);
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
@@ -110,7 +118,7 @@ export default class PlaceBetConsumer {
         return true;
     }
 
-    consume(player, payload) {
+    async consume(player, payload) {
         Object.assign(payload, {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
@@ -121,7 +129,7 @@ export default class PlaceBetConsumer {
         const { amount, betChoice, freeBet, roundId } = payload;
         const name = player.profile.name;
 
-        if (!this.validateBetRequest(player, betChoice, amount, freeBet, roundId)) {
+        if (!(await this.validateBetRequest(player, betChoice, amount, freeBet, roundId))) {
             return;
         }
 

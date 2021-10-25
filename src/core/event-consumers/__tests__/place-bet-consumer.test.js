@@ -31,7 +31,7 @@ describe("adjustBetTracks test", () => {
 });
 
 describe("consume test", () => {
-    it("valid bet, no inGame data, should init inGame Data then push to betQueue", () => {
+    it("valid bet, no inGame data, should init inGame Data then push to betQueue", async () => {
         const playerName = "nhanvat01";
         const player = {
             profile: {
@@ -50,13 +50,13 @@ describe("consume test", () => {
 
         const placeBetConsumer = new PlaceBetConsumer({}, gameData, new BaseEventPublisher("", {}));
         placeBetConsumer.validateBetRequest = jest.fn(() => true);
-        placeBetConsumer.consume(player, payload);
+        await placeBetConsumer.consume(player, payload);
 
         expect(gameData.ingame[playerName].betQueue).not.toBeEmpty();
         expect(gameData.ingame[playerName].betQueue).toHaveLength(1);
     });
 
-    it("valid bet, have inGame data, should push to betQueue", () => {
+    it("valid bet, have inGame data, should push to betQueue", async () => {
         const playerName = "nhanvat01";
         const player = {
             profile: {
@@ -81,7 +81,7 @@ describe("consume test", () => {
 
         const placeBetConsumer = new PlaceBetConsumer({}, gameData, new BaseEventPublisher("", {}));
         placeBetConsumer.validateBetRequest = jest.fn(() => true);
-        placeBetConsumer.consume(player, payload);
+        await placeBetConsumer.consume(player, payload);
 
         expect(gameData.ingame[playerName].betQueue).not.toBeEmpty();
         expect(gameData.ingame[playerName].betQueue).toHaveLength(1);
@@ -140,32 +140,32 @@ describe("validateBetRequest tests", () => {
         },
     };
 
-    it("have failed criteron, publish to user and return false", () => {
+    it("have failed criteron, publish to user and return false", async () => {
         const publisher = new BaseEventPublisher("", gameData);
         const placeBetConsumer = new PlaceBetConsumer({}, gameData, publisher);
         placeBetConsumer.composeValidationCriteria = jest.fn(() => [{ failure: true, notice: "" }]);
 
-        var actualResult = placeBetConsumer.validateBetRequest(player, "betChoice", 1, false);
+        var actualResult = await placeBetConsumer.validateBetRequest(player, "betChoice", 1, false);
 
         expect(publisher.publishToUser).toHaveBeenCalled();
         expect(actualResult).toBeFalse();
     });
 
-    it("invalid bet amount and choice, return false", () => {
+    it("invalid bet amount and choice, return false", async () => {
         const publisher = new BaseEventPublisher("", gameData);
         const placeBetConsumer = new PlaceBetConsumer({}, gameData, publisher);
-        var actualResult = placeBetConsumer.validateBetRequest(player, null, null, false);
+        var actualResult = await placeBetConsumer.validateBetRequest(player, null, null, false);
 
         expect(publisher.publishToUser).not.toHaveBeenCalled();
         expect(actualResult).toBeFalse();
     });
 
-    it("valid bet request, return true", () => {
+    it("valid bet request, return true", async () => {
         const publisher = new BaseEventPublisher("", gameData);
         const placeBetConsumer = new PlaceBetConsumer({}, gameData, publisher);
         placeBetConsumer.composeValidationCriteria = jest.fn(() => [{ failure: false, notice: "" }]);
 
-        var actualResult = placeBetConsumer.validateBetRequest(player, "betChoice", 1, false);
+        var actualResult = await placeBetConsumer.validateBetRequest(player, "betChoice", 1, false);
 
         expect(actualResult).toBeTrue();
     });
