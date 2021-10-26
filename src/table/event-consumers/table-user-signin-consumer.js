@@ -15,8 +15,8 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(definition, gameData, userSignInPublisher, userInfosRepository, userSessionsRepository) {
-        super(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository);
+    constructor(definition, gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, playGamePermissionValidator) {
+        super(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, playGamePermissionValidator);
 
         this.definition = definition;
     }
