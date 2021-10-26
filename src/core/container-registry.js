@@ -40,10 +40,10 @@ export default class ContainerRegistry {
         this.registerModels();
         this.registerApis();
         this.registerPublishers();
+        this.registerValidators();
         this.registerConsumers();
         this.registerCrons();
         this.registerRouters();
-        this.registerValidators();
 
         return this.container;
     }
