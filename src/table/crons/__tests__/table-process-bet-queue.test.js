@@ -63,9 +63,9 @@ describe("table process bet queue test", () => {
         spyOn(ProcessBetQueue.prototype, "generatePlacingBetResult").and.returnValue(ownBet);
 
         // act
-        betQueue.generatePlacingBetResult(player, 2000, 10);
+        betQueue.generatePlacingBetResult(player, 2000, 10, 0.05);
 
         // assert
-        expect(ProcessBetQueue.prototype.generatePlacingBetResult).toHaveBeenCalledWith(player, 2000, 10);
+        expect(ProcessBetQueue.prototype.generatePlacingBetResult).toHaveBeenCalledWith(player, 2000, 10, 0.05);
     });
 });
