@@ -3,7 +3,6 @@ import { endGame, getBalance, notifyLogin, placeBet } from "sc-base-apis";
 import { gameConfigs, userInfos, userSessions } from "sc-base-database";
 import { logger } from "sc-common";
 
-import BaseMetrics from "./base-metrics";
 import * as Crons from "./crons";
 import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
@@ -38,7 +37,6 @@ export default class ContainerRegistry {
             gameData: asValue(gameData),
         });
 
-        this.registerMetrics();
         this.registerModels();
         this.registerApis();
         this.registerPublishers();
@@ -127,12 +125,6 @@ export default class ContainerRegistry {
             adminSocketRouter: asClass(Routers.BaseAdminSocketRouter).proxy(),
             socketRouter: asClass(Routers.BaseSocketRouter).proxy(),
             httpRouter: asClass(Routers.HttpRouter),
-        });
-    }
-
-    registerMetrics() {
-        this.container.register({
-            baseMetrics: asClass(BaseMetrics).singleton(),
         });
     }
 
