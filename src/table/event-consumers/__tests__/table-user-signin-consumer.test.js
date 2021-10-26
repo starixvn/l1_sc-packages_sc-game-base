@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { Socket } from "socket.io";
 
 import UserSignInConsumer from "../../../core/event-consumers/user-signin-consumer";
+import { PlayGamePermissionValidator } from "../../../core/validators";
 import TableUserSignInPublisher from "../../event-publishers/table-user-signin-publisher";
 import TableGameData from "../../table-game-data";
 import TableGameDefinition from "../../table-game-definition";
@@ -21,6 +22,9 @@ describe("table user signin consumer in testing", () => {
     const userSessionsRepository = stubMongooseModelStupidly(mongoose.Model);
     const definition = new TableGameDefinition({ name: "game name" });
 
+    /** @type {PlayGamePermissionValidator}*/
+    const playGamePermissionValidator = stub(PlayGamePermissionValidator);
+
     /** @type {Socket} */
     const socketClient = stub(Socket);
 
@@ -29,7 +33,14 @@ describe("table user signin consumer in testing", () => {
     beforeEach(() => {
         gameData = new TableGameData(0);
 
-        consumer = new TableUserSignInConsumer(definition, gameData, userSignInPublisher, userInfosRepository, userSessionsRepository);
+        consumer = new TableUserSignInConsumer(
+            definition,
+            gameData,
+            userSignInPublisher,
+            userInfosRepository,
+            userSessionsRepository,
+            playGamePermissionValidator
+        );
     });
 
     it("Inherit UserSignInConsumer", () => {
