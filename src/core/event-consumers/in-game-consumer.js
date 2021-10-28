@@ -43,7 +43,7 @@ export default class InGameConsumer {
         const { session } = realPlayer;
         const rate = exchangeRates.code[session.currencyCode] * session.multiplier;
         const settings = await this.currencyGroupGamesRepository
-            .findOne({ groupId: session.currencyGroupId }, "minBet maxBet maxBetPerChoices chips stakeLevels")
+            .findOne({ groupId: session.currencyGroupId, gameId: this.definition.id }, "minBet maxBet maxBetPerChoices chips stakeLevels")
             .lean()
             .exec();
         const gameConfigs = { ...settings, odds, enableFreeBet };
