@@ -181,7 +181,7 @@ export default class ProcessBetQueue {
         await this.upsertBet(player, roundId, bet, rate);
 
         this.adjustTotalBets(player, bet, rate);
-        this.notifyPlacingBetResult(player, balance, bet);
+        this.notifyPlacingBetResult(player, balance, bet, rate);
 
         if (!bet.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
             await this.updateUserStakeLevel(player, balance.minBet, balance.maxBet);
@@ -272,10 +272,10 @@ export default class ProcessBetQueue {
         this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount * rate;
     }
 
-    notifyPlacingBetResult(player, balance, bet) {
+    notifyPlacingBetResult(player, balance, bet, rate) {
         const result = this.generatePlacingBetResult(player, balance, bet);
 
-        this.placeBetPublisher.publishSuccessBet(player.UID, result);
+        this.placeBetPublisher.publishSuccessBet(player.UID, result, rate);
     }
 
     generatePlacingBetResult(player, balance, bet, rate) {
