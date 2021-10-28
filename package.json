@@ -39,7 +39,7 @@
         "mongoose": "^5.9.25",
         "morgan": "^1.10.0",
         "openid-client": "^4.2.0",
-        "sc-base-apis": "1.12.1-beta.3",
+        "sc-base-apis": "1.12.1-beta.4",
         "sc-base-database": "1.8.3-beta.2",
         "sc-common": "^1.7.0",
         "socket.io": "^4.1.2",
