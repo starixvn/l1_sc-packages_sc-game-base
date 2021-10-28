@@ -273,7 +273,7 @@ export default class ProcessBetQueue {
     }
 
     notifyPlacingBetResult(player, balance, bet, rate) {
-        const result = this.generatePlacingBetResult(player, balance, bet);
+        const result = this.generatePlacingBetResult(player, balance, bet, rate);
 
         this.placeBetPublisher.publishSuccessBet(player.UID, result, rate);
     }
