@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const schema = new mongoose.Schema({
-    groupId: { type: String, require: true },
+    groupId: { type: mongoose.Types.ObjectId, require: true },
     gameId: { type: Number, require: true },
     gameName: { type: String, require: true },
     enabled: { type: Boolean, require: true },

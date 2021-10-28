@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 import GameDefinition from "../game-definition";
 
 export class PlayGamePermissionValidator {
@@ -23,6 +25,8 @@ export class PlayGamePermissionValidator {
     }
 
     async getOfferedGames(currencyGroupId) {
-        return this.currencyGroupGamesRepository.distinct("gameId", { groupId: currencyGroupId }).exec();
+        return this.currencyGroupGamesRepository
+            .distinct("gameId", { groupId: new mongoose.Types.ObjectId(currencyGroupId), enabled: true })
+            .exec();
     }
 }
