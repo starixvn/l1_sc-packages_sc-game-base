@@ -257,7 +257,7 @@ export default class TableGameBot extends BaseBot {
         this.gameData.totalBets[choice] = this.gameData.totalBets[choice] ? this.gameData.totalBets[choice] + amount : amount;
 
         if (!this.gameData.chips[this.botRate]) {
-            this.gameData.chips[this.botRate] = { betChoice: { amount: 1 } };
+            this.gameData.chips[this.botRate] = { [choice]: { amount: 1 } };
         } else {
             this.gameData.chips[this.botRate][choice] = this.gameData.chips[this.botRate][choice] ?? {};
             this.gameData.chips[this.botRate][choice][amount] = (this.gameData.chips[this.botRate][choice][amount] ?? 0) + 1;
