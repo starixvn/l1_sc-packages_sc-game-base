@@ -50,7 +50,10 @@ export default class PlaceBetConsumer {
 
     async composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) {
         const settings = await this.currencyGroupGamesRepository
-            .findOne({ groupId: player.session.currencyGroupId }, "minBet maxBet maxBetPerChoices")
+            .findOne(
+                { groupId: new mongoose.Types.ObjectId(player.session.currencyGroupId), gameId: this.definition.id },
+                "minBet maxBet maxBetPerChoices"
+            )
             .lean()
             .exec();
 
