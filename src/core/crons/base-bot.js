@@ -25,6 +25,7 @@ export default class BaseBot {
         this.totalBets = {};
 
         this.chance = new Chance();
+        this.botRate = 1;
     }
 
     async reset() {

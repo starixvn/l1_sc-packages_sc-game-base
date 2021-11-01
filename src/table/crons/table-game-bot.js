@@ -31,7 +31,6 @@ export default class TableGameBot extends BaseBot {
         this.chance = new Chance();
         this.minBotsAtTheTable = 8;
         this.botsInRoom = {};
-        this.botRate = 1;
     }
 
     async processDisabledBots() {
