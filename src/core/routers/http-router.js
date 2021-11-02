@@ -84,13 +84,13 @@ export default class HttpRouter {
         return {
             totalRealPlayer: users.realUsers.length,
             realUsers: users.realUsers,
-            totalUusPlayer: users.uusUsers.length,
-            uusUsers: users.uusUsers,
+            totalTestPlayer: users.testUsers.length,
+            testUsers: users.testUsers,
         };
     }
 
     mapRealUsers(players) {
-        const uusUsers = [];
+        const testUsers = [];
         const realUsers = [];
 
         players.forEach((player) => {
@@ -98,20 +98,21 @@ export default class HttpRouter {
                 const user = {
                     name: player.session.memberName,
                     id: player.session.memberId,
-                    currency: player.session.currency,
+                    currency: player.session.currencyName,
                     character: player.session.characterName,
                     system: player.session.system,
+                    partnerId: player.session.partnerId,
                 };
 
-                if (player.session.currency && player.session.currency.toUpperCase() === "UUS") {
-                    uusUsers.push(user);
+                if (player.session.isTestCurrency) {
+                    testUsers.push(user);
                 } else {
                     realUsers.push(user);
                 }
             }
         });
 
-        return { uusUsers, realUsers };
+        return { testUsers, realUsers };
     }
 
     handleMetrics(req, res) {
