@@ -7,7 +7,7 @@ export default class TablePlaceBetPublisher extends PlaceBetPublisher {
 
         const otherUsersPayload = {
             playerId,
-            endBet: payload.endBet * rate,
+            rate,
             ...payload.ownChip,
             ...payload.user,
         };
