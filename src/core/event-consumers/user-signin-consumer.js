@@ -41,7 +41,7 @@ export default class UserSignInConsumer {
             userSession.username === payload.username &&
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
-            if (await this.playGamePermissionValidator.validate(userSession, socketClient)) {
+            if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
                 await this.getUserBetLimit(userSession, userInfo, socketClient);
 
                 Object.values(this.gameData.realPlayers).forEach((realPlayer) => {

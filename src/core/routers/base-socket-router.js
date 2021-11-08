@@ -58,7 +58,7 @@ export default class BaseSocketRouter {
 
     async handlePlaceBet(payload) {
         try {
-            if (!(await this.verify())) {
+            if (!this.verify()) {
                 return;
             }
 
@@ -78,7 +78,7 @@ export default class BaseSocketRouter {
 
     async handleInGame() {
         try {
-            if (!(await this.verify())) {
+            if (!this.verify()) {
                 return;
             }
 
@@ -90,7 +90,7 @@ export default class BaseSocketRouter {
 
     async handleGetHistory(payload) {
         try {
-            if (!(await this.verify())) {
+            if (!this.verify()) {
                 return;
             }
 
@@ -114,11 +114,11 @@ export default class BaseSocketRouter {
         }
     }
 
-    async verify(payload) {
+    verify(payload) {
         const realPlayer = this.gameData.realPlayers[this.socketClient.id];
 
         if (realPlayer) {
-            if (await this.playGamePermissionValidator.validate(realPlayer.session, this.socketClient)) {
+            if (this.playGamePermissionValidator.validate(realPlayer.session, this.socketClient)) {
                 return true;
             }
 

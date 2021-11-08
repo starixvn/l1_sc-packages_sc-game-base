@@ -1,5 +1,5 @@
-import GameStatusPublisher from "../game-status-publisher";
 import GameData from "../../game-data";
+import GameStatusPublisher from "../game-status-publisher";
 
 const gameData = new GameData();
 const gameName = "game";
@@ -57,8 +57,8 @@ describe("publishEnablingGameStatus test", () => {
 
         // act
         publisher.publishEnablingGameStatus();
+
         // assert
-        expect(publisher.publishToAllUsers).toHaveBeenCalled();
         expect(publisher.publishToAllAdmins).toHaveBeenCalled();
     });
 });
@@ -73,8 +73,8 @@ describe("publishDisableGameStatus test", () => {
         // act
         publisher.publishDisableGameStatus();
         const payload = { um: true, um_message: gameData.umMessages };
+
         // assert
-        expect(publisher.publishToAllUsers).toHaveBeenCalledWith(payload);
         expect(publisher.publishToAllAdmins).toHaveBeenCalledWith(payload);
     });
 

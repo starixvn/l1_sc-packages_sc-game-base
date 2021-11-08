@@ -13,17 +13,14 @@ export default class InGameConsumer {
      * @param {BaseEventPublisher} publisher
      * @param {*} getBalance
      * @param {mongoose.Model} userInfosRepository
-     * @param {mongoose.Model} currencyGroupGamesRepository
-     * @param {mongoose.Model} exchangeRatesRepository
      */
-    constructor(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository, currencyGroupGamesRepository) {
+    constructor(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository) {
         this.definition = definition;
         this.gameData = gameData;
         this.roundQuery = roundQuery;
         this.publisher = publisher;
         this.getBalance = getBalance;
         this.userInfosRepository = userInfosRepository;
-        this.currencyGroupGamesRepository = currencyGroupGamesRepository;
     }
 
     async consume(realPlayer) {
@@ -42,13 +39,7 @@ export default class InGameConsumer {
         const { totalBets, roundId, exchangeRates } = this.gameData;
         const { session } = realPlayer;
         const rate = exchangeRates.code[session.currencyCode] * session.multiplier;
-        const settings = await this.currencyGroupGamesRepository
-            .findOne(
-                { groupId: new mongoose.Types.ObjectId(session.currencyGroupId), gameId: this.definition.id },
-                "minBet maxBet maxBetPerChoices chips stakeLevels"
-            )
-            .lean()
-            .exec();
+        const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === session.currencyGroupId);
         const gameConfigs = { ...settings, odds, enableFreeBet };
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);

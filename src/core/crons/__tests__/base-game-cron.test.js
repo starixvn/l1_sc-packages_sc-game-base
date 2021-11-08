@@ -1,13 +1,14 @@
+import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import mongoose from "mongoose";
+import { logger } from "sc-common";
+
 import SettleGameRoundConsumer from "../../event-consumers/settle-game-round-consumer";
-import RunningRoundInfoPublisher from "../../event-publishers/running-round-info-publisher";
 import GameStatusPublisher from "../../event-publishers/game-status-publisher";
+import RunningRoundInfoPublisher from "../../event-publishers/running-round-info-publisher";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
 import BaseBot from "../base-bot";
-import { logger } from "sc-common";
 import BaseGameCron from "../base-game-cron";
-import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
-import mongoose from "mongoose";
 
 jest.mock("../base-bot");
 jest.mock("../../event-consumers/settle-game-round-consumer");
@@ -37,6 +38,12 @@ const notificationRepository = stubMongooseModelStupidly(mongoose.Model);
 /** @type {mongoose.Model}*/
 const archiveRepository = stubMongooseModelStupidly(mongoose.Model);
 
+/** @type {mongoose.Model}*/
+const exchangeRatesRepository = stubMongooseModelStupidly(mongoose.Model);
+
+/** @type {mongoose.Model}*/
+const currencyGroupGamesRepository = stubMongooseModelStupidly(mongoose.Model);
+
 describe("proceed tests", () => {
     it("should call checkGameStatus after each round", async () => {
         gameData.disabled = false;
@@ -53,7 +60,9 @@ describe("proceed tests", () => {
             gameConfigsRepository,
             roundsRepository,
             archiveRepository,
-            notificationRepository
+            notificationRepository,
+            exchangeRatesRepository,
+            currencyGroupGamesRepository,
         });
 
         baseGameCron.checkGameStatus = jest.fn();
@@ -78,7 +87,9 @@ describe("proceed tests", () => {
             gameConfigsRepository,
             roundsRepository,
             archiveRepository,
-            notificationRepository
+            notificationRepository,
+            exchangeRatesRepository,
+            currencyGroupGamesRepository,
         });
 
         jest.spyOn(baseGameCron, "resetForNewRound");
@@ -104,7 +115,9 @@ describe("proceed tests", () => {
             gameConfigsRepository,
             roundsRepository,
             archiveRepository,
-            notificationRepository
+            notificationRepository,
+            exchangeRatesRepository,
+            currencyGroupGamesRepository,
         });
 
         await baseGameCron.proceed();
@@ -126,9 +139,11 @@ describe("proceed tests", () => {
             runningRoundInfoPublisher,
             logService,
             gameConfigsRepository,
-            roundsRepository,  
+            roundsRepository,
             archiveRepository,
-            notificationRepository
+            notificationRepository,
+            exchangeRatesRepository,
+            currencyGroupGamesRepository,
         });
 
         baseGameCron.checkGameStatus = jest.fn();
@@ -139,7 +154,6 @@ describe("proceed tests", () => {
         expect(bot.run).toHaveBeenCalled();
     });
 });
-
 
 describe("checkGameStatus tests", () => {
     it("game is enabled, should update gameData.gameConfigs and call publishStartGame", async () => {
@@ -157,11 +171,12 @@ describe("checkGameStatus tests", () => {
             runningRoundInfoPublisher,
             logService,
             gameConfigsRepository,
-            roundsRepository,            
+            roundsRepository,
             archiveRepository,
-            notificationRepository
+            notificationRepository,
+            exchangeRatesRepository,
+            currencyGroupGamesRepository,
         });
-
 
         await baseGameCron.checkGameStatus();
 
@@ -186,9 +201,10 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository,
             roundsRepository,
             archiveRepository,
-            notificationRepository
+            notificationRepository,
+            exchangeRatesRepository,
+            currencyGroupGamesRepository,
         });
-
 
         await baseGameCron.checkGameStatus();
 
@@ -215,9 +231,10 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository,
             roundsRepository,
             archiveRepository,
-            notificationRepository
+            notificationRepository,
+            exchangeRatesRepository,
+            currencyGroupGamesRepository,
         });
-
 
         await baseGameCron.checkGameStatus();
 

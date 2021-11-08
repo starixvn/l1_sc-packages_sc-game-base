@@ -36,9 +36,6 @@ gameData.exchangeRates = {
 /** @type {mongoose.Model}*/
 const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
 
-/** @type {mongoose.Model}*/
-const currencyGroupGamesRepository = stubMongooseModelStupidly(mongoose.Model);
-
 const roundQuery = new RoundQuery();
 const publisher = new BaseEventPublisher();
 const getBalance = jest.fn();
@@ -71,15 +68,7 @@ describe("consume test", () => {
 
 describe("build payload test", () => {
     it("should call getBlance then return user info", async () => {
-        const consumer = new InGameConsumer(
-            definition,
-            gameData,
-            roundQuery,
-            publisher,
-            getBalance,
-            userInfosRepository,
-            currencyGroupGamesRepository
-        );
+        const consumer = new InGameConsumer(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository);
         userInfosRepository.findOne().lean().exec.mockReturnValueOnce({ id: 1, name: "player01" });
         roundQuery.getList.mockReturnValueOnce([]);
         const actualResult = await consumer.buildPayload(realPlayer);

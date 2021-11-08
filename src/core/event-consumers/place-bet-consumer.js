@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
 import { BaseEventPublisher } from "./../event-publishers";
@@ -10,13 +9,11 @@ export default class PlaceBetConsumer {
      * @param {GameDefinition} definition
      * @param {GameData} gameData
      * @param {BaseEventPublisher} publisher
-     * @param {mongoose.Model} currencyGroupGamesRepository
      */
-    constructor(definition, gameData, publisher, currencyGroupGamesRepository) {
+    constructor(definition, gameData, publisher) {
         this.definition = definition;
         this.gameData = gameData;
         this.publisher = publisher;
-        this.currencyGroupGamesRepository = currencyGroupGamesRepository;
     }
 
     async composeValidationCriteria(player, betChoice, amount, freeBet, roundId) {
@@ -49,14 +46,7 @@ export default class PlaceBetConsumer {
     }
 
     async composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) {
-        const settings = await this.currencyGroupGamesRepository
-            .findOne(
-                { groupId: new mongoose.Types.ObjectId(player.session.currencyGroupId), gameId: this.definition.id },
-                "minBet maxBet maxBetPerChoices"
-            )
-            .lean()
-            .exec();
-
+        const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === player.session.currencyGroupId);
         const configs = this.gameData.gameConfigs;
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
         const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;

@@ -24,6 +24,7 @@ export default class BaseGameCron {
      * @param {mongoose.Model} dependencies.archiveStatusesRepository
      * @param {mongoose.Model} dependencies.notificationRepository
      * @param {mongoose.Model} dependencies.exchangeRatesRepository
+     * @param {mongoose.Model} dependencies.currencyGroupGamesRepository
      */
     constructor({
         definition,
@@ -38,6 +39,7 @@ export default class BaseGameCron {
         archiveStatusesRepository,
         notificationRepository,
         exchangeRatesRepository,
+        currencyGroupGamesRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -51,6 +53,7 @@ export default class BaseGameCron {
         this.archiveStatusesRepository = archiveStatusesRepository;
         this.notificationRepository = notificationRepository;
         this.exchangeRatesRepository = exchangeRatesRepository;
+        this.currencyGroupGamesRepository = currencyGroupGamesRepository;
     }
 
     async start() {
@@ -75,6 +78,7 @@ export default class BaseGameCron {
             this.gameData.roundId = await this.getLastArchiveRound();
         }
 
+        await this.updateCurrencyGroups();
         await this.updateExchangeRates();
 
         job.start();
@@ -136,6 +140,7 @@ export default class BaseGameCron {
 
         this.gameData.gameConfigs = configs ?? {};
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
+        await this.updateCurrencyGroups();
 
         if (this.gameData.gameConfigs.exchangeReload) {
             await this.updateExchangeRates();
@@ -164,6 +169,13 @@ export default class BaseGameCron {
     async updateExchangeRates() {
         this.gameData.exchangeRates = await this.exchangeRatesRepository
             .findOne({}, "exId code", { sort: { exId: -1 } })
+            .lean()
+            .exec();
+    }
+
+    async updateCurrencyGroups() {
+        this.gameData.currencyGroupGames = await this.exchangeRatesRepository
+            .find({ gameId: this.definition.id, enabled: true }, "groupId minBet maxBet maxBetPerChoices chips stakeLevels")
             .lean()
             .exec();
     }
