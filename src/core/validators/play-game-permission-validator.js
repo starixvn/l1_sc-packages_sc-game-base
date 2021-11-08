@@ -1,10 +1,13 @@
 import GameData from "../game-data";
+import GameDefinition from "../game-definition";
 
 export class PlayGamePermissionValidator {
     /**
+     * @param {GameDefinition} definition
      * @param {GameData} gameData
      */
-    constructor(gameData, userSignInPublisher) {
+    constructor(definition, gameData, userSignInPublisher) {
+        this.definition = definition;
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
     }
