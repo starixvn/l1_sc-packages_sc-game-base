@@ -78,7 +78,7 @@ export default class BaseGameCron {
             this.gameData.roundId = await this.getLastArchiveRound();
         }
 
-        await this.updateCurrencyGroups();
+        await this.updateCurrencyGroupGames();
         await this.updateExchangeRates();
 
         job.start();
@@ -140,7 +140,7 @@ export default class BaseGameCron {
 
         this.gameData.gameConfigs = configs ?? {};
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
-        await this.updateCurrencyGroups();
+        await this.updateCurrencyGroupGames();
 
         if (this.gameData.gameConfigs.exchangeReload) {
             await this.updateExchangeRates();
@@ -173,12 +173,10 @@ export default class BaseGameCron {
             .exec();
     }
 
-    async updateCurrencyGroups() {
-        this.gameData.currencyGroupGames = await this.exchangeRatesRepository
+    async updateCurrencyGroupGames() {
+        this.gameData.currencyGroupGames = await this.currencyGroupGamesRepository
             .find({ gameId: this.definition.id, enabled: true }, "groupId minBet maxBet maxBetPerChoices chips stakeLevels")
             .lean()
             .exec();
-
-        this.logService.log(this.gameData.currencyGroupGames);
     }
 }
