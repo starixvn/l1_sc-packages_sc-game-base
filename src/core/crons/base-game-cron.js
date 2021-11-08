@@ -178,5 +178,7 @@ export default class BaseGameCron {
             .find({ gameId: this.definition.id, enabled: true }, "groupId minBet maxBet maxBetPerChoices chips stakeLevels")
             .lean()
             .exec();
+
+        this.logService.log(this.gameData.currencyGroupGames);
     }
 }

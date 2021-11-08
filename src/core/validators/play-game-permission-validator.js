@@ -14,6 +14,7 @@ export class PlayGamePermissionValidator {
 
     validate(userSession, socketClient) {
         const isExist = this.gameData.currencyGroupGames.some((x) => x.groupId.toString() === userSession.currencyGroupId);
+        console.log(isExist);
 
         if (!isExist) {
             this.userSignInPublisher.publishNotPermittedToPlayMessage(socketClient, this.definition.id);
