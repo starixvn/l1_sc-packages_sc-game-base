@@ -16,9 +16,9 @@ export default class PlaceBetConsumer {
         this.publisher = publisher;
     }
 
-    async composeValidationCriteria(player, betChoice, amount, freeBet, roundId) {
+    composeValidationCriteria(player, betChoice, amount, freeBet, roundId) {
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(roundId) ?? [];
-        const betAmountValidationCriteria = (await this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet)) || [];
+        const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) || [];
         const betChoiceValidationCriteria = this.composeBetChoiceValidationCriteria(betChoice) || [];
 
         return bettingTimeValidationCriteria.concat(betChoiceValidationCriteria, betAmountValidationCriteria);
@@ -45,7 +45,7 @@ export default class PlaceBetConsumer {
         ];
     }
 
-    async composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) {
+    composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) {
         const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === player.session.currencyGroupId);
         const configs = this.gameData.gameConfigs;
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
@@ -94,12 +94,12 @@ export default class PlaceBetConsumer {
         ];
     }
 
-    async validateBetRequest(player, betChoice, amount, freeBet, roundId) {
+    validateBetRequest(player, betChoice, amount, freeBet, roundId) {
         if (!amount || !betChoice) {
             return false;
         }
 
-        const criteria = await this.composeValidationCriteria(player, betChoice, amount, freeBet, roundId);
+        const criteria = this.composeValidationCriteria(player, betChoice, amount, freeBet, roundId);
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
@@ -111,7 +111,7 @@ export default class PlaceBetConsumer {
         return true;
     }
 
-    async consume(player, payload) {
+    consume(player, payload) {
         Object.assign(payload, {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
@@ -122,7 +122,7 @@ export default class PlaceBetConsumer {
         const { amount, betChoice, freeBet, roundId } = payload;
         const name = player.profile.name;
 
-        if (!(await this.validateBetRequest(player, betChoice, amount, freeBet, roundId))) {
+        if (!this.validateBetRequest(player, betChoice, amount, freeBet, roundId)) {
             return;
         }
 

@@ -56,13 +56,13 @@ export default class BaseSocketRouter {
         this.socketClient.on("disconnect", this.handleDisconnect.bind(this));
     }
 
-    async handlePlaceBet(payload) {
+    handlePlaceBet(payload) {
         try {
             if (!this.verify()) {
                 return;
             }
 
-            await this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
+            this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
         } catch (error) {
             this.logService.logError(error);
         }

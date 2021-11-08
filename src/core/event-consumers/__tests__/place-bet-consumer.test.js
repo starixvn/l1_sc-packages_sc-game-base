@@ -31,7 +31,7 @@ describe("adjustBetTracks test", () => {
 });
 
 describe("consume test", () => {
-    it("valid bet, no inGame data, should init inGame Data then push to betQueue", async () => {
+    it("valid bet, no inGame data, should init inGame Data then push to betQueue", () => {
         const playerName = "nhanvat01";
         const player = {
             profile: {
@@ -50,13 +50,13 @@ describe("consume test", () => {
 
         const placeBetConsumer = new PlaceBetConsumer({}, gameData, new BaseEventPublisher("", {}));
         placeBetConsumer.validateBetRequest = jest.fn(() => true);
-        await placeBetConsumer.consume(player, payload);
+        placeBetConsumer.consume(player, payload);
 
         expect(gameData.ingame[playerName].betQueue).not.toBeEmpty();
         expect(gameData.ingame[playerName].betQueue).toHaveLength(1);
     });
 
-    it("valid bet, have inGame data, should push to betQueue", async () => {
+    it("valid bet, have inGame data, should push to betQueue", () => {
         const playerName = "nhanvat01";
         const player = {
             profile: {
@@ -81,7 +81,7 @@ describe("consume test", () => {
 
         const placeBetConsumer = new PlaceBetConsumer({}, gameData, new BaseEventPublisher("", {}));
         placeBetConsumer.validateBetRequest = jest.fn(() => true);
-        await placeBetConsumer.consume(player, payload);
+        placeBetConsumer.consume(player, payload);
 
         expect(gameData.ingame[playerName].betQueue).not.toBeEmpty();
         expect(gameData.ingame[playerName].betQueue).toHaveLength(1);
@@ -140,32 +140,32 @@ describe("validateBetRequest tests", () => {
         },
     };
 
-    it("have failed criteron, publish to user and return false", async () => {
+    it("have failed criteron, publish to user and return false", () => {
         const publisher = new BaseEventPublisher("", gameData);
         const placeBetConsumer = new PlaceBetConsumer({}, gameData, publisher);
         placeBetConsumer.composeValidationCriteria = jest.fn(() => [{ failure: true, notice: "" }]);
 
-        var actualResult = await placeBetConsumer.validateBetRequest(player, "betChoice", 1, false);
+        var actualResult = placeBetConsumer.validateBetRequest(player, "betChoice", 1, false);
 
         expect(publisher.publishToUser).toHaveBeenCalled();
         expect(actualResult).toBeFalse();
     });
 
-    it("invalid bet amount and choice, return false", async () => {
+    it("invalid bet amount and choice, return false", () => {
         const publisher = new BaseEventPublisher("", gameData);
         const placeBetConsumer = new PlaceBetConsumer({}, gameData, publisher);
-        var actualResult = await placeBetConsumer.validateBetRequest(player, null, null, false);
+        var actualResult = placeBetConsumer.validateBetRequest(player, null, null, false);
 
         expect(publisher.publishToUser).not.toHaveBeenCalled();
         expect(actualResult).toBeFalse();
     });
 
-    it("valid bet request, return true", async () => {
+    it("valid bet request, return true", () => {
         const publisher = new BaseEventPublisher("", gameData);
         const placeBetConsumer = new PlaceBetConsumer({}, gameData, publisher);
         placeBetConsumer.composeValidationCriteria = jest.fn(() => [{ failure: false, notice: "" }]);
 
-        var actualResult = await placeBetConsumer.validateBetRequest(player, "betChoice", 1, false);
+        var actualResult = placeBetConsumer.validateBetRequest(player, "betChoice", 1, false);
 
         expect(actualResult).toBeTrue();
     });
@@ -181,6 +181,7 @@ describe("composeValidationCriteria tests", () => {
             maxBet: 500,
         },
         session: {
+            currencyGroupId: "1",
             currency: "US",
         },
     };
@@ -202,6 +203,14 @@ describe("composeValidationCriteria tests", () => {
             choice01: 200,
         },
     };
+    gameData.currencyGroupGames = [
+        {
+            groupId: 1,
+            minBet: 1,
+            maxBet: 2000,
+            maxBetPerChoices: [],
+        },
+    ];
 
     const gameDefinition = new GameDefinition({
         choices: ["choice01"],
@@ -325,6 +334,7 @@ function mockPlayer(playerName) {
         },
         session: {
             currency: "US",
+            currencyGroupId: "1",
         },
     };
 }
@@ -352,6 +362,14 @@ function initGameData() {
             choice01: 200,
         },
     };
+    gameData.currencyGroupGames = [
+        {
+            groupId: 1,
+            minBet: 1,
+            maxBet: 2000,
+            maxBetPerChoices: [],
+        },
+    ];
 
     return gameData;
 }
