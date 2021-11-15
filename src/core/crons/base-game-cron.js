@@ -25,6 +25,7 @@ export default class BaseGameCron {
      * @param {mongoose.Model} dependencies.notificationRepository
      * @param {mongoose.Model} dependencies.exchangeRatesRepository
      * @param {mongoose.Model} dependencies.currencyGroupGamesRepository
+     * @param {mongoose.Model} dependencies.partnerConfigRepository
      */
     constructor({
         definition,
@@ -40,6 +41,7 @@ export default class BaseGameCron {
         notificationRepository,
         exchangeRatesRepository,
         currencyGroupGamesRepository,
+        partnerConfigRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -54,6 +56,7 @@ export default class BaseGameCron {
         this.notificationRepository = notificationRepository;
         this.exchangeRatesRepository = exchangeRatesRepository;
         this.currencyGroupGamesRepository = currencyGroupGamesRepository;
+        this.partnerConfigRepository = partnerConfigRepository;
     }
 
     async start() {
@@ -80,6 +83,7 @@ export default class BaseGameCron {
 
         await this.updateCurrencyGroupGames();
         await this.updateExchangeRates();
+        await this.updatePartnerGameSiteExclusions();
 
         job.start();
     }
@@ -142,10 +146,10 @@ export default class BaseGameCron {
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.updateCurrencyGroupGames();
 
-        if (this.gameData.gameConfigs.exchangeReload) {
+        if (this.gameData.gameConfigs.reloadExchange) {
             await this.updateExchangeRates();
-            await this.gameConfigsRepository.updateOne({ name: configName }, { exchangeReload: false });
-            this.gameData.gameConfigs.exchangeReload = false;
+            await this.gameConfigsRepository.updateOne({ name: configName }, { reloadExchange: false });
+            this.gameData.gameConfigs.reloadExchange = false;
         }
 
         if (this.gameData.disabled) {
@@ -176,6 +180,13 @@ export default class BaseGameCron {
     async updateCurrencyGroupGames() {
         this.gameData.currencyGroupGames = await this.currencyGroupGamesRepository
             .find({ gameId: this.definition.id, enabled: true }, "groupId minBet maxBet maxBetPerChoices chips stakeLevels")
+            .lean()
+            .exec();
+    }
+
+    async updatePartnerGameSiteExclusions() {
+        this.gameData.partnerGameSiteExclusions = await this.partnerConfigRepository
+            .find({ type: "game_site_exclusions" }, "partnerId type value")
             .lean()
             .exec();
     }

@@ -13,13 +13,22 @@ export class PlayGamePermissionValidator {
     }
 
     validate(userSession, socketClient) {
-        const isExist = this.gameData.currencyGroupGames.some((x) => x.groupId.toString() === userSession.currencyGroupId);
+        const playPermission = this.isHavePlayingPermission(userSession);
 
-        if (!isExist) {
+        if (!playPermission) {
             this.userSignInPublisher.publishNotPermittedToPlayMessage(socketClient, this.definition.id);
             return false;
         }
 
         return true;
+    }
+
+    isHavePlayingPermission(userSession) {
+        const isOffered = this.gameData.currencyGroupGames.some((x) => x.groupId.toString() === userSession.currencyGroupId);
+        const gameSiteExclusion = this.gameData.partnerGameSiteExclusions.find((config) => config.partnerId == userSession.partnerId);
+        const isExcluded =
+            gameSiteExclusion?.value?.[this.definition.id] && gameSiteExclusion.value[this.definition.id].includes(userSession.siteName);
+
+        return isOffered && !isExcluded;
     }
 }

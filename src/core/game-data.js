@@ -13,5 +13,6 @@ export default class GameData {
         this.umMessages = {};
         this.exchangeRates = {};
         this.currencyGroupGames = [];
+        this.partnerGameSiteExclusions = [];
     }
 }
