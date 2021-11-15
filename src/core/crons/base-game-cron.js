@@ -145,6 +145,7 @@ export default class BaseGameCron {
         this.gameData.gameConfigs = configs ?? {};
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.updateCurrencyGroupGames();
+        await this.updatePartnerGameSiteExclusions();
 
         if (this.gameData.gameConfigs.reloadExchange) {
             await this.updateExchangeRates();
