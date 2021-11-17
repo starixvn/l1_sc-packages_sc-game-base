@@ -7,17 +7,23 @@ export default class TableProcessBetQueue extends ProcessBetQueue {
 
         ownBet.ownChip = { betChoice, amount };
 
-        if (!this.gameData.chips[rate]) {
-            this.gameData.chips[rate] = { [betChoice]: { amount: 1 } };
-        } else {
-            this.gameData.chips[rate][betChoice] = this.gameData.chips[rate][betChoice] ?? {};
-            this.gameData.chips[rate][betChoice][amount] = (this.gameData.chips[rate][betChoice][amount] ?? 0) + 1;
-        }
+        this.updateGameDataChips(bet, rate);
 
         if (this.gameData.players[player.UID]) {
             this.gameData.players[player.UID].red = balance.red;
         }
 
         return ownBet;
+    }
+
+    updateGameDataChips(bet, rate) {
+        const { betChoice, amount } = bet;
+
+        if (!this.gameData.chips[rate]) {
+            this.gameData.chips[rate] = { [betChoice]: { amount: 1 } };
+        } else {
+            this.gameData.chips[rate][betChoice] = this.gameData.chips[rate][betChoice] ?? {};
+            this.gameData.chips[rate][betChoice][amount] = (this.gameData.chips[rate][betChoice][amount] ?? 0) + 1;
+        }
     }
 }
