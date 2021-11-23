@@ -24,7 +24,12 @@ export class PlayGamePermissionValidator {
     }
 
     isHavePlayingPermission(userSession) {
-        return isValidCurrency(userSession) && isValidGroupCurrency(userSession) && isOffered(userSession) && !isSiteExcluded(userSession);
+        return (
+            this.isValidCurrency(userSession) &&
+            this.isValidGroupCurrency(userSession) &&
+            this.isOffered(userSession) &&
+            !this.isSiteExcluded(userSession)
+        );
     }
 
     isValidCurrency(userSession) {
