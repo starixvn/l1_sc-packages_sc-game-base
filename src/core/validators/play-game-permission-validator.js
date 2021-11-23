@@ -24,11 +24,24 @@ export class PlayGamePermissionValidator {
     }
 
     isHavePlayingPermission(userSession) {
-        const isOffered = this.gameData.currencyGroupGames.some((x) => x.groupId.toString() === userSession.currencyGroupId);
-        const gameSiteExclusion = this.gameData.partnerGameSiteExclusions.find((config) => config.partnerId == userSession.partnerId);
-        const isExcluded =
-            gameSiteExclusion?.value?.[this.definition.id] && gameSiteExclusion.value[this.definition.id].includes(userSession.siteName);
+        return isValidCurrency(userSession) && isValidGroupCurrency(userSession) && isOffered(userSession) && !isSiteExcluded(userSession);
+    }
 
-        return isOffered && !isExcluded;
+    isValidCurrency(userSession) {
+        return this.gameData.currencies.some((currency) => userSession.currencyName === currency.name);
+    }
+
+    isValidGroupCurrency(userSession) {
+        return this.gameData.currencyGroups.some((group) => group._id.toString() === userSession.currencyGroupId);
+    }
+
+    isOffered(userSession) {
+        return this.gameData.currencyGroupGames.some((x) => x.groupId.toString() === userSession.currencyGroupId);
+    }
+
+    isSiteExcluded(userSession) {
+        const gameSiteExclusion = this.gameData.partnerGameSiteExclusions.find((config) => config.partnerId == userSession.partnerId);
+
+        return gameSiteExclusion?.value?.[this.definition.id] && gameSiteExclusion.value[this.definition.id].includes(userSession.siteName);
     }
 }

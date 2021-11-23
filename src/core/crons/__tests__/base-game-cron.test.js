@@ -47,6 +47,12 @@ const currencyGroupGamesRepository = stubMongooseModelStupidly(mongoose.Model);
 /** @type {mongoose.Model}*/
 const partnerConfigRepository = stubMongooseModelStupidly(mongoose.Model);
 
+/** @type {mongoose.Model}*/
+const currencyGroupRepository = stubMongooseModelStupidly(mongoose.Model);
+
+/** @type {mongoose.Model}*/
+const currencyRepository = stubMongooseModelStupidly(mongoose.Model);
+
 describe("proceed tests", () => {
     it("should call checkGameStatus after each round", async () => {
         gameData.disabled = false;
@@ -67,6 +73,8 @@ describe("proceed tests", () => {
             exchangeRatesRepository,
             currencyGroupGamesRepository,
             partnerConfigRepository,
+            currencyGroupRepository,
+            currencyRepository,
         });
 
         baseGameCron.checkGameStatus = jest.fn();
@@ -95,6 +103,8 @@ describe("proceed tests", () => {
             exchangeRatesRepository,
             currencyGroupGamesRepository,
             partnerConfigRepository,
+            currencyGroupRepository,
+            currencyRepository,
         });
 
         jest.spyOn(baseGameCron, "resetForNewRound");
@@ -124,6 +134,8 @@ describe("proceed tests", () => {
             exchangeRatesRepository,
             currencyGroupGamesRepository,
             partnerConfigRepository,
+            currencyGroupRepository,
+            currencyRepository,
         });
 
         await baseGameCron.proceed();
@@ -151,6 +163,8 @@ describe("proceed tests", () => {
             exchangeRatesRepository,
             currencyGroupGamesRepository,
             partnerConfigRepository,
+            currencyGroupRepository,
+            currencyRepository,
         });
 
         baseGameCron.checkGameStatus = jest.fn();
@@ -184,6 +198,8 @@ describe("checkGameStatus tests", () => {
             exchangeRatesRepository,
             currencyGroupGamesRepository,
             partnerConfigRepository,
+            currencyGroupRepository,
+            currencyRepository,
         });
 
         await baseGameCron.checkGameStatus();
@@ -213,6 +229,8 @@ describe("checkGameStatus tests", () => {
             exchangeRatesRepository,
             currencyGroupGamesRepository,
             partnerConfigRepository,
+            currencyGroupRepository,
+            currencyRepository,
         });
 
         await baseGameCron.checkGameStatus();
@@ -244,6 +262,8 @@ describe("checkGameStatus tests", () => {
             exchangeRatesRepository,
             currencyGroupGamesRepository,
             partnerConfigRepository,
+            currencyGroupRepository,
+            currencyRepository,
         });
 
         await baseGameCron.checkGameStatus();

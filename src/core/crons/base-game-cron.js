@@ -26,6 +26,8 @@ export default class BaseGameCron {
      * @param {mongoose.Model} dependencies.exchangeRatesRepository
      * @param {mongoose.Model} dependencies.currencyGroupGamesRepository
      * @param {mongoose.Model} dependencies.partnerConfigRepository
+     * @param {mongoose.Model} dependencies.currencyGroupRepository
+     * @param {mongoose.Model} dependencies.currencyRepository
      */
     constructor({
         definition,
@@ -42,6 +44,8 @@ export default class BaseGameCron {
         exchangeRatesRepository,
         currencyGroupGamesRepository,
         partnerConfigRepository,
+        currencyGroupRepository,
+        currencyRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -57,6 +61,8 @@ export default class BaseGameCron {
         this.exchangeRatesRepository = exchangeRatesRepository;
         this.currencyGroupGamesRepository = currencyGroupGamesRepository;
         this.partnerConfigRepository = partnerConfigRepository;
+        this.currencyGroupRepository = currencyGroupRepository;
+        this.currencyRepository = currencyRepository;
     }
 
     async start() {
@@ -81,9 +87,8 @@ export default class BaseGameCron {
             this.gameData.roundId = await this.getLastArchiveRound();
         }
 
-        await this.updateCurrencyGroupGames();
+        await this.getSettingForNewRound();
         await this.updateExchangeRates();
-        await this.updatePartnerGameSiteExclusions();
 
         job.start();
     }
@@ -144,8 +149,7 @@ export default class BaseGameCron {
 
         this.gameData.gameConfigs = configs ?? {};
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
-        await this.updateCurrencyGroupGames();
-        await this.updatePartnerGameSiteExclusions();
+        await this.getSettingForNewRound();
 
         if (this.gameData.gameConfigs.reloadExchange) {
             await this.updateExchangeRates();
@@ -171,6 +175,13 @@ export default class BaseGameCron {
         this.gameData.settlementResultFromAdmin = {};
     }
 
+    async getSettingForNewRound() {
+        await this.updateCurrencyGroupGames();
+        await this.updatePartnerGameSiteExclusions();
+        await this.updateCurrencyGroups();
+        await this.updateCurrencies();
+    }
+
     async updateExchangeRates() {
         this.gameData.exchangeRates = await this.exchangeRatesRepository
             .findOne({}, "exId code", { sort: { exId: -1 } })
@@ -188,6 +199,17 @@ export default class BaseGameCron {
     async updatePartnerGameSiteExclusions() {
         this.gameData.partnerGameSiteExclusions = await this.partnerConfigRepository
             .find({ type: "game_site_exclusions" }, "partnerId type value")
+            .lean()
+            .exec();
+    }
+
+    async updateCurrencyGroups() {
+        this.gameData.currencyGroups = await this.currencyGroupRepository.find({ enabled: true }, "name enabled partnerId").lean().exec();
+    }
+
+    async updateCurrencies() {
+        this.gameData.currencies = await this.currencyRepository
+            .find({ enabled: true }, "name code multiplier enabled partnerId groupId")
             .lean()
             .exec();
     }
