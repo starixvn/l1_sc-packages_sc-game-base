@@ -33,7 +33,10 @@ export class PlayGamePermissionValidator {
     }
 
     isValidCurrency(userSession) {
-        return this.gameData.currencies.some((currency) => userSession.currencyName === currency.name);
+        return this.gameData.currencies.some(
+            (currency) =>
+                userSession.currencyName.toUpperCase() === currency.name.toUpperCase() && currency.partnerId === userSession.partnerId
+        );
     }
 
     isValidGroupCurrency(userSession) {
