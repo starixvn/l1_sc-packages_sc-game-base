@@ -45,7 +45,7 @@ export class PlayGamePermissionValidator {
     }
 
     isSiteExcluded(userSession) {
-        const gameSiteExclusion = this.gameData.partnerGameSiteExclusions.find((config) => config.partnerId == userSession.partnerId);
+        const gameSiteExclusion = this.gameData.partnerGameSiteExclusions.find((config) => config.partnerId === userSession.partnerId);
 
         return gameSiteExclusion?.value?.[this.definition.id] && gameSiteExclusion.value[this.definition.id].includes(userSession.siteName);
     }
