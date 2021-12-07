@@ -1,3 +1,45 @@
+# [2.1.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v2.0.0...v2.1.0) (2021-12-07)
+
+
+### Bug Fixes
+
+* add log ([479bcae](https://git3.nexdev.net/sc-packages/sc-game-base/commit/479bcae65715c91c642c3a06daca5da1b6d0773a))
+* compare currency name ([aa397c7](https://git3.nexdev.net/sc-packages/sc-game-base/commit/aa397c72f246e0ef0a55178e649c662b130bdd47))
+* correct import ([4db9ce3](https://git3.nexdev.net/sc-packages/sc-game-base/commit/4db9ce3035d48d93749a5c5c06edbb45443e1fdd))
+* func call ([1237a31](https://git3.nexdev.net/sc-packages/sc-game-base/commit/1237a318b1a17febe3f584ac8e2da61295047158))
+* get chips when ingame ([972f753](https://git3.nexdev.net/sc-packages/sc-game-base/commit/972f753f2d202d82ca83c0bbfb04b4be79f40c89))
+* player chip ([8e7d832](https://git3.nexdev.net/sc-packages/sc-game-base/commit/8e7d8326307197dc3f2bbfd05305f12c83d74fc8))
+* query game settings ([c9ffa1b](https://git3.nexdev.net/sc-packages/sc-game-base/commit/c9ffa1b9a83b31d95e1c72fba5145780a743b668))
+* register base metrics ([dc6cbc7](https://git3.nexdev.net/sc-packages/sc-game-base/commit/dc6cbc7e241c7bbcc735f0a108e9c8b6e3430402))
+* update container register ([9422d8e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9422d8e08aa68a22b0780a1aaaef9dee0c415a11))
+* update placebet consumer ([95e7838](https://git3.nexdev.net/sc-packages/sc-game-base/commit/95e7838ac5afd2de75fc4f62c744d9048c98f285))
+* update site exclusion every round ([6285ed2](https://git3.nexdev.net/sc-packages/sc-game-base/commit/6285ed2c44de1e9aa7866036e197f3e03e23c9f0))
+* updateCurrencyGroupGames ([feecc87](https://git3.nexdev.net/sc-packages/sc-game-base/commit/feecc876294d29f142c80815863a25ddfc1da91d))
+
+
+### Features
+
+* block set result on PROD env ([0005d1a](https://git3.nexdev.net/sc-packages/sc-game-base/commit/0005d1a3716c6689bbdc514fd4234760cf4bbc55))
+* cache currency group games ([cfd8168](https://git3.nexdev.net/sc-packages/sc-game-base/commit/cfd8168843c3fc12b2e6cfd1c3ca64ee6f6e4540))
+* change groupId type ([ea8439f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ea8439f58e6bde00c2e37dfcd1d2dced0afebbd1))
+* fix chips ([18e8de5](https://git3.nexdev.net/sc-packages/sc-game-base/commit/18e8de555b1b7dd79bbd55af38403ed43353c95e))
+* handle currency/group currency is disabled ([efd49af](https://git3.nexdev.net/sc-packages/sc-game-base/commit/efd49afb191e5a38b9b0d714778ee0538bcf6bef))
+* multiple currencies ([aa051d1](https://git3.nexdev.net/sc-packages/sc-game-base/commit/aa051d1a0faa0e05da2dff954537e9052c30a651))
+* online users ([80a7570](https://git3.nexdev.net/sc-packages/sc-game-base/commit/80a7570ebc50014c465b43f17f51cfebe0dda496))
+* partner game site exclusion ([4322805](https://git3.nexdev.net/sc-packages/sc-game-base/commit/43228051d706e001b543cd37c05bab8091127525))
+* update base apis ([446d956](https://git3.nexdev.net/sc-packages/sc-game-base/commit/446d9569af7b3a7a222574a8a762a6955dbcd036))
+* update bot ([5697b3a](https://git3.nexdev.net/sc-packages/sc-game-base/commit/5697b3ac4cb95414d7bc22d99b028db645dad8b7))
+* update currency group games model ([ace3967](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ace396769ac8c58de1a060a5caea350daa6e775f))
+* update endGame ([1bd54d4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/1bd54d4f5a352d1ed7673fce44b2d96458d0bdbd))
+* update packages ([7613be4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7613be4f96f91ded937927e6ac11dcdf9d00f19d))
+* update place bet publisher ([282aaba](https://git3.nexdev.net/sc-packages/sc-game-base/commit/282aabab056d046d10b61384b19514ce28d8efc4))
+* update PlayGamePermissionValidator ([eb5ec22](https://git3.nexdev.net/sc-packages/sc-game-base/commit/eb5ec221d3c94b2879b7ccf0da5843c610c31a1f))
+* update pool stake, chips ([edbc2e9](https://git3.nexdev.net/sc-packages/sc-game-base/commit/edbc2e972766c001bcec485c3e23bfb85b1e94b4))
+* update release packages ([9ab64e5](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9ab64e585a59df5b3ba67e32125dc514f85d51e1))
+* update stable in game ([5a14fb4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/5a14fb4c5af65c00279fd5162daa6107161f0d94))
+* update table bot ([e116b09](https://git3.nexdev.net/sc-packages/sc-game-base/commit/e116b09881d88b7b53ad656181b50cac47e4f1f9))
+* upgrade sc-base-apis 1.12.1-beta.7 ([8485ab4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/8485ab4924b7f33e8a24d33cb15493322520c5e2))
+
 # [2.0.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v1.25.0...v2.0.0) (2021-09-16)
 
 
