@@ -1,4 +1,5 @@
 import { instrument } from "@socket.io/admin-ui";
+import * as awilix from "awilix";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -51,6 +52,7 @@ export default class BaseGameApp {
      * @param {awilix.AwilixContainer} container
      */
     async startGame(container) {
+        container.register({ baseMetrics: awilix.asValue(this.baseMetrics) });
         const gameStartUp = new BaseStartup(container);
         await gameStartUp.start(this.app, this.socketServer);
     }

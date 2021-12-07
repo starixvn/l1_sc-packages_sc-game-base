@@ -96,6 +96,7 @@ describe("table settle game round consumer test", () => {
             };
             gameData.winningPlayers = {};
             const winningStatus = {
+                rate: 1,
                 win: true,
                 bet: 1,
                 winningByChoices: {},

@@ -23,6 +23,11 @@ export default class BaseGameCron {
      * @param {mongoose.Model} dependencies.roundsRepository
      * @param {mongoose.Model} dependencies.archiveStatusesRepository
      * @param {mongoose.Model} dependencies.notificationRepository
+     * @param {mongoose.Model} dependencies.exchangeRatesRepository
+     * @param {mongoose.Model} dependencies.currencyGroupGamesRepository
+     * @param {mongoose.Model} dependencies.partnerConfigRepository
+     * @param {mongoose.Model} dependencies.currencyGroupRepository
+     * @param {mongoose.Model} dependencies.currencyRepository
      */
     constructor({
         definition,
@@ -36,6 +41,11 @@ export default class BaseGameCron {
         roundsRepository,
         archiveStatusesRepository,
         notificationRepository,
+        exchangeRatesRepository,
+        currencyGroupGamesRepository,
+        partnerConfigRepository,
+        currencyGroupRepository,
+        currencyRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -48,6 +58,11 @@ export default class BaseGameCron {
         this.roundsRepository = roundsRepository;
         this.archiveStatusesRepository = archiveStatusesRepository;
         this.notificationRepository = notificationRepository;
+        this.exchangeRatesRepository = exchangeRatesRepository;
+        this.currencyGroupGamesRepository = currencyGroupGamesRepository;
+        this.partnerConfigRepository = partnerConfigRepository;
+        this.currencyGroupRepository = currencyGroupRepository;
+        this.currencyRepository = currencyRepository;
     }
 
     async start() {
@@ -71,6 +86,9 @@ export default class BaseGameCron {
         } else {
             this.gameData.roundId = await this.getLastArchiveRound();
         }
+
+        await this.getSettingForNewRound();
+        await this.updateExchangeRates();
 
         job.start();
     }
@@ -131,6 +149,13 @@ export default class BaseGameCron {
 
         this.gameData.gameConfigs = configs ?? {};
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
+        await this.getSettingForNewRound();
+
+        if (this.gameData.gameConfigs.reloadExchange) {
+            await this.updateExchangeRates();
+            await this.gameConfigsRepository.updateOne({ name: configName }, { reloadExchange: false });
+            this.gameData.gameConfigs.reloadExchange = false;
+        }
 
         if (this.gameData.disabled) {
             this.gameData.remainingTime = durations.wholeRound;
@@ -148,5 +173,44 @@ export default class BaseGameCron {
         this.gameData.ingame = {};
         this.gameData.totalBets = {};
         this.gameData.settlementResultFromAdmin = {};
+    }
+
+    async getSettingForNewRound() {
+        await this.updateCurrencyGroupGames();
+        await this.updatePartnerGameSiteExclusions();
+        await this.updateCurrencyGroups();
+        await this.updateCurrencies();
+    }
+
+    async updateExchangeRates() {
+        this.gameData.exchangeRates = await this.exchangeRatesRepository
+            .findOne({}, "exId code", { sort: { exId: -1 } })
+            .lean()
+            .exec();
+    }
+
+    async updateCurrencyGroupGames() {
+        this.gameData.currencyGroupGames = await this.currencyGroupGamesRepository
+            .find({ gameId: this.definition.id, enabled: true }, "groupId minBet maxBet maxBetPerChoices chips stakeLevels")
+            .lean()
+            .exec();
+    }
+
+    async updatePartnerGameSiteExclusions() {
+        this.gameData.partnerGameSiteExclusions = await this.partnerConfigRepository
+            .find({ type: "game_site_exclusions" }, "partnerId type value")
+            .lean()
+            .exec();
+    }
+
+    async updateCurrencyGroups() {
+        this.gameData.currencyGroups = await this.currencyGroupRepository.find({ enabled: true }, "name enabled partnerId").lean().exec();
+    }
+
+    async updateCurrencies() {
+        this.gameData.currencies = await this.currencyRepository
+            .find({ enabled: true }, "name code multiplier enabled partnerId groupId")
+            .lean()
+            .exec();
     }
 }

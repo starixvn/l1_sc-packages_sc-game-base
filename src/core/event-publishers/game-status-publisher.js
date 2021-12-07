@@ -12,14 +12,17 @@ export default class GameStatusPublisher extends BaseEventPublisher {
     publishEnablingGameStatus() {
         const { gameConfigs, remainingTime, roundId } = this.gameData;
         const configs = {
-            minbet: gameConfigs.minbet,
-            maxbet: gameConfigs.maxbet,
-            choices_maxbet: gameConfigs.choices_maxbet,
             odds: gameConfigs.odds,
             enableFreeBet: gameConfigs.enableFreeBet,
         };
 
-        this.publishToAllUsers({ gameConfigs: configs, remainingTime });
+        const realPlayers = Object.values(this.gameData.realPlayers);
+        realPlayers.forEach((realPlayer) => {
+            const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === realPlayer.session.currencyGroupId);
+            const payload = { gameConfigs: { ...configs, ...settings }, remainingTime };
+            realPlayer.socketClient && realPlayer.socketClient.emit(this.gameName, payload);
+        });
+
         this.publishToAllAdmins({ remainingTime, roundId });
     }
 

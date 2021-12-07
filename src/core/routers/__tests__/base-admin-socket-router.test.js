@@ -22,6 +22,12 @@ describe("base admin socket router test", () => {
     /** @type {logger}*/
     const logService = stub(logger);
 
+    const appConfigs = {
+        sentry: {
+            env: "PROD",
+        },
+    };
+
     const router = new BaseAdminSocketRouter({
         definition,
         gameData,
@@ -29,6 +35,7 @@ describe("base admin socket router test", () => {
         adminMonitorConsumer,
         adminDisconnectConsumer,
         logService,
+        appConfigs,
     });
 
     beforeEach(() => {
@@ -121,6 +128,7 @@ describe("base admin socket router test", () => {
 
         it("setresult_validRequest_update settlementResultFromAdmin", async () => {
             // arrange
+            router.appConfigs.sentry.env = "Local";
             const settlementResult = {
                 roundId: 1,
                 result: { red1: true, red2: false, red3: true, red4: false },
@@ -135,6 +143,25 @@ describe("base admin socket router test", () => {
 
             // assert
             expect(gameData.settlementResultFromAdmin).toEqual(settlementResult);
+        });
+
+        it("setresult_environment_PROD_invalid settlementResultFromAdmin", async () => {
+            // arrange
+            router.appConfigs.sentry.env = "PROD";
+            gameData.settlementResultFromAdmin = null;
+            const settlementResult = {
+                roundId: 1,
+                result: { red1: true, red2: false, red3: true, red4: false },
+            };
+            payload[definition.name] = {
+                set_result: settlementResult,
+            };
+
+            // act
+            await router.handleMessage(payload);
+
+            // assert
+            expect(gameData.settlementResultFromAdmin).toEqual(null);
         });
 
         it("handleMessage_throwException_calls logError", async () => {

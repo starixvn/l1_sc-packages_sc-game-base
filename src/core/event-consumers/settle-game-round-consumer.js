@@ -28,11 +28,13 @@ export default class SettleGameRoundConsumer {
     async settleRound() {
         const result = this.generateResult();
         const settlementResult = this.definition.settle(result);
+        const { roundId, exchangeRates } = this.gameData;
         const newRound = await this.roundsRepository.create({
-            id: this.gameData.roundId,
+            id: roundId,
             result,
             settlementResult,
             time: new Date(),
+            exchangeRateId: exchangeRates.exId,
         });
 
         if (newRound) {
@@ -75,7 +77,7 @@ export default class SettleGameRoundConsumer {
                     await bet.save();
                     await this.callEndGame(bet, roundId, time, betResult);
 
-                    this.captureBetResult(bet.uid, betResult);
+                    this.captureBetResult(bet.uid, betResult, bet.rate);
                     await this.userBetResultPublisher.publish(bet.uid, betResult);
                 })
             );
@@ -119,7 +121,7 @@ export default class SettleGameRoundConsumer {
         return betResult;
     }
 
-    captureBetResult(uid, betResult) {}
+    captureBetResult(uid, betResult, rate) {}
 
     collectRoundResult(result, settlementResult, roundId) {
         return {
@@ -145,6 +147,7 @@ export default class SettleGameRoundConsumer {
             gameRoundId: roundId,
             memberId: bet.memberId,
             siteId: bet.siteId,
+            partnerId: bet.partnerId,
             time: time,
         };
         const settlementInfo = {

@@ -53,10 +53,11 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
         return realPlayerBets.concat(botBets);
     }
 
-    captureBetResult(uid, betResult) {
+    captureBetResult(uid, betResult, rate) {
         if (betResult.totalWin > 0) {
             const existingWinningStatus = this.gameData.winningPlayers[uid] ?? this.defaultWinningStatus;
             const winningStatus = {
+                rate: rate ?? 1,
                 win: true,
                 bet: existingWinningStatus.bet + betResult.totalWin,
                 winningByChoices: Object.assign({}, existingWinningStatus.winningByChoices, betResult.winningByChoices),

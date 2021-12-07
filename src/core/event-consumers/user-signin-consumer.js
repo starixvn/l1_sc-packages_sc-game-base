@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { getBetLimit } from "sc-base-apis";
 import { Socket } from "socket.io";
 
+import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
 
@@ -11,13 +12,14 @@ export default class UserSignInConsumer {
      * @param {UserSignInPublisher} userSignInPublisher
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} userSessionsRepository
+     * @param {PlayGamePermissionValidator} playGamePermissionValidator
      */
-    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, definition) {
+    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, playGamePermissionValidator) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
         this.userInfosRepository = userInfosRepository;
         this.userSessionsRepository = userSessionsRepository;
-        this.definition = definition;
+        this.playGamePermissionValidator = playGamePermissionValidator;
     }
 
     /**
@@ -39,7 +41,7 @@ export default class UserSignInConsumer {
             userSession.username === payload.username &&
             userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
         ) {
-            if (this.hasPlayingPermission(userSession, socketClient)) {
+            if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
                 await this.getUserBetLimit(userSession, userInfo, socketClient);
 
                 Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
@@ -88,14 +90,5 @@ export default class UserSignInConsumer {
     handleUnauthorizedSignIn(socketClient) {
         this.userSignInPublisher.publishUnauthorizedMessage(socketClient);
         socketClient.disconnect(true);
-    }
-
-    hasPlayingPermission(userSession, socketClient) {
-        if (this.gameData.gameConfigs.siteExclusions?.some((x) => x.toLowerCase() === userSession.siteName.toLowerCase())) {
-            this.userSignInPublisher.publishNotPermittedToPlayMessage(socketClient, this.definition.id);
-            return false;
-        }
-
-        return true;
     }
 }

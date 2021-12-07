@@ -46,12 +46,13 @@ export default class PlaceBetConsumer {
     }
 
     composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) {
+        const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === player.session.currencyGroupId);
         const configs = this.gameData.gameConfigs;
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
         const totalAmount = this.definition.choices.reduce((total, choice) => total + (betTracks[choice] || 0), 0) + amount;
-        const minBet = Math.max(player.profile.minBet, configs.minbet);
-        const maxBet = Math.min(player.profile.maxBet, configs.maxbet);
-        const maxBetPerChoice = Math.min(player.profile.maxBet, configs.choices_maxbet[betChoice]);
+        const minBet = Math.max(player.profile.minBet, settings.minBet);
+        const maxBet = Math.min(player.profile.maxBet, settings.maxBet);
+        const maxBetPerChoice = Math.min(player.profile.maxBet, settings.maxBetPerChoices[betChoice]);
 
         return [
             {
@@ -128,8 +129,9 @@ export default class PlaceBetConsumer {
         if (!this.gameData.ingame[name]) {
             const newPlayer = {
                 name: player.profile.name,
-                currency: player.session.currency,
+                currency: player.session.currencyName,
                 system: player.session.system,
+                partnerId: player.session.partnerId,
                 betTracks: {},
                 betQueue: [],
             };

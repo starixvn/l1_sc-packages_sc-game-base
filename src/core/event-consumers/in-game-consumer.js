@@ -35,9 +35,12 @@ export default class InGameConsumer {
     }
 
     async buildPayload(realPlayer) {
-        const { minbet, maxbet, choices_maxbet, odds, enableFreeBet } = this.gameData.gameConfigs;
-        const { totalBets, roundId } = this.gameData;
-        const gameConfigs = { minbet, maxbet, choices_maxbet, odds, enableFreeBet };
+        const { odds, enableFreeBet } = this.gameData.gameConfigs;
+        const { totalBets, roundId, exchangeRates } = this.gameData;
+        const { session } = realPlayer;
+        const rate = exchangeRates.code[session.currencyCode] * session.multiplier;
+        const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === session.currencyGroupId);
+        const gameConfigs = { ...settings, odds, enableFreeBet };
         const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
 
@@ -51,7 +54,7 @@ export default class InGameConsumer {
             roundHistory,
             ownBets,
             totalBets,
-            user,
+            user: { ...user, rate },
         };
     }
 

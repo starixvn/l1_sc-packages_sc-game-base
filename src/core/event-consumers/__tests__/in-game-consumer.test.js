@@ -1,5 +1,6 @@
 import { stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
+
 import BaseEventPublisher from "../../event-publishers/base-event-publisher";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
@@ -23,9 +24,18 @@ gameData.gameConfigs = {
     },
     enableFreeBet: false,
 };
+gameData.exchangeRates = {
+    exId: 1,
+    code: {
+        USD: 1,
+        VND: 0.00004405,
+        IDR: 0.07099,
+    },
+};
 
 /** @type {mongoose.Model}*/
 const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
+
 const roundQuery = new RoundQuery();
 const publisher = new BaseEventPublisher();
 const getBalance = jest.fn();
@@ -35,6 +45,11 @@ const realPlayer = {
     },
     profile: {
         name: "player01",
+    },
+    session: {
+        currencyGroupId: 1,
+        currencyCode: "USD",
+        multiplier: 1000,
     },
 };
 describe("consume test", () => {

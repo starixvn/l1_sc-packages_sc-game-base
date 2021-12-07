@@ -71,15 +71,15 @@ describe("http router test", () => {
     it("collectOnlineUsers_always_returns correct data", () => {
         // arrange
         const users = {
-            realUsers: [{ id: 1, name: "user1", currency: "USD" }],
-            uusUsers: [{ id: 2, name: "user2", currency: "UUS" }],
+            realUsers: [{ id: 1, name: "user1", isTestCurrency: false }],
+            testUsers: [{ id: 2, name: "user2", isTestCurrency: true }],
         };
         spyOn(router, "mapRealUsers").and.returnValue(users);
         const expectedResult = {
             totalRealPlayer: 1,
-            realUsers: [{ id: 1, name: "user1", currency: "USD" }],
-            totalUusPlayer: 1,
-            uusUsers: [{ id: 2, name: "user2", currency: "UUS" }],
+            realUsers: [{ id: 1, name: "user1", isTestCurrency: false }],
+            totalTestPlayer: 1,
+            testUsers: [{ id: 2, name: "user2", isTestCurrency: true }],
         };
 
         // act
@@ -95,13 +95,35 @@ describe("http router test", () => {
             connected: true,
         };
         const players = [
-            { session: { memberName: "player1", memberId: 1, currency: "USD", characterName: "character1" }, socketClient },
-            { session: { memberName: "player2", memberId: 2, currency: "UUS", characterName: "character2" }, socketClient },
+            {
+                session: {
+                    memberName: "player1",
+                    memberId: 1,
+                    isTestCurrency: false,
+                    characterName: "character1",
+                    currencyName: "USD",
+                    partnerId: "1W",
+                    system: 1,
+                },
+                socketClient,
+            },
+            {
+                session: {
+                    memberName: "player2",
+                    memberId: 2,
+                    isTestCurrency: true,
+                    characterName: "character2",
+                    currencyName: "USD",
+                    partnerId: "1W",
+                    system: 1,
+                },
+                socketClient,
+            },
         ];
 
         const expectedResult = {
-            uusUsers: [{ name: "player2", id: 2, currency: "UUS", character: "character2" }],
-            realUsers: [{ name: "player1", id: 1, currency: "USD", character: "character1" }],
+            testUsers: [{ name: "player2", id: 2, character: "character2", currency: "USD", partnerId: "1W", system: 1 }],
+            realUsers: [{ name: "player1", id: 1, character: "character1", currency: "USD", partnerId: "1W", system: 1 }],
         };
 
         // act

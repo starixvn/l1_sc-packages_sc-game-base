@@ -181,6 +181,7 @@ describe("composeValidationCriteria tests", () => {
             maxBet: 500,
         },
         session: {
+            currencyGroupId: "1",
             currency: "US",
         },
     };
@@ -202,6 +203,14 @@ describe("composeValidationCriteria tests", () => {
             choice01: 200,
         },
     };
+    gameData.currencyGroupGames = [
+        {
+            groupId: 1,
+            minBet: 1,
+            maxBet: 2000,
+            maxBetPerChoices: [],
+        },
+    ];
 
     const gameDefinition = new GameDefinition({
         choices: ["choice01"],
@@ -325,6 +334,7 @@ function mockPlayer(playerName) {
         },
         session: {
             currency: "US",
+            currencyGroupId: "1",
         },
     };
 }
@@ -352,6 +362,14 @@ function initGameData() {
             choice01: 200,
         },
     };
+    gameData.currencyGroupGames = [
+        {
+            groupId: 1,
+            minBet: 1,
+            maxBet: 2000,
+            maxBetPerChoices: [],
+        },
+    ];
 
     return gameData;
 }

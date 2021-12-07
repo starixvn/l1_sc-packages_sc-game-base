@@ -1,6 +1,7 @@
 import { logger } from "sc-common";
 import { Socket } from "socket.io";
 
+import { PlayGamePermissionValidator } from "../validators";
 import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
 import { HistoryQuery } from "./../query-apis";
@@ -16,7 +17,8 @@ export default class BaseSocketRouter {
      * @param {UserDisconnectConsumer} dependencies.userDisconnectConsumer
      * @param {UserSignInPublisher} dependencies.userSignInPublisher
      * @param {HistoryQuery} dependencies.historyQuery
-     * @param {logger} ldependencies.logService
+     * @param {logger} dependencies.logService
+     * @param {PlayGamePermissionValidator} dependencies.playGamePermissionValidator
      */
     constructor({
         definition,
@@ -28,6 +30,7 @@ export default class BaseSocketRouter {
         userSignInPublisher,
         historyQuery,
         logService,
+        playGamePermissionValidator,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -38,6 +41,7 @@ export default class BaseSocketRouter {
         this.userSignInPublisher = userSignInPublisher;
         this.historyQuery = historyQuery;
         this.logService = logService;
+        this.playGamePermissionValidator = playGamePermissionValidator;
     }
 
     /**
@@ -114,7 +118,7 @@ export default class BaseSocketRouter {
         const realPlayer = this.gameData.realPlayers[this.socketClient.id];
 
         if (realPlayer) {
-            if (this.hasPlayingPermission(realPlayer.session)) {
+            if (this.playGamePermissionValidator.validate(realPlayer.session, this.socketClient)) {
                 return true;
             }
 
@@ -131,14 +135,5 @@ export default class BaseSocketRouter {
         this.logService.setTag({ id: "username", value: "" });
 
         return false;
-    }
-
-    hasPlayingPermission(userSession) {
-        if (this.gameData.gameConfigs.siteExclusions?.some((x) => x.toLowerCase() === userSession.siteName.toLowerCase())) {
-            this.userSignInPublisher.publishNotPermittedToPlayMessage(this.socketClient, this.definition.id);
-            return false;
-        }
-
-        return true;
     }
 }

@@ -172,14 +172,16 @@ export default class ProcessBetQueue {
     }
 
     async handleSuccessBet(player, balance, roundId, bet) {
+        const rate = this.calculateCurrencyRate(player.session);
+
         if (this.betLogsRepository) {
-            await this.insertBetLog(player, roundId, bet);
+            await this.insertBetLog(player, roundId, bet, rate);
         }
 
-        await this.upsertBet(player, roundId, bet);
+        await this.upsertBet(player, roundId, bet, rate);
 
-        this.adjustTotalBets(player, bet);
-        this.notifyPlacingBetResult(player, balance, bet);
+        this.adjustTotalBets(player, bet, rate);
+        this.notifyPlacingBetResult(player, balance, bet, rate);
 
         if (!bet.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
             await this.updateUserStakeLevel(player, balance.minBet, balance.maxBet);
@@ -199,7 +201,7 @@ export default class ProcessBetQueue {
         }
     }
 
-    async upsertBet(player, roundId, bet) {
+    async upsertBet(player, roundId, bet, rate) {
         const configs = this.gameData.gameConfigs;
         const newBet = {
             uid: player.UID,
@@ -218,6 +220,9 @@ export default class ProcessBetQueue {
         if (player.session) {
             newBet.memberId = player.session.memberId;
             newBet.siteId = player.session.siteId;
+            newBet.partnerId = player.session.partnerId;
+            newBet.currency = player.session.currencyName;
+            newBet.rate = rate;
         }
 
         await this.betsRepository.updateOne(
@@ -227,7 +232,7 @@ export default class ProcessBetQueue {
         );
     }
 
-    async insertBetLog(player, roundId, bet) {
+    async insertBetLog(player, roundId, bet, rate) {
         const newBetLog = {
             uid: player.UID,
             name: player.profile.name,
@@ -243,6 +248,9 @@ export default class ProcessBetQueue {
         if (player.session) {
             newBetLog.memberId = player.session.memberId;
             newBetLog.siteId = player.session.siteId;
+            newBetLog.partnerId = player.session.partnerId;
+            newBetLog.currency = player.session.currencyName;
+            newBetLog.rate = rate;
         }
 
         await this.betLogsRepository.create(newBetLog);
@@ -258,19 +266,19 @@ export default class ProcessBetQueue {
         }
     }
 
-    adjustTotalBets(player, bet) {
+    adjustTotalBets(player, bet, rate) {
         const { betChoice, amount } = bet;
 
-        this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount;
+        this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount * rate;
     }
 
-    notifyPlacingBetResult(player, balance, bet) {
-        const result = this.generatePlacingBetResult(player, balance, bet);
+    notifyPlacingBetResult(player, balance, bet, rate) {
+        const result = this.generatePlacingBetResult(player, balance, bet, rate);
 
-        this.placeBetPublisher.publishSuccessBet(player.UID, result);
+        this.placeBetPublisher.publishSuccessBet(player.UID, result, rate);
     }
 
-    generatePlacingBetResult(player, balance, bet) {
+    generatePlacingBetResult(player, balance, bet, rate) {
         const { amount, freeBet, betChoice } = bet;
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
 
@@ -281,5 +289,9 @@ export default class ProcessBetQueue {
             freeBet,
             user: { ...balance },
         };
+    }
+
+    calculateCurrencyRate(session) {
+        return session.multiplier * this.gameData.exchangeRates.code[session.currencyCode];
     }
 }

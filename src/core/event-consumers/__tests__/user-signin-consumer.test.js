@@ -6,6 +6,7 @@ import { Socket } from "socket.io";
 
 import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
+import { PlayGamePermissionValidator } from "../../validators";
 import UserSignInConsumer from "../user-signin-consumer";
 
 jest.mock("sc-base-apis", () => ({
@@ -32,7 +33,16 @@ describe("user signing in testing", () => {
     /** @type {mongoose.Model}*/
     const userSessionsRepository = stubMongooseModelStupidly(mongoose.Model);
 
-    const consumer = new UserSignInConsumer(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository);
+    /** @type {PlayGamePermissionValidator}*/
+    const playGamePermissionValidator = stub(PlayGamePermissionValidator);
+
+    const consumer = new UserSignInConsumer(
+        gameData,
+        userSignInPublisher,
+        userInfosRepository,
+        userSessionsRepository,
+        playGamePermissionValidator
+    );
 
     /** @type {Socket} */
     const socketClient = stub(Socket);
@@ -206,6 +216,7 @@ describe("user signing in testing", () => {
     it("valid payload makes the consumer publish signIn message via the socket", async () => {
         // arrange
         const { payload } = arrangeValidSession();
+        spyOn(playGamePermissionValidator, "validate").and.returnValue(true);
 
         // act
         await consumer.consume(socketClient, payload);
@@ -221,6 +232,7 @@ describe("user signing in testing", () => {
 
         gameData.realPlayers = [];
         socketClient.id = socketClientId;
+        spyOn(playGamePermissionValidator, "validate").and.returnValue(true);
 
         // act
         await consumer.consume(socketClient, payload);

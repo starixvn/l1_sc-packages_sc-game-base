@@ -3,16 +3,16 @@ import { endGame, getBalance, notifyLogin, placeBet } from "sc-base-apis";
 import { gameConfigs, userInfos, userSessions } from "sc-base-database";
 import { logger } from "sc-common";
 
-import BaseMetrics from "./base-metrics";
 import * as Crons from "./crons";
 import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import { authenticationHelpers } from "./helpers";
-import { ArchiveStatuses, Notifications } from "./models";
+import { ArchiveStatuses, CurrencyGroupGames, ExchangeRates, Notifications, PartnerConfigs, CurrencyGroups, Currencies } from "./models";
 import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
+import { PlayGamePermissionValidator } from "./validators";
 
 export default class ContainerRegistry {
     /**
@@ -37,10 +37,10 @@ export default class ContainerRegistry {
             gameData: asValue(gameData),
         });
 
-        this.registerMetrics();
         this.registerModels();
         this.registerApis();
         this.registerPublishers();
+        this.registerValidators();
         this.registerConsumers();
         this.registerCrons();
         this.registerRouters();
@@ -54,6 +54,11 @@ export default class ContainerRegistry {
             userInfosRepository: asValue(userInfos),
             userSessionsRepository: asValue(userSessions),
             notificationRepository: asValue(Notifications),
+            currencyGroupGamesRepository: asValue(CurrencyGroupGames),
+            exchangeRatesRepository: asValue(ExchangeRates),
+            partnerConfigRepository: asValue(PartnerConfigs),
+            currencyGroupRepository: asValue(CurrencyGroups),
+            currencyRepository: asValue(Currencies),
         });
 
         this.container.register({
@@ -126,9 +131,9 @@ export default class ContainerRegistry {
         });
     }
 
-    registerMetrics() {
+    registerValidators() {
         this.container.register({
-            baseMetrics: asClass(BaseMetrics).singleton(),
+            playGamePermissionValidator: asClass(PlayGamePermissionValidator).singleton(),
         });
     }
 }

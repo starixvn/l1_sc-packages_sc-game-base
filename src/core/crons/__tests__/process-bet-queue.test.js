@@ -12,6 +12,15 @@ import ProcessBetQueue from "../process-bet-queue";
 jest.mock("../../event-publishers/place-bet-publisher");
 
 const gameData = new GameData(10);
+gameData.exchangeRates = {
+    exId: 1,
+    code: {
+        USD: 1,
+        VND: 0.00004405,
+        IDR: 0.07099,
+    },
+};
+
 gameData.gameConfigs = {
     odds: {
         red2: 2.4,
@@ -287,6 +296,8 @@ const mockPlayer = () => {
             userId: 1,
             memberId: 1,
             siteId: "123456",
+            currencyCode: "USD",
+            multiplier: 1000,
         },
         socketClient: {
             emit: jest.fn(),

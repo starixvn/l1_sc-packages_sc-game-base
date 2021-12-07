@@ -14,14 +14,24 @@ export default class BaseAdminSocketRouter {
      * @param {AdminMonitorConsumer} dependencies.adminMonitorConsumer
      * @param {AdminDisconnectConsumer} dependencies.adminDisconnectConsumer
      * @param {logger} dependencies.logService
+     * @param {Object} appConfigs
      */
-    constructor({ definition, gameData, adminAuthenticationConsumer, adminMonitorConsumer, adminDisconnectConsumer, logService }) {
+    constructor({
+        definition,
+        gameData,
+        adminAuthenticationConsumer,
+        adminMonitorConsumer,
+        adminDisconnectConsumer,
+        logService,
+        appConfigs,
+    }) {
         this.definition = definition;
         this.gameData = gameData;
         this.adminAuthenticationConsumer = adminAuthenticationConsumer;
         this.adminMonitorConsumer = adminMonitorConsumer;
         this.adminDisconnectConsumer = adminDisconnectConsumer;
         this.logService = logService;
+        this.appConfigs = appConfigs;
     }
 
     /**
@@ -43,7 +53,12 @@ export default class BaseAdminSocketRouter {
                 await this.adminMonitorConsumer.consume(this.socketClient);
             }
 
-            if (payload[this.definition.name] && payload[this.definition.name].set_result && this.verify()) {
+            if (
+                this.appConfigs.sentry.env !== "PROD" &&
+                payload[this.definition.name] &&
+                payload[this.definition.name].set_result &&
+                this.verify()
+            ) {
                 const { set_result } = payload[this.definition.name];
 
                 this.gameData.settlementResultFromAdmin = {
