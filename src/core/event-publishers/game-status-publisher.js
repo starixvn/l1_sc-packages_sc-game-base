@@ -23,10 +23,16 @@ export default class GameStatusPublisher extends BaseEventPublisher {
             realPlayer.socketClient && realPlayer.socketClient.emit(this.gameName, payload);
         });
 
-        this.publishToAllAdmins({ remainingTime, roundId });
+        this.publishToAllAdmins({
+            remainingTime,
+            roundId,
+            currencies: this.gameData.currencies,
+            exchangeRates: this.gameData.exchangeRates,
+        });
     }
 
     publishStartGame() {
         this.publishToAllUsers({ remainingTime: this.gameData.remainingTime });
+        this.publishToAllAdmins({ currencies: this.gameData.currencies, exchangeRates: this.gameData.exchangeRates });
     }
 }
