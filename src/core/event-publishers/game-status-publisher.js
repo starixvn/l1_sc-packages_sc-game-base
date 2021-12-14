@@ -28,6 +28,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
             roundId,
             currencies: this.gameData.currencies,
             exchangeRates: this.gameData.exchangeRates,
+            partners: this.gameData.partners,
         });
     }
 

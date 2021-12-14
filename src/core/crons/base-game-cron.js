@@ -28,6 +28,7 @@ export default class BaseGameCron {
      * @param {mongoose.Model} dependencies.partnerConfigRepository
      * @param {mongoose.Model} dependencies.currencyGroupRepository
      * @param {mongoose.Model} dependencies.currencyRepository
+     * @param {mongoose.Model} dependencies.partnerRepository
      */
     constructor({
         definition,
@@ -46,6 +47,7 @@ export default class BaseGameCron {
         partnerConfigRepository,
         currencyGroupRepository,
         currencyRepository,
+        partnerRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -63,6 +65,7 @@ export default class BaseGameCron {
         this.partnerConfigRepository = partnerConfigRepository;
         this.currencyGroupRepository = currencyGroupRepository;
         this.currencyRepository = currencyRepository;
+        this.partnerRepository = partnerRepository;
     }
 
     async start() {
@@ -212,5 +215,9 @@ export default class BaseGameCron {
             .find({ enabled: true }, "name code multiplier enabled partnerId groupId")
             .lean()
             .exec();
+    }
+
+    async updatePartners() {
+        this.gameData.partners = await this.partnerRepository.find({}).lean().exec();
     }
 }
