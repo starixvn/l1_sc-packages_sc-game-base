@@ -183,6 +183,7 @@ export default class BaseGameCron {
         await this.updatePartnerGameSiteExclusions();
         await this.updateCurrencyGroups();
         await this.updateCurrencies();
+        await this.updatePartners();
     }
 
     async updateExchangeRates() {
