@@ -151,10 +151,10 @@ export default class BaseGameCron {
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.getSettingForNewRound();
 
-        if (this.gameData.gameConfigs.reloadExchange) {
+        if (this.gameData.gameConfigs.exchangeReload) {
             await this.updateExchangeRates();
-            await this.gameConfigsRepository.updateOne({ name: configName }, { reloadExchange: false });
-            this.gameData.gameConfigs.reloadExchange = false;
+            await this.gameConfigsRepository.updateOne({ name: configName }, { exchangeReload: false });
+            this.gameData.gameConfigs.exchangeReload = false;
         }
 
         if (this.gameData.disabled) {
