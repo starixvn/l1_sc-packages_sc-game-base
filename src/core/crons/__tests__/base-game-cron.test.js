@@ -53,9 +53,6 @@ const currencyGroupRepository = stubMongooseModelStupidly(mongoose.Model);
 /** @type {mongoose.Model}*/
 const currencyRepository = stubMongooseModelStupidly(mongoose.Model);
 
-/** @type {mongoose.Model}*/
-const partnerRepository = stubMongooseModelStupidly(mongoose.Model);
-
 describe("proceed tests", () => {
     it("should call checkGameStatus after each round", async () => {
         gameData.disabled = false;
@@ -78,7 +75,6 @@ describe("proceed tests", () => {
             partnerConfigRepository,
             currencyGroupRepository,
             currencyRepository,
-            partnerRepository,
         });
 
         baseGameCron.checkGameStatus = jest.fn();
@@ -109,7 +105,6 @@ describe("proceed tests", () => {
             partnerConfigRepository,
             currencyGroupRepository,
             currencyRepository,
-            partnerRepository,
         });
 
         jest.spyOn(baseGameCron, "resetForNewRound");
@@ -141,7 +136,6 @@ describe("proceed tests", () => {
             partnerConfigRepository,
             currencyGroupRepository,
             currencyRepository,
-            partnerRepository,
         });
 
         await baseGameCron.proceed();
@@ -171,7 +165,6 @@ describe("proceed tests", () => {
             partnerConfigRepository,
             currencyGroupRepository,
             currencyRepository,
-            partnerRepository,
         });
 
         baseGameCron.checkGameStatus = jest.fn();
@@ -207,7 +200,6 @@ describe("checkGameStatus tests", () => {
             partnerConfigRepository,
             currencyGroupRepository,
             currencyRepository,
-            partnerRepository,
         });
 
         await baseGameCron.checkGameStatus();
@@ -239,7 +231,6 @@ describe("checkGameStatus tests", () => {
             partnerConfigRepository,
             currencyGroupRepository,
             currencyRepository,
-            partnerRepository,
         });
 
         await baseGameCron.checkGameStatus();
@@ -273,7 +264,6 @@ describe("checkGameStatus tests", () => {
             partnerConfigRepository,
             currencyGroupRepository,
             currencyRepository,
-            partnerRepository,
         });
 
         await baseGameCron.checkGameStatus();

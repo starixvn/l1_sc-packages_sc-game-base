@@ -36,7 +36,6 @@ export default class AdminMonitorConsumer {
                 remainingTime: this.gameData.remainingTime,
                 currencies: this.gameData.currencies,
                 exchangeRates: this.gameData.exchangeRates,
-                partners: this.gameData.partners,
             };
 
             this.adminPublisher.publishToAdmin(socketClient, payload);

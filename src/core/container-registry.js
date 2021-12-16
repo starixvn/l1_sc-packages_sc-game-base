@@ -68,7 +68,6 @@ export default class ContainerRegistry {
             partnerConfigRepository: asValue(PartnerConfigs),
             currencyGroupRepository: asValue(CurrencyGroups),
             currencyRepository: asValue(Currencies),
-            partnerRepository: asValue(Partners),
         });
 
         this.container.register({

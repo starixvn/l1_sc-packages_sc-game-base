@@ -5,6 +5,5 @@ import Notifications from "./notifications";
 import PartnerConfigs from "./partner-config";
 import Currencies from "./currencies";
 import CurrencyGroups from "./currency-groups";
-import Partners from "./partners";
 
-export { ArchiveStatuses, Notifications, CurrencyGroupGames, ExchangeRates, PartnerConfigs, Currencies, CurrencyGroups, Partners };
+export { ArchiveStatuses, Notifications, CurrencyGroupGames, ExchangeRates, PartnerConfigs, Currencies, CurrencyGroups };
