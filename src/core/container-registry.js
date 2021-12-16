@@ -9,16 +9,7 @@ import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import { authenticationHelpers } from "./helpers";
-import {
-    ArchiveStatuses,
-    CurrencyGroupGames,
-    ExchangeRates,
-    Notifications,
-    PartnerConfigs,
-    CurrencyGroups,
-    Currencies,
-    Partners,
-} from "./models";
+import { ArchiveStatuses, CurrencyGroupGames, ExchangeRates, Notifications, PartnerConfigs, CurrencyGroups, Currencies } from "./models";
 import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
 import { PlayGamePermissionValidator } from "./validators";
