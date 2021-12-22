@@ -8,6 +8,7 @@ import { init as initApis } from "sc-base-apis";
 import { init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
 import { Server } from "socket.io";
+import MsgpackParser from "socket.io-msgpack-parser";
 
 import { BaseStartup } from ".";
 import BaseMetrics from "./base-metrics";
@@ -68,6 +69,10 @@ export default class BaseGameApp {
             origin: enableCorsWs ? corsUrls : "*",
             credentials: true,
         };
+
+        if (this.appConfigs.useMsgpackParser) {
+            opts.parser = MsgpackParser;
+        }
 
         return new Server(httpServer, opts);
     }
