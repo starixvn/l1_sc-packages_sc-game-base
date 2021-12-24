@@ -11,11 +11,15 @@ const definition = new GameDefinition({ id: 1, name: "game name", durations: { l
 const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
 userInfosRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
 
+const initBot = function () {
+    return new BaseBot(definition, gameData, userInfosRepository);
+}
+
 describe("reset tests", () => {
     it("should call removeAllBots when botenabled is false", async () => {
         gameData.gameConfigs = { botenabled: false };
 
-        const baseBot = new BaseBot(definition, gameData, userInfosRepository);
+        const baseBot = initBot();
         jest.spyOn(baseBot, "removeAllBots");
 
         await baseBot.reset();
@@ -27,7 +31,7 @@ describe("reset tests", () => {
         gameData.gameConfigs = { botenabled: true, maxbot: 0.5 };
         userInfosRepository.countDocuments().exec.mockReturnValueOnce(100);
 
-        const baseBot = new BaseBot(definition, gameData, userInfosRepository);
+        const baseBot = initBot();
         jest.spyOn(baseBot, "processDisabledBots");
 
         await baseBot.reset();
@@ -49,7 +53,7 @@ describe("run tests", () => {
             { id: 6, name: "bot6", type: true, red: 2000 },
         ];
 
-        const baseBot = new BaseBot(definition, gameData, userInfosRepository);
+        const baseBot = initBot();
         baseBot.bots = bots;
         jest.spyOn(baseBot, "placeBet");
 

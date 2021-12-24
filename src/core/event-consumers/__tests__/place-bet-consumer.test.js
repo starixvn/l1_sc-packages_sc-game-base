@@ -15,7 +15,7 @@ describe("adjustBetTracks test", () => {
             amount: 100,
             betChoice: "choice01",
         };
-        const gameData = new GameData();
+        const gameData = initGameData();
         gameData.ingame = {
             [playerName]: {
                 betTracks: {
@@ -24,7 +24,7 @@ describe("adjustBetTracks test", () => {
             },
         };
 
-        const placeBetConsumer = new PlaceBetConsumer({}, gameData, new BaseEventPublisher("", {}));
+        const placeBetConsumer = new PlaceBetConsumer(initGameDefinition(), gameData, new BaseEventPublisher("", {}));
         placeBetConsumer.adjustBetTracks(playerName, payload);
         expect(gameData.ingame[playerName].betTracks.choice01).toEqual(200);
     });
@@ -33,22 +33,15 @@ describe("adjustBetTracks test", () => {
 describe("consume test", () => {
     it("valid bet, no inGame data, should init inGame Data then push to betQueue", () => {
         const playerName = "nhanvat01";
-        const player = {
-            profile: {
-                name: playerName,
-            },
-            session: {
-                currency: "US",
-            },
-        };
+        const player = mockPlayer(playerName);
         const payload = {
             amount: 100,
             betChoice: "choice01",
         };
-        const gameData = new GameData();
+        const gameData = initGameData();
         gameData.ingame = {};
 
-        const placeBetConsumer = new PlaceBetConsumer({}, gameData, new BaseEventPublisher("", {}));
+        const placeBetConsumer = new PlaceBetConsumer(initGameDefinition(), gameData, new BaseEventPublisher("", {}));
         placeBetConsumer.validateBetRequest = jest.fn(() => true);
         placeBetConsumer.consume(player, payload);
 
@@ -58,19 +51,12 @@ describe("consume test", () => {
 
     it("valid bet, have inGame data, should push to betQueue", () => {
         const playerName = "nhanvat01";
-        const player = {
-            profile: {
-                name: playerName,
-            },
-            session: {
-                currency: "US",
-            },
-        };
+        const player = mockPlayer(playerName);
         const payload = {
             amount: 100,
             betChoice: "choice01",
         };
-        const gameData = new GameData();
+        const gameData = initGameData();
         gameData.ingame = {
             [playerName]: {
                 name: player.profile.name,
@@ -79,7 +65,7 @@ describe("consume test", () => {
             },
         };
 
-        const placeBetConsumer = new PlaceBetConsumer({}, gameData, new BaseEventPublisher("", {}));
+        const placeBetConsumer = new PlaceBetConsumer(initGameDefinition(), gameData, new BaseEventPublisher("", {}));
         placeBetConsumer.validateBetRequest = jest.fn(() => true);
         placeBetConsumer.consume(player, payload);
 
@@ -90,19 +76,12 @@ describe("consume test", () => {
 
     it("invalid bet, have inGame data, should return", () => {
         const playerName = "nhanvat01";
-        const player = {
-            profile: {
-                name: playerName,
-            },
-            session: {
-                currency: "US",
-            },
-        };
+        const player = mockPlayer(playerName);
         const payload = {
             amount: 100,
             betChoice: "choice01",
         };
-        const gameData = new GameData();
+        const gameData = initGameData();
         gameData.ingame = {
             [playerName]: {
                 name: player.profile.name,
@@ -111,7 +90,7 @@ describe("consume test", () => {
             },
         };
 
-        const placeBetConsumer = new PlaceBetConsumer({}, gameData, new BaseEventPublisher("", {}));
+        const placeBetConsumer = new PlaceBetConsumer(initGameDefinition(), gameData, new BaseEventPublisher("", {}));
         placeBetConsumer.validateBetRequest = jest.fn(() => false);
         placeBetConsumer.consume(player, payload);
 
@@ -121,17 +100,9 @@ describe("consume test", () => {
 
 describe("validateBetRequest tests", () => {
     const playerName = "nhanvat01";
-    const player = {
-        UID: "123",
-        profile: {
-            name: playerName,
-        },
-        session: {
-            currency: "US",
-        },
-    };
+    const player = mockPlayer(playerName);
 
-    const gameData = new GameData();
+    const gameData = initGameData();
     gameData.ingame = {
         [playerName]: {
             name: player.profile.name,
@@ -140,9 +111,11 @@ describe("validateBetRequest tests", () => {
         },
     };
 
+    const definition = initGameDefinition();
+
     it("have failed criteron, publish to user and return false", () => {
         const publisher = new BaseEventPublisher("", gameData);
-        const placeBetConsumer = new PlaceBetConsumer({}, gameData, publisher);
+        const placeBetConsumer = new PlaceBetConsumer(definition, gameData, publisher);
         placeBetConsumer.composeValidationCriteria = jest.fn(() => [{ failure: true, notice: "" }]);
 
         var actualResult = placeBetConsumer.validateBetRequest(player, "betChoice", 1, false);
@@ -153,7 +126,7 @@ describe("validateBetRequest tests", () => {
 
     it("invalid bet amount and choice, return false", () => {
         const publisher = new BaseEventPublisher("", gameData);
-        const placeBetConsumer = new PlaceBetConsumer({}, gameData, publisher);
+        const placeBetConsumer = new PlaceBetConsumer(definition, gameData, publisher);
         var actualResult = placeBetConsumer.validateBetRequest(player, null, null, false);
 
         expect(publisher.publishToUser).not.toHaveBeenCalled();
@@ -162,7 +135,7 @@ describe("validateBetRequest tests", () => {
 
     it("valid bet request, return true", () => {
         const publisher = new BaseEventPublisher("", gameData);
-        const placeBetConsumer = new PlaceBetConsumer({}, gameData, publisher);
+        const placeBetConsumer = new PlaceBetConsumer(definition, gameData, publisher);
         placeBetConsumer.composeValidationCriteria = jest.fn(() => [{ failure: false, notice: "" }]);
 
         var actualResult = placeBetConsumer.validateBetRequest(player, "betChoice", 1, false);
@@ -173,20 +146,9 @@ describe("validateBetRequest tests", () => {
 
 describe("composeValidationCriteria tests", () => {
     const playerName = "nhanvat01";
-    const player = {
-        UID: "123",
-        profile: {
-            name: playerName,
-            minBet: 1,
-            maxBet: 500,
-        },
-        session: {
-            currencyGroupId: "1",
-            currency: "US",
-        },
-    };
+    const player = mockPlayer(playerName);
 
-    const gameData = new GameData();
+    const gameData = initGameData();
     gameData.ingame = {
         [playerName]: {
             name: player.profile.name,
@@ -195,30 +157,8 @@ describe("composeValidationCriteria tests", () => {
         },
     };
     gameData.remainingTime = 20;
-    gameData.gameConfigs = {
-        enabled: true,
-        minbet: 1,
-        maxbet: 1000,
-        choices_maxbet: {
-            choice01: 200,
-        },
-    };
-    gameData.currencyGroupGames = [
-        {
-            groupId: 1,
-            minBet: 1,
-            maxBet: 2000,
-            maxBetPerChoices: [],
-        },
-    ];
-
-    const gameDefinition = new GameDefinition({
-        choices: ["choice01"],
-        durations: {
-            placingBets: 30,
-            lockingBet: 5,
-        },
-    });
+  
+    const gameDefinition = initGameDefinition();
 
     it("return criterons", () => {
         const publisher = new BaseEventPublisher("", gameData);

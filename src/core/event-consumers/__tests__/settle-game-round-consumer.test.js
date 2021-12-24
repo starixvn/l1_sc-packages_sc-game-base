@@ -38,6 +38,18 @@ const roundsRepository = stubMongooseModelStupidly(mongoose.Model);
 /** @type {mongoose.Model}*/
 const betsRepository = stubMongooseModelStupidly(mongoose.Model);
 
+const initConsumer = function () {
+    return new SettleGameRoundConsumer({
+        definition,
+        gameData,
+        roundResultPublisher,
+        userBetResultPublisher,
+        endGame,
+        roundsRepository,
+        betsRepository,
+    });
+};
+
 describe("generateResult test", () => {
     it("should return restult from admin when roundId from gameData is equal to roundId from admin", () => {
         gameData.settlementResultFromAdmin = {
@@ -47,15 +59,7 @@ describe("generateResult test", () => {
         gameData.roundId = 1;
         definition.generateResult.mockReturnValueOnce({ red1: true, red2: true, red3: true, red4: false });
 
-        const consumer = new SettleGameRoundConsumer({
-            definition,
-            gameData,
-            roundResultPublisher,
-            userBetResultPublisher,
-            endGame,
-            roundsRepository,
-            betsRepository,
-        });
+        const consumer = initConsumer();
 
         var actualResult = consumer.generateResult();
         expect(actualResult).toEqual(gameData.settlementResultFromAdmin.result);
@@ -69,15 +73,7 @@ describe("generateResult test", () => {
         gameData.roundId = 2;
         definition.generateResult.mockReturnValueOnce({ red1: true, red2: true, red3: true, red4: false });
 
-        const consumer = new SettleGameRoundConsumer({
-            definition,
-            gameData,
-            roundResultPublisher,
-            userBetResultPublisher,
-            endGame,
-            roundsRepository,
-            betsRepository,
-        });
+        const consumer = initConsumer();
 
         var actualResult = consumer.generateResult();
         expect(actualResult).toEqual({ red1: true, red2: true, red3: true, red4: false });
@@ -93,15 +89,7 @@ describe("settleRound test", () => {
         definition.settle.mockReturnValueOnce(settlementResult);
         roundsRepository.create.mockReturnValueOnce({ id: 1, result, settlementResult });
 
-        const consumer = new SettleGameRoundConsumer({
-            definition,
-            gameData,
-            roundResultPublisher,
-            userBetResultPublisher,
-            endGame,
-            roundsRepository,
-            betsRepository,
-        });
+        const consumer = initConsumer();
         consumer.settleBets = jest.fn();
 
         await consumer.settleRound();
@@ -120,15 +108,7 @@ describe("settleBets test", () => {
         definition.settle.mockReturnValueOnce(settlementResult);
         roundsRepository.create.mockReturnValueOnce({ id: 1, result, settlementResult });
 
-        const consumer = new SettleGameRoundConsumer({
-            definition,
-            gameData,
-            roundResultPublisher,
-            userBetResultPublisher,
-            endGame,
-            roundsRepository,
-            betsRepository,
-        });
+        const consumer = initConsumer();
         consumer.callEndGame = jest.fn();
         consumer.queryBets = jest.fn(() => [
             { odd: 100, save: jest.fn() },
@@ -145,15 +125,7 @@ describe("settleBets test", () => {
 
 describe("callEndGame test", () => {
     it("should not publish to game client when api result is ok", async () => {
-        const consumer = new SettleGameRoundConsumer({
-            definition,
-            gameData,
-            roundResultPublisher,
-            userBetResultPublisher,
-            endGame,
-            roundsRepository,
-            betsRepository,
-        });
+        const consumer = initConsumer();
 
         endGame.mockReturnValue({ isOk: true, response: {} });
 
@@ -169,15 +141,7 @@ describe("callEndGame test", () => {
     });
 
     it("should not publish to game client when api result is ok", async () => {
-        const consumer = new SettleGameRoundConsumer({
-            definition,
-            gameData,
-            roundResultPublisher,
-            userBetResultPublisher,
-            endGame,
-            roundsRepository,
-            betsRepository,
-        });
+        const consumer = initConsumer();
 
         endGame.mockReturnValue({ isOk: true, response: {} });
 

@@ -53,29 +53,33 @@ const currencyGroupRepository = stubMongooseModelStupidly(mongoose.Model);
 /** @type {mongoose.Model}*/
 const currencyRepository = stubMongooseModelStupidly(mongoose.Model);
 
+const initCron = function () {
+    return new BaseGameCron({
+        definition,
+        gameData,
+        bot,
+        settleGameRoundConsumer,
+        gameStatusPublisher,
+        runningRoundInfoPublisher,
+        logService,
+        gameConfigsRepository,
+        roundsRepository,
+        archiveRepository,
+        notificationRepository,
+        exchangeRatesRepository,
+        currencyGroupGamesRepository,
+        partnerConfigRepository,
+        currencyGroupRepository,
+        currencyRepository,
+    });
+};
+
 describe("proceed tests", () => {
     it("should call checkGameStatus after each round", async () => {
         gameData.disabled = false;
         gameData.remainingTime = definition.durations.wholeRound;
 
-        const baseGameCron = new BaseGameCron({
-            definition,
-            gameData,
-            bot,
-            settleGameRoundConsumer,
-            gameStatusPublisher,
-            runningRoundInfoPublisher,
-            logService,
-            gameConfigsRepository,
-            roundsRepository,
-            archiveRepository,
-            notificationRepository,
-            exchangeRatesRepository,
-            currencyGroupGamesRepository,
-            partnerConfigRepository,
-            currencyGroupRepository,
-            currencyRepository,
-        });
+        const baseGameCron = initCron();
 
         baseGameCron.checkGameStatus = jest.fn();
 
@@ -88,24 +92,7 @@ describe("proceed tests", () => {
         gameData.disabled = false;
         gameData.remainingTime = definition.durations.placingBets + 1;
 
-        const baseGameCron = new BaseGameCron({
-            definition,
-            gameData,
-            bot,
-            settleGameRoundConsumer,
-            gameStatusPublisher,
-            runningRoundInfoPublisher,
-            logService,
-            gameConfigsRepository,
-            roundsRepository,
-            archiveRepository,
-            notificationRepository,
-            exchangeRatesRepository,
-            currencyGroupGamesRepository,
-            partnerConfigRepository,
-            currencyGroupRepository,
-            currencyRepository,
-        });
+        const baseGameCron = initCron();
 
         jest.spyOn(baseGameCron, "resetForNewRound");
 
@@ -119,24 +106,7 @@ describe("proceed tests", () => {
         gameData.disabled = false;
         gameData.remainingTime = 0;
 
-        const baseGameCron = new BaseGameCron({
-            definition,
-            gameData,
-            bot,
-            settleGameRoundConsumer,
-            gameStatusPublisher,
-            runningRoundInfoPublisher,
-            logService,
-            gameConfigsRepository,
-            roundsRepository,
-            archiveRepository,
-            notificationRepository,
-            exchangeRatesRepository,
-            currencyGroupGamesRepository,
-            partnerConfigRepository,
-            currencyGroupRepository,
-            currencyRepository,
-        });
+        const baseGameCron = initCron();
 
         await baseGameCron.proceed();
 
@@ -148,24 +118,7 @@ describe("proceed tests", () => {
         gameData.disabled = false;
         gameData.remainingTime = definition.durations.placingBets;
 
-        const baseGameCron = new BaseGameCron({
-            definition,
-            gameData,
-            bot,
-            settleGameRoundConsumer,
-            gameStatusPublisher,
-            runningRoundInfoPublisher,
-            logService,
-            gameConfigsRepository,
-            roundsRepository,
-            archiveRepository,
-            notificationRepository,
-            exchangeRatesRepository,
-            currencyGroupGamesRepository,
-            partnerConfigRepository,
-            currencyGroupRepository,
-            currencyRepository,
-        });
+        const baseGameCron = initCron();
 
         baseGameCron.checkGameStatus = jest.fn();
 
@@ -183,24 +136,7 @@ describe("checkGameStatus tests", () => {
         gameData.remainingTime = definition.durations.wholeRound;
         gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
-        const baseGameCron = new BaseGameCron({
-            definition,
-            gameData,
-            bot,
-            settleGameRoundConsumer,
-            gameStatusPublisher,
-            runningRoundInfoPublisher,
-            logService,
-            gameConfigsRepository,
-            roundsRepository,
-            archiveRepository,
-            notificationRepository,
-            exchangeRatesRepository,
-            currencyGroupGamesRepository,
-            partnerConfigRepository,
-            currencyGroupRepository,
-            currencyRepository,
-        });
+        const baseGameCron = initCron();
 
         await baseGameCron.checkGameStatus();
 
@@ -214,24 +150,7 @@ describe("checkGameStatus tests", () => {
         gameData.remainingTime = definition.durations.wholeRound;
         gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
-        const baseGameCron = new BaseGameCron({
-            definition,
-            gameData,
-            bot,
-            settleGameRoundConsumer,
-            gameStatusPublisher,
-            runningRoundInfoPublisher,
-            logService,
-            gameConfigsRepository,
-            roundsRepository,
-            archiveRepository,
-            notificationRepository,
-            exchangeRatesRepository,
-            currencyGroupGamesRepository,
-            partnerConfigRepository,
-            currencyGroupRepository,
-            currencyRepository,
-        });
+        const baseGameCron = initCron();
 
         await baseGameCron.checkGameStatus();
 
@@ -247,24 +166,7 @@ describe("checkGameStatus tests", () => {
         gameData.remainingTime = definition.durations.wholeRound;
         gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
-        const baseGameCron = new BaseGameCron({
-            definition,
-            gameData,
-            bot,
-            settleGameRoundConsumer,
-            gameStatusPublisher,
-            runningRoundInfoPublisher,
-            logService,
-            gameConfigsRepository,
-            roundsRepository,
-            archiveRepository,
-            notificationRepository,
-            exchangeRatesRepository,
-            currencyGroupGamesRepository,
-            partnerConfigRepository,
-            currencyGroupRepository,
-            currencyRepository,
-        });
+        const baseGameCron = initCron();
 
         await baseGameCron.checkGameStatus();
 

@@ -14,13 +14,17 @@ jest.mock("sc-common", () => ({
     },
 }));
 
+const gameData = new GameData();
+const gameName = "game";
+
+const initPublisher = function () {
+    return new UserBetResultPublisher(gameName, gameData, authenticationHelpers, logger);
+};
+
 describe("publish test", () => {
     it("should publish to user", async () => {
         // arrange
-        const gameData = new GameData();
-        const gameName = "game";
-
-        const publisher = new UserBetResultPublisher(gameName, gameData, authenticationHelpers);
+        const publisher = initPublisher();
         publisher.publishToUser = jest.fn();
         // act
         await publisher.publish(1, { totalWin: 200 });
@@ -30,10 +34,7 @@ describe("publish test", () => {
 
     it("should publish to all users & admins", async () => {
         // arrange
-        const gameData = new GameData();
-        const gameName = "game";
-
-        const publisher = new UserBetResultPublisher(gameName, gameData);
+        const publisher = initPublisher();
         publisher.publishToUser = jest.fn();
         // act
         await publisher.publish(1, { totalWin: 0 });
@@ -45,7 +46,6 @@ describe("publish test", () => {
 describe("publishToUser test", () => {
     it("found user - should call publish to user", async () => {
         // arrange
-        const gameData = new GameData();
         gameData.realPlayers = {
             1: {
                 UID: 1,
@@ -62,9 +62,7 @@ describe("publishToUser test", () => {
                 },
             },
         };
-
-        const gameName = "game";
-        const publisher = new UserBetResultPublisher(gameName, gameData, authenticationHelpers, logger);
+        const publisher = initPublisher();
         // act
         await publisher.publishToUser(1, {});
         // assert
@@ -73,7 +71,6 @@ describe("publishToUser test", () => {
 
     it("not found user - should call refreshBalance", async () => {
         // arrange
-        const gameData = new GameData();
         gameData.realPlayers = {
             1: {
                 UID: 1,
@@ -91,20 +88,22 @@ describe("publishToUser test", () => {
             },
         };
 
-        const gameName = "game";
-        const publisher = new UserBetResultPublisher(gameName, gameData, authenticationHelpers, logger);
+        const publisher = initPublisher();
         jest.spyOn(publisher, "refreshBalance");
         // act
         await publisher.publishToUser(3, {});
         // assert
         expect(publisher.refreshBalance).toHaveBeenCalled();
     });
+
+    afterEach(() => {
+        gameData.realPlayers = {};
+    });
 });
 
 describe("refreshBalance test", () => {
     it("mainServiceCommunicator throw exception - should log the error", async () => {
         // arrange
-        const gameData = new GameData();
         gameData.realPlayers = {
             1: {
                 UID: 1,
@@ -122,8 +121,7 @@ describe("refreshBalance test", () => {
             },
         };
 
-        const gameName = "game";
-        const publisher = new UserBetResultPublisher(gameName, gameData, authenticationHelpers, logger);
+        const publisher = initPublisher();
         authenticationHelpers.post.mockImplementation(() => {
             throw new TypeError();
         });
