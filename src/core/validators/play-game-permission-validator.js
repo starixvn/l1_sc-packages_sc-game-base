@@ -17,6 +17,7 @@ export default class PlayGamePermissionValidator {
 
         if (!playPermission) {
             this.userSignInPublisher.publishNotPermittedToPlayMessage(socketClient, this.definition.id);
+
             return false;
         }
 
@@ -56,6 +57,6 @@ export default class PlayGamePermissionValidator {
             return false;
         }
 
-        return excludeSiteConfig.findIndex((site) => site.toLowerCase() === userSession.siteName.toLowerCase()) > -1;
+        return excludeSiteConfig.some((site) => site?.toLowerCase() === userSession.siteName.toLowerCase());
     }
 }

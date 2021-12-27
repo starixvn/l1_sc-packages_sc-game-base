@@ -56,4 +56,42 @@ describe("isSiteExcluded", () => {
         // assert
         expect(value).toBe(true);
     });
+
+    it("return false when game contains exclusion config but value is null", () => {
+        // arrange
+        const validator = new PlayGamePermissionValidator(definition, gameData, userSignInPublisher);
+        const userSession = {siteName: "lumi", partnerId: "2W"};
+        gameData.partnerGameSiteExclusions = [{
+            partnerId: "2W",
+            type: "game_site_exclusions",
+            value: {
+                "2": [null]
+            }
+        }];
+
+        // act
+        const value = validator.isSiteExcluded(userSession);
+
+        // assert
+        expect(value).toBe(false);
+    });
+
+    it("return false when game contains exclusion config but not same value", () => {
+        // arrange
+        const validator = new PlayGamePermissionValidator(definition, gameData, userSignInPublisher);
+        const userSession = {siteName: "lumi", partnerId: "2W"};
+        gameData.partnerGameSiteExclusions = [{
+            partnerId: "2W",
+            type: "game_site_exclusions",
+            value: {
+                "2": ["lumi2"]
+            }
+        }];
+
+        // act
+        const value = validator.isSiteExcluded(userSession);
+
+        // assert
+        expect(value).toBe(false);
+    });
 });
