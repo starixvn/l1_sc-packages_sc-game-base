@@ -1,3 +1,10 @@
+## [2.2.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v2.2.0...v2.2.1) (2021-12-28)
+
+
+### Bug Fixes
+
+* upgrade sc-base-apis ([8eb6962](https://git3.nexdev.net/sc-packages/sc-game-base/commit/8eb6962229c086cfec730a1431a75e68ac2d5392))
+
 # [2.2.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v2.1.0...v2.2.0) (2021-12-28)
 
 
