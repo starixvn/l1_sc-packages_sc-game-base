@@ -1,3 +1,31 @@
+# [2.2.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v2.1.0...v2.2.0) (2021-12-28)
+
+
+### Bug Fixes
+
+* enable check new namespaces for socket monitoring ([ee88dfd](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ee88dfdccc275672a898848d453e3da9e121c63e))
+* excluded site validator ([f92d7ad](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f92d7add47e9d5400302c983078af68be6387c8b))
+* export PlayGamePermissionValidator ([d64e001](https://git3.nexdev.net/sc-packages/sc-game-base/commit/d64e0015379214d9e190a734f58309a3660cc48f))
+* remove get partners ([590b5d4](https://git3.nexdev.net/sc-packages/sc-game-base/commit/590b5d422a184c0288a5c0c80a82385c789443cf))
+* remove partners on game data ([bee42e3](https://git3.nexdev.net/sc-packages/sc-game-base/commit/bee42e3c8a63c6c3691c476b0aee71adfe041d40))
+* remove socket.io/admin-ui ([b2205d6](https://git3.nexdev.net/sc-packages/sc-game-base/commit/b2205d60452467174c47f5f5ac7d7e0f921dbde6))
+* sensitive case site exclusion ([a44aa2a](https://git3.nexdev.net/sc-packages/sc-game-base/commit/a44aa2aedf1ee06fa22f89d67d921aaf63964ed4))
+* site exclusion null ([c8d388e](https://git3.nexdev.net/sc-packages/sc-game-base/commit/c8d388ed835909ad4efd5c5dd3518e9ca492f993))
+* sitename values is null for specific game ([f280011](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f2800114bb78b3876c7ede78467e227a64ad84b0))
+* update exchange reload field name ([63a1eaf](https://git3.nexdev.net/sc-packages/sc-game-base/commit/63a1eaf2831c12f547178008ec4a50e27f0f6d9d))
+
+
+### Features
+
+* add currencies & exchange rate config to first message for monitor page ([9b84c63](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9b84c632c89939ba23380cfc2893765c7918cc25))
+* add partner Id to ingame info for monitor page ([0e1c3ef](https://git3.nexdev.net/sc-packages/sc-game-base/commit/0e1c3efb03d888f7b0532804b3e851af3e21821a))
+* broadcast currency & exchange rate config to monitoring page ([7ea0359](https://git3.nexdev.net/sc-packages/sc-game-base/commit/7ea0359c024a5b2f2a6f36e3fe515c5e7f576301))
+* broadcast partners for monitor page ([6ba3b2d](https://git3.nexdev.net/sc-packages/sc-game-base/commit/6ba3b2d9f3600a450b142c01ef56f7d46f185738))
+* broadcast partners to monitor page on starting new round ([cd63619](https://git3.nexdev.net/sc-packages/sc-game-base/commit/cd63619c03fc79e97703993019c7276ee134cd1b))
+* get partners each round ([516bfc8](https://git3.nexdev.net/sc-packages/sc-game-base/commit/516bfc85e4496ce433be3002930f747f654f8387))
+* update sc-base-apis 1.13.1-beta.0 ([f73c491](https://git3.nexdev.net/sc-packages/sc-game-base/commit/f73c491623f2513de99d5f25daeecee4ac14f637))
+* upgrade sc-base-database 1.9.1-beta.0 ([c3500a2](https://git3.nexdev.net/sc-packages/sc-game-base/commit/c3500a2295f035431ebb5091ef7efa6e3f2ed107))
+
 # [2.1.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v2.0.0...v2.1.0) (2021-12-07)
 
 
