@@ -1,7 +1,7 @@
 import GameData from "../game-data";
 import GameDefinition from "../game-definition";
 
-export class PlayGamePermissionValidator {
+export default class PlayGamePermissionValidator {
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
@@ -17,6 +17,7 @@ export class PlayGamePermissionValidator {
 
         if (!playPermission) {
             this.userSignInPublisher.publishNotPermittedToPlayMessage(socketClient, this.definition.id);
+
             return false;
         }
 
@@ -50,6 +51,12 @@ export class PlayGamePermissionValidator {
     isSiteExcluded(userSession) {
         const gameSiteExclusion = this.gameData.partnerGameSiteExclusions.find((config) => config.partnerId === userSession.partnerId);
 
-        return gameSiteExclusion?.value?.[this.definition.id] && gameSiteExclusion.value[this.definition.id].includes(userSession.siteName);
+        const excludeSiteConfig = gameSiteExclusion?.value[this.definition.id];
+
+        if(!excludeSiteConfig){
+            return false;
+        }
+
+        return excludeSiteConfig.some((site) => site?.toLowerCase() === userSession.siteName.toLowerCase());
     }
 }

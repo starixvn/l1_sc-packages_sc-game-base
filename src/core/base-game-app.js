@@ -1,4 +1,3 @@
-import { instrument } from "@socket.io/admin-ui";
 import * as awilix from "awilix";
 import cors from "cors";
 import express from "express";
@@ -70,11 +69,7 @@ export default class BaseGameApp {
             credentials: true,
         };
 
-        const socketServer = new Server(httpServer, opts);
-
-        instrument(socketServer, { auth: false });
-
-        return socketServer;
+        return new Server(httpServer, opts);
     }
 
     async configureServices(app) {

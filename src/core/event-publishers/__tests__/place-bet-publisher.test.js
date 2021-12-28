@@ -1,12 +1,17 @@
 import PlaceBetPublisher from "../place-bet-publisher";
 import GameData from "../../game-data";
 
+const gameData = new GameData();
+const gameName = "game";
+
+const initPublisher = function () {
+    return new PlaceBetPublisher(gameName, gameData);
+};
+
 describe("publishGameFailedBet test", () => {
     it("should call publishToUser to selected userid", () => {
         // arrange
-        const gameData = new GameData();
-        const gameName = "game";
-        const publisher = new PlaceBetPublisher(gameName, gameData);
+        const publisher = initPublisher();
         publisher.publishToUser = jest.fn();
         const playerId = 1;
         const payload = { endBet: -1 };
@@ -20,9 +25,7 @@ describe("publishGameFailedBet test", () => {
 describe("publishSuccessBet test", () => {
     it("should call publishToUser to selected userid", () => {
         // arrange
-        const gameData = new GameData();
-        const gameName = "game";
-        const publisher = new PlaceBetPublisher(gameName, gameData);
+        const publisher = initPublisher();
         publisher.publishToUser = jest.fn();
         const playerId = 1;
         const payload = { endBet: 100 };
@@ -36,9 +39,7 @@ describe("publishSuccessBet test", () => {
 describe("publishGeneralFailedBet test", () => {
     it("should call publishToUser to selected userid", () => {
         // arrange
-        const gameData = new GameData();
-        const gameName = "game";
-        const publisher = new PlaceBetPublisher(gameName, gameData);
+        const publisher = initPublisher();
         publisher.publishToUser = jest.fn();
         const playerId = 1;
         const payload = { endBet: 100 };

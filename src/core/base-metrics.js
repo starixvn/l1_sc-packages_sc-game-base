@@ -19,7 +19,7 @@ export default class BaseMetrics {
             this.socketIOMetrics = prometheus.metrics(socketServer, {
                 collectDefaultMetrics: true,
                 createServer: false,
-                checkForNewNamespaces: false,
+                checkForNewNamespaces: true,
             });
 
             this.initBetProcessedTimeMetrics();
