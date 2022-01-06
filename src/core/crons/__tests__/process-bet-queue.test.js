@@ -1,3 +1,4 @@
+import Chance from "chance";
 import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import noticeHelper from "sc-common/helpers/notice-helper";
@@ -30,7 +31,12 @@ gameData.gameConfigs = {
 const definition = new GameDefinition({
     id: 1,
     name: "game name",
-    durations: { lockingBet: 5, wholeRound: 30, placingBets: 25 },
+    durations: {
+        wholeRound: 36,
+        placingBets: 30,
+        lockingBet: 5,
+        shakeThePlateDuration: 1
+    },
     choicesMapper: { red2: 1 },
 });
 const placeBetPublisher = new PlaceBetPublisher(definition.name, gameData);
@@ -110,12 +116,33 @@ describe("proceed freeBet", () => {
     });
 });
 
-describe("proceedBet in blocking time tests", () => {
-    it("dequeue bet in blocking time, should call handleFailedBet, placeBetPublisher.publishGameFailedBet", async () => {
+describe("proceedBet should reject when dequeue in locking bet duration", () => {
+    it("after locking bet time", async () => {
         // arange
-        gameData.remainingTime = 3;
+        gameData.remainingTime = definition.durations.lockingBet - 1;
         const placeBet = jest.fn();
-        placeBet.mockReturnValueOnce({});
+        placeBet.mockReturnValueOnce({ isOk: true, response: {} });
+        const proceedBetQueue = initBetQueue(placeBet);
+        const player = mockPlayer();
+
+        // act
+        await proceedBetQueue.proceedBet(player, mockPayload());
+
+        // assert
+        expect(placeBet).not.toHaveBeenCalled();
+        expect(userInfosRepository.updateOne).not.toHaveBeenCalled();
+        expect(placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(player.UID, {
+            endBet: -1,
+            betChoice: "red2",
+            notice: { errorCode: noticeHelper.placeBetNextRound },
+        });
+    });
+
+    it("at locking bet time", async () => {
+        // arange
+        gameData.remainingTime = definition.durations.lockingBet;
+        const placeBet = jest.fn();
+        placeBet.mockReturnValueOnce({ isOk: true, response: {} });
         const proceedBetQueue = initBetQueue(placeBet);
         const player = mockPlayer();
 

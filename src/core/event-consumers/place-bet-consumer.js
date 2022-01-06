@@ -38,7 +38,7 @@ export default class PlaceBetConsumer {
             },
             {
                 failure:
-                    this.gameData.remainingTime < this.definition.durations.lockingBet ||
+                    this.gameData.remainingTime <= this.definition.durations.lockingBet ||
                     this.gameData.remainingTime >= this.definition.durations.placingBets,
                 notice: this.getNoticeObj(helpers.noticeHelper.placeBetNextRound),
             },
