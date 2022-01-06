@@ -224,8 +224,7 @@ export default class TableGameBot extends BaseBot {
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
                 const user = await this.userInfosRepository
-                    .findOneAndUpdate({ id: bot.id, red: { $gt: amount } }, { $inc: { red: -amount } }, { new: true })
-                    .lean();
+                    .findOneAndUpdate({ id: bot.id, red: { $gt: amount } }, { $inc: { red: -amount } }, { new: true, lean: true});
 
                 if (user) {
                     await this.insertOrUpdateBet(bot, choice, amount, currentBet);

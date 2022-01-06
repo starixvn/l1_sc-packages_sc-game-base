@@ -215,13 +215,7 @@ describe("table game bot test", () => {
         gameData.remainingTime = 10;
         gameData.gameConfigs = { bot_maxbet: 5000 };
         tempBetsRepository.findOne().lean().exec.mockReturnValue(null);
-        spyOn(userInfosRepository, "findOne").and.callFake(() => {
-            return {
-                exec: () => {
-                    return bot;
-                },
-            };
-        });
+        userInfosRepository.findOneAndUpdate.mockReturnValueOnce(bot);
 
         spyOn(tableBot, "insertOrUpdateBet");
 
