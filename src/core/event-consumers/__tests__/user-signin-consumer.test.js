@@ -8,7 +8,7 @@ import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
 import { PlayGamePermissionValidator } from "../../validators";
 import UserSignInConsumer from "../user-signin-consumer";
-import UserSignInFixture from "./user-signin-fixture";
+import UserSignInFixture from "../__fixtures__/user-signin-fixture";
 
 jest.mock("sc-base-apis", () => ({
     getBetLimit: function () {
