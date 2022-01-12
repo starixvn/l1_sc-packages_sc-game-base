@@ -123,7 +123,7 @@ export default class ProcessBetQueue {
             },
             {
                 failure:
-                    this.gameData.remainingTime < this.definition.durations.lockingBet ||
+                    this.gameData.remainingTime <= this.definition.durations.lockingBet ||
                     this.gameData.remainingTime >= this.definition.durations.placingBets,
                 notice: { errorCode: helpers.noticeHelper.placeBetNextRound },
             },

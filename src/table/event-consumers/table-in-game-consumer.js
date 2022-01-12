@@ -10,12 +10,14 @@ export default class TableInGameConsumer extends InGameConsumer {
         }
 
         const payload = await this.buildPayload(realPlayer);
+        const { red, avatarId, type, rate } = payload.user;
         const player = {
             id: realPlayer.UID,
             name: realPlayer.profile.name,
-            red: payload.user.red,
-            avatarId: payload.user.avatarId,
-            type: payload.user.type,
+            red,
+            avatarId,
+            type,
+            rate,
         };
 
         if (!this.gameData.players[realPlayer.UID]) {
@@ -40,22 +42,21 @@ export default class TableInGameConsumer extends InGameConsumer {
     }
 
     buildPlayersPayload(realPlayer) {
-        const players = Object.values(this.gameData.players).reduce((playerList, player) => {
-            const { id, name, red, avatarId, type, patternId } = player;
+        return Object.values(this.gameData.players).reduce((playerList, player) => {
+            const { id, name, red, avatarId, type, patternId, rate } = player;
 
-            playerList[id] = {
-                id,
-                name,
-                red,
-                avatarId,
-                type: patternId > 0 ? false : type,
-            };
+            if(id !== realPlayer.UID){
+                playerList[id] = {
+                    id,
+                    name,
+                    red,
+                    avatarId,
+                    type: patternId > 0 ? false : type,
+                    rate,
+                };
+            }
 
             return playerList;
         }, {});
-
-        delete players[realPlayer.UID];
-
-        return players;
     }
 }
