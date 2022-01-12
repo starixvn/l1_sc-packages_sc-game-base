@@ -8,6 +8,7 @@ import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
 import { PlayGamePermissionValidator } from "../../validators";
 import UserSignInConsumer from "../user-signin-consumer";
+import UserSignInFixture from "./user-signin-fixture";
 
 jest.mock("sc-base-apis", () => ({
     getBetLimit: function () {
@@ -22,7 +23,9 @@ jest.mock("sc-base-apis", () => ({
 }));
 
 describe("user-signin-consumer", () => {
+    let payload, consumer;
     const gameData = new GameData(0);
+    const fixture = new UserSignInFixture();
 
     /** @type {UserSignInPublisher}*/
     const userSignInPublisher = stub(UserSignInPublisher);
@@ -36,18 +39,20 @@ describe("user-signin-consumer", () => {
     /** @type {PlayGamePermissionValidator}*/
     const playGamePermissionValidator = stub(PlayGamePermissionValidator);
 
-    const consumer = new UserSignInConsumer(
-        gameData,
-        userSignInPublisher,
-        userInfosRepository,
-        userSessionsRepository,
-        playGamePermissionValidator
-    );
-
     /** @type {Socket} */
     const socketClient = stub(Socket);
 
-    beforeEach(() => {});
+    beforeEach(() => {
+        jest.clearAllMocks();
+
+        consumer = new UserSignInConsumer(
+            gameData,
+            userSignInPublisher,
+            userInfosRepository,
+            userSessionsRepository,
+            playGamePermissionValidator
+        );
+    });
 
     describe("consume", () => {
         describe("undefined/null payload", () => {
@@ -79,7 +84,8 @@ describe("user-signin-consumer", () => {
         describe("unexisting session ID", () => {
             it("publish unauthorized message", async () => {
                 // arrange
-                const payload = arrangeUnexistingSessionId();
+                const payload = fixture.SignInPayload();
+                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
 
                 // act
                 await consumer.consume(socketClient, payload);
@@ -90,7 +96,8 @@ describe("user-signin-consumer", () => {
 
             it("disconnect the socket", async () => {
                 // arrange
-                const payload = arrangeUnexistingSessionId();
+                const payload = fixture.SignInPayload();
+                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
 
                 // act
                 await consumer.consume(socketClient, payload);
@@ -101,9 +108,14 @@ describe("user-signin-consumer", () => {
         });
 
         describe("unexisting userInfo", () => {
+            beforeEach(() => {
+                payload = fixture.SignInPayload();
+                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(fixture.UserSession());
+                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(null);
+            });
+
             it("publish unauthorized message to client", async () => {
                 // arrange
-                const payload = arrangeUnexistingUserInfo();
 
                 // act
                 await consumer.consume(socketClient, payload);
@@ -114,7 +126,6 @@ describe("user-signin-consumer", () => {
 
             it("unexisting userInfo makes the consumer disconnect the socket", async () => {
                 // arrange
-                const payload = arrangeUnexistingUserInfo();
 
                 // act
                 await consumer.consume(socketClient, payload);
@@ -125,9 +136,15 @@ describe("user-signin-consumer", () => {
         });
 
         describe("mismatching username between payload and stored session", () => {
+            beforeEach(() => {
+                payload = fixture.SignInPayload();
+
+                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(fixture.UserSession());
+                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(fixture.UserInfo());
+            });
+
             it("publish unauthorized message", async () => {
                 // arrange
-                const payload = arrangeMismatchUsername();
 
                 // act
                 await consumer.consume(socketClient, payload);
@@ -138,7 +155,6 @@ describe("user-signin-consumer", () => {
 
             it("disconnect the socket", async () => {
                 // arrange
-                const payload = arrangeMismatchUsername();
 
                 // act
                 await consumer.consume(socketClient, payload);
@@ -149,9 +165,17 @@ describe("user-signin-consumer", () => {
         });
 
         describe("mismatching browser agent between payload and stored session", () => {
+            beforeEach(() => {
+                payload = fixture.SignInPayload();
+
+                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(fixture.UserSession());
+                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(fixture.UserInfo());
+
+                socketClient.request = { headers: { "user-agent": "firefox" } };
+            });
+
             it("publish unauthorized message", async () => {
                 // arrange
-                const payload = arrangeMismatchBrowserAgent();
 
                 // act
                 await consumer.consume(socketClient, payload);
@@ -162,7 +186,6 @@ describe("user-signin-consumer", () => {
 
             it("disconnect the socket", async () => {
                 // arrange
-                const payload = arrangeMismatchBrowserAgent();
 
                 // act
                 await consumer.consume(socketClient, payload);
@@ -173,9 +196,21 @@ describe("user-signin-consumer", () => {
         });
 
         describe("valid payload", () => {
+            const browserAgent = "chrome";
+            let userSession;
+
+            beforeEach(() => {
+                payload = fixture.SignInPayload("validUser", browserAgent);
+                userSession = payload.ss;
+
+                userSessionsRepository.findOne().lean().exec.mockReturnValue(payload.ss);
+                userInfosRepository.findOne().lean().exec.mockReturnValue(fixture.UserInfo());
+
+                socketClient.request = { headers: { "user-agent": browserAgent } };
+            });
+
             it("publish signedIn message", async () => {
                 // arrange
-                const { payload } = arrangeValidSession();
                 spyOn(playGamePermissionValidator, "validate").and.returnValue(true);
 
                 // act
@@ -187,7 +222,6 @@ describe("user-signin-consumer", () => {
 
             it("add to realPlayers", async () => {
                 // arrange
-                const { payload } = arrangeValidSession();
                 const socketClientId = "socket id";
 
                 gameData.realPlayers = [];
@@ -203,9 +237,7 @@ describe("user-signin-consumer", () => {
 
             it("cached unique member", async () => {
                 // arrange
-                const { payload, userSession } = arrangeValidSession();
                 const socketClientId = "socket id";
-
                 gameData.realPlayers[socketClientId] = { UID: userSession.userId, socketClient: stub(Socket) };
                 socketClient.id = socketClientId;
 
@@ -219,78 +251,4 @@ describe("user-signin-consumer", () => {
             });
         });
     });
-
-    const arrangeUnexistingSessionId = () => {
-        const payload = { ss: "unexisting ID" };
-
-        userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
-
-        return payload;
-    };
-
-    const arrangeUnexistingUserInfo = () => {
-        const payload = { ss: "valid ID but no associated userInfo" };
-
-        userSessionsRepository.findOne().lean().exec.mockReturnValueOnce({ userId: "unexisting user ID" });
-        userInfosRepository.findOne().lean().exec.mockReturnValueOnce(null);
-
-        return payload;
-    };
-
-    const arrangeMismatchUsername = () => {
-        const payload = {
-            ss: "any valid session ID",
-            username: "username A",
-        };
-        const storedSession = {
-            userId: "valid user ID",
-            username: "username B",
-        };
-        const storedUserInfo = { name: "hello world" };
-
-        userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(storedSession);
-        userInfosRepository.findOne().lean().exec.mockReturnValueOnce(storedUserInfo);
-
-        return payload;
-    };
-
-    const arrangeMismatchBrowserAgent = () => {
-        const payload = {
-            ss: "any valid session ID",
-            username: "username",
-        };
-        const storedSession = {
-            userId: "valid user ID",
-            username: "username",
-            browserUserAgent: "chrome",
-        };
-        const storedUserInfo = { name: "hello worlld" };
-
-        userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(storedSession);
-        userInfosRepository.findOne().lean().exec.mockReturnValueOnce(storedUserInfo);
-
-        socketClient.request = { headers: { "user-agent": "firefox" } };
-
-        return payload;
-    };
-
-    const arrangeValidSession = (browserAgent = "chrome", storedBrowserAgent = "chrome") => {
-        const payload = {
-            ss: "any valid session ID",
-            username: "username",
-        };
-        const storedSession = {
-            userId: "valid user ID",
-            username: "username",
-            browserUserAgent: storedBrowserAgent,
-        };
-        const storedUserInfo = { name: "hello worlld" };
-
-        userSessionsRepository.findOne().lean().exec.mockReturnValue(storedSession);
-        userInfosRepository.findOne().lean().exec.mockReturnValue(storedUserInfo);
-
-        socketClient.request = { headers: { "user-agent": browserAgent } };
-
-        return { payload, userSession: storedSession, userInfo: storedUserInfo };
-    };
 });
