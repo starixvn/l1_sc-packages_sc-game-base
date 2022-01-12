@@ -1,3 +1,18 @@
+# [2.3.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v2.2.1...v2.3.0) (2022-01-12)
+
+
+### Bug Fixes
+
+* add lean as option when findOneAndUpdate bot ([11e471f](https://git3.nexdev.net/sc-packages/sc-game-base/commit/11e471f358e6e9dc752fb7faa9ac93d50a96382f))
+* include exchange rate to ingame payload ([ba50351](https://git3.nexdev.net/sc-packages/sc-game-base/commit/ba503514fa4ddaff8e5605a976cbf7816b978b19))
+* reject bet at locking time ([aa706fe](https://git3.nexdev.net/sc-packages/sc-game-base/commit/aa706fe924b4a3a3b66eca014e42512b30e43386))
+* update partner config model ([9b9e0bc](https://git3.nexdev.net/sc-packages/sc-game-base/commit/9b9e0bcaf7ecdaa12a731b100ba2dc9743b2d4f4))
+
+
+### Features
+
+* upgrade sc-base-apis 1.14.2-beta.0 ([dc105fc](https://git3.nexdev.net/sc-packages/sc-game-base/commit/dc105fc40c93e5522a6fcea56b303077dc34cbc5))
+
 ## [2.2.1](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v2.2.0...v2.2.1) (2021-12-28)
 
 
