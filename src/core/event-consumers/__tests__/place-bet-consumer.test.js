@@ -157,7 +157,7 @@ describe("composeValidationCriteria tests", () => {
         },
     };
     gameData.remainingTime = 20;
-  
+
     const gameDefinition = initGameDefinition();
 
     it("return criterons", () => {
@@ -264,6 +264,54 @@ describe("composeBettingTimeValidationCriteria tests", () => {
     });
 });
 
+describe("composeHedgeBetValidationCriteria tests", () => {
+    const playerName = "nhanvat01";
+    const player = mockPlayer(playerName);
+
+    const gameData = initGameData();
+    gameData.ingame = {
+        [playerName]: {
+            name: player.profile.name,
+            betTracks: {
+                choice01: 30,
+            },
+            betQueue: [],
+        },
+    };
+    gameData.remainingTime = 20;
+
+    const gameDefinition = initGameDefinition();
+
+    it("return no failure when NOT having another bet choice on same hedge group", () => {
+        // Arrange
+        const betChoice = "choice03";
+        const publisher = new BaseEventPublisher("", gameData);
+        const placeBetConsumer = new PlaceBetConsumer(gameDefinition, gameData, publisher);
+
+        // Act
+        const actualResult = placeBetConsumer.composeHedgeBetValidationCriteria(betChoice, player);
+
+        // Assert
+        expect(actualResult.find((x) => x.failure)).toBe(undefined);
+    });
+
+    it("return failure when having another bet choice on same hedge bet group", () => {
+        // Arrange
+        const betChoice = "choice02";
+        const publisher = new BaseEventPublisher("", gameData);
+        const placeBetConsumer = new PlaceBetConsumer(gameDefinition, gameData, publisher);
+
+        // Act
+        const actualResult = placeBetConsumer.composeHedgeBetValidationCriteria(betChoice, player);
+
+        // Assert
+        expect(actualResult.find((x) => x.failure)).toStrictEqual({
+            failure: true,
+            notice: { errorCode: helpers.noticeHelper.disallowHedgeBet, betChoice, hedgeBetGroup: ["choice01", "choice02"] },
+        });
+    });
+});
+
 function mockPlayer(playerName) {
     return {
         UID: "123",
@@ -283,7 +331,8 @@ function initGameDefinition() {
     return new GameDefinition({
         id: 1,
         name: "game",
-        choices: ["choice01"],
+        choices: ["choice01", "choice02", "choice03"],
+        hedgeBetGroups: [["choice01", "choice02"]],
         durations: {
             placingBets: 30,
             lockingBet: 5,
@@ -300,6 +349,8 @@ function initGameData() {
         maxbet: 1000,
         choices_maxbet: {
             choice01: 200,
+            choice02: 200,
+            choice03: 200,
         },
     };
     gameData.currencyGroupGames = [
