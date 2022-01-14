@@ -1,4 +1,4 @@
-import { stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
@@ -8,12 +8,12 @@ import BaseBot from "../base-bot";
 const gameData = new GameData(3);
 const definition = new GameDefinition({ id: 1, name: "game name", durations: { lockingBet: 2 } });
 /** @type {mongoose.Model}*/
-const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
+const userInfosRepository = stubMongoose(mongoose.Model);
 userInfosRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
 
 const initBot = function () {
     return new BaseBot(definition, gameData, userInfosRepository);
-}
+};
 
 describe("reset tests", () => {
     it("should call removeAllBots when botenabled is false", async () => {

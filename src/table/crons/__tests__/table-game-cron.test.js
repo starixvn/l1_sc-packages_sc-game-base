@@ -1,6 +1,6 @@
 import "jest-extended";
 
-import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { logger } from "sc-common";
 
@@ -28,15 +28,14 @@ describe("table game cron test", () => {
     /** @type {RunningRoundInfoPublisher}*/
     const runningRoundInfoPublisher = stub(RunningRoundInfoPublisher);
 
-
     /** @type {logger}*/
     const logService = stub(logger);
 
     /** @type {mongoose.Model}*/
-    const gameConfigsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const gameConfigsRepository = stubMongoose(mongoose.Model);
 
     /** @type {mongoose.Model}*/
-    const roundsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const roundsRepository = stubMongoose(mongoose.Model);
 
     /** @type {TableGameCron}*/
     const tableGameCron = new TableGameCron({
@@ -48,11 +47,11 @@ describe("table game cron test", () => {
         runningRoundInfoPublisher: runningRoundInfoPublisher,
         logService: logService,
         gameConfigsRepository: gameConfigsRepository,
-        roundsRepository: roundsRepository
-    })
+        roundsRepository: roundsRepository,
+    });
 
     it("inherit BaseGameCron", () => {
-        expect(tableGameCron instanceof BaseGameCron)
+        expect(tableGameCron instanceof BaseGameCron);
     });
 
     it("start_always_calls specific methods", async () => {
@@ -66,7 +65,7 @@ describe("table game cron test", () => {
         // assert
         expect(bot.resetInRoomTrackings).toHaveBeenCalled();
         expect(BaseGameCron.prototype.start).toHaveBeenCalled();
-    })
+    });
 
     it("resetForNewRound_always_calls super", () => {
         // arrange
@@ -79,5 +78,5 @@ describe("table game cron test", () => {
         expect(BaseGameCron.prototype.resetForNewRound).toHaveBeenCalled();
         expect(gameData.chips).toEqual({});
         expect(gameData.winningPlayers).toEqual({});
-    })
-})
+    });
+});

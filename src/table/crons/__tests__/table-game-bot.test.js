@@ -1,4 +1,4 @@
-import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
 import { Systems } from "../../../constants/systems";
@@ -16,10 +16,10 @@ describe("table game bot test", () => {
     const publisher = stub(BaseEventPublisher);
 
     /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
+    const userInfosRepository = stubMongoose(mongoose.Model);
 
     /** @type {mongoose.Model}*/
-    const tempBetsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const tempBetsRepository = stubMongoose(mongoose.Model);
 
     const tableBot = new TableGameBot(definition, gameData, publisher, userInfosRepository, tempBetsRepository);
 

@@ -1,4 +1,4 @@
-import { stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
 import BaseEventPublisher from "../../event-publishers/base-event-publisher";
@@ -34,7 +34,7 @@ gameData.exchangeRates = {
 };
 
 /** @type {mongoose.Model}*/
-const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
+const userInfosRepository = stubMongoose(mongoose.Model);
 
 const roundQuery = new RoundQuery();
 const publisher = new BaseEventPublisher();

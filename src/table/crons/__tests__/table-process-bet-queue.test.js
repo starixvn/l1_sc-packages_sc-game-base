@@ -1,6 +1,6 @@
 import "jest-extended";
 
-import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { logger } from "sc-common";
 
@@ -18,13 +18,13 @@ describe("table process bet queue test", () => {
     const logService = stub(logger);
 
     /** @type {mongoose.Model}*/
-    const betsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const betsRepository = stubMongoose(mongoose.Model);
 
     /** @type {mongoose.Model}*/
-    const betLogsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const betLogsRepository = stubMongoose(mongoose.Model);
 
     /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
+    const userInfosRepository = stubMongoose(mongoose.Model);
 
     const betQueue = new TableProcessBetQueue({
         definition,
