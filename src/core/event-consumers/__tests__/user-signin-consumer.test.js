@@ -10,17 +10,9 @@ import { PlayGamePermissionValidator } from "../../validators";
 import UserSignInConsumer from "../user-signin-consumer";
 import UserSignInFixture from "../__fixtures__/user-signin-fixture";
 
-jest.mock("sc-base-apis", () => ({
-    getBetLimit: function () {
-        return {
-            isOk: true,
-            response: {
-                minBet: 1,
-                maxBet: 100,
-            },
-        };
-    },
-}));
+import * as baseApis from "sc-base-apis";
+
+jest.mock("sc-base-apis");
 
 describe("user-signin-consumer", () => {
     let payload, consumer;
@@ -57,52 +49,52 @@ describe("user-signin-consumer", () => {
     describe("consume", () => {
         describe("undefined/null payload", () => {
             it.each([undefined, null])("return undefined", async (payload) => {
-                // act
+                // Act
                 const result = await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(result).toBeUndefined();
             });
 
             it.each([undefined, null])("publish unauthorized message", async (payload) => {
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
             });
 
             it.each([undefined, null])("disconnect the socket", async (payload) => {
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(socketClient.disconnect).toHaveBeenCalled();
             });
         });
 
         describe("unexisting session ID", () => {
             it("publish unauthorized message", async () => {
-                // arrange
+                // Arrange
                 const payload = fixture.SignInPayload();
                 userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
             });
 
             it("disconnect the socket", async () => {
-                // arrange
+                // Arrange
                 const payload = fixture.SignInPayload();
                 userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(socketClient.disconnect).toHaveBeenCalled();
             });
         });
@@ -115,22 +107,22 @@ describe("user-signin-consumer", () => {
             });
 
             it("publish unauthorized message to client", async () => {
-                // arrange
+                // Arrange
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
             });
 
             it("unexisting userInfo makes the consumer disconnect the socket", async () => {
-                // arrange
+                // Arrange
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(socketClient.disconnect).toHaveBeenCalled();
             });
         });
@@ -144,22 +136,22 @@ describe("user-signin-consumer", () => {
             });
 
             it("publish unauthorized message", async () => {
-                // arrange
+                // Arrange
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
             });
 
             it("disconnect the socket", async () => {
-                // arrange
+                // Arrange
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(socketClient.disconnect).toHaveBeenCalled();
             });
         });
@@ -175,22 +167,22 @@ describe("user-signin-consumer", () => {
             });
 
             it("publish unauthorized message", async () => {
-                // arrange
+                // Arrange
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
             });
 
             it("disconnect the socket", async () => {
-                // arrange
+                // Arrange
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(socketClient.disconnect).toHaveBeenCalled();
             });
         });
@@ -207,44 +199,52 @@ describe("user-signin-consumer", () => {
                 userInfosRepository.findOne().lean().exec.mockReturnValue(fixture.UserInfo());
 
                 socketClient.request = { headers: { "user-agent": browserAgent } };
+
+                baseApis.getBetLimit.mockReturnValue({
+                    isOk: true,
+                    response: {
+                        minBet: 1,
+                        maxBet: 100,
+                    },
+                });
             });
 
             it("publish signedIn message", async () => {
-                // arrange
+                // Arrange
                 spyOn(playGamePermissionValidator, "validate").and.returnValue(true);
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(socketClient.emit).toBeCalledWith("signedIn");
             });
 
             it("add to realPlayers", async () => {
-                // arrange
+                // Arrange
                 const socketClientId = "socket id";
 
                 gameData.realPlayers = [];
                 socketClient.id = socketClientId;
                 spyOn(playGamePermissionValidator, "validate").and.returnValue(true);
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 expect(gameData.realPlayers).toContainKey(socketClientId);
             });
 
             it("cached unique member", async () => {
-                // arrange
+                // Arrange
                 const socketClientId = "socket id";
                 gameData.realPlayers[socketClientId] = { UID: userSession.userId, socketClient: stub(Socket) };
                 socketClient.id = socketClientId;
 
-                // act
+                // Act
                 await consumer.consume(socketClient, payload);
 
-                // assert
+                // Assert
                 const allCachedRealPlayers = Object.values(gameData.realPlayers);
 
                 expect(allCachedRealPlayers.filter((realPlayer) => realPlayer.UID === userSession.userId).length).toBe(1);
