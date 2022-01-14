@@ -1,4 +1,4 @@
-import { stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import RoundResultPublisher from "../../event-publishers/round-result-publisher";
 import UserBetResultPublisher from "../../event-publishers/user-bet-result-publisher";
@@ -33,10 +33,10 @@ const userBetResultPublisher = new UserBetResultPublisher();
 const endGame = jest.fn();
 
 /** @type {mongoose.Model}*/
-const roundsRepository = stubMongooseModelStupidly(mongoose.Model);
+const roundsRepository = stubMongoose(mongoose.Model);
 
 /** @type {mongoose.Model}*/
-const betsRepository = stubMongooseModelStupidly(mongoose.Model);
+const betsRepository = stubMongoose(mongoose.Model);
 
 const initConsumer = function () {
     return new SettleGameRoundConsumer({

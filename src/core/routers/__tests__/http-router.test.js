@@ -1,4 +1,4 @@
-import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { logger } from "sc-common";
 
@@ -24,7 +24,7 @@ describe("http router test", () => {
     /** @type {logger} */
     const logService = stub(logger);
     /** @type {mongoose.Model}*/
-    const userSessionsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const userSessionsRepository = stubMongoose(mongoose.Model);
     /** @type {MetricQuery} */
     const metricQuery = stub(MetricQuery);
 

@@ -1,5 +1,5 @@
 import Chance from "chance";
-import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import noticeHelper from "sc-common/helpers/notice-helper";
 import logger from "sc-common/logger";
@@ -35,7 +35,7 @@ const definition = new GameDefinition({
         wholeRound: 36,
         placingBets: 30,
         lockingBet: 5,
-        shakeThePlateDuration: 1
+        shakeThePlateDuration: 1,
     },
     choicesMapper: { red2: 1 },
 });
@@ -43,15 +43,15 @@ const placeBetPublisher = new PlaceBetPublisher(definition.name, gameData);
 /** @type {logger}*/
 const logService = stub(logger);
 /** @type {mongoose.Model}*/
-const betsRepository = stubMongooseModelStupidly(mongoose.Model);
+const betsRepository = stubMongoose(mongoose.Model);
 betsRepository.updateOne = jest.fn();
 
 /** @type {mongoose.Model}*/
-const betLogsRepository = stubMongooseModelStupidly(mongoose.Model);
+const betLogsRepository = stubMongoose(mongoose.Model);
 betLogsRepository.create = jest.fn();
 
 /** @type {mongoose.Model}*/
-const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
+const userInfosRepository = stubMongoose(mongoose.Model);
 userInfosRepository.updateOne = jest.fn();
 
 const baseMetrics = stub(BaseMetrics);

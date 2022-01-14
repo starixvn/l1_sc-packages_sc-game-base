@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stubMongoose } from "jest-micro-auto-stub";
 
 import AdminMonitorConsumer from "../admin-monitor-consumer";
 import AdminPublisher from "../../event-publishers/admin-publisher";
@@ -12,7 +12,7 @@ describe("consume test", () => {
     gameData.remainingTime = 20;
 
     /** @type {mongoose.Model}*/
-    const roundsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const roundsRepository = stubMongoose(mongoose.Model);
 
     it("last round is found, publisher should call publishToAdmin", async () => {
         const adminPublisher = new AdminPublisher("", gameData);
