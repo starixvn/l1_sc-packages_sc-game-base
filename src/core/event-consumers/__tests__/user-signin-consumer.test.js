@@ -211,7 +211,7 @@ describe("user-signin-consumer", () => {
 
             it("publish signedIn message", async () => {
                 // Arrange
-                spyOn(playGamePermissionValidator, "validate").and.returnValue(true);
+                playGamePermissionValidator.validate.mockReturnValueOnce(true);
 
                 // Act
                 await consumer.consume(socketClient, payload);
@@ -223,10 +223,9 @@ describe("user-signin-consumer", () => {
             it("add to realPlayers", async () => {
                 // Arrange
                 const socketClientId = "socket id";
-
                 gameData.realPlayers = [];
                 socketClient.id = socketClientId;
-                spyOn(playGamePermissionValidator, "validate").and.returnValue(true);
+                playGamePermissionValidator.validate.mockReturnValueOnce(true);
 
                 // Act
                 await consumer.consume(socketClient, payload);
