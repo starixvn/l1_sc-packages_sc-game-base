@@ -47,67 +47,89 @@ describe("user-signin-consumer", () => {
     });
 
     describe("consume", () => {
-        describe("undefined/null payload", () => {
-            it.each([undefined, null])("return undefined", async (payload) => {
+        describe("when undefined payload", () => {
+            it("should return undefined", async () => {
                 // Act
-                const result = await consumer.consume(socketClient, payload);
+                const result = await consumer.consume(socketClient, undefined);
 
                 // Assert
                 expect(result).toBeUndefined();
             });
 
-            it.each([undefined, null])("publish unauthorized message", async (payload) => {
+            it("should publish unauthorized message", async () => {
                 // Act
-                await consumer.consume(socketClient, payload);
+                await consumer.consume(socketClient, undefined);
 
                 // Assert
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
             });
 
-            it.each([undefined, null])("disconnect the socket", async (payload) => {
+            it("should disconnect the socket", async () => {
                 // Act
-                await consumer.consume(socketClient, payload);
+                await consumer.consume(socketClient, undefined);
 
                 // Assert
                 expect(socketClient.disconnect).toHaveBeenCalled();
             });
         });
 
-        describe("unexisting session ID", () => {
-            it("publish unauthorized message", async () => {
-                // Arrange
-                const payload = SignInPayload();
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
-
+        describe("when null payload", () => {
+            it("should return undefined", async () => {
                 // Act
-                await consumer.consume(socketClient, payload);
+                const result = await consumer.consume(socketClient, null);
+
+                // Assert
+                expect(result).toBeUndefined();
+            });
+
+            it("should publish unauthorized message", async () => {
+                // Act
+                await consumer.consume(socketClient, null);
 
                 // Assert
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
             });
 
-            it("disconnect the socket", async () => {
-                // Arrange
-                const payload = SignInPayload();
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
-
+            it("should disconnect the socket", async () => {
                 // Act
-                await consumer.consume(socketClient, payload);
+                await consumer.consume(socketClient, null);
 
                 // Assert
                 expect(socketClient.disconnect).toHaveBeenCalled();
             });
         });
 
-        describe("unexisting userInfo", () => {
+        describe("when unexisting session ID", () => {
             beforeEach(() => {
+                payload = SignInPayload();
+                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
+            });
+
+            it("should publish unauthorized message", async () => {
+                // Act
+                await consumer.consume(socketClient, payload);
+
+                // Assert
+                expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
+            });
+
+            it("should disconnect the socket", async () => {
+                // Act
+                await consumer.consume(socketClient, payload);
+
+                // Assert
+                expect(socketClient.disconnect).toHaveBeenCalled();
+            });
+        });
+
+        describe("when unexisting userInfo", () => {
+            beforeEach(() => {});
+
+            it("should publish unauthorized message to client when unexisting userInfo", async () => {
+                // Arrange
                 payload = SignInPayload();
                 userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(UserSession());
                 userInfosRepository.findOne().lean().exec.mockReturnValueOnce(null);
-            });
-
-            it("publish unauthorized message to client", async () => {
-                // Arrange
 
                 // Act
                 await consumer.consume(socketClient, payload);
@@ -116,9 +138,7 @@ describe("user-signin-consumer", () => {
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
             });
 
-            it("unexisting userInfo makes the consumer disconnect the socket", async () => {
-                // Arrange
-
+            it("should disconnect the socket", async () => {
                 // Act
                 await consumer.consume(socketClient, payload);
 
@@ -127,7 +147,7 @@ describe("user-signin-consumer", () => {
             });
         });
 
-        describe("mismatching username between payload and stored session", () => {
+        describe("when mismatching username between payload and stored session", () => {
             beforeEach(() => {
                 payload = SignInPayload();
 
@@ -135,9 +155,7 @@ describe("user-signin-consumer", () => {
                 userInfosRepository.findOne().lean().exec.mockReturnValueOnce(UserInfo());
             });
 
-            it("publish unauthorized message", async () => {
-                // Arrange
-
+            it("should publish unauthorized message", async () => {
                 // Act
                 await consumer.consume(socketClient, payload);
 
@@ -145,9 +163,7 @@ describe("user-signin-consumer", () => {
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
             });
 
-            it("disconnect the socket", async () => {
-                // Arrange
-
+            it("should disconnect the socket", async () => {
                 // Act
                 await consumer.consume(socketClient, payload);
 
@@ -156,7 +172,7 @@ describe("user-signin-consumer", () => {
             });
         });
 
-        describe("mismatching browser agent between payload and stored session", () => {
+        describe("when mismatching browser agent between payload and stored session", () => {
             beforeEach(() => {
                 payload = SignInPayload();
 
@@ -166,9 +182,7 @@ describe("user-signin-consumer", () => {
                 socketClient.request = { headers: { "user-agent": "firefox" } };
             });
 
-            it("publish unauthorized message", async () => {
-                // Arrange
-
+            it("should publish unauthorized message", async () => {
                 // Act
                 await consumer.consume(socketClient, payload);
 
@@ -176,9 +190,7 @@ describe("user-signin-consumer", () => {
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
             });
 
-            it("disconnect the socket", async () => {
-                // Arrange
-
+            it("should disconnect the socket", async () => {
                 // Act
                 await consumer.consume(socketClient, payload);
 
@@ -187,7 +199,7 @@ describe("user-signin-consumer", () => {
             });
         });
 
-        describe("valid payload", () => {
+        describe("when valid payload", () => {
             const browserAgent = "chrome";
             let userSession;
 
@@ -209,7 +221,7 @@ describe("user-signin-consumer", () => {
                 });
             });
 
-            it("publish signedIn message", async () => {
+            it("should publish signedIn message", async () => {
                 // Arrange
                 playGamePermissionValidator.validate.mockReturnValueOnce(true);
 
@@ -220,7 +232,7 @@ describe("user-signin-consumer", () => {
                 expect(socketClient.emit).toBeCalledWith("signedIn");
             });
 
-            it("add to realPlayers", async () => {
+            it("should add to realPlayers", async () => {
                 // Arrange
                 const socketClientId = "socket id";
                 gameData.realPlayers = [];
@@ -234,7 +246,7 @@ describe("user-signin-consumer", () => {
                 expect(gameData.realPlayers).toContainKey(socketClientId);
             });
 
-            it("cached unique member", async () => {
+            it("should cached unique member", async () => {
                 // Arrange
                 const socketClientId = "socket id";
                 gameData.realPlayers[socketClientId] = { UID: userSession.userId, socketClient: stub(Socket) };
