@@ -99,9 +99,9 @@ export default class PlaceBetConsumer {
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
         const hedgeBetGroup = this.definition.hedgeBetGroups.find((group) => group.includes(betChoice));
 
-        const isInvalid = Object.keys(betTracks).some(
-            (betKey) => betTracks[betKey] && hedgeBetGroup?.includes(betKey) && betKey !== betChoice
-        );
+        const isInvalid =
+            hedgeBetGroup &&
+            Object.keys(betTracks).some((betKey) => betTracks[betKey] && hedgeBetGroup.includes(betKey) && betKey !== betChoice);
 
         return [
             {
