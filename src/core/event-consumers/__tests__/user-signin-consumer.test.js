@@ -15,7 +15,7 @@ import * as baseApis from "sc-base-apis";
 
 jest.mock("sc-base-apis");
 
-describe("user-signin-consumer", () => {
+describe("UserSignInConsumer", () => {
     let payload, consumer;
     const gameData = new GameData(0);
 
@@ -47,7 +47,7 @@ describe("user-signin-consumer", () => {
     });
 
     describe("consume", () => {
-        describe("when undefined payload", () => {
+        describe("when payload is undefined", () => {
             it("should return undefined", async () => {
                 // Act
                 const result = await consumer.consume(socketClient, undefined);
@@ -73,7 +73,7 @@ describe("user-signin-consumer", () => {
             });
         });
 
-        describe("when null payload", () => {
+        describe("when payload is null", () => {
             it("should return undefined", async () => {
                 // Act
                 const result = await consumer.consume(socketClient, null);
@@ -99,7 +99,7 @@ describe("user-signin-consumer", () => {
             });
         });
 
-        describe("when unexisting session ID", () => {
+        describe("when session is not exist", () => {
             beforeEach(() => {
                 payload = SignInPayload();
                 userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
@@ -122,10 +122,10 @@ describe("user-signin-consumer", () => {
             });
         });
 
-        describe("when unexisting userInfo", () => {
+        describe("when userInfo is not exist", () => {
             beforeEach(() => {});
 
-            it("should publish unauthorized message to client when unexisting userInfo", async () => {
+            it("should publish unauthorized message to client", async () => {
                 // Arrange
                 payload = SignInPayload();
                 userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(UserSession());
@@ -147,7 +147,7 @@ describe("user-signin-consumer", () => {
             });
         });
 
-        describe("when mismatching username between payload and stored session", () => {
+        describe("when username is mismatched between payload and stored session", () => {
             beforeEach(() => {
                 payload = SignInPayload();
 
@@ -172,7 +172,7 @@ describe("user-signin-consumer", () => {
             });
         });
 
-        describe("when mismatching browser agent between payload and stored session", () => {
+        describe("when browser agent is mismatched between payload and stored session", () => {
             beforeEach(() => {
                 payload = SignInPayload();
 
@@ -199,7 +199,7 @@ describe("user-signin-consumer", () => {
             });
         });
 
-        describe("when valid payload", () => {
+        describe("when payload is valid", () => {
             const browserAgent = "chrome";
             let userSession;
 
