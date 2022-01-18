@@ -106,7 +106,7 @@ export default class PlaceBetConsumer {
         return [
             {
                 failure: isInvalid,
-                notice: this.getNoticeObj(helpers.noticeHelper.disallowHedgeBet, { betChoice, hedgeBetGroup }),
+                notice: this.getNoticeObj(helpers.noticeHelper.disallowHedgeBet, { hedgeBetGroup }),
             },
         ];
     }

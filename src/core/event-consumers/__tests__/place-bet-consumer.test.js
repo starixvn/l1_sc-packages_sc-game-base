@@ -307,7 +307,7 @@ describe("composeHedgeBetValidationCriteria tests", () => {
         // Assert
         expect(actualResult.find((x) => x.failure)).toStrictEqual({
             failure: true,
-            notice: { errorCode: helpers.noticeHelper.disallowHedgeBet, betChoice, hedgeBetGroup: ["choice01", "choice02"] },
+            notice: { errorCode: helpers.noticeHelper.disallowHedgeBet, hedgeBetGroup: ["choice01", "choice02"] },
         });
     });
 });
