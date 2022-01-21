@@ -9,7 +9,7 @@ import GameData from "../../game-data";
 import { PlayGamePermissionValidator } from "../../validators";
 import UserSignInConsumer from "../user-signin-consumer";
 
-import { UserInfo, UserSession, SignInPayload } from "jest-auto-fixture";
+import { Models, Payloads } from "jest-auto-fixture";
 
 import * as baseApis from "sc-base-apis";
 
@@ -101,7 +101,7 @@ describe("UserSignInConsumer", () => {
 
         describe("when session is not exist", () => {
             beforeEach(() => {
-                payload = SignInPayload();
+                payload = Payloads.SignIn();
                 userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
             });
 
@@ -123,14 +123,13 @@ describe("UserSignInConsumer", () => {
         });
 
         describe("when userInfo is not exist", () => {
-            beforeEach(() => {});
+            beforeEach(() => {
+                payload = Payloads.SignIn();
+                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserSession());
+                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(null);
+            });
 
             it("should publish unauthorized message to client", async () => {
-                // Arrange
-                payload = SignInPayload();
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(UserSession());
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(null);
-
                 // Act
                 await consumer.consume(socketClient, payload);
 
@@ -149,10 +148,10 @@ describe("UserSignInConsumer", () => {
 
         describe("when username is mismatched between payload and stored session", () => {
             beforeEach(() => {
-                payload = SignInPayload();
+                payload = Payloads.SignIn();
 
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(UserSession());
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(UserInfo());
+                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserSession());
+                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserInfo());
             });
 
             it("should publish unauthorized message", async () => {
@@ -174,10 +173,10 @@ describe("UserSignInConsumer", () => {
 
         describe("when browser agent is mismatched between payload and stored session", () => {
             beforeEach(() => {
-                payload = SignInPayload();
+                payload = Payloads.SignIn();
 
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(UserSession());
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(UserInfo());
+                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserSession());
+                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserInfo());
 
                 socketClient.request = { headers: { "user-agent": "firefox" } };
             });
@@ -204,11 +203,11 @@ describe("UserSignInConsumer", () => {
             let userSession;
 
             beforeEach(() => {
-                payload = SignInPayload("validUser", browserAgent);
+                payload = Payloads.SignIn({ username: "validUser", browserUserAgent: browserAgent });
                 userSession = payload.ss;
 
                 userSessionsRepository.findOne().lean().exec.mockReturnValue(payload.ss);
-                userInfosRepository.findOne().lean().exec.mockReturnValue(UserInfo());
+                userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
 
                 socketClient.request = { headers: { "user-agent": browserAgent } };
 
