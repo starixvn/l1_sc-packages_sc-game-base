@@ -1,6 +1,15 @@
 export default class GameDefinition {
     constructor(
-        { id = 0, name = "", durations = {}, choices = [], choicesMapper = {}, numberOfRoundHistory = 100, historyPageSize = 8 },
+        {
+            id = 0,
+            name = "",
+            durations = {},
+            choices = [],
+            choicesMapper = {},
+            hedgeBetGroups = [],
+            numberOfRoundHistory = 100,
+            historyPageSize = 8,
+        },
         generateResult,
         settle
     ) {
@@ -14,5 +23,6 @@ export default class GameDefinition {
         this.historyPageSize = historyPageSize;
         this.generateResult = generateResult;
         this.settle = settle;
+        this.hedgeBetGroups = hedgeBetGroups;
     }
 }

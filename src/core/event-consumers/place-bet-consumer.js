@@ -20,8 +20,9 @@ export default class PlaceBetConsumer {
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(roundId) ?? [];
         const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) || [];
         const betChoiceValidationCriteria = this.composeBetChoiceValidationCriteria(betChoice) || [];
+        const hedgeBetValidationCriteria = this.composeHedgeBetValidationCriteria(betChoice, player) || [];
 
-        return bettingTimeValidationCriteria.concat(betChoiceValidationCriteria, betAmountValidationCriteria);
+        return bettingTimeValidationCriteria.concat(betChoiceValidationCriteria, betAmountValidationCriteria, hedgeBetValidationCriteria);
     }
 
     composeBettingTimeValidationCriteria(roundId) {
@@ -90,6 +91,22 @@ export default class PlaceBetConsumer {
             {
                 failure: !this.definition.choices.includes(betChoice),
                 notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
+            },
+        ];
+    }
+
+    composeHedgeBetValidationCriteria(betChoice, player) {
+        const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
+        const hedgeBetGroup = this.definition.hedgeBetGroups.find((group) => group.includes(betChoice));
+
+        const isInvalid =
+            hedgeBetGroup &&
+            Object.keys(betTracks).some((betKey) => betTracks[betKey] && hedgeBetGroup.includes(betKey) && betKey !== betChoice);
+
+        return [
+            {
+                failure: isInvalid,
+                notice: this.getNoticeObj(helpers.noticeHelper.disallowHedgeBet, { hedgeBetGroup }),
             },
         ];
     }
