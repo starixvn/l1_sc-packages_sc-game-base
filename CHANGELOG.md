@@ -1,3 +1,16 @@
+# [2.4.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.3.0...v2.4.0) (2022-01-25)
+
+
+### Bug Fixes
+
+* enhance condition ([2ca675d](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/2ca675d91a782b8d56130ea088ae8491762bea2f))
+* remove redundant prop betChoice on notice msg ([6dbe712](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/6dbe7124eb6bdc6be8026bea02746a418d9007bb))
+
+
+### Features
+
+* disallow hedge bet ([9e2c14b](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/9e2c14bd2ce3f600730ea872e5524cee21046840))
+
 # [2.3.0](https://git3.nexdev.net/sc-packages/sc-game-base/compare/v2.2.1...v2.3.0) (2022-01-12)
 
 
