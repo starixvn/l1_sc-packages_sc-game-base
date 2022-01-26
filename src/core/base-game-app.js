@@ -70,7 +70,7 @@ export default class BaseGameApp {
             credentials: true,
         };
 
-        if (this.appConfigs.useMsgpackParser) {
+        if (this.appConfigs.enableMsgpackParser) {
             opts.parser = MsgpackParser;
         }
 
