@@ -48,13 +48,13 @@ describe("table user signin consumer in testing", () => {
     });
 
     describe("consume", () => {
-        describe("when disabled", () => {
-            it("should publish UM Notice", () => {
+        describe("when game disabled", async () => {
+            it("should publish UM Notice", async () => {
                 // arrange
                 gameData.gameConfigs = { enabled: false, disabled_message: "disabled message" };
 
                 // act
-                consumer.consume(socketClient, {});
+                await consumer.consume(socketClient, {});
 
                 // assert
                 expect(userSignInPublisher.publishUmNotice).toHaveBeenCalled();

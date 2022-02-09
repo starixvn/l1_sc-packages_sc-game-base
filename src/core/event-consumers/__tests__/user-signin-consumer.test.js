@@ -33,6 +33,7 @@ describe("UserSignInConsumer", () => {
 
     /** @type {Socket} */
     const socketClient = stub(Socket);
+    socketClient.request = { headers: { "user-agent": "userAgent" } };
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -53,7 +54,7 @@ describe("UserSignInConsumer", () => {
                 const result = await consumer.consume(socketClient, undefined);
 
                 // Assert
-                expect(result).toBeUndefined();
+                expect(result).toBeFalse();
             });
 
             it("should publish unauthorized message", async () => {
@@ -79,7 +80,7 @@ describe("UserSignInConsumer", () => {
                 const result = await consumer.consume(socketClient, null);
 
                 // Assert
-                expect(result).toBeUndefined();
+                expect(result).toBeFalse();
             });
 
             it("should publish unauthorized message", async () => {

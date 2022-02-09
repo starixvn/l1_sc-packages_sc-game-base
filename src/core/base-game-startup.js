@@ -64,6 +64,11 @@ export default class BaseGameStartup {
         const gameNameInSocketNamespace = this.definition.name.toLowerCase();
         this.initHttpRouter(app);
 
+        const router = this.container.resolve(this.dependencies.socketRouter);
+        socketServer.of(`/user/${gameNameInSocketNamespace}`).use(async (socket, next) => {
+            await router.authorize(socket, next);
+        });
+
         socketServer.of(`/user/${gameNameInSocketNamespace}`).on("connection", (socketClient) => {
             this.initSocketRouter(socketClient);
         });

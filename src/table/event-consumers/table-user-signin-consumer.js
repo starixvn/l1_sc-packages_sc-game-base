@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { Socket } from "socket.io";
 
 import { Systems } from "../../constants";
 import UserSignInConsumer from "./../../core/event-consumers/user-signin-consumer";
@@ -21,24 +20,21 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
         this.definition = definition;
     }
 
-    /**
-     * @param {Socket} socketClient
-     */
     async consume(socketClient, payload) {
         if (payload?.system === Systems.Mobi) {
-            await super.consume(socketClient, payload);
-            return;
+            return super.consume(socketClient, payload);
         }
 
         const configs = this.gameData.gameConfigs;
         const configuredlyDisabled = !configs || !configs.enabled;
         const disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
 
-        if (!disabled) {
-            await super.consume(socketClient, payload);
-        } else {
+        if (disabled) {
             this.userSignInPublisher.publishUmNotice(socketClient, this.gameData.umMessages);
+            return false;
         }
+
+        return super.consume(socketClient, payload);
     }
 
     handleSignInSuccess(socketClient, userInfo, userSession) {

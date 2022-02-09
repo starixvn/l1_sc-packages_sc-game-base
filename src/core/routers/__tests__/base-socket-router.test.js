@@ -36,6 +36,7 @@ describe("base socket router test", () => {
         on: jest.fn(),
         emit: jest.fn(),
         disconnect: jest.fn(),
+        use: jest.fn(),
     };
 
     const router = new BaseSocketRouter({
@@ -61,37 +62,21 @@ describe("base socket router test", () => {
             router.init(socketClient);
 
             // assert
-            expect(socketClient.on).toHaveBeenCalledTimes(5);
+            expect(socketClient.on).toHaveBeenCalledTimes(6);
         });
     });
 
     describe("handlePlaceBet", () => {
-        describe("when invalidRequest", () => {
-            it("should not call place bet consumer", async () => {
-                // arrange
-                spyOn(router, "verify").and.returnValue(false);
-                spyOn(placeBetConsumer, "consume");
+        it("should calls place bet consumer", async () => {
+            // arrange
+            spyOn(router, "verify").and.returnValue(true);
+            spyOn(placeBetConsumer, "consume");
 
-                // act
-                await router.handlePlaceBet({});
+            // act
+            await router.handlePlaceBet({});
 
-                // assert
-                expect(placeBetConsumer.consume).not.toHaveBeenCalled();
-            });
-        });
-
-        describe("when validRequest", () => {
-            it("should calls place bet consumer", async () => {
-                // arrange
-                spyOn(router, "verify").and.returnValue(true);
-                spyOn(placeBetConsumer, "consume");
-
-                // act
-                await router.handlePlaceBet({});
-
-                // assert
-                expect(placeBetConsumer.consume).toHaveBeenCalled();
-            });
+            // assert
+            expect(placeBetConsumer.consume).toHaveBeenCalled();
         });
 
         describe("when haveException", () => {
@@ -139,32 +124,16 @@ describe("base socket router test", () => {
     });
 
     describe("handleInGame", () => {
-        describe("when invalidRequest", () => {
-            it("should not call in game consumer", async () => {
-                // arrange
-                spyOn(router, "verify").and.returnValue(false);
-                spyOn(inGameConsumer, "consume");
+        it("should calls in game consumer", async () => {
+            // arrange
+            spyOn(router, "verify").and.returnValue(true);
+            spyOn(inGameConsumer, "consume");
 
-                // act
-                await router.handleInGame();
+            // act
+            await router.handleInGame();
 
-                // assert
-                expect(inGameConsumer.consume).not.toHaveBeenCalled();
-            });
-        });
-
-        describe("when validRequest", () => {
-            it("should calls in game consumer", async () => {
-                // arrange
-                spyOn(router, "verify").and.returnValue(true);
-                spyOn(inGameConsumer, "consume");
-
-                // act
-                await router.handleInGame();
-
-                // assert
-                expect(inGameConsumer.consume).toHaveBeenCalled();
-            });
+            // assert
+            expect(inGameConsumer.consume).toHaveBeenCalled();
         });
 
         describe("when have exception", () => {
@@ -183,33 +152,17 @@ describe("base socket router test", () => {
     });
 
     describe("handleGetHistory", () => {
-        describe("when invalidRequest", () => {
-            it("should not call query history", async () => {
-                // arrange
-                spyOn(router, "verify").and.returnValue(false);
-                spyOn(historyQuery, "queryHistory");
+        it("should query history", async () => {
+            // arrange
+            spyOn(router, "verify").and.returnValue(true);
+            spyOn(historyQuery, "queryHistory");
 
-                // act
-                await router.handleGetHistory({});
+            // act
+            await router.handleGetHistory({});
 
-                // assert
-                expect(historyQuery.queryHistory).not.toHaveBeenCalled();
-            });
-        });
-
-        describe("when validRequest", () => {
-            it("should query history", async () => {
-                // arrange
-                spyOn(router, "verify").and.returnValue(true);
-                spyOn(historyQuery, "queryHistory");
-
-                // act
-                await router.handleGetHistory({});
-
-                // assert
-                expect(historyQuery.queryHistory).toHaveBeenCalled();
-                expect(socketClient.emit).toHaveBeenCalled();
-            });
+            // assert
+            expect(historyQuery.queryHistory).toHaveBeenCalled();
+            expect(socketClient.emit).toHaveBeenCalled();
         });
 
         describe("when have exception", () => {
@@ -275,9 +228,10 @@ describe("base socket router test", () => {
                 gameData.realPlayers = {};
                 router.socketClient = socketClient;
                 spyOn(userSignInPublisher, "publishUnauthorizedMessage");
+                const args = [];
 
                 // act
-                const result = await router.verify();
+                const result = await router.verify(null, args);
 
                 // assert
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();

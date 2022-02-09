@@ -49,6 +49,12 @@ export default class BaseSocketRouter {
      */
     init(socketClient) {
         this.socketClient = socketClient;
+
+        this.socketClient.on("connection_error", (e) => {
+            this.logService.logError(e);
+        });
+        this.socketClient.use(([event, ...args], next) => this.authorizeRequest(event, args, next));
+
         this.socketClient.on("bet", this.handlePlaceBet.bind(this));
         this.socketClient.on("signin", this.handleSignIn.bind(this));
         this.socketClient.on("inGame", this.handleInGame.bind(this));
@@ -58,10 +64,6 @@ export default class BaseSocketRouter {
 
     handlePlaceBet(payload) {
         try {
-            if (!this.verify()) {
-                return;
-            }
-
             this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
         } catch (error) {
             this.logService.logError(error);
@@ -78,10 +80,6 @@ export default class BaseSocketRouter {
 
     async handleInGame() {
         try {
-            if (!this.verify()) {
-                return;
-            }
-
             await this.inGameConsumer.consume(this.gameData.realPlayers[this.socketClient.id]);
         } catch (error) {
             this.logService.logError(error);
@@ -90,10 +88,6 @@ export default class BaseSocketRouter {
 
     async handleGetHistory(payload) {
         try {
-            if (!this.verify()) {
-                return;
-            }
-
             const history = await this.historyQuery.queryHistory(
                 this.gameData.realPlayers[this.socketClient.id],
                 payload.page,
@@ -114,26 +108,45 @@ export default class BaseSocketRouter {
         }
     }
 
-    verify(payload) {
+    verify(event, args) {
+        if (event === "signin") {
+            return true;
+        }
+
         const realPlayer = this.gameData.realPlayers[this.socketClient.id];
 
-        if (realPlayer) {
-            if (this.playGamePermissionValidator.validate(realPlayer.session, this.socketClient)) {
-                return true;
-            }
+        if (!realPlayer) {
+            const payload = args[0];
+
+            this.userSignInPublisher.publishUnauthorizedMessage(this.socketClient);
+            this.socketClient.disconnect(true);
+
+            this.logService.setTag({ id: "socket-io-id", value: this.socketClient.id });
+            this.logService.setTag({ id: "username", value: payload?.username });
+            this.logService.logError("User not found in server storage");
+            this.logService.setTag({ id: "socket-io-id", value: "" });
+            this.logService.setTag({ id: "username", value: "" });
 
             return false;
         }
 
-        this.userSignInPublisher.publishUnauthorizedMessage(this.socketClient);
-        this.socketClient.disconnect(true);
+        return this.playGamePermissionValidator.validate(realPlayer.session, this.socketClient);
+    }
 
-        this.logService.setTag({ id: "socket-io-id", value: this.socketClient.id });
-        this.logService.setTag({ id: "username", value: payload?.username });
-        this.logService.logError("User not found in server storage");
-        this.logService.setTag({ id: "socket-io-id", value: "" });
-        this.logService.setTag({ id: "username", value: "" });
+    async authorizeRequest(event, args, next) {
+        if (this.verify(event, args, next)) {
+            next();
+        } else {
+            next(new Error(`Verify failed at ${event} with params: ${JSON.stringify(args)}`));
+        }
+    }
 
-        return false;
+    async authorize(socket, next) {
+        const token = socket.handshake.auth;
+        if (await this.userSignInConsumer.consume(socket, token)) {
+            next();
+        } else {
+            next(new Error(`Invalid authorization: ${JSON.stringify(token)}`));
+        }
     }
 }

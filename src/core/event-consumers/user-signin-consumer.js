@@ -26,10 +26,11 @@ export default class UserSignInConsumer {
      * @param {Socket} socketClient
      */
     async consume(socketClient, payload) {
-        if (!payload) {
-            this.handleUnauthorizedSignIn(socketClient);
+        const userAgent = socketClient.request.headers["user-agent"];
 
-            return;
+        if (!payload || !userAgent) {
+            this.handleUnauthorizedSignIn(socketClient);
+            return false;
         }
 
         const userSession = await this.userSessionsRepository.findOne({ sessionId: payload.ss }).lean().exec();
@@ -39,23 +40,25 @@ export default class UserSignInConsumer {
             userInfo &&
             userSession &&
             userSession.username === payload.username &&
-            userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
+            userSession.browserUserAgent.toUpperCase() === userAgent.toUpperCase()
         ) {
-            if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
-                await this.getUserBetLimit(userSession, userInfo, socketClient);
+            await this.getUserBetLimit(userSession, userInfo, socketClient);
 
+            if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
                 Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
                     if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
                         realPlayer.socketClient.disconnect(true);
                         delete this.gameData.realPlayers[realPlayer.socketClient.id];
                     }
                 });
-
-                this.handleSignInSuccess(socketClient, userInfo, userSession);
             }
-        } else {
-            this.handleUnauthorizedSignIn(socketClient);
+
+            this.handleSignInSuccess(socketClient, userInfo, userSession);
+            return true;
         }
+
+        this.handleUnauthorizedSignIn(socketClient);
+        return false;
     }
 
     async getUserBetLimit(userSession, userInfo, socketClient) {
