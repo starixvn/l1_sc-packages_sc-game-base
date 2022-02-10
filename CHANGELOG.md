@@ -1,3 +1,10 @@
+## [2.4.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.4.0...v2.4.1) (2022-02-10)
+
+
+### Bug Fixes
+
+* upgrade stable packages ([e868015](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e868015e511ebb0ea7164bb402fec03cbf40f4b9))
+
 # [2.4.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.3.0...v2.4.0) (2022-01-25)
 
 
