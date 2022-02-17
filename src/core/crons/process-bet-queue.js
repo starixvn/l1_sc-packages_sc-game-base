@@ -296,7 +296,7 @@ export default class ProcessBetQueue {
     }
 
     isCountOnTotalBets(player) {
-        const playerCurrencyInfo = this.gameData.currencies.find((currency) => currency.code === player.session.currencyCode);
+        const playerCurrencyInfo = this.gameData.currencies.find((currency) => currency.name === player.session.currencyName);
 
         return !playerCurrencyInfo.isTest || !playerCurrencyInfo.isUncountOnTotal;
     }

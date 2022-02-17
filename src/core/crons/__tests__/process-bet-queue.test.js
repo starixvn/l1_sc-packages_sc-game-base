@@ -29,9 +29,9 @@ gameData.gameConfigs = {
 };
 
 gameData.currencies = [
-    { code: "USD", isTest: false, isUncountOnTotal: false },
-    { code: "IND", isTest: true, isUncountOnTotal: false },
-    { code: "UUS", isTest: true, isUncountOnTotal: true },
+    { code: "USD", name: "USD", isTest: false, isUncountOnTotal: false },
+    { code: "IND", name: "IND", isTest: true, isUncountOnTotal: false },
+    { code: "VND", name: "UUS", isTest: true, isUncountOnTotal: true },
 ];
 
 const chance = new Chance();
@@ -444,7 +444,7 @@ describe("isCountOnTotalBets", () => {
     describe("when player currency is not test currency", () => {
         it("should return true", () => {
             // Arrange
-            player.session.currencyCode = "USD";
+            player.session.currencyName = "USD";
 
             // Act
             const actualResult = proceedBetQueue.isCountOnTotalBets(player);
@@ -457,7 +457,7 @@ describe("isCountOnTotalBets", () => {
     describe("when player currency is test currency and isUncountOnTotal config is false", () => {
         it("should return true", () => {
             // Arrange
-            player.session.currencyCode = "IND";
+            player.session.currencyName = "IND";
 
             // Act
             const actualResult = proceedBetQueue.isCountOnTotalBets(player);
@@ -470,7 +470,7 @@ describe("isCountOnTotalBets", () => {
     describe("when player currency is test currency and isUncountOnTotal config is true", () => {
         it("should return false", () => {
             // Arrange
-            player.session.currencyCode = "UUS";
+            player.session.currencyName = "UUS";
 
             // Act
             const actualResult = proceedBetQueue.isCountOnTotalBets(player);
@@ -504,6 +504,7 @@ const mockPlayer = () => {
             memberId: 1,
             siteId: "123456",
             currencyCode: "USD",
+            currencyName: "USD",
             multiplier: 1000,
         },
         socketClient: {
