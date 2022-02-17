@@ -180,7 +180,7 @@ export default class ProcessBetQueue {
 
         await this.upsertBet(player, roundId, bet, rate);
 
-        this.adjustTotalBets(player, bet, rate);
+        this.isCountOnTotalBets(player) && this.adjustTotalBets(player, bet, rate);
         this.notifyPlacingBetResult(player, balance, bet, rate);
 
         if (!bet.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
@@ -293,5 +293,11 @@ export default class ProcessBetQueue {
 
     calculateCurrencyRate(session) {
         return session.multiplier * this.gameData.exchangeRates.code[session.currencyCode];
+    }
+
+    isCountOnTotalBets(player) {
+        const playerCurrencyInfo = this.gameData.currencies.find((currency) => currency.code === player.session.currencyCode);
+
+        return !playerCurrencyInfo.isTest || !playerCurrencyInfo.isUncountOnTotal;
     }
 }

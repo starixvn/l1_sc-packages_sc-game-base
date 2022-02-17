@@ -28,6 +28,13 @@ gameData.gameConfigs = {
     },
 };
 
+gameData.currencies = [
+    { code: "USD", isTest: false, isUncountOnTotal: false },
+    { code: "IND", isTest: true, isUncountOnTotal: false },
+    { code: "UUS", isTest: true, isUncountOnTotal: true },
+];
+
+const chance = new Chance();
 const definition = new GameDefinition({
     id: 1,
     name: "game name",
@@ -55,8 +62,17 @@ const userInfosRepository = stubMongoose(mongoose.Model);
 userInfosRepository.updateOne = jest.fn();
 
 const baseMetrics = stub(BaseMetrics);
+let player = null,
+    proceedBetQueue = null,
+    payload = null,
+    placeBet = null;
 
 beforeEach(() => {
+    player = mockPlayer();
+    placeBet = jest.fn();
+    payload = mockPayload();
+    proceedBetQueue = initBetQueue(placeBet);
+
     gameData.ingame = {
         player01: {
             name: "player01",
@@ -74,8 +90,6 @@ beforeEach(() => {
 describe("dequeueBets tests", () => {
     it("get data from inGame, pop item from betQueue, then proceed", () => {
         // arange
-        const placeBet = jest.fn();
-        const proceedBetQueue = initBetQueue(placeBet);
         proceedBetQueue.proceedBet = jest.fn().mockResolvedValueOnce({});
 
         // act
@@ -89,14 +103,10 @@ describe("dequeueBets tests", () => {
 describe("proceed freeBet", () => {
     it("should call handleFailedBet with notEnoughScoin when insufficient coins", async () => {
         // arange
-        const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({});
         userInfosRepository.findOne().lean().exec.mockReturnValueOnce({
             scoins: 0,
         });
-
-        const proceedBetQueue = initBetQueue(placeBet);
-        const player = mockPlayer();
 
         // act
         await proceedBetQueue.proceedBet(player, mockPayload(1, true));
@@ -120,10 +130,7 @@ describe("proceedBet should reject when dequeue in locking bet duration", () => 
     it("after locking bet time", async () => {
         // arange
         gameData.remainingTime = definition.durations.lockingBet - 1;
-        const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({ isOk: true, response: {} });
-        const proceedBetQueue = initBetQueue(placeBet);
-        const player = mockPlayer();
 
         // act
         await proceedBetQueue.proceedBet(player, mockPayload());
@@ -141,10 +148,7 @@ describe("proceedBet should reject when dequeue in locking bet duration", () => 
     it("at locking bet time", async () => {
         // arange
         gameData.remainingTime = definition.durations.lockingBet;
-        const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({ isOk: true, response: {} });
-        const proceedBetQueue = initBetQueue(placeBet);
-        const player = mockPlayer();
 
         // act
         await proceedBetQueue.proceedBet(player, mockPayload());
@@ -163,10 +167,7 @@ describe("proceedBet should reject when dequeue in locking bet duration", () => 
         // arange
         gameData.roundId = 2;
         gameData.remainingTime = 10;
-        const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({});
-        const proceedBetQueue = initBetQueue(placeBet);
-        const player = mockPlayer();
 
         // act
         await proceedBetQueue.proceedBet(player, mockPayload());
@@ -194,7 +195,6 @@ describe("proceedBet placebet error tests", () => {
 
     it("place bet api return apiError, should call handleFailedBet, placeBetPublisher.publishGameFailedBet and update user stake level", async () => {
         // arange
-        const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({
             isOk: false,
             response: {
@@ -204,8 +204,6 @@ describe("proceedBet placebet error tests", () => {
                 },
             },
         });
-        const proceedBetQueue = initBetQueue(placeBet);
-        const player = mockPlayer();
 
         // act
         await proceedBetQueue.proceedBet(player, mockPayload());
@@ -229,15 +227,12 @@ describe("proceedBet placebet error tests", () => {
         const apiError = {
             message: "Win limit hit! Please contact your upline, thank you",
         };
-        const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({
             isOk: false,
             response: {
                 apiError,
             },
         });
-        const proceedBetQueue = initBetQueue(placeBet);
-        const player = mockPlayer();
 
         // act
         await proceedBetQueue.proceedBet(player, mockPayload());
@@ -252,15 +247,12 @@ describe("proceedBet placebet error tests", () => {
         const apiError = {
             message: "Win limit hit! Please contact your upline, thank you",
         };
-        const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({
             isOk: false,
             response: {
                 apiError,
             },
         });
-        const proceedBetQueue = initBetQueue(placeBet);
-        const player = mockPlayer();
 
         // act
         await proceedBetQueue.proceedBet(player, mockPayload());
@@ -282,10 +274,7 @@ describe("proceedBet successful tests", () => {
 
     it("place bet successfully, insert new betlog, upsert bet, update total bet and call notifyPlacingBetResult", async () => {
         // arange
-        const placeBet = jest.fn();
         placeBet.mockReturnValueOnce({ isOk: true, response: {} });
-        const proceedBetQueue = initBetQueue(placeBet);
-        const player = mockPlayer();
 
         // act
         await proceedBetQueue.proceedBet(player, mockPayload());
@@ -298,6 +287,197 @@ describe("proceedBet successful tests", () => {
 
     afterEach(() => {
         jest.clearAllMocks();
+    });
+});
+
+describe("handleSuccessBet", () => {
+    const response = {};
+    const roundId = chance.natural();
+
+    it("should call calculateCurrencyRate", async () => {
+        // Arrange
+        jest.spyOn(proceedBetQueue, "calculateCurrencyRate");
+
+        // Act
+        await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+        // Assert
+        expect(proceedBetQueue.calculateCurrencyRate).toBeCalled();
+    });
+
+    it("should call upsertBet", async () => {
+        // Arrange
+        jest.spyOn(proceedBetQueue, "upsertBet");
+
+        // Act
+        await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+        // Assert
+        expect(proceedBetQueue.upsertBet).toBeCalled();
+    });
+
+    it("should call isCountOnTotalBets", async () => {
+        // Arrange
+        jest.spyOn(proceedBetQueue, "isCountOnTotalBets");
+
+        // Act
+        await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+        // Assert
+        expect(proceedBetQueue.isCountOnTotalBets).toBeCalled();
+    });
+
+    it("should call notifyPlacingBetResult", async () => {
+        // Arrange
+        jest.spyOn(proceedBetQueue, "notifyPlacingBetResult");
+
+        // Act
+        await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+        // Assert
+        expect(proceedBetQueue.notifyPlacingBetResult).toBeCalled();
+    });
+
+    describe("when betLogsRepository is available", () => {
+        it("should call insertBetLog", async () => {
+            //Arrange
+            jest.spyOn(proceedBetQueue, "insertBetLog");
+
+            // Act
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+            // Assert
+            expect(proceedBetQueue.insertBetLog).toBeCalled();
+        });
+    });
+
+    describe("when betLogsRepository is not available", () => {
+        it("should not call insertBetLog", async () => {
+            //Arrange
+            proceedBetQueue.betLogsRepository = undefined;
+            jest.spyOn(proceedBetQueue, "insertBetLog");
+
+            // Act
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+            // Assert
+            expect(proceedBetQueue.insertBetLog).not.toBeCalled();
+        });
+    });
+
+    describe("when player currency is allow to count on total bets", () => {
+        it("should call adjustTotalBets", async () => {
+            // Arrange
+            proceedBetQueue.isCountOnTotalBets = jest.fn().mockReturnValueOnce(true);
+            jest.spyOn(proceedBetQueue, "adjustTotalBets");
+
+            // Act
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+            // Assert
+            expect(proceedBetQueue.adjustTotalBets).toBeCalled();
+        });
+    });
+
+    describe("when player currency is not allow to count on total bets", () => {
+        it("should call not call adjustTotalBets", async () => {
+            // Arrange
+            proceedBetQueue.isCountOnTotalBets = jest.fn().mockReturnValueOnce(false);
+            jest.spyOn(proceedBetQueue, "adjustTotalBets");
+
+            // Act
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+            // Assert
+            expect(proceedBetQueue.adjustTotalBets).not.toBeCalled();
+        });
+    });
+
+    describe("when bet is free bet", () => {
+        it("should not call updateUserStakeLevel", async () => {
+            // Arrange
+            payload.freeBet = true;
+            jest.spyOn(proceedBetQueue, "updateUserStakeLevel");
+
+            // Act
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+            // Assert
+            expect(proceedBetQueue.updateUserStakeLevel).not.toBeCalled();
+        });
+    });
+
+    describe("when bet is not free bet and user stake level is not updated", () => {
+        it("should not call updateUserStakeLevel", async () => {
+            // Arrange
+            payload.freeBet = false;
+            response.minBet = player.profile.minBet;
+            response.maxBet = player.profile.maxBet;
+            jest.spyOn(proceedBetQueue, "updateUserStakeLevel");
+
+            // Act
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+            // Assert
+            expect(proceedBetQueue.updateUserStakeLevel).not.toBeCalled();
+        });
+    });
+
+    describe("when bet is not free bet and user stake level is updated", () => {
+        it("should call updateUserStakeLevel", async () => {
+            // Arrange
+            payload.freeBet = false;
+            response.minBet = player.profile.minBet + 1;
+            response.maxBet = player.profile.maxBet;
+            jest.spyOn(proceedBetQueue, "updateUserStakeLevel");
+
+            // Act
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+
+            // Assert
+            expect(proceedBetQueue.updateUserStakeLevel).toBeCalledWith(player, response.minBet, response.maxBet);
+        });
+    });
+});
+
+describe("isCountOnTotalBets", () => {
+    describe("when player currency is not test currency", () => {
+        it("should return true", () => {
+            // Arrange
+            player.session.currencyCode = "USD";
+
+            // Act
+            const actualResult = proceedBetQueue.isCountOnTotalBets(player);
+
+            // Assert
+            expect(actualResult).toBe(true);
+        });
+    });
+
+    describe("when player currency is test currency and isUncountOnTotal config is false", () => {
+        it("should return true", () => {
+            // Arrange
+            player.session.currencyCode = "IND";
+
+            // Act
+            const actualResult = proceedBetQueue.isCountOnTotalBets(player);
+
+            // Assert
+            expect(actualResult).toBe(true);
+        });
+    });
+
+    describe("when player currency is test currency and isUncountOnTotal config is true", () => {
+        it("should return false", () => {
+            // Arrange
+            player.session.currencyCode = "UUS";
+
+            // Act
+            const actualResult = proceedBetQueue.isCountOnTotalBets(player);
+
+            // Assert
+            expect(actualResult).toBe(false);
+        });
     });
 });
 
