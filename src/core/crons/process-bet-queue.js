@@ -210,6 +210,7 @@ export default class ProcessBetQueue {
             time: new Date(),
             odds: configs.odds,
             freeBet: bet.freeBet,
+            roundId,
         };
         const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
         const existingBetIncrement = {
@@ -223,6 +224,9 @@ export default class ProcessBetQueue {
             newBet.partnerId = player.session.partnerId;
             newBet.currency = player.session.currencyName;
             newBet.rate = rate;
+
+            newBet.operatorId = player.session.operatorId;
+            newBet.playerId = player.session.playerId;
         }
 
         await this.betsRepository.updateOne(
@@ -243,6 +247,7 @@ export default class ProcessBetQueue {
             freeBet: bet.freeBet,
             clientSentTime: bet.clientSentTime,
             receivedTime: bet.receivedTime,
+            roundId,
         };
 
         if (player.session) {
@@ -251,6 +256,9 @@ export default class ProcessBetQueue {
             newBetLog.partnerId = player.session.partnerId;
             newBetLog.currency = player.session.currencyName;
             newBetLog.rate = rate;
+
+            newBetLog.operatorId = player.session.Id;
+            newBetLog.playerId = player.session.playerId;
         }
 
         await this.betLogsRepository.create(newBetLog);

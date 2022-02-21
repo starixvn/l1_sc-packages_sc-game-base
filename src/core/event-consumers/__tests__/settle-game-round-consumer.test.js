@@ -338,6 +338,8 @@ describe("SettleGameRoundConsumer", () => {
                 siteId: bet.siteId,
                 partnerId: bet.partnerId,
                 time: time,
+                operatorId: undefined,
+                playerId: undefined,
             });
         });
 

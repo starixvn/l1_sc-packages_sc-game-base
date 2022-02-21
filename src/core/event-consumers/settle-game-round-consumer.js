@@ -73,6 +73,7 @@ export default class SettleGameRoundConsumer {
 
                     bet.betwin = betResult.totalWin;
                     bet.thanhtoan = true;
+                    bet.paid = true;
 
                     await bet.save();
                     await this.callEndGame(bet, roundId, time, betResult);
@@ -149,6 +150,8 @@ export default class SettleGameRoundConsumer {
             siteId: bet.siteId,
             partnerId: bet.partnerId,
             time: time,
+            operatorId: bet.operatorId,
+            playerId: bet.playerId,
         };
         const settlementInfo = {
             redPlay: betResult.totalBetAmount,
