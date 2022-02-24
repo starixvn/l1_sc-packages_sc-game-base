@@ -531,23 +531,61 @@ describe("composeBettingTimeValidationCriteria", () => {
     });
 });
 
-// describe("composeBalanceValidationCriteria", () => {
-//     describe("when bet is free bet", () => {
-//         it("should call getCoinBalance");
+describe("composeBalanceValidationCriteria", () => {
+    describe("when bet is free bet", () => {
+        beforeEach(() => {
+            payload.freeBet = true;
+            proceedBetQueue.getCoinBalance = jest.fn();
+        });
 
-//         describe("when player coins is less than bet amount", () => {
-//             it("should return result with fail criteria not enough Scoin");
-//         });
+        it("should call getCoinBalance", async () => {
+            // Act
+            await proceedBetQueue.composeBalanceValidationCriteria(player, payload);
 
-//         describe("when player coins is NOT less then bet amount", () => {
-//             it("should return result with NO fail criteria");
-//         });
-//     });
+            // Assert
+            expect(proceedBetQueue.getCoinBalance).toBeCalledWith(player);
+        });
 
-//     describe("when bet is NOT free bet", () => {
-//         it("should return empty array");
-//     });
-// });
+        describe("when player coins is less than bet amount", () => {
+            it("should return result with fail criteria not enough Scoin", async () => {
+                // Arrange
+                proceedBetQueue.getCoinBalance.mockResolvedValueOnce(payload.amount - 1);
+
+                // Act
+                const actualResult = await proceedBetQueue.composeBalanceValidationCriteria(player, payload);
+
+                // Assert
+                expect(actualResult[0].failure).toBe(true);
+            });
+        });
+
+        describe("when player coins is NOT less then bet amount", () => {
+            it("should return result with NO fail criteria", async () => {
+                // Arrange
+                proceedBetQueue.getCoinBalance.mockResolvedValueOnce(payload.amount + 1);
+
+                // Act
+                const actualResult = await proceedBetQueue.composeBalanceValidationCriteria(player, payload);
+
+                // Assert
+                expect(actualResult[0].failure).toBe(false);
+            });
+        });
+    });
+
+    describe("when bet is NOT free bet", () => {
+        it("should return empty array", async () => {
+            // Arrange
+            payload.freeBet = false;
+
+            // Act
+            const actualResult = await proceedBetQueue.composeBalanceValidationCriteria(player, payload);
+
+            // Assert
+            expect(actualResult.length).toBe(0);
+        });
+    });
+});
 
 describe("handleSuccessBet", () => {
     const response = {};
