@@ -676,6 +676,76 @@ describe("ProcessBetQueue", () => {
         });
     });
 
+    describe("handleFailedBet", () => {
+        beforeEach(() => {
+            proceedBetQueue.decreaseBetTracks = jest.fn();
+            placeBetPublisher.publishGameFailedBet = jest.fn();
+        });
+
+        it("should call decreaseBetTracks", () => {
+            // Act
+            proceedBetQueue.handleFailedBet(player, {}, payload);
+
+            // Assert
+            expect(proceedBetQueue.decreaseBetTracks).toBeCalledWith(player.profile.name, payload);
+        });
+
+        describe("when apiError", () => {
+            it("should call publishGameFailedBet with apiError property", () => {
+                // Arrange
+                const apiError = {
+                    errorCode: 1000,
+                };
+
+                // Act
+                proceedBetQueue.handleFailedBet(player, { apiError }, payload);
+
+                // Assert
+                expect(placeBetPublisher.publishGameFailedBet).toBeCalledWith(player.UID, {
+                    endBet: -1,
+                    betChoice: payload.betChoice,
+                    apiError,
+                });
+            });
+        });
+
+        describe("when kickedOut", () => {
+            it("should call publishGameFailedBet with kickOut property", () => {
+                // Arrange
+                const kickedOut = {
+                    errorCode: 1000,
+                };
+
+                // Act
+                proceedBetQueue.handleFailedBet(player, { kickedOut }, payload);
+
+                // Assert
+                expect(placeBetPublisher.publishGameFailedBet).toBeCalledWith(player.UID, {
+                    endBet: -1,
+                    betChoice: payload.betChoice,
+                    kickedOut,
+                });
+            });
+        });
+
+        describe("when is not apiError and kickedOut", () => {
+            it("should call publishGameFailedBet with notice", () => {
+                // Arrange
+                const notice = {};
+
+                // Act
+                proceedBetQueue.handleFailedBet(player, notice, payload);
+
+                // Assert
+                expect(placeBetPublisher.publishGameFailedBet).toBeCalledWith(player.UID, {
+                    endBet: -1,
+                    betChoice: payload.betChoice,
+                    notice,
+                });
+            });
+        });
+    });
+
     describe("handleSuccessBet", () => {
         const response = {};
         const roundId = chance.natural();
