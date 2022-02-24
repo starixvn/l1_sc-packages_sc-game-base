@@ -223,8 +223,11 @@ export default class TableGameBot extends BaseBot {
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
-                const user = await this.userInfosRepository
-                    .findOneAndUpdate({ id: bot.id, red: { $gt: amount } }, { $inc: { red: -amount } }, { new: true, lean: true});
+                const user = await this.userInfosRepository.findOneAndUpdate(
+                    { id: bot.id, red: { $gt: amount } },
+                    { $inc: { red: -amount } },
+                    { new: true, lean: true }
+                );
 
                 if (user) {
                     await this.insertOrUpdateBet(bot, choice, amount, currentBet);
@@ -277,11 +280,12 @@ export default class TableGameBot extends BaseBot {
             uid: bot.id,
             name: bot.name,
             phien: this.gameData.roundId,
+            roundId: this.gameData.roundId,
             time: new Date(),
         };
 
         await this.tempBetsRepository.updateOne(
-            { uid: bot.id, phien: this.gameData.roundId },
+            { uid: bot.id, phien: this.gameData.roundId, roundId: this.gameData.roundId },
             { $set: update, $setOnInsert: create },
             { upsert: true, setDefaultsOnInsert: true }
         );

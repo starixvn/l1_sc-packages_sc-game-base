@@ -102,7 +102,7 @@ export default class HttpRouter {
                     character: player.session.characterName,
                     system: player.session.system,
                     partnerId: player.session.partnerId,
-                    operatorId: player.session.operatorId,
+                    operatorId: player.session.partnerId,
                 };
 
                 if (player.session.isTestCurrency) {

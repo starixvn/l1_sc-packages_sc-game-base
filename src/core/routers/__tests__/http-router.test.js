@@ -122,8 +122,8 @@ describe("http router test", () => {
         ];
 
         const expectedResult = {
-            testUsers: [{ name: "player2", id: 2, character: "character2", currency: "USD", partnerId: "1W", system: 1 }],
-            realUsers: [{ name: "player1", id: 1, character: "character1", currency: "USD", partnerId: "1W", system: 1 }],
+            testUsers: [{ name: "player2", id: 2, character: "character2", currency: "USD", partnerId: "1W", system: 1, operatorId: "1W" }],
+            realUsers: [{ name: "player1", id: 1, character: "character1", currency: "USD", partnerId: "1W", system: 1, operatorId: "1W" }],
         };
 
         // act
