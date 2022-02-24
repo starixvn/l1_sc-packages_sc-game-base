@@ -373,7 +373,7 @@ describe("proceedBet", () => {
                         minBet: player.profile.minBet,
                         maxBet: player.profile.maxBet + 1000,
                     };
-                    jest.spyOn(proceedBetQueue, "updateUserStakeLevel");
+                    proceedBetQueue.updateUserStakeLevel = jest.fn();
                     placeBet.mockResolvedValueOnce({
                         isOk: false,
                         response: {
@@ -587,6 +587,54 @@ describe("composeBalanceValidationCriteria", () => {
     });
 });
 
+describe("updateUserStakeLevel", () => {
+    const minBet = 100;
+    const maxBet = 20000;
+
+    it("should call userInfosRepository.updateOne", async () => {
+        // Act
+        const mockDate = new Date();
+        jest.spyOn(global, "Date").mockImplementation(() => mockDate);
+        await proceedBetQueue.updateUserStakeLevel(player, minBet, maxBet);
+
+        // Assert
+        expect(userInfosRepository.updateOne).toBeCalledWith({ id: player.id }, { minBet, maxBet, betLimitModifiedDate: mockDate });
+    });
+
+    it("should update user profile minBet", async () => {
+        // Arrange
+        const newPlayerMinBet = player.profile.minBet + 1;
+
+        // Act
+        await proceedBetQueue.updateUserStakeLevel(player, newPlayerMinBet, maxBet);
+
+        // Assert
+        expect(player.profile.minBet).toBe(newPlayerMinBet);
+    });
+
+    it("should update user profile minBet", async () => {
+        // Arrange
+        const newPlayerMaxBet = player.profile.maxBet + 1;
+
+        // Act
+        await proceedBetQueue.updateUserStakeLevel(player, minBet, newPlayerMaxBet);
+
+        // Assert
+        expect(player.profile.maxBet).toBe(newPlayerMaxBet);
+    });
+
+    it("should call publish to user", async () => {
+        // Arrange
+        placeBetPublisher.publishToUser = jest.fn();
+
+        // Act
+        await proceedBetQueue.updateUserStakeLevel(player, minBet, maxBet);
+
+        // Assert
+        expect(placeBetPublisher.publishToUser).toBeCalledWith(player.UID, { userStakeLevel: { minBet, maxBet } }, definition.name);
+    });
+});
+
 describe("handleSuccessBet", () => {
     const response = {};
     const roundId = chance.natural();
@@ -734,7 +782,7 @@ describe("handleSuccessBet", () => {
             payload.freeBet = false;
             response.minBet = player.profile.minBet + 1;
             response.maxBet = player.profile.maxBet;
-            jest.spyOn(proceedBetQueue, "updateUserStakeLevel");
+            proceedBetQueue.updateUserStakeLevel = jest.fn();
 
             // Act
             await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
