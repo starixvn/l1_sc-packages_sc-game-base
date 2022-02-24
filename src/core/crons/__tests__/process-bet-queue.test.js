@@ -653,7 +653,7 @@ describe("ProcessBetQueue", () => {
             expect(player.profile.minBet).toBe(newPlayerMinBet);
         });
 
-        it("should update user profile minBet", async () => {
+        it("should update user profile maxBet", async () => {
             // Arrange
             const newPlayerMaxBet = player.profile.maxBet + 1;
 
