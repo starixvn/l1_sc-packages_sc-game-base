@@ -285,7 +285,7 @@ export default class TableGameBot extends BaseBot {
         };
 
         await this.tempBetsRepository.updateOne(
-            { uid: bot.id, phien: this.gameData.roundId, roundId: this.gameData.roundId },
+            { uid: bot.id, phien: this.gameData.roundId },
             { $set: update, $setOnInsert: create },
             { upsert: true, setDefaultsOnInsert: true }
         );
