@@ -6,6 +6,7 @@ import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
 import SettleGameRoundConsumer from "../settle-game-round-consumer";
 import Chance from "chance";
+import { Models } from "jest-auto-fixture";
 
 describe("SettleGameRoundConsumer", () => {
     const chance = new Chance();
@@ -13,20 +14,7 @@ describe("SettleGameRoundConsumer", () => {
     const roundId = chance.natural();
 
     const defaultGameData = new GameData(30);
-    defaultGameData.gameConfigs = {
-        enabled: true,
-        minbet: 1,
-        maxbet: 1000,
-        choices_maxbet: {
-            odd: 1000,
-            even: 1000,
-        },
-        odds: {
-            odd: 2,
-            even: 2,
-        },
-        enableFreeBet: false,
-    };
+    defaultGameData.gameConfigs = Models.GameConfig();
 
     let gameData, definition, consumer;
 
@@ -454,8 +442,8 @@ describe("SettleGameRoundConsumer", () => {
     });
 
     describe("calculateBetResult", () => {
-        const settlementResult = { odd: true, even: false },
-            odds = { odd: 1.96, even: 1.96 };
+        const settlementResult = { odd: true, even: false };
+        const odds = defaultGameData.gameConfigs.odds;
 
         it("should return totalWin amount with format #.##", () => {
             // Arrange
@@ -482,25 +470,31 @@ describe("SettleGameRoundConsumer", () => {
         describe("when bet is free bet", () => {
             it("should return result with winning amount exclude bet amount", () => {
                 // Arrange
-                const bet = { freeBet: true, odd: 1000 };
+                const choice = "odd";
+                const bet = { freeBet: true, [choice]: 1000 };
+                const expected = bet[choice] * odds[choice] - bet[choice];
 
                 // Act
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.totalWin).toBe(960);
+                expect(actualResult.totalWin).toBe(expected);
             });
         });
 
         describe("when bet result is win", () => {
-            const bet = { odd: 1000 };
+            const choice = "odd";
+            const bet = { [choice]: 1000 };
 
             it("should return result with correct net win", () => {
+                // Arrange
+                const expected = bet[choice] * odds[choice] - bet[choice];
+
                 // Act
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.netWin).toBe(960);
+                expect(actualResult.netWin).toBe(expected);
             });
 
             it("should return with correct total bet amount", () => {
@@ -516,7 +510,7 @@ describe("SettleGameRoundConsumer", () => {
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.totalWin).toBe(1960);
+                expect(actualResult.totalWin).toBe(bet[choice] * odds[choice]);
             });
 
             it("should return result with total lost is zero", () => {
@@ -532,7 +526,7 @@ describe("SettleGameRoundConsumer", () => {
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.winningByChoices).toStrictEqual({ odd: 1960, even: 0 });
+                expect(actualResult.winningByChoices).toStrictEqual({ odd: bet[choice] * odds[choice], even: 0 });
             });
         });
 
