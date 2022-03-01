@@ -307,7 +307,7 @@ describe("SettleGameRoundConsumer", () => {
 
         it("should return result with correct gameInfo", () => {
             // Arrange
-            const bet = { freeBet: false };
+            const bet = { freeBet: false, memberId: chance.guid(), partnerId: chance.string(), siteId: chance.guid() };
             const betResult = {
                 totalBetAmount: 2000,
                 totalWin: 3000,
