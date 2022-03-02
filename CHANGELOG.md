@@ -1,3 +1,17 @@
+# [2.5.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.4.1...v2.5.0) (2022-03-02)
+
+
+### Bug Fixes
+
+* separate enable game method ([34450db](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/34450db7c96df7a129c88c0d72a3210f763b563f))
+* separate enable game method ([780da66](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/780da661e224d54118c6aaae03675c007192c9f3))
+
+
+### Features
+
+* add msgpack parser config ([7bf6697](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/7bf6697266fe64c6ae0ab4964e22050e98f3fe64))
+* socket msgpack parser ([e83bddd](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e83bddd34db79ef5c9104b523049affae5b15545))
+
 ## [2.4.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.4.0...v2.4.1) (2022-02-10)
 
 
