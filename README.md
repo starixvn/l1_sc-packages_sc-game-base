@@ -18,3 +18,13 @@ npm install sc-game-base --save-dev
 ## Architecture
 
 ![](https://i.ibb.co/r5y42hZ/Game-Server-Flow-Chart-Page-1.png)
+
+## Using Msgpack parser for socket.io (currently available in v2.4.1-beta.x)
+
+Simply add enableMsgpackParser with value = true to app-configs.js of the environment you want to enable msgpack
+
+```json
+{
+    "enableMsgpackParser": true
+}
+```

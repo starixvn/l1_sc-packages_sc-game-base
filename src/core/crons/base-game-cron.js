@@ -163,7 +163,7 @@ export default class BaseGameCron {
 
             await this.gameConfigsRepository.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
-            this.gameStatusPublisher.publishEnablingGameStatus();
+            await this.enableGame();
         } else {
             this.gameStatusPublisher.publishStartGame();
         }
@@ -212,5 +212,9 @@ export default class BaseGameCron {
             .find({ enabled: true }, "name code multiplier enabled partnerId groupId")
             .lean()
             .exec();
+    }
+
+    async enableGame() {
+        this.gameStatusPublisher.publishEnablingGameStatus();
     }
 }
