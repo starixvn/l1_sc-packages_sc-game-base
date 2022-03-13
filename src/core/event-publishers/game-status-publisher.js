@@ -32,7 +32,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
     }
 
     publishStartGame() {
-        this.publishToAllUsers({ remainingTime: this.gameData.remainingTime });
+        this.publishToAllUsers({ remainingTime: this.gameData.remainingTime, md5: { hashValue: this.gameData.md5.hashValue } });
         this.publishToAllAdmins({
             currencies: this.gameData.currencies,
             exchangeRates: this.gameData.exchangeRates,

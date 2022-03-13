@@ -55,6 +55,7 @@ export default class InGameConsumer {
             ownBets,
             totalBets,
             user: { ...user, rate },
+            md5: { hashValue: this.gameData.md5.hashValue },
         };
     }
 

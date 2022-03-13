@@ -4,7 +4,7 @@ export default class RoundResultPublisher extends BaseEventPublisher {
     publishRoundResult(roundResult) {
         const payload = { finish: roundResult };
 
-        this.publishToAllUsers(payload);
+        this.publishToAllUsers({ ...payload, md5: { rawValue: this.gameData.md5.rawValue } });
         this.publishToAllAdmins(payload);
     }
 }

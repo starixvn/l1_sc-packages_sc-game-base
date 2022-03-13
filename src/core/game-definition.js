@@ -11,7 +11,8 @@ export default class GameDefinition {
             historyPageSize = 8,
         },
         generateResult,
-        settle
+        settle,
+        generateRawResultForMd5
     ) {
         this.id = id;
         this.name = name;
@@ -23,6 +24,7 @@ export default class GameDefinition {
         this.historyPageSize = historyPageSize;
         this.generateResult = generateResult;
         this.settle = settle;
+        this.generateRawResultForMd5 = generateRawResultForMd5;
         this.hedgeBetGroups = hedgeBetGroups;
     }
 }

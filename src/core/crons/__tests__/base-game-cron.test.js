@@ -16,7 +16,12 @@ jest.mock("../../event-publishers/running-round-info-publisher");
 jest.mock("../../event-publishers/game-status-publisher");
 
 const gameData = new GameData(3);
-const definition = new GameDefinition({ id: 1, name: "game name", durations: { lockingBet: 2, wholeRound: 30, placingBets: 25 } });
+const definition = new GameDefinition(
+    { id: 1, name: "game name", durations: { lockingBet: 2, wholeRound: 30, placingBets: 25 } },
+    jest.fn,
+    jest.fn,
+    jest.fn
+);
 const bot = new BaseBot(gameData, definition);
 const settleGameRoundConsumer = new SettleGameRoundConsumer();
 const runningRoundInfoPublisher = new RunningRoundInfoPublisher();
