@@ -7,7 +7,7 @@ import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publi
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
-import { createHashMD5, randomString } from "../helpers/crypto-helper";
+import { generateMD5Result } from "../helpers/md5-helper";
 
 export default class BaseGameCron {
     /**
@@ -114,7 +114,7 @@ export default class BaseGameCron {
 
         if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
-            this.genereateNewRoundResult();
+            this.generateRoundResult();
             this.bot && (await this.bot.reset());
         }
 
@@ -177,10 +177,10 @@ export default class BaseGameCron {
         this.gameData.settlementResultFromAdmin = {};
     }
 
-    genereateNewRoundResult() {
+    generateRoundResult() {
         this.gameData.result = this.definition.generateResult();
-        const rawValue = `${this.definition.generateRawResultForMd5(this.gameData.result)}${randomString()}`;
-        this.gameData.md5 = { hashValue: createHashMD5(rawValue), rawValue };
+        const formattedResult = this.definition.generateRawResultForMd5(this.gameData.result, this.gameData.roundId);
+        this.gameData.md5 = generateMD5Result(formattedResult);
     }
 
     async getSettingForNewRound() {

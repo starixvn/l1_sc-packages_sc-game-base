@@ -4,7 +4,7 @@ import { Socket } from "socket.io";
 import { AdminAuthenticationConsumer, AdminDisconnectConsumer, AdminMonitorConsumer } from "./../event-consumers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import { createHashMD5, randomString } from "../helpers/crypto-helper";
+import { generateMD5Result } from "../helpers/md5-helper";
 
 export default class BaseAdminSocketRouter {
     /**
@@ -71,8 +71,8 @@ export default class BaseAdminSocketRouter {
 
                 if (this.gameData.roundId === set_result.roundId) {
                     this.gameData.result = set_result.result;
-                    const rawValue = `${this.definition.generateRawResultForMd5(this.gameData.result)}${randomString()}`;
-                    this.gameData.md5 = { hashValue: createHashMD5(rawValue), rawValue };
+                    const formattedResult = this.definition.generateRawResultForMd5(this.gameData.result, this.gameData.roundId);
+                    this.gameData.md5 = generateMD5Result(formattedResult);
                     this.roundResultPublisher.publishToAllUsers({ md5: { hashValue: this.gameData.md5.hashValue } });
                 }
             }

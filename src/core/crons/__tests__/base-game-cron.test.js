@@ -119,7 +119,7 @@ describe("proceed tests", () => {
         expect(settleGameRoundConsumer.settleRound).toHaveBeenCalledWith(gameData);
     });
 
-    it("should call bot.run and runningRoundInfoPublisher.publish when remainting time is in placing bet time", async () => {
+    it("should call bot.run and runningRoundInfoPublisher.publish when remaining time is in placing bet time", async () => {
         gameData.disabled = false;
         gameData.remainingTime = definition.durations.placingBets;
 
