@@ -1,3 +1,22 @@
+# [2.6.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.5.0...v2.6.0) (2022-03-14)
+
+
+### Bug Fixes
+
+* func call ([f77cfd5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f77cfd504040aa781850baad9b8a0f9f5fe3ddcc))
+* rebase on master ([b783f1f](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/b783f1f1ae2be48a92ca5299701488513ce1fc2a))
+* update db schema ([224cbf4](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/224cbf4dadcc16e05271119cbd0fbeb29efc3557))
+* upgrade db schema ([af8a93c](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/af8a93c95914df44d557acf8c6c5664b31e441f8))
+* upgrade db shema ([28fd743](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/28fd74376c0968535028213326f71b2a2f999a30))
+* upgrade sc-base-apis@1.15.2-beta.1 ([03074fd](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/03074fdd63a90d0787d61b352e97497595d78922))
+* upgrade sc-base-apis@1.15.2-beta.2 ([55b4671](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/55b467166186cc7354474c451587c450ecf60c48))
+* using currency name instead code ([e0ccf78](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e0ccf783960a6dafd739d8fea9405da69d875fb3))
+
+
+### Features
+
+* exclude test currency bet on total bets ([9d88baa](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/9d88baa8d3d7af25ca0d0b68bfa188b087fbabf0))
+
 # [2.5.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.4.1...v2.5.0) (2022-03-02)
 
 
