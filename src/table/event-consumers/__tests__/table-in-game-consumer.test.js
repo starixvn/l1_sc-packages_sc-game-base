@@ -1,4 +1,4 @@
-import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
 import InGameConsumer from "../../../core/event-consumers/in-game-consumer";
@@ -13,7 +13,7 @@ describe("TableInGameConsumer", () => {
     const gameData = new TableGameData(0);
 
     /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongooseModelStupidly(mongoose.Model);
+    const userInfosRepository = stubMongoose(mongoose.Model);
     const roundQuery = stub(RoundQuery);
     /** @type {BaseEventPublisher}*/
     const publisher = stub(BaseEventPublisher);
@@ -28,14 +28,14 @@ describe("TableInGameConsumer", () => {
                     name,
                 },
                 session: {},
-                rate: 1
-            }
-        }
-    }
+                rate: 1,
+            },
+        };
+    };
 
     afterEach(() => {
         jest.clearAllMocks();
-    })
+    });
 
     it("inherit BaseInGameConsumer", () => {
         expect(consumer instanceof InGameConsumer);
@@ -90,9 +90,9 @@ describe("TableInGameConsumer", () => {
                 red: 1000,
                 avatarId: 1,
                 type: false,
-                rate: 2
+                rate: 2,
             };
-            const payload = { user }
+            const payload = { user };
             spyOn(consumer, "buildPayload").and.returnValue(payload);
             const realPlayer = {
                 UID: "uid",
@@ -108,7 +108,7 @@ describe("TableInGameConsumer", () => {
             // assert
             expect(socketClient.emit).toHaveBeenCalledWith(definition.name, payload);
         });
-    })
+    });
 
     describe("buildPlayersPayload", () => {
         it("returns empty when dont have other players", () => {
@@ -122,7 +122,7 @@ describe("TableInGameConsumer", () => {
 
             // assert
             expect(result).toBeEmpty();
-        })
+        });
 
         it("returns list of other players", () => {
             // arrange
@@ -137,7 +137,6 @@ describe("TableInGameConsumer", () => {
             // assert
             expect(Object.values(result).length).toBe(1);
             expect(Object.values(result)[0].id).toBe("player2");
-        })
-    })
+        });
+    });
 });
-

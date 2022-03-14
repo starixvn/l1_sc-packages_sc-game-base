@@ -180,7 +180,10 @@ export default class ProcessBetQueue {
 
         await this.upsertBet(player, roundId, bet, rate);
 
-        this.adjustTotalBets(player, bet, rate);
+        if (this.isCountOnTotalBets(player)) {
+            this.adjustTotalBets(player, bet, rate);
+        }
+
         this.notifyPlacingBetResult(player, balance, bet, rate);
 
         if (!bet.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
@@ -210,6 +213,7 @@ export default class ProcessBetQueue {
             time: new Date(),
             odds: configs.odds,
             freeBet: bet.freeBet,
+            roundId,
         };
         const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
         const existingBetIncrement = {
@@ -223,6 +227,9 @@ export default class ProcessBetQueue {
             newBet.partnerId = player.session.partnerId;
             newBet.currency = player.session.currencyName;
             newBet.rate = rate;
+
+            newBet.operatorId = player.session.partnerId;
+            newBet.playerId = player.session.memberId;
         }
 
         await this.betsRepository.updateOne(
@@ -243,6 +250,7 @@ export default class ProcessBetQueue {
             freeBet: bet.freeBet,
             clientSentTime: bet.clientSentTime,
             receivedTime: bet.receivedTime,
+            roundId,
         };
 
         if (player.session) {
@@ -251,6 +259,9 @@ export default class ProcessBetQueue {
             newBetLog.partnerId = player.session.partnerId;
             newBetLog.currency = player.session.currencyName;
             newBetLog.rate = rate;
+
+            newBetLog.operatorId = player.session.partnerId;
+            newBetLog.playerId = player.session.memberId;
         }
 
         await this.betLogsRepository.create(newBetLog);
@@ -293,5 +304,11 @@ export default class ProcessBetQueue {
 
     calculateCurrencyRate(session) {
         return session.multiplier * this.gameData.exchangeRates.code[session.currencyCode];
+    }
+
+    isCountOnTotalBets(player) {
+        return this.gameData.currencies.some(
+            (currency) => currency.name === player.session.currencyName && !(currency.isTest && currency.isUncountOnTotal)
+        );
     }
 }

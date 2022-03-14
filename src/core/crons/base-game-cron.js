@@ -209,7 +209,7 @@ export default class BaseGameCron {
 
     async updateCurrencies() {
         this.gameData.currencies = await this.currencyRepository
-            .find({ enabled: true }, "name code multiplier enabled partnerId groupId")
+            .find({ enabled: true }, "name code multiplier enabled partnerId groupId isTest isUncountOnTotal")
             .lean()
             .exec();
     }

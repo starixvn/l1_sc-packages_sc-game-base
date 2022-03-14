@@ -1,4 +1,4 @@
-import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { logger } from "sc-common";
 
@@ -26,32 +26,32 @@ const gameStatusPublisher = new GameStatusPublisher();
 const logService = stub(logger);
 
 /** @type {mongoose.Model}*/
-const gameConfigsRepository = stubMongooseModelStupidly(mongoose.Model);
+const gameConfigsRepository = stubMongoose(mongoose.Model);
 gameConfigsRepository.updateOne = jest.fn();
 
 /** @type {mongoose.Model}*/
-const roundsRepository = stubMongooseModelStupidly(mongoose.Model);
+const roundsRepository = stubMongoose(mongoose.Model);
 
 /** @type {mongoose.Model}*/
-const notificationRepository = stubMongooseModelStupidly(mongoose.Model);
+const notificationRepository = stubMongoose(mongoose.Model);
 
 /** @type {mongoose.Model}*/
-const archiveRepository = stubMongooseModelStupidly(mongoose.Model);
+const archiveRepository = stubMongoose(mongoose.Model);
 
 /** @type {mongoose.Model}*/
-const exchangeRatesRepository = stubMongooseModelStupidly(mongoose.Model);
+const exchangeRatesRepository = stubMongoose(mongoose.Model);
 
 /** @type {mongoose.Model}*/
-const currencyGroupGamesRepository = stubMongooseModelStupidly(mongoose.Model);
+const currencyGroupGamesRepository = stubMongoose(mongoose.Model);
 
 /** @type {mongoose.Model}*/
-const partnerConfigRepository = stubMongooseModelStupidly(mongoose.Model);
+const partnerConfigRepository = stubMongoose(mongoose.Model);
 
 /** @type {mongoose.Model}*/
-const currencyGroupRepository = stubMongooseModelStupidly(mongoose.Model);
+const currencyGroupRepository = stubMongoose(mongoose.Model);
 
 /** @type {mongoose.Model}*/
-const currencyRepository = stubMongooseModelStupidly(mongoose.Model);
+const currencyRepository = stubMongoose(mongoose.Model);
 
 const initCron = function () {
     return new BaseGameCron({

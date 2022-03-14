@@ -1,11 +1,11 @@
-import { stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
 import { RoundQuery } from "..";
 
 describe("round query test", () => {
     /** @type {mongoose.Model}*/
-    const roundsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const roundsRepository = stubMongoose(mongoose.Model);
 
     const roundQuery = new RoundQuery(roundsRepository);
     beforeEach(() => {

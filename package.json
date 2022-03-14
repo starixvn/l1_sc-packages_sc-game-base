@@ -1,6 +1,6 @@
 {
     "name": "sc-game-base",
-    "version": "2.5.0",
+    "version": "2.5.1-beta.0",
     "description": "SC Game base for game services",
     "main": "./src/index.js",
     "scripts": {
@@ -38,8 +38,8 @@
         "mongoose": "^5.9.25",
         "morgan": "^1.10.0",
         "openid-client": "^4.2.0",
-        "sc-base-apis": "1.15.1",
-        "sc-base-database": "1.9.1",
+        "sc-base-apis": "1.15.2",
+        "sc-base-database": "1.9.2",
         "sc-common": "^1.8.0",
         "socket.io": "^4.1.2",
         "socket.io-msgpack-parser": "^3.0.1",
@@ -60,8 +60,9 @@
         "husky": "^4.2.5",
         "install": "^0.13.0",
         "jest": "^26.6.3",
+        "jest-auto-fixture": "^1.0.6",
         "jest-extended": "^0.11.5",
-        "jest-micro-auto-stub": "^1.0.7",
+        "jest-micro-auto-stub": "^1.0.8",
         "jest-sonar-reporter": "^2.0.0",
         "sc-semantic-release": "^1.2.0",
         "semantic-release": "^17.1.1"

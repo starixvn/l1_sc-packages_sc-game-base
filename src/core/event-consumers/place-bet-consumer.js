@@ -151,6 +151,8 @@ export default class PlaceBetConsumer {
                 partnerId: player.session.partnerId,
                 betTracks: {},
                 betQueue: [],
+
+                operatorId: player.session.partnerId,
             };
 
             this.gameData.ingame[name] = newPlayer;

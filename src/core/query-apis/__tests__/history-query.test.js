@@ -1,4 +1,4 @@
-import { stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
 import HistoryQuery from "../history-query";
@@ -9,9 +9,9 @@ jest.mock("../round-query");
 describe("history quer test", () => {
     const roundQuery = new RoundQuery();
     /** @type {mongoose.Model}*/
-    const betsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const betsRepository = stubMongoose(mongoose.Model);
     /** @type {mongoose.Model}*/
-    const betLogsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const betLogsRepository = stubMongoose(mongoose.Model);
 
     describe("queryHistory tests", () => {
         it("should return empty when page < 1", async () => {

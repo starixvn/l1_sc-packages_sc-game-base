@@ -1,4 +1,4 @@
-import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { logger } from "sc-common";
 
@@ -24,7 +24,7 @@ describe("http router test", () => {
     /** @type {logger} */
     const logService = stub(logger);
     /** @type {mongoose.Model}*/
-    const userSessionsRepository = stubMongooseModelStupidly(mongoose.Model);
+    const userSessionsRepository = stubMongoose(mongoose.Model);
     /** @type {MetricQuery} */
     const metricQuery = stub(MetricQuery);
 
@@ -122,8 +122,8 @@ describe("http router test", () => {
         ];
 
         const expectedResult = {
-            testUsers: [{ name: "player2", id: 2, character: "character2", currency: "USD", partnerId: "1W", system: 1 }],
-            realUsers: [{ name: "player1", id: 1, character: "character1", currency: "USD", partnerId: "1W", system: 1 }],
+            testUsers: [{ name: "player2", id: 2, character: "character2", currency: "USD", partnerId: "1W", system: 1, operatorId: "1W" }],
+            realUsers: [{ name: "player1", id: 1, character: "character1", currency: "USD", partnerId: "1W", system: 1, operatorId: "1W" }],
         };
 
         // act
