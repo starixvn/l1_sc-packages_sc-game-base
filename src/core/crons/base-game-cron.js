@@ -114,7 +114,6 @@ export default class BaseGameCron {
 
         if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
-            this.generateRoundResult();
             this.bot && (await this.bot.reset());
         }
 
@@ -165,8 +164,10 @@ export default class BaseGameCron {
 
             await this.gameConfigsRepository.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
+            this.generateRoundResult();
             await this.enableGame();
         } else {
+            this.generateRoundResult();
             this.gameStatusPublisher.publishStartGame();
         }
     }
