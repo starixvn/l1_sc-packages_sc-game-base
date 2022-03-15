@@ -180,7 +180,7 @@ export default class BaseGameCron {
     generateRoundResult() {
         this.gameData.result = this.definition.generateResult();
         const formattedResult = this.definition.generateRawResultForMd5(this.gameData.result, this.gameData.roundId);
-        this.gameData.md5 = generateMD5Result(formattedResult);
+        this.gameData.md5 = generateMD5Result(formattedResult, this.gameData.roundId);
     }
 
     async getSettingForNewRound() {

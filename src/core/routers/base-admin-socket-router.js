@@ -72,7 +72,7 @@ export default class BaseAdminSocketRouter {
                 if (this.gameData.roundId === set_result.roundId) {
                     this.gameData.result = set_result.result;
                     const formattedResult = this.definition.generateRawResultForMd5(this.gameData.result, this.gameData.roundId);
-                    this.gameData.md5 = generateMD5Result(formattedResult);
+                    this.gameData.md5 = generateMD5Result(formattedResult, this.gameData.roundId);
                     this.roundResultPublisher.publishToAllUsers({ md5: { hashValue: this.gameData.md5.hashValue } });
                 }
             }
