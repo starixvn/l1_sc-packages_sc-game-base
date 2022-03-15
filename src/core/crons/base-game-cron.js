@@ -114,6 +114,7 @@ export default class BaseGameCron {
 
         if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
+            this.generateRoundResult();
             this.bot && (await this.bot.reset());
         }
 
@@ -164,10 +165,8 @@ export default class BaseGameCron {
 
             await this.gameConfigsRepository.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
-            this.generateRoundResult();
             await this.enableGame();
         } else {
-            this.generateRoundResult();
             this.gameStatusPublisher.publishStartGame();
         }
     }
@@ -181,7 +180,8 @@ export default class BaseGameCron {
     generateRoundResult() {
         this.gameData.result = this.definition.generateResult();
         const formattedResult = this.definition.generateRawResultForMd5(this.gameData.result);
-        this.gameData.md5 = generateMD5Result(formattedResult, this.gameData.roundId);
+        this.gameData.md5 = { ...generateMD5Result(formattedResult, this.gameData.roundId), roundId: this.gameData.roundId };
+        this.gameStatusPublisher.publishMD5();
     }
 
     async getSettingForNewRound() {

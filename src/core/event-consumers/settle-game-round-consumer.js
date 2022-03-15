@@ -35,7 +35,6 @@ export default class SettleGameRoundConsumer {
             settlementResult,
             time: new Date(),
             exchangeRateId: exchangeRates.exId,
-            md5: this.gameData.md5,
         });
 
         if (newRound) {
