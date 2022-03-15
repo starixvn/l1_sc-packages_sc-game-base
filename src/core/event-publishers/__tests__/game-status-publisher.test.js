@@ -96,12 +96,11 @@ describe("publishDisableGameStatus test", () => {
 describe("publishStartGame test", () => {
     it("should call publishToAllUsers", () => {
         // arrange
-        gameData.md5 = { hashValue: "xyz" };
         const publisher = new GameStatusPublisher(gameName, gameData);
         publisher.publishToAllUsers = jest.fn();
         // act
         publisher.publishStartGame();
         // assert
-        expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ remainingTime: gameData.remainingTime, md5: { hashValue: "xyz" } });
+        expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ remainingTime: gameData.remainingTime });
     });
 });
