@@ -109,6 +109,9 @@ describe("SettleGameRoundConsumer", () => {
         });
 
         it("should create new round", async () => {
+            // Arrange
+            gameData.md5 = { hashValue: "x1", rawValue: "x" };
+
             // Act
             await consumer.settleRound();
 
@@ -118,6 +121,7 @@ describe("SettleGameRoundConsumer", () => {
                 result,
                 settlementResult,
                 time: mockDate,
+                md5: { hashValue: "x1", rawValue: "x" },
             });
         });
 
