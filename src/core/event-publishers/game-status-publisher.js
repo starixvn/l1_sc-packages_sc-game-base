@@ -38,8 +38,4 @@ export default class GameStatusPublisher extends BaseEventPublisher {
             exchangeRates: this.gameData.exchangeRates,
         });
     }
-
-    publishMD5() {
-        this.publishToAllUsers({ md5: { hashValue: this.gameData.md5.hashValue } });
-    }
 }

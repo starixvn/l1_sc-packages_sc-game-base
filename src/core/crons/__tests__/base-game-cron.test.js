@@ -58,6 +58,8 @@ const currencyGroupRepository = stubMongoose(mongoose.Model);
 /** @type {mongoose.Model}*/
 const currencyRepository = stubMongoose(mongoose.Model);
 
+const roundResultConsumer = { generateResultAndPublishMD5: jest.fn() };
+
 const initCron = function () {
     return new BaseGameCron({
         definition,
@@ -76,6 +78,7 @@ const initCron = function () {
         partnerConfigRepository,
         currencyGroupRepository,
         currencyRepository,
+        roundResultConsumer,
     });
 };
 

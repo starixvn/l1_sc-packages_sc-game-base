@@ -47,6 +47,8 @@ export default class BaseGameCron {
         partnerConfigRepository,
         currencyGroupRepository,
         currencyRepository,
+        roundResultConsumer,
+        md5sRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -64,13 +66,36 @@ export default class BaseGameCron {
         this.partnerConfigRepository = partnerConfigRepository;
         this.currencyGroupRepository = currencyGroupRepository;
         this.currencyRepository = currencyRepository;
+        this.roundResultConsumer = roundResultConsumer;
+        this.md5sRepository = md5sRepository;
     }
 
     async start() {
+        await this.initRoundId();
+        await this.queryLastMD5();
+        await this.getSettingForNewRound();
+        await this.updateExchangeRates();
+        this.startCron();
+    }
+
+    async initRoundId() {
         const lastRound = await this.roundsRepository
             .findOne({}, "id", { sort: { id: -1 } })
             .lean()
             .exec();
+
+        if (lastRound) {
+            this.gameData.roundId = lastRound.id + 1;
+        } else {
+            this.gameData.roundId = await this.getLastArchiveRound();
+        }
+    }
+
+    async queryLastMD5() {
+        this.gameData.lastMD5Record = await this.md5sRepository.findOne({ round: this.gameData.roundId }).lean().exec();
+    }
+
+    startCron() {
         const job = new cron.CronJob(
             "* * * * * *",
             () => this.proceed().catch(this.logService.logError),
@@ -81,16 +106,6 @@ export default class BaseGameCron {
                 job.start();
             }
         );
-
-        if (lastRound) {
-            this.gameData.roundId = lastRound.id + 1;
-        } else {
-            this.gameData.roundId = await this.getLastArchiveRound();
-        }
-
-        await this.getSettingForNewRound();
-        await this.updateExchangeRates();
-
         job.start();
     }
 
@@ -114,7 +129,7 @@ export default class BaseGameCron {
 
         if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
-            this.generateRoundResult();
+            await this.roundResultConsumer.generateResultAndPublishMD5(this.gameData.lastMD5Record);
             this.bot && (await this.bot.reset());
         }
 
@@ -175,13 +190,6 @@ export default class BaseGameCron {
         this.gameData.ingame = {};
         this.gameData.totalBets = {};
         this.gameData.settlementResultFromAdmin = {};
-    }
-
-    generateRoundResult() {
-        this.gameData.result = this.definition.generateResult();
-        const formattedResult = this.definition.generateRawResultForMd5(this.gameData.result);
-        this.gameData.md5 = { ...generateMD5Result(formattedResult, this.gameData.roundId), roundId: this.gameData.roundId };
-        this.gameStatusPublisher.publishMD5();
     }
 
     async getSettingForNewRound() {
