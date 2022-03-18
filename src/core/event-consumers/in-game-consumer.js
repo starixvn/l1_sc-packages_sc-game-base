@@ -61,7 +61,7 @@ export default class InGameConsumer {
 
     getMD5() {
         return this.gameData.roundId > this.gameData.md5.roundId
-            ? { rawValue: this.gameData.md5.rawValue }
+            ? { rawValue: this.gameData.md5.rawValue, extraInfos: this.gameData.result }
             : { hashValue: this.gameData.md5.hashValue };
     }
 
