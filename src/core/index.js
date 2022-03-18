@@ -9,6 +9,7 @@ import GameDefinition from "./game-definition";
 import * as Helpers from "./helpers";
 import * as QueryApis from "./query-apis";
 import * as Routers from "./routers";
+import * as Models from "./models";
 
 export {
     BaseGameApp,
@@ -22,4 +23,5 @@ export {
     Helpers,
     QueryApis,
     Routers,
+    Models,
 };
