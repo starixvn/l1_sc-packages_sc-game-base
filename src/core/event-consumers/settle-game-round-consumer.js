@@ -52,7 +52,7 @@ export default class SettleGameRoundConsumer {
     }
 
     generateResult() {
-        return this.gameData.result;
+        return this.gameData.result || this.definition.generateResult();
     }
 
     queryBets(roundId) {

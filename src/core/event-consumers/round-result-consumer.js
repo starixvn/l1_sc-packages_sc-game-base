@@ -10,6 +10,10 @@ export default class RoundResultConsumer {
     }
 
     async generateResultAndPublishMD5(lastMD5Record) {
+        if (!this.md5sRepository) {
+            return;
+        }
+
         if (lastMD5Record && lastMD5Record.roundId === this.gameData.roundId) {
             this.gameData.result = JSON.parse(decrypt(lastMD5Record.encryptedResult));
             this.gameData.md5 = JSON.parse(decrypt(lastMD5Record.encryptedMD5));

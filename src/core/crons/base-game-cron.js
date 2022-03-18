@@ -92,7 +92,9 @@ export default class BaseGameCron {
     }
 
     async queryLastMD5() {
-        this.gameData.lastMD5Record = await this.md5sRepository.findOne({ roundId: this.gameData.roundId }).lean().exec();
+        if (this.md5sRepository) {
+            this.gameData.lastMD5Record = await this.md5sRepository.findOne({ roundId: this.gameData.roundId }).lean().exec();
+        }
     }
 
     startCron() {
