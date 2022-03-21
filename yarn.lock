@@ -5526,10 +5526,15 @@
     "jest-util" "^26.6.2"
     "string-length" "^4.0.1"
 
-"jest-worker@^26.6.2":
-  "integrity" "sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ=="
-  "resolved" "http://npm.lumigame.com/jest-worker/-/jest-worker-26.6.2.tgz"
-  "version" "26.6.2"
+jest-when@^3.5.1:
+  version "3.5.1"
+  resolved "https://npm.lumigame.com/jest-when/-/jest-when-3.5.1.tgz#33ab6f923661cf878cd08fe9df64b507934603db"
+  integrity sha512-o+HiaIVCg1IC95sMDKHU9G5v5N5l3UHqXvJpf0PgAMThZeQo4Hf5Sgoj+wpCBRGg4/KtzSAZZZEKNiLqE0i4eQ==
+
+jest-worker@^26.6.2:
+  version "26.6.2"
+  resolved "http://npm.lumigame.com/jest-worker/-/jest-worker-26.6.2.tgz"
+  integrity sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==
   dependencies:
     "@types/node" "*"
     "merge-stream" "^2.0.0"

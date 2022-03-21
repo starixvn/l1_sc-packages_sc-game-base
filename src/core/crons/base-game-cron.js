@@ -7,7 +7,6 @@ import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publi
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
-import { generateMD5Result } from "../helpers/md5-helper";
 
 export default class BaseGameCron {
     /**
@@ -108,6 +107,7 @@ export default class BaseGameCron {
                 job.start();
             }
         );
+
         job.start();
     }
 
