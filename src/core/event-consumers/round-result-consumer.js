@@ -18,21 +18,34 @@ export default class RoundResultConsumer {
             this.gameData.result = JSON.parse(decrypt(lastMD5Record.encryptedResult));
             this.gameData.md5 = JSON.parse(decrypt(lastMD5Record.encryptedMD5));
         } else {
-            const { roundId } = this.gameData;
-            const resultFromAdmin = this.gameData.settlementResultFromAdmin;
-            const result = roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
-            const formattedResult = this.definition.generateRawResultForMd5(result);
-            this.gameData.md5 = { ...generateMD5Result(formattedResult, roundId), roundId };
-            this.gameData.result = result;
-
-            await this.md5sRepository.create({
-                roundId: roundId,
-                encryptedMD5: encrypt(JSON.stringify(this.gameData.md5)),
-                encryptedResult: encrypt(JSON.stringify(result)),
-                time: new Date(),
-            });
+            this.gameData.result = this.generateResult();
+            this.gameData.md5 = this.buildMD5();
+            await this.createMD5Record();
         }
 
         this.roundResultPublisher.publishMD5();
+    }
+
+    generateResult() {
+        const resultFromAdmin = this.gameData.settlementResultFromAdmin;
+        return this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
+    }
+
+    buildMD5() {
+        const formattedResult = this.definition.generateRawResultForMd5(this.gameData.result);
+        return { ...generateMD5Result(formattedResult, this.gameData.roundId), roundId: this.gameData.roundId };
+    }
+
+    async createMD5Record() {
+        await this.md5sRepository.create({
+            roundId: this.gameData.roundId,
+            encryptedMD5: encrypt(JSON.stringify(this.gameData.md5)),
+            encryptedResult: encrypt(JSON.stringify(this.gameData.result)),
+            time: this.getNewDate(),
+        });
+    }
+
+    getNewDate() {
+        return new Date();
     }
 }
