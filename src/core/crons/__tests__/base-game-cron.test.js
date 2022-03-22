@@ -11,6 +11,7 @@ import GameDefinition from "../../game-definition";
 import BaseBot from "../base-bot";
 import BaseGameCron from "../base-game-cron";
 import cron from "cron";
+import { create } from "lodash";
 
 jest.mock("../base-bot");
 jest.mock("../../event-consumers/settle-game-round-consumer");
@@ -86,7 +87,7 @@ const createBaseGameCron = function () {
 };
 
 describe("start", () => {
-    it("call initRoundId", async () => {
+    it("should call initRoundId", async () => {
         // Arrange
         var gameCron = createBaseGameCron();
         gameCron.initRoundId = jest.fn();
@@ -102,7 +103,7 @@ describe("start", () => {
         expect(gameCron.initRoundId).toHaveBeenCalledWith();
     });
 
-    it("call querylastMD5", async () => {
+    it("should call querylastMD5", async () => {
         // Arrange
         var gameCron = createBaseGameCron();
         gameCron.initRoundId = jest.fn();
@@ -118,7 +119,7 @@ describe("start", () => {
         expect(gameCron.queryLastMD5).toHaveBeenCalledWith();
     });
 
-    it("call getSettingForNewRound", async () => {
+    it("should call getSettingForNewRound", async () => {
         // Arrange
         var gameCron = createBaseGameCron();
         gameCron.initRoundId = jest.fn();
@@ -134,7 +135,7 @@ describe("start", () => {
         expect(gameCron.getSettingForNewRound).toHaveBeenCalledWith();
     });
 
-    it("call updateExchangeRates", async () => {
+    it("should call updateExchangeRates", async () => {
         // Arrange
         var gameCron = createBaseGameCron();
         gameCron.initRoundId = jest.fn();
@@ -150,7 +151,7 @@ describe("start", () => {
         expect(gameCron.updateExchangeRates).toHaveBeenCalledWith();
     });
 
-    it("call startCron", async () => {
+    it("should call startCron", async () => {
         // Arrange
         var gameCron = createBaseGameCron();
         gameCron.initRoundId = jest.fn();
@@ -169,7 +170,7 @@ describe("start", () => {
 
 describe("initRoundId", () => {
     describe("when last round exists", () => {
-        it("roundid = last round id + 1", async () => {
+        it("should update roundid = last round id + 1", async () => {
             // Arrange
             const lastRound = { id: 123 };
             var gameCron = createBaseGameCron();
@@ -188,7 +189,7 @@ describe("initRoundId", () => {
     });
 
     describe("when last round does not exist", () => {
-        it("get round id from archiveRound", async () => {
+        it("should get round id from archiveRound", async () => {
             // Arrange
             const lastRoundId = 125;
             var gameCron = createBaseGameCron();
@@ -211,7 +212,7 @@ describe("initRoundId", () => {
 
 describe("queryLastMD5", () => {
     describe("when md5sRepository is null", () => {
-        it("do not update lastMD5Record", async () => {
+        it("should not update lastMD5Record", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
             gameCron.md5sRepository = null;
@@ -225,7 +226,7 @@ describe("queryLastMD5", () => {
     });
 
     describe("when md5sRepository exists", () => {
-        it("find lastMD5Record", async () => {
+        it("should find lastMD5Record", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
             const lastMD5Record = { x: 1 };
@@ -261,7 +262,7 @@ describe("startCron", () => {
     });
 
     describe("onStick", () => {
-        it("call proceed", () => {
+        it("should call proceed", () => {
             // Arrange
             const gameCron = createBaseGameCron();
             cron.CronJob = jest.fn(() => {
@@ -279,7 +280,7 @@ describe("startCron", () => {
             expect(gameCron.proceed).toHaveBeenCalledWith();
         });
 
-        it("call catch", () => {
+        it("should call catch", () => {
             // Arrange
             const gameCron = createBaseGameCron();
             cron.CronJob = jest.fn(() => {
@@ -300,7 +301,7 @@ describe("startCron", () => {
     });
 
     describe("onComplete", () => {
-        it("log error", () => {
+        it("should log error", () => {
             // Arrange
             const gameCron = createBaseGameCron();
             const startFunc = jest.fn();
@@ -321,7 +322,7 @@ describe("startCron", () => {
             );
         });
 
-        it("call start job", () => {
+        it("should call start job", () => {
             // Arrange
             const gameCron = createBaseGameCron();
             const startFunc = jest.fn();
@@ -342,103 +343,545 @@ describe("startCron", () => {
     });
 });
 
-xdescribe("proceed tests", () => {
-    it("should call checkGameStatus after each round", async () => {
-        gameData.disabled = false;
-        gameData.remainingTime = definition.durations.wholeRound;
+describe("getLastArchiveRound", () => {
+    describe("when archive exists", () => {
+        it("should return last phien + 1", async () => {
+            // Arrange
+            const archiveStatus = { lastArcId: { _phiens: 123 } };
+            const configName = "config name 1";
+            const gameCron = createBaseGameCron();
+            gameCron.definition.configName = configName;
+            gameCron.archiveStatusesRepository = { findOne: jest.fn() };
+            const findOneResult = { lean: jest.fn().mockReturnValue({ exec: jest.fn().mockReturnValue(archiveStatus) }) };
+            when(gameCron.archiveStatusesRepository.findOne).calledWith({ name: configName }, "lastArcId").mockReturnValue(findOneResult);
 
-        const baseGameCron = createBaseGameCron();
+            // Act
+            const result = await gameCron.getLastArchiveRound();
 
-        baseGameCron.checkGameStatus = jest.fn();
-
-        await baseGameCron.proceed();
-
-        expect(baseGameCron.checkGameStatus).toHaveBeenCalled();
+            // Assert
+            expect(result).toBe(124);
+        });
     });
 
-    it("should call resetForNewRound and reset bot at starting round", async () => {
-        gameData.disabled = false;
-        gameData.remainingTime = definition.durations.placingBets + 1;
+    describe("when archive does not exist", () => {
+        it("should return 1", async () => {
+            // Arrange
+            const archiveStatus = null;
+            const configName = "config name 1";
+            const gameCron = createBaseGameCron();
+            gameCron.definition.configName = configName;
+            gameCron.archiveStatusesRepository = { findOne: jest.fn() };
+            const findOneResult = { lean: jest.fn().mockReturnValue({ exec: jest.fn().mockReturnValue(archiveStatus) }) };
+            when(gameCron.archiveStatusesRepository.findOne).calledWith({ name: configName }, "lastArcId").mockReturnValue(findOneResult);
 
-        const baseGameCron = createBaseGameCron();
+            // Act
+            const result = await gameCron.getLastArchiveRound();
 
-        jest.spyOn(baseGameCron, "resetForNewRound");
-
-        await baseGameCron.proceed();
-
-        expect(bot.reset).toHaveBeenCalled();
-        expect(baseGameCron.resetForNewRound).toHaveBeenCalled();
-    });
-
-    it("should call settleRound when remainingTime is less than 0", async () => {
-        gameData.disabled = false;
-        gameData.remainingTime = 0;
-
-        const baseGameCron = createBaseGameCron();
-
-        await baseGameCron.proceed();
-
-        expect(gameData.remainingTime).toEqual(definition.durations.wholeRound);
-        expect(settleGameRoundConsumer.settleRound).toHaveBeenCalledWith(gameData);
-    });
-
-    it("should call bot.run and runningRoundInfoPublisher.publish when remaining time is in placing bet time", async () => {
-        gameData.disabled = false;
-        gameData.remainingTime = definition.durations.placingBets;
-
-        const baseGameCron = createBaseGameCron();
-
-        baseGameCron.checkGameStatus = jest.fn();
-
-        await baseGameCron.proceed();
-
-        expect(runningRoundInfoPublisher.publish).toHaveBeenCalled();
-        expect(bot.run).toHaveBeenCalled();
+            // Assert
+            expect(result).toBe(1);
+        });
     });
 });
 
-xdescribe("checkGameStatus tests", () => {
-    it("game is enabled, should update gameData.gameConfigs and call publishStartGame", async () => {
-        const gameConfigs = { enabled: true };
-        gameData.disabled = false;
-        gameData.remainingTime = definition.durations.wholeRound;
-        gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+describe("proceed", () => {
+    describe("when remainingTime = wholeRound", () => {
+        it("should call checkGameStatus", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.definition.durations = { wholeRound: 12 };
+            gameCron.gameData.remainingTime = 12;
+            gameCron.checkGameStatus = jest.fn();
 
-        const baseGameCron = createBaseGameCron();
+            // Act
+            await gameCron.proceed();
 
-        await baseGameCron.checkGameStatus();
-
-        expect(gameData.gameConfigs).toEqual(gameConfigs);
-        expect(gameStatusPublisher.publishStartGame).toHaveBeenCalled();
+            // Assert
+            expect(gameCron.checkGameStatus).toHaveBeenCalled();
+        });
     });
 
-    it("game is disabled, should reset gameData.remainingTime, update game configs and call publishDisableGameStatus", async () => {
-        const gameConfigs = { enabled: false };
-        gameData.disabled = false;
-        gameData.remainingTime = definition.durations.wholeRound;
-        gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+    describe("when gameData.disabled is false", () => {
+        it("should reduce remainingTime by 1", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.disabled = false;
+            gameCron.gameData.remainingTime = 123;
 
-        const baseGameCron = createBaseGameCron();
+            // Act
+            await gameCron.proceed();
 
-        await baseGameCron.checkGameStatus();
-
-        expect(gameData.gameConfigs).toEqual(gameConfigs);
-        expect(gameData.remainingTime).toEqual(definition.durations.wholeRound);
-        expect(gameConfigsRepository.updateOne).toHaveBeenCalled();
-        expect(gameStatusPublisher.publishDisableGameStatus).toHaveBeenCalled();
+            // Assert
+            expect(gameCron.gameData.remainingTime).toBe(122);
+        });
     });
 
-    it("game is currently disabled, then being enabled, should call publishEnablingGameStatus", async () => {
-        const gameConfigs = { enabled: true };
-        gameData.disabled = true;
-        gameData.remainingTime = definition.durations.wholeRound;
-        gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+    describe("when isStartingTime true", () => {
+        it("should call resetForNewRound", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.remainingTime = 11;
+            gameCron.definition.durations = { wholeRound: 22 };
+            gameCron.isStartingTime = jest.fn();
+            when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
+            gameCron.resetForNewRound = jest.fn();
+            gameCron.roundResultConsumer = {
+                generateResultAndPublishMD5: jest.fn(),
+            };
+            gameCron.gameData.lastMD5Record = { id: 122 };
+            gameCron.bot = { reset: jest.fn() };
+            gameCron.gameData.disabled = true;
 
-        const baseGameCron = createBaseGameCron();
+            // Act
+            await gameCron.proceed();
 
-        await baseGameCron.checkGameStatus();
+            // Assert
+            expect(gameCron.resetForNewRound).toHaveBeenCalled();
+        });
 
-        expect(gameData.gameConfigs).toEqual(gameConfigs);
-        expect(gameStatusPublisher.publishEnablingGameStatus).toHaveBeenCalled();
+        it("should generate result and publish md5", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.remainingTime = 11;
+            gameCron.definition.durations = { wholeRound: 22 };
+            gameCron.isStartingTime = jest.fn();
+            when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
+            gameCron.resetForNewRound = jest.fn();
+            gameCron.roundResultConsumer = {
+                generateResultAndPublishMD5: jest.fn(),
+            };
+            gameCron.gameData.lastMD5Record = { id: 122 };
+            gameCron.bot = { reset: jest.fn() };
+            gameCron.gameData.disabled = true;
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.roundResultConsumer.generateResultAndPublishMD5).toHaveBeenCalledWith({ id: 122 });
+        });
+
+        it("should reset bot", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.remainingTime = 11;
+            gameCron.definition.durations = { wholeRound: 22 };
+            gameCron.isStartingTime = jest.fn();
+            when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
+            gameCron.resetForNewRound = jest.fn();
+            gameCron.roundResultConsumer = {
+                generateResultAndPublishMD5: jest.fn(),
+            };
+            gameCron.gameData.lastMD5Record = { id: 122 };
+            gameCron.bot = { reset: jest.fn() };
+            gameCron.gameData.disabled = true;
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.bot.reset).toHaveBeenCalled();
+        });
+    });
+
+    describe("when remainingTime < 0", () => {
+        it("should update remainingTime = wholeRound", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData = {
+                remainingTime: -1,
+            };
+            gameCron.definition.durations = { wholeRound: 10 };
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.gameData.remainingTime).toBe(10);
+        });
+
+        it("should call settleRound", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData = {
+                remainingTime: -1,
+            };
+            gameCron.definition.durations = { wholeRound: 10 };
+            gameCron.settleGameRoundConsumer = {
+                settleRound: jest.fn(),
+            };
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.settleGameRoundConsumer.settleRound).toHaveBeenCalledWith(gameCron.gameData);
+        });
+    });
+
+    describe("when remainingTime < durations.placingBets", () => {
+        it("should call bot run", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.remainingTime = 10;
+            gameCron.definition.durations = { placingBets: 11 };
+            gameCron.bot = { run: jest.fn() };
+            gameCron.runningRoundInfoPublisher = {
+                publish: jest.fn(),
+            };
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.bot.run).toHaveBeenCalled();
+        });
+
+        it("should publish round info", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.remainingTime = 10;
+            gameCron.definition.durations = { placingBets: 11 };
+            gameCron.bot = { run: jest.fn() };
+            gameCron.runningRoundInfoPublisher = {
+                publish: jest.fn(),
+            };
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.runningRoundInfoPublisher.publish).toHaveBeenCalled();
+        });
+    });
+});
+
+describe("checkGameStatus tests", () => {
+    describe("when game is enabled", () => {
+        it("should update gameData.gameConfigs", async () => {
+            // Arrange
+            const gameConfigs = { enabled: true };
+            gameData.disabled = false;
+            gameData.remainingTime = definition.durations.wholeRound;
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            const baseGameCron = createBaseGameCron();
+
+            // Act
+            await baseGameCron.checkGameStatus();
+
+            // Assert
+            expect(gameData.gameConfigs).toEqual(gameConfigs);
+        });
+
+        it("should call publishStartGame", async () => {
+            // Arrange
+            const gameConfigs = { enabled: true };
+            gameData.disabled = false;
+            gameData.remainingTime = definition.durations.wholeRound;
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            const baseGameCron = createBaseGameCron();
+
+            // Act
+            await baseGameCron.checkGameStatus();
+
+            // Asset
+            expect(gameStatusPublisher.publishStartGame).toHaveBeenCalled();
+        });
+    });
+
+    describe("game is disabled", () => {
+        it("should update game configs", async () => {
+            // Arrange
+            const gameConfigs = { enabled: false };
+            gameData.disabled = false;
+            gameData.remainingTime = definition.durations.wholeRound;
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            const baseGameCron = createBaseGameCron();
+
+            // Act
+            await baseGameCron.checkGameStatus();
+
+            // Asset
+            expect(gameData.gameConfigs).toEqual(gameConfigs);
+        });
+
+        it("should reset gameData.remainingTime", async () => {
+            // Arrange
+            const gameConfigs = { enabled: false };
+            gameData.disabled = false;
+            gameData.remainingTime = definition.durations.wholeRound;
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            const baseGameCron = createBaseGameCron();
+
+            // Act
+            await baseGameCron.checkGameStatus();
+
+            // Asset
+            expect(gameData.remainingTime).toEqual(definition.durations.wholeRound);
+        });
+
+        it("should call updateOne", async () => {
+            // Arrange
+            const gameConfigs = { enabled: false };
+            gameData.disabled = false;
+            gameData.remainingTime = definition.durations.wholeRound;
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            const baseGameCron = createBaseGameCron();
+
+            // Act
+            await baseGameCron.checkGameStatus();
+
+            // Asset
+            expect(gameConfigsRepository.updateOne).toHaveBeenCalled();
+        });
+
+        it("should call publishDisableGameStatus", async () => {
+            // Arrange
+            const gameConfigs = { enabled: false };
+            gameData.disabled = false;
+            gameData.remainingTime = definition.durations.wholeRound;
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            const baseGameCron = createBaseGameCron();
+
+            // Act
+            await baseGameCron.checkGameStatus();
+
+            // Asset
+            expect(gameStatusPublisher.publishDisableGameStatus).toHaveBeenCalled();
+        });
+    });
+
+    describe("when game is currently disabled, then being enabled", () => {
+        it("should update gameConfig", async () => {
+            // Arrange
+            const gameConfigs = { enabled: true };
+            gameData.disabled = true;
+            gameData.remainingTime = definition.durations.wholeRound;
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            const baseGameCron = createBaseGameCron();
+
+            // Act
+            await baseGameCron.checkGameStatus();
+
+            // Asset
+            expect(gameData.gameConfigs).toEqual(gameConfigs);
+        });
+
+        it("should call publishEnablingGameStatus", async () => {
+            // Arrange
+            const gameConfigs = { enabled: true };
+            gameData.disabled = true;
+            gameData.remainingTime = definition.durations.wholeRound;
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            const baseGameCron = createBaseGameCron();
+
+            // Act
+            await baseGameCron.checkGameStatus();
+
+            // Asset
+            expect(gameStatusPublisher.publishEnablingGameStatus).toHaveBeenCalled();
+        });
+    });
+});
+
+describe("resetForNewRound", () => {
+    it("should reset ingame", () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+
+        // Act
+        gameCron.resetForNewRound();
+
+        // Assert
+        expect(gameCron.gameData.ingame).toEqual({});
+    });
+
+    it("should reset totalBets", () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+
+        // Act
+        gameCron.resetForNewRound();
+
+        // Assert
+        expect(gameCron.gameData.totalBets).toEqual({});
+    });
+
+    it("should reset settleResultFromAdmin", () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+
+        // Act
+        gameCron.resetForNewRound();
+
+        // Assert
+        expect(gameCron.gameData.settlementResultFromAdmin).toEqual({});
+    });
+});
+
+describe("getSettingForNewRound", () => {
+    it("should updateCurrencyGroupGames", async () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+        gameCron.updateCurrencyGroupGames = jest.fn();
+
+        // Act
+        await gameCron.getSettingForNewRound();
+
+        // Assert
+        expect(gameCron.updateCurrencyGroupGames).toHaveBeenCalled();
+    });
+
+    it("should updatePartnerGameSiteExclusions", async () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+        gameCron.updatePartnerGameSiteExclusions = jest.fn();
+
+        // Act
+        await gameCron.getSettingForNewRound();
+
+        // Assert
+        expect(gameCron.updatePartnerGameSiteExclusions).toHaveBeenCalled();
+    });
+
+    it("should updateCurrencyGroups", async () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+        gameCron.updateCurrencyGroups = jest.fn();
+
+        // Act
+        await gameCron.getSettingForNewRound();
+
+        // Assert
+        expect(gameCron.updateCurrencyGroups).toHaveBeenCalled();
+    });
+
+    it("should updateCurrencies", async () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+        gameCron.updateCurrencies = jest.fn();
+
+        // Act
+        await gameCron.getSettingForNewRound();
+
+        // Assert
+        expect(gameCron.updateCurrencies).toHaveBeenCalled();
+    });
+});
+
+describe("updateExchangeRates", () => {
+    it("should get exchangeRates", async () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+        const exchangeRates = { EUR: 1, US: 2 };
+        gameCron.exchangeRatesRepository = { findOne: jest.fn() };
+        const findOneResult = { lean: jest.fn().mockReturnValue({ exec: jest.fn().mockReturnValue(exchangeRates) }) };
+        when(gameCron.exchangeRatesRepository.findOne)
+            .calledWith({}, "exId code", { sort: { exId: -1 } })
+            .mockReturnValue(findOneResult);
+
+        // Act
+        await gameCron.updateExchangeRates();
+
+        // Assert
+        expect(gameCron.gameData.exchangeRates).toBe(exchangeRates);
+    });
+});
+
+describe("updateCurrencyGroupGames", () => {
+    it("should get currencyGroupGames", async () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+        gameCron.definition.id = 111;
+        const currencyGroupGames = { EUR: ["EUR1", "EUR2"] };
+        gameCron.currencyGroupGamesRepository = { find: jest.fn() };
+        const findResult = { lean: jest.fn().mockReturnValue({ exec: jest.fn().mockReturnValue(currencyGroupGames) }) };
+        when(gameCron.currencyGroupGamesRepository.find)
+            .calledWith({ gameId: 111, enabled: true }, "groupId minBet maxBet maxBetPerChoices chips stakeLevels")
+            .mockReturnValue(findResult);
+
+        // Act
+        await gameCron.updateCurrencyGroupGames();
+
+        // Assert
+        expect(gameCron.gameData.currencyGroupGames).toBe(currencyGroupGames);
+    });
+});
+
+describe("updatePartnerGameSiteExclusions", () => {
+    it("should partnerGameSiteExclusions", async () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+        const partnerGameSiteExclusions = ["site1", "site2"];
+        gameCron.partnerConfigRepository = { find: jest.fn() };
+        const findResult = { lean: jest.fn().mockReturnValue({ exec: jest.fn().mockReturnValue(partnerGameSiteExclusions) }) };
+        when(gameCron.partnerConfigRepository.find)
+            .calledWith({ type: "game_site_exclusions" }, "partnerId type value")
+            .mockReturnValue(findResult);
+
+        // Act
+        await gameCron.updatePartnerGameSiteExclusions();
+
+        // Assert
+        expect(gameCron.gameData.partnerGameSiteExclusions).toBe(partnerGameSiteExclusions);
+    });
+});
+
+describe("updateCurrencyGroups", () => {
+    it("should get currencyGroups", async () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+        const currencyGroups = ["EUR", "US"];
+        gameCron.currencyGroupRepository = { find: jest.fn() };
+        const findResult = { lean: jest.fn().mockReturnValue({ exec: jest.fn().mockReturnValue(currencyGroups) }) };
+        when(gameCron.currencyGroupRepository.find).calledWith({ enabled: true }, "name enabled partnerId").mockReturnValue(findResult);
+
+        // Act
+        await gameCron.updateCurrencyGroups();
+
+        // Assert
+        expect(gameCron.gameData.currencyGroups).toBe(currencyGroups);
+    });
+});
+
+describe("updateCurrencies", () => {
+    it("should get currencies", async () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+        const currencies = ["EUR", "US"];
+        gameCron.currencyRepository = { find: jest.fn() };
+        const findResult = { lean: jest.fn().mockReturnValue({ exec: jest.fn().mockReturnValue(currencies) }) };
+        when(gameCron.currencyRepository.find)
+            .calledWith({ enabled: true }, "name code multiplier enabled partnerId groupId isTest isUncountOnTotal")
+            .mockReturnValue(findResult);
+
+        // Act
+        await gameCron.updateCurrencies();
+
+        // Assert
+        expect(gameCron.gameData.currencies).toBe(currencies);
+    });
+});
+
+describe("enableGame", () => {
+    it("should publishEnablingGameStatus", async () => {
+        // Arrange
+        const gameCron = createBaseGameCron();
+        gameCron.gameStatusPublisher = {
+            publishEnablingGameStatus: jest.fn(),
+        };
+
+        // Act
+        await gameCron.enableGame();
+
+        // Assert
+        expect(gameCron.gameStatusPublisher.publishEnablingGameStatus).toHaveBeenCalled();
     });
 });
