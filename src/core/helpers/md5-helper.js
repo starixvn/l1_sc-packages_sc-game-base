@@ -12,6 +12,6 @@ const createHashMD5 = (value) => {
 };
 
 export const generateMD5Result = (formattedResult, roundId) => {
-    const formattedResultWithSalt = `${formattedResult}_#${roundId}${randomString()}`;
+    const formattedResultWithSalt = `${formattedResult}_{#${roundId}${randomString()}}`;
     return { hashValue: createHashMD5(formattedResultWithSalt), rawValue: formattedResultWithSalt };
 };
