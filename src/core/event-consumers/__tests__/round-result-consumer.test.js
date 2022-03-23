@@ -152,7 +152,7 @@ describe("generateResultAndPublishMD5", () => {
 
             // Assert
             expect(consumer.gameData.md5.roundId).toBe(11);
-            expect(consumer.gameData.md5.rawValue).toContain("1010_#11");
+            expect(consumer.gameData.md5.rawValue).toContain("1010_{#11");
         });
 
         it("should create md5 record from admin result", async () => {
@@ -248,7 +248,7 @@ describe("generateResultAndPublishMD5", () => {
 
             // Assert
             expect(consumer.gameData.md5.roundId).toBe(12);
-            expect(consumer.gameData.md5.rawValue).toContain("1110_#12");
+            expect(consumer.gameData.md5.rawValue).toContain("1110_{#12");
         });
 
         it("should create md5 record from generated result", async () => {

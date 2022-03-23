@@ -25,7 +25,6 @@ export default class BaseAdminSocketRouter {
         adminDisconnectConsumer,
         logService,
         appConfigs,
-        roundResultPublisher,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -34,7 +33,6 @@ export default class BaseAdminSocketRouter {
         this.adminDisconnectConsumer = adminDisconnectConsumer;
         this.logService = logService;
         this.appConfigs = appConfigs;
-        this.roundResultPublisher = roundResultPublisher;
     }
 
     /**
