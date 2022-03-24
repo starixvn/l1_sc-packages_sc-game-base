@@ -54,29 +54,33 @@ describe("table game cron test", () => {
         expect(tableGameCron instanceof BaseGameCron);
     });
 
-    it("start_always_calls specific methods", async () => {
-        // arrange
-        spyOn(bot, "resetInRoomTrackings");
-        spyOn(BaseGameCron.prototype, "start");
+    describe("start", () => {
+        it("should calls specific methods", async () => {
+            // arrange
+            spyOn(bot, "resetInRoomTrackings");
+            spyOn(BaseGameCron.prototype, "start");
 
-        // act
-        await tableGameCron.start();
+            // act
+            await tableGameCron.start();
 
-        // assert
-        expect(bot.resetInRoomTrackings).toHaveBeenCalled();
-        expect(BaseGameCron.prototype.start).toHaveBeenCalled();
+            // assert
+            expect(bot.resetInRoomTrackings).toHaveBeenCalled();
+            expect(BaseGameCron.prototype.start).toHaveBeenCalled();
+        });
     });
 
-    it("resetForNewRound_always_calls super", () => {
-        // arrange
-        spyOn(BaseGameCron.prototype, "resetForNewRound");
+    describe("resetForNewRound", () => {
+        it("should calls super", () => {
+            // arrange
+            spyOn(BaseGameCron.prototype, "resetForNewRound");
 
-        // act
-        tableGameCron.resetForNewRound();
+            // act
+            tableGameCron.resetForNewRound();
 
-        // assert
-        expect(BaseGameCron.prototype.resetForNewRound).toHaveBeenCalled();
-        expect(gameData.chips).toEqual({});
-        expect(gameData.winningPlayers).toEqual({});
+            // assert
+            expect(BaseGameCron.prototype.resetForNewRound).toHaveBeenCalled();
+            expect(gameData.chips).toEqual({});
+            expect(gameData.winningPlayers).toEqual({});
+        });
     });
 });

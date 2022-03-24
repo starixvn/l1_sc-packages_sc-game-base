@@ -28,7 +28,7 @@ describe("table out game consumer test", () => {
     });
 
     describe("consume", () => {
-        it("Always_Call super.consume", () => {
+        it("should Call super.consume", () => {
             // act
             consumer.consume(socketClient);
 
@@ -36,19 +36,21 @@ describe("table out game consumer test", () => {
             expect(UserDisconnectConsumer.prototype.consume).toHaveBeenCalled();
         });
 
-        it("existPlayer_publish out game message", () => {
-            // arrange
-            spyOn(publisher, "publishToAllUsers");
-            const socketId = 123;
-            gameData.realPlayers = {
-                [socketId]: {},
-            };
+        describe("when exist player", () => {
+            it("should publish out game message", () => {
+                // arrange
+                spyOn(publisher, "publishToAllUsers");
+                const socketId = 123;
+                gameData.realPlayers = {
+                    [socketId]: {},
+                };
 
-            // act
-            consumer.consume({ id: socketId });
+                // act
+                consumer.consume({ id: socketId });
 
-            // assert
-            expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalled();
+                // assert
+                expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalled();
+            });
         });
     });
 });

@@ -41,14 +41,16 @@ describe("TableInGameConsumer", () => {
         expect(consumer instanceof InGameConsumer);
     });
 
-    it("buildPayload_always_calls Super", async () => {
-        // arrange
-        spyOn(InGameConsumer.prototype, "buildPayload");
+    describe("buildPayload", () => {
+        it("should calls Super", async () => {
+            // arrange
+            spyOn(InGameConsumer.prototype, "buildPayload");
 
-        // act
-        await consumer.buildPayload({ UID: "uid" });
+            // act
+            await consumer.buildPayload({ UID: "uid" });
 
-        expect(InGameConsumer.prototype.buildPayload).toHaveBeenCalled();
+            expect(InGameConsumer.prototype.buildPayload).toHaveBeenCalled();
+        });
     });
 
     describe("consume", () => {

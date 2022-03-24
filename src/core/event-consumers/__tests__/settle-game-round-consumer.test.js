@@ -64,7 +64,6 @@ describe("SettleGameRoundConsumer", () => {
             it("should return result from admin", () => {
                 // Arrange
                 gameData.roundId = 1;
-                //definition.generateResult.mockReturnValueOnce({ red1: true, red2: true, red3: true, red4: false });
 
                 // Act
                 const actualResult = consumer.generateResult();

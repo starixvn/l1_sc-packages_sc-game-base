@@ -21,42 +21,48 @@ describe("base game startup test", () => {
         emit: jest.fn(),
     };
 
-    it("initSocketRouter_always_init router", () => {
-        /** @type {BaseSocketRouter} */
-        const router = stub(BaseSocketRouter);
-        spyOn(container, "resolve").and.returnValue(router);
-        const baseGameStartup = new BaseGameStartup(container);
+    describe("initSocketRouter", () => {
+        it("should always init router", () => {
+            /** @type {BaseSocketRouter} */
+            const router = stub(BaseSocketRouter);
+            spyOn(container, "resolve").and.returnValue(router);
+            const baseGameStartup = new BaseGameStartup(container);
 
-        // act
-        baseGameStartup.initSocketRouter(socketClient);
+            // act
+            baseGameStartup.initSocketRouter(socketClient);
 
-        // assert
-        expect(router.init).toHaveBeenCalled();
+            // assert
+            expect(router.init).toHaveBeenCalled();
+        });
     });
 
-    it("initAdminSocketRouter_always_init router", () => {
-        /** @type {BaseAdminSocketRouter} */
-        const router = stub(BaseAdminSocketRouter);
-        spyOn(container, "resolve").and.returnValue(router);
-        const baseGameStartup = new BaseGameStartup(container);
+    describe("initAdminSocketRouter", () => {
+        it("should always init router", () => {
+            /** @type {BaseAdminSocketRouter} */
+            const router = stub(BaseAdminSocketRouter);
+            spyOn(container, "resolve").and.returnValue(router);
+            const baseGameStartup = new BaseGameStartup(container);
 
-        //act
-        baseGameStartup.initAdminSocketRouter(socketClient);
+            //act
+            baseGameStartup.initAdminSocketRouter(socketClient);
 
-        // assert
-        expect(router.init).toHaveBeenCalled();
+            // assert
+            expect(router.init).toHaveBeenCalled();
+        });
     });
 
-    it("initHttpRouter_always_init router", () => {
-        /** @type {HttpRouter} */
-        const router = stub(HttpRouter);
-        spyOn(container, "resolve").and.returnValue(router);
-        const baseGameStartup = new BaseGameStartup(container);
+    describe("initHttpRouter", () => {
+        it("should always init router", () => {
+            /** @type {HttpRouter} */
+            const router = stub(HttpRouter);
+            spyOn(container, "resolve").and.returnValue(router);
+            const baseGameStartup = new BaseGameStartup(container);
 
-        //act
-        baseGameStartup.initHttpRouter(socketClient);
+            //act
+            baseGameStartup.initHttpRouter(socketClient);
 
-        // assert
-        expect(router.init).toHaveBeenCalled();
+            // assert
+            expect(router.init).toHaveBeenCalled();
+        });
     });
 });

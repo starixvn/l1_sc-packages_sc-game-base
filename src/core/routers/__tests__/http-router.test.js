@@ -30,7 +30,7 @@ describe("http router test", () => {
 
     const router = new HttpRouter(appConfigs, gameData, historyQuery, userSessionsRepository, metricQuery, logService);
 
-    it("init_always_calls app.get", () => {
+    it("should calls app.get", () => {
         // act
         router.init(app);
 
@@ -38,99 +38,111 @@ describe("http router test", () => {
         expect(app.get).toHaveBeenCalled();
     });
 
-    describe("handleOnlineUsers_", () => {
+    describe("handleOnlineUsers", () => {
         const res = {
             send: jest.fn(),
         };
 
-        it("normal_response online users", () => {
-            // arrange
-            const onlineUsers = [];
-            spyOn(router, "collectOnlineUsers").and.returnValue(onlineUsers);
+        describe("when normal", () => {
+            it("should response online users", () => {
+                // arrange
+                const onlineUsers = [];
+                spyOn(router, "collectOnlineUsers").and.returnValue(onlineUsers);
 
-            // act
-            router.handleOnlineUsers(res);
+                // act
+                router.handleOnlineUsers(res);
 
-            // assert
-            expect(res.send).toHaveBeenCalledWith(onlineUsers);
+                // assert
+                expect(res.send).toHaveBeenCalledWith(onlineUsers);
+            });
         });
 
-        it("have exception_response error", () => {
-            // arrange
-            spyOn(router, "collectOnlineUsers").and.throwError("error");
+        describe("when have exception", () => {
+            it("should response error", () => {
+                // arrange
+                spyOn(router, "collectOnlineUsers").and.throwError("error");
 
-            // act
-            router.handleOnlineUsers(res);
+                // act
+                router.handleOnlineUsers(res);
 
-            // assert
-            expect(logService.logError).toHaveBeenCalled();
-            expect(res.send).toHaveBeenCalledWith({ error: true });
+                // assert
+                expect(logService.logError).toHaveBeenCalled();
+                expect(res.send).toHaveBeenCalledWith({ error: true });
+            });
         });
     });
 
-    it("collectOnlineUsers_always_returns correct data", () => {
-        // arrange
-        const users = {
-            realUsers: [{ id: 1, name: "user1", isTestCurrency: false }],
-            testUsers: [{ id: 2, name: "user2", isTestCurrency: true }],
-        };
-        spyOn(router, "mapRealUsers").and.returnValue(users);
-        const expectedResult = {
-            totalRealPlayer: 1,
-            realUsers: [{ id: 1, name: "user1", isTestCurrency: false }],
-            totalTestPlayer: 1,
-            testUsers: [{ id: 2, name: "user2", isTestCurrency: true }],
-        };
+    describe("collectOnlineUsers", () => {
+        it("should returns correct data", () => {
+            // arrange
+            const users = {
+                realUsers: [{ id: 1, name: "user1", isTestCurrency: false }],
+                testUsers: [{ id: 2, name: "user2", isTestCurrency: true }],
+            };
+            spyOn(router, "mapRealUsers").and.returnValue(users);
+            const expectedResult = {
+                totalRealPlayer: 1,
+                realUsers: [{ id: 1, name: "user1", isTestCurrency: false }],
+                totalTestPlayer: 1,
+                testUsers: [{ id: 2, name: "user2", isTestCurrency: true }],
+            };
 
-        // act
-        const actualResult = router.collectOnlineUsers();
+            // act
+            const actualResult = router.collectOnlineUsers();
 
-        // assert
-        expect(actualResult).toEqual(expectedResult);
+            // assert
+            expect(actualResult).toEqual(expectedResult);
+        });
     });
 
-    it("mapRealUsers_always_returns correct data", () => {
-        // arrange
-        const socketClient = {
-            connected: true,
-        };
-        const players = [
-            {
-                session: {
-                    memberName: "player1",
-                    memberId: 1,
-                    isTestCurrency: false,
-                    characterName: "character1",
-                    currencyName: "USD",
-                    partnerId: "1W",
-                    system: 1,
+    describe("mapRealUsers", () => {
+        it("should returns correct data", () => {
+            // arrange
+            const socketClient = {
+                connected: true,
+            };
+            const players = [
+                {
+                    session: {
+                        memberName: "player1",
+                        memberId: 1,
+                        isTestCurrency: false,
+                        characterName: "character1",
+                        currencyName: "USD",
+                        partnerId: "1W",
+                        system: 1,
+                    },
+                    socketClient,
                 },
-                socketClient,
-            },
-            {
-                session: {
-                    memberName: "player2",
-                    memberId: 2,
-                    isTestCurrency: true,
-                    characterName: "character2",
-                    currencyName: "USD",
-                    partnerId: "1W",
-                    system: 1,
+                {
+                    session: {
+                        memberName: "player2",
+                        memberId: 2,
+                        isTestCurrency: true,
+                        characterName: "character2",
+                        currencyName: "USD",
+                        partnerId: "1W",
+                        system: 1,
+                    },
+                    socketClient,
                 },
-                socketClient,
-            },
-        ];
+            ];
 
-        const expectedResult = {
-            testUsers: [{ name: "player2", id: 2, character: "character2", currency: "USD", partnerId: "1W", system: 1, operatorId: "1W" }],
-            realUsers: [{ name: "player1", id: 1, character: "character1", currency: "USD", partnerId: "1W", system: 1, operatorId: "1W" }],
-        };
+            const expectedResult = {
+                testUsers: [
+                    { name: "player2", id: 2, character: "character2", currency: "USD", partnerId: "1W", system: 1, operatorId: "1W" },
+                ],
+                realUsers: [
+                    { name: "player1", id: 1, character: "character1", currency: "USD", partnerId: "1W", system: 1, operatorId: "1W" },
+                ],
+            };
 
-        // act
-        const actualResult = router.mapRealUsers(players);
+            // act
+            const actualResult = router.mapRealUsers(players);
 
-        // assert
-        expect(actualResult).toEqual(expectedResult);
+            // assert
+            expect(actualResult).toEqual(expectedResult);
+        });
     });
 
     describe("handleMetrics", () => {
@@ -142,32 +154,36 @@ describe("http router test", () => {
             jest.clearAllMocks();
         });
 
-        it("should return error if missing secret key", () => {
-            // arrange
-            const req = {
-                query: jest.fn(),
-            };
+        describe("when  missing secret key ", () => {
+            it("should return error ", () => {
+                // arrange
+                const req = {
+                    query: jest.fn(),
+                };
 
-            // act
-            router.handleMetrics(req, res);
+                // act
+                router.handleMetrics(req, res);
 
-            // assert
-            expect(res.send).toHaveBeenCalledWith({ error: true });
+                // assert
+                expect(res.send).toHaveBeenCalledWith({ error: true });
+            });
         });
 
-        it("should return error and logError if metricQuery throws exception", () => {
-            // arrange
-            const req = {
-                query: { secretKey: "secret" },
-            };
-            spyOn(metricQuery, "getMetrics").and.throwError("error");
+        describe("when metricQuery throws exception", () => {
+            it("should return error and logError", () => {
+                // arrange
+                const req = {
+                    query: { secretKey: "secret" },
+                };
+                spyOn(metricQuery, "getMetrics").and.throwError("error");
 
-            // act
-            router.handleMetrics(req, res);
+                // act
+                router.handleMetrics(req, res);
 
-            // assert
-            expect(logService.logError).toHaveBeenCalled();
-            expect(res.send).toHaveBeenCalledWith({ error: true });
+                // assert
+                expect(logService.logError).toHaveBeenCalled();
+                expect(res.send).toHaveBeenCalledWith({ error: true });
+            });
         });
 
         it("should return metrics response", () => {
