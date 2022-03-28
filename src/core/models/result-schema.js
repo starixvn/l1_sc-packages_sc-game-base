@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
-const md5s = new mongoose.Schema({
+const resultSchema = new mongoose.Schema({
     roundId: { type: Number, required: true },
-    encryptedMD5: { iv: { type: String }, content: { type: String } },
+    encryptedResultHash: { iv: { type: String }, content: { type: String } },
     encryptedResult: { iv: { type: String }, content: { type: String } },
     time: { type: Date, default: new Date() },
 });
 
-export default md5s;
+export default resultSchema;

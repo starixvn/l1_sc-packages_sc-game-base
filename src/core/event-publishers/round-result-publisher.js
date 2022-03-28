@@ -4,8 +4,11 @@ export default class RoundResultPublisher extends BaseEventPublisher {
     publishRoundResult(roundResult) {
         const payload = { finish: roundResult };
 
-        if (this.gameData.md5.rawValue) {
-            this.publishToAllUsers({ ...payload, md5: { rawValue: this.gameData.md5.rawValue, extraInfos: this.gameData.result } });
+        if (this.gameData.resultHash.rawValue) {
+            this.publishToAllUsers({
+                ...payload,
+                resultHash: { rawValue: this.gameData.resultHash.rawValue, extraInfos: this.gameData.result },
+            });
         } else {
             this.publishToAllUsers(payload);
         }
@@ -13,9 +16,9 @@ export default class RoundResultPublisher extends BaseEventPublisher {
         this.publishToAllAdmins(payload);
     }
 
-    publishMD5() {
-        if (this.gameData.md5.hashValue) {
-            this.publishToAllUsers({ md5: { hashValue: this.gameData.md5.hashValue } });
+    publishResultHash() {
+        if (this.gameData.resultHash.hashValue) {
+            this.publishToAllUsers({ resultHash: { hashValue: this.gameData.resultHash.hashValue } });
         }
     }
 }

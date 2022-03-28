@@ -4,7 +4,6 @@ import { Socket } from "socket.io";
 import { AdminAuthenticationConsumer, AdminDisconnectConsumer, AdminMonitorConsumer } from "./../event-consumers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import { generateMD5Result } from "../helpers/md5-helper";
 
 export default class BaseAdminSocketRouter {
     /**

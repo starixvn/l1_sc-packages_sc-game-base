@@ -47,7 +47,7 @@ export default class BaseGameCron {
         currencyGroupRepository,
         currencyRepository,
         roundResultConsumer,
-        md5sRepository,
+        resultRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -66,12 +66,12 @@ export default class BaseGameCron {
         this.currencyGroupRepository = currencyGroupRepository;
         this.currencyRepository = currencyRepository;
         this.roundResultConsumer = roundResultConsumer;
-        this.md5sRepository = md5sRepository;
+        this.resultRepository = resultRepository;
     }
 
     async start() {
         await this.initRoundId();
-        await this.queryLastMD5();
+        await this.queryLastResult();
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
         this.startCron();
@@ -90,9 +90,9 @@ export default class BaseGameCron {
         }
     }
 
-    async queryLastMD5() {
-        if (this.md5sRepository) {
-            this.gameData.lastMD5Record = await this.md5sRepository.findOne({ roundId: this.gameData.roundId }).lean().exec();
+    async queryLastResult() {
+        if (this.resultRepository) {
+            this.gameData.lastResultRecord = await this.resultRepository.findOne({ roundId: this.gameData.roundId }).lean().exec();
         }
     }
 
@@ -131,7 +131,7 @@ export default class BaseGameCron {
 
         if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
-            await this.roundResultConsumer.generateResultAndPublishMD5(this.gameData.lastMD5Record);
+            await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
             this.bot && (await this.bot.reset());
         }
 

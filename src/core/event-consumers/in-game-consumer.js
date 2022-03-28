@@ -55,14 +55,14 @@ export default class InGameConsumer {
             ownBets,
             totalBets,
             user: { ...user, rate },
-            md5: this.getMD5(),
+            resultHash: this.getResultHash(),
         };
     }
 
-    getMD5() {
-        return this.gameData.roundId > this.gameData.md5.roundId
-            ? { rawValue: this.gameData.md5.rawValue, extraInfos: this.gameData.result }
-            : { hashValue: this.gameData.md5.hashValue };
+    getResultHash() {
+        return this.gameData.roundId > this.gameData.resultHash.roundId
+            ? { rawValue: this.gameData.resultHash.rawValue, extraInfos: this.gameData.result }
+            : { hashValue: this.gameData.resultHash.hashValue };
     }
 
     getUserInfo(uid) {

@@ -62,7 +62,7 @@ const currencyGroupRepository = stubMongoose(mongoose.Model);
 /** @type {mongoose.Model}*/
 const currencyRepository = stubMongoose(mongoose.Model);
 
-const roundResultConsumer = { generateResultAndPublishMD5: jest.fn() };
+const roundResultConsumer = { generateResultAndPublishHash: jest.fn() };
 
 const createBaseGameCron = function () {
     return new BaseGameCron({
@@ -91,7 +91,7 @@ describe("start", () => {
         // Arrange
         var gameCron = createBaseGameCron();
         gameCron.initRoundId = jest.fn();
-        gameCron.queryLastMD5 = jest.fn();
+        gameCron.queryLastResult = jest.fn();
         gameCron.getSettingForNewRound = jest.fn();
         gameCron.updateExchangeRates = jest.fn();
         gameCron.startCron = jest.fn();
@@ -103,11 +103,11 @@ describe("start", () => {
         expect(gameCron.initRoundId).toHaveBeenCalledWith();
     });
 
-    it("should call querylastMD5", async () => {
+    it("should call queryLastResult", async () => {
         // Arrange
         var gameCron = createBaseGameCron();
         gameCron.initRoundId = jest.fn();
-        gameCron.queryLastMD5 = jest.fn();
+        gameCron.queryLastResult = jest.fn();
         gameCron.getSettingForNewRound = jest.fn();
         gameCron.updateExchangeRates = jest.fn();
         gameCron.startCron = jest.fn();
@@ -116,14 +116,14 @@ describe("start", () => {
         await gameCron.start();
 
         // Assert
-        expect(gameCron.queryLastMD5).toHaveBeenCalledWith();
+        expect(gameCron.queryLastResult).toHaveBeenCalledWith();
     });
 
     it("should call getSettingForNewRound", async () => {
         // Arrange
         var gameCron = createBaseGameCron();
         gameCron.initRoundId = jest.fn();
-        gameCron.queryLastMD5 = jest.fn();
+        gameCron.queryLastResult = jest.fn();
         gameCron.getSettingForNewRound = jest.fn();
         gameCron.updateExchangeRates = jest.fn();
         gameCron.startCron = jest.fn();
@@ -139,7 +139,7 @@ describe("start", () => {
         // Arrange
         var gameCron = createBaseGameCron();
         gameCron.initRoundId = jest.fn();
-        gameCron.queryLastMD5 = jest.fn();
+        gameCron.queryLastResult = jest.fn();
         gameCron.getSettingForNewRound = jest.fn();
         gameCron.updateExchangeRates = jest.fn();
         gameCron.startCron = jest.fn();
@@ -155,7 +155,7 @@ describe("start", () => {
         // Arrange
         var gameCron = createBaseGameCron();
         gameCron.initRoundId = jest.fn();
-        gameCron.queryLastMD5 = jest.fn();
+        gameCron.queryLastResult = jest.fn();
         gameCron.getSettingForNewRound = jest.fn();
         gameCron.updateExchangeRates = jest.fn();
         gameCron.startCron = jest.fn();
@@ -210,36 +210,36 @@ describe("initRoundId", () => {
     });
 });
 
-describe("queryLastMD5", () => {
-    describe("when md5sRepository is null", () => {
-        it("should not update lastMD5Record", async () => {
+describe("queryLastResult", () => {
+    describe("when resultRepository is null", () => {
+        it("should not update lastResultRecord", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
-            gameCron.md5sRepository = null;
+            gameCron.resultRepository = null;
 
             // Act
-            await gameCron.queryLastMD5();
+            await gameCron.queryLastResult();
 
             // Assert
-            expect(gameCron.gameData.lastMD5Record).toBe(undefined);
+            expect(gameCron.gameData.lastResultRecord).toBe(undefined);
         });
     });
 
-    describe("when md5sRepository exists", () => {
-        it("should find lastMD5Record", async () => {
+    describe("when resultRepository exists", () => {
+        it("should find lastResultRecord", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
-            const lastMD5Record = { x: 1 };
-            gameCron.md5sRepository = { findOne: jest.fn() };
-            const findOneResult = { lean: jest.fn().mockReturnValue({ exec: jest.fn().mockReturnValue(lastMD5Record) }) };
-            when(gameCron.md5sRepository.findOne).calledWith({ roundId: 123 }).mockReturnValue(findOneResult);
+            const lastResultRecord = { x: 1 };
+            gameCron.resultRepository = { findOne: jest.fn() };
+            const findOneResult = { lean: jest.fn().mockReturnValue({ exec: jest.fn().mockReturnValue(lastResultRecord) }) };
+            when(gameCron.resultRepository.findOne).calledWith({ roundId: 123 }).mockReturnValue(findOneResult);
             gameCron.gameData.roundId = 123;
 
             // Act
-            await gameCron.queryLastMD5();
+            await gameCron.queryLastResult();
 
             // Assert
-            expect(gameCron.gameData.lastMD5Record).toBe(lastMD5Record);
+            expect(gameCron.gameData.lastResultRecord).toBe(lastResultRecord);
         });
     });
 });
@@ -425,9 +425,9 @@ describe("proceed", () => {
             when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
             gameCron.resetForNewRound = jest.fn();
             gameCron.roundResultConsumer = {
-                generateResultAndPublishMD5: jest.fn(),
+                generateResultAndPublishHash: jest.fn(),
             };
-            gameCron.gameData.lastMD5Record = { id: 122 };
+            gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
             gameCron.gameData.disabled = true;
 
@@ -438,7 +438,7 @@ describe("proceed", () => {
             expect(gameCron.resetForNewRound).toHaveBeenCalled();
         });
 
-        it("should generate result and publish md5", async () => {
+        it("should generate result and publish hash", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
             gameCron.gameData.remainingTime = 11;
@@ -447,9 +447,9 @@ describe("proceed", () => {
             when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
             gameCron.resetForNewRound = jest.fn();
             gameCron.roundResultConsumer = {
-                generateResultAndPublishMD5: jest.fn(),
+                generateResultAndPublishHash: jest.fn(),
             };
-            gameCron.gameData.lastMD5Record = { id: 122 };
+            gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
             gameCron.gameData.disabled = true;
 
@@ -457,7 +457,7 @@ describe("proceed", () => {
             await gameCron.proceed();
 
             // Assert
-            expect(gameCron.roundResultConsumer.generateResultAndPublishMD5).toHaveBeenCalledWith({ id: 122 });
+            expect(gameCron.roundResultConsumer.generateResultAndPublishHash).toHaveBeenCalledWith({ id: 122 });
         });
 
         it("should reset bot", async () => {
@@ -469,9 +469,9 @@ describe("proceed", () => {
             when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
             gameCron.resetForNewRound = jest.fn();
             gameCron.roundResultConsumer = {
-                generateResultAndPublishMD5: jest.fn(),
+                generateResultAndPublishHash: jest.fn(),
             };
-            gameCron.gameData.lastMD5Record = { id: 122 };
+            gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
             gameCron.gameData.disabled = true;
 

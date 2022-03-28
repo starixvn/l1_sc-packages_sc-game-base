@@ -2,13 +2,13 @@ import GameData from "../../game-data";
 import RoundResultPublisher from "../round-result-publisher";
 
 describe("publishRoundResult", () => {
-    describe("when md5 value exists", () => {
-        it("should publish to all users with md5 value", () => {
+    describe("when result hash value exists", () => {
+        it("should publish to all users with result hash value", () => {
             // Arrange
             const publisher = new RoundResultPublisher();
             const roundResult = { red1: true, red2: false };
             publisher.gameData = {
-                md5: {
+                resultHash: {
                     rawValue: "xx",
                 },
                 result: "yy",
@@ -22,7 +22,7 @@ describe("publishRoundResult", () => {
             // Assert
             expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
                 finish: roundResult,
-                md5: { rawValue: "xx", extraInfos: "yy" },
+                resultHash: { rawValue: "xx", extraInfos: "yy" },
             });
         });
 
@@ -31,7 +31,7 @@ describe("publishRoundResult", () => {
             const publisher = new RoundResultPublisher();
             const roundResult = { red1: true, red2: false };
             publisher.gameData = {
-                md5: {
+                resultHash: {
                     rawValue: "xx",
                 },
                 result: "yy",
@@ -47,13 +47,13 @@ describe("publishRoundResult", () => {
         });
     });
 
-    describe("when md5 value does not exist", () => {
-        it("should publish to all users without md5 value", () => {
+    describe("when result hash value does not exist", () => {
+        it("should publish to all users without result hash value", () => {
             // Arrange
             const publisher = new RoundResultPublisher();
             const roundResult = { red1: true, red2: false };
             publisher.gameData = {
-                md5: {},
+                resultHash: {},
             };
             publisher.publishToAllUsers = jest.fn();
             publisher.publishToAllAdmins = jest.fn();
@@ -72,7 +72,7 @@ describe("publishRoundResult", () => {
             const publisher = new RoundResultPublisher();
             const roundResult = { red1: true, red2: false };
             publisher.gameData = {
-                md5: {},
+                resultHash: {},
             };
             publisher.publishToAllUsers = jest.fn();
             publisher.publishToAllAdmins = jest.fn();
@@ -86,37 +86,37 @@ describe("publishRoundResult", () => {
     });
 });
 
-describe("publishMD5", () => {
-    describe("when md5 value exists", () => {
-        it("should publish md5 value to all users", () => {
+describe("publishResultHash", () => {
+    describe("when result hash value exists", () => {
+        it("should publish result hash value to all users", () => {
             // Arrange
             const publisher = new RoundResultPublisher();
             publisher.gameData = {
-                md5: {
+                resultHash: {
                     hashValue: "hash1",
                 },
             };
             publisher.publishToAllUsers = jest.fn();
 
             // Act
-            publisher.publishMD5();
+            publisher.publishResultHash();
 
             // Assert
-            expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ md5: { hashValue: "hash1" } });
+            expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ resultHash: { hashValue: "hash1" } });
         });
     });
 
-    describe("when md5 value does not exist", () => {
-        it("should not publish md5 value", () => {
+    describe("when result hash value does not exist", () => {
+        it("should not publish result hash value", () => {
             // Arrange
             const publisher = new RoundResultPublisher();
             publisher.gameData = {
-                md5: {},
+                resultHash: {},
             };
             publisher.publishToAllUsers = jest.fn();
 
             // Act
-            publisher.publishMD5();
+            publisher.publishResultHash();
 
             // Assert
             expect(publisher.publishToAllUsers).not.toHaveBeenCalled();

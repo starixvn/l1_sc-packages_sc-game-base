@@ -2,28 +2,28 @@ import { generateMD5Result } from "../helpers/md5-helper";
 import { encrypt, decrypt } from "../helpers/crypto-helper";
 
 export default class RoundResultConsumer {
-    constructor(gameData, definition, roundResultPublisher, md5sRepository) {
+    constructor(gameData, definition, roundResultPublisher, resultRepository) {
         this.gameData = gameData;
         this.definition = definition;
         this.roundResultPublisher = roundResultPublisher;
-        this.md5sRepository = md5sRepository;
+        this.resultRepository = resultRepository;
     }
 
-    async generateResultAndPublishMD5(lastMD5Record) {
-        if (!this.md5sRepository) {
+    async generateResultAndPublishHash(lastResultRecord) {
+        if (!this.resultRepository) {
             return;
         }
 
-        if (lastMD5Record && lastMD5Record.roundId === this.gameData.roundId) {
-            this.gameData.result = JSON.parse(decrypt(lastMD5Record.encryptedResult));
-            this.gameData.md5 = JSON.parse(decrypt(lastMD5Record.encryptedMD5));
+        if (lastResultRecord && lastResultRecord.roundId === this.gameData.roundId) {
+            this.gameData.result = JSON.parse(decrypt(lastResultRecord.encryptedResult));
+            this.gameData.resultHash = JSON.parse(decrypt(lastResultRecord.encryptedResultHash));
         } else {
             this.gameData.result = this.generateResult();
-            this.gameData.md5 = this.buildMD5();
-            await this.createMD5Record();
+            this.gameData.resultHash = this.buildResultHash();
+            await this.createResultRecord();
         }
 
-        this.roundResultPublisher.publishMD5();
+        this.roundResultPublisher.publishResultHash();
     }
 
     generateResult() {
@@ -31,15 +31,15 @@ export default class RoundResultConsumer {
         return this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
     }
 
-    buildMD5() {
-        const formattedResult = this.definition.generateRawResultForMd5(this.gameData.result);
+    buildResultHash() {
+        const formattedResult = this.definition.generateRawResultForHash(this.gameData.result);
         return { ...generateMD5Result(formattedResult, this.gameData.roundId), roundId: this.gameData.roundId };
     }
 
-    async createMD5Record() {
-        await this.md5sRepository.create({
+    async createResultRecord() {
+        await this.resultRepository.create({
             roundId: this.gameData.roundId,
-            encryptedMD5: encrypt(JSON.stringify(this.gameData.md5)),
+            encryptedResultHash: encrypt(JSON.stringify(this.gameData.resultHash)),
             encryptedResult: encrypt(JSON.stringify(this.gameData.result)),
             time: this.getNewDate(),
         });
