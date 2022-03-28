@@ -47,7 +47,7 @@ export default class BaseGameCron {
         currencyGroupRepository,
         currencyRepository,
         roundResultConsumer,
-        resultRepository,
+        resultsRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -66,7 +66,7 @@ export default class BaseGameCron {
         this.currencyGroupRepository = currencyGroupRepository;
         this.currencyRepository = currencyRepository;
         this.roundResultConsumer = roundResultConsumer;
-        this.resultRepository = resultRepository;
+        this.resultsRepository = resultsRepository;
     }
 
     async start() {
@@ -91,8 +91,8 @@ export default class BaseGameCron {
     }
 
     async queryLastResult() {
-        if (this.resultRepository) {
-            this.gameData.lastResultRecord = await this.resultRepository.findOne({ roundId: this.gameData.roundId }).lean().exec();
+        if (this.resultsRepository) {
+            this.gameData.lastResultRecord = await this.resultsRepository.findOne({ roundId: this.gameData.roundId }).lean().exec();
         }
     }
 

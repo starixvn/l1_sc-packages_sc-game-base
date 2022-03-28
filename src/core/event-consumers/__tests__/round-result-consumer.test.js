@@ -11,7 +11,7 @@ jest.mock("../../helpers/crypto-helper", () => {
 });
 
 describe("generateResultAndPublishHash", () => {
-    describe("when resultRepository null", () => {
+    describe("when resultsRepository null", () => {
         it("should not publish result hash", async () => {
             // Arrange
             const consumer = new RoundResultConsumer();
@@ -27,14 +27,14 @@ describe("generateResultAndPublishHash", () => {
         });
     });
 
-    describe("when resultRepository not null", () => {
+    describe("when resultsRepository not null", () => {
         it("should publish result hash", async () => {
             // Arrange
             const consumer = new RoundResultConsumer();
             consumer.roundResultPublisher = {
                 publishResultHash: jest.fn(),
             };
-            consumer.resultRepository = { create: jest.fn() };
+            consumer.resultsRepository = { create: jest.fn() };
             consumer.gameData = {
                 settlementResultFromAdmin: {},
             };
@@ -61,7 +61,7 @@ describe("generateResultAndPublishHash", () => {
                 roundId: 12,
             };
             consumer.gameData = { roundId: 12 };
-            consumer.resultRepository = jest.fn();
+            consumer.resultsRepository = jest.fn();
             consumer.roundResultPublisher = {
                 publishResultHash: jest.fn(),
             };
@@ -82,7 +82,7 @@ describe("generateResultAndPublishHash", () => {
                 roundId: 12,
             };
             consumer.gameData = { roundId: 12 };
-            consumer.resultRepository = jest.fn();
+            consumer.resultsRepository = jest.fn();
             consumer.roundResultPublisher = {
                 publishResultHash: jest.fn(),
             };
@@ -114,7 +114,7 @@ describe("generateResultAndPublishHash", () => {
                     return `${+result.red1}${+result.red2}${+result.red3}${+result.red4}`;
                 },
             };
-            consumer.resultRepository = {
+            consumer.resultsRepository = {
                 create: jest.fn,
             };
             consumer.roundResultPublisher = {
@@ -143,7 +143,7 @@ describe("generateResultAndPublishHash", () => {
                     return `${+result.red1}${+result.red2}${+result.red3}${+result.red4}`;
                 },
             };
-            consumer.resultRepository = {
+            consumer.resultsRepository = {
                 create: jest.fn,
             };
             consumer.roundResultPublisher = {
@@ -173,7 +173,7 @@ describe("generateResultAndPublishHash", () => {
                     return `${+result.red1}${+result.red2}${+result.red3}${+result.red4}`;
                 },
             };
-            consumer.resultRepository = {
+            consumer.resultsRepository = {
                 create: jest.fn(),
             };
             consumer.roundResultPublisher = {
@@ -185,7 +185,7 @@ describe("generateResultAndPublishHash", () => {
             await consumer.generateResultAndPublishHash();
 
             // Assert
-            expect(consumer.resultRepository.create).toHaveBeenCalledWith({
+            expect(consumer.resultsRepository.create).toHaveBeenCalledWith({
                 roundId: consumer.gameData.roundId,
                 encryptedResultHash: JSON.stringify(consumer.gameData.resultHash),
                 encryptedResult: '{"red1":true,"red2":false,"red3":true,"red4":false}',
@@ -210,7 +210,7 @@ describe("generateResultAndPublishHash", () => {
                     return { red1: true, red2: true, red3: true, red4: false };
                 },
             };
-            consumer.resultRepository = {
+            consumer.resultsRepository = {
                 create: jest.fn,
             };
             consumer.roundResultPublisher = {
@@ -239,7 +239,7 @@ describe("generateResultAndPublishHash", () => {
                     return { red1: true, red2: true, red3: true, red4: false };
                 },
             };
-            consumer.resultRepository = {
+            consumer.resultsRepository = {
                 create: jest.fn,
             };
             consumer.roundResultPublisher = {
@@ -269,7 +269,7 @@ describe("generateResultAndPublishHash", () => {
                     return { red1: true, red2: true, red3: true, red4: false };
                 },
             };
-            consumer.resultRepository = {
+            consumer.resultsRepository = {
                 create: jest.fn(),
             };
             consumer.roundResultPublisher = {
@@ -281,7 +281,7 @@ describe("generateResultAndPublishHash", () => {
             await consumer.generateResultAndPublishHash();
 
             // Assert
-            expect(consumer.resultRepository.create).toHaveBeenCalledWith({
+            expect(consumer.resultsRepository.create).toHaveBeenCalledWith({
                 roundId: consumer.gameData.roundId,
                 encryptedResultHash: JSON.stringify(consumer.gameData.resultHash),
                 encryptedResult: '{"red1":true,"red2":true,"red3":true,"red4":false}',

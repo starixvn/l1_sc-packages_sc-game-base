@@ -211,11 +211,11 @@ describe("initRoundId", () => {
 });
 
 describe("queryLastResult", () => {
-    describe("when resultRepository is null", () => {
+    describe("when resultsRepository is null", () => {
         it("should not update lastResultRecord", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
-            gameCron.resultRepository = null;
+            gameCron.resultsRepository = null;
 
             // Act
             await gameCron.queryLastResult();
@@ -225,14 +225,14 @@ describe("queryLastResult", () => {
         });
     });
 
-    describe("when resultRepository exists", () => {
+    describe("when resultsRepository exists", () => {
         it("should find lastResultRecord", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
             const lastResultRecord = { x: 1 };
-            gameCron.resultRepository = { findOne: jest.fn() };
+            gameCron.resultsRepository = { findOne: jest.fn() };
             const findOneResult = { lean: jest.fn().mockReturnValue({ exec: jest.fn().mockReturnValue(lastResultRecord) }) };
-            when(gameCron.resultRepository.findOne).calledWith({ roundId: 123 }).mockReturnValue(findOneResult);
+            when(gameCron.resultsRepository.findOne).calledWith({ roundId: 123 }).mockReturnValue(findOneResult);
             gameCron.gameData.roundId = 123;
 
             // Act

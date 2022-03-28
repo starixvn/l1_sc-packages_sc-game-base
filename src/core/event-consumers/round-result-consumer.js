@@ -2,15 +2,15 @@ import { generateMD5Result } from "../helpers/md5-helper";
 import { encrypt, decrypt } from "../helpers/crypto-helper";
 
 export default class RoundResultConsumer {
-    constructor(gameData, definition, roundResultPublisher, resultRepository) {
+    constructor(gameData, definition, roundResultPublisher, resultsRepository) {
         this.gameData = gameData;
         this.definition = definition;
         this.roundResultPublisher = roundResultPublisher;
-        this.resultRepository = resultRepository;
+        this.resultsRepository = resultsRepository;
     }
 
     async generateResultAndPublishHash(lastResultRecord) {
-        if (!this.resultRepository) {
+        if (!this.resultsRepository) {
             return;
         }
 
@@ -37,7 +37,7 @@ export default class RoundResultConsumer {
     }
 
     async createResultRecord() {
-        await this.resultRepository.create({
+        await this.resultsRepository.create({
             roundId: this.gameData.roundId,
             encryptedResultHash: encrypt(JSON.stringify(this.gameData.resultHash)),
             encryptedResult: encrypt(JSON.stringify(this.gameData.result)),
