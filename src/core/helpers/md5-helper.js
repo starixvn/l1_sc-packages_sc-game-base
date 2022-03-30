@@ -1,10 +1,7 @@
 import crypto from "crypto";
 
 const randomString = (length = 21) => {
-    return crypto
-        .randomBytes(length)
-        .toString("hex")
-        .slice(0, length - 1);
+    return crypto.randomBytes(length).toString("hex").slice(0, length);
 };
 
 const createHashMD5 = (value) => {
