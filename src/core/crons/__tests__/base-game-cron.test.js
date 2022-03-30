@@ -441,8 +441,8 @@ describe("proceed", () => {
         it("should generate result and publish hash", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
-            gameCron.gameData.remainingTime = 11;
-            gameCron.definition.durations = { wholeRound: 22 };
+            gameCron.gameData.remainingTime = 20;
+            gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
             gameCron.isStartingTime = jest.fn();
             when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
             gameCron.resetForNewRound = jest.fn();

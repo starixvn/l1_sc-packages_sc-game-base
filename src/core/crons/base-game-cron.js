@@ -131,8 +131,11 @@ export default class BaseGameCron {
 
         if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
-            await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
             this.bot && (await this.bot.reset());
+        }
+
+        if (this.gameData.remainingTime === durations.placingBets) {
+            await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
         }
 
         if (this.gameData.remainingTime < 0) {
