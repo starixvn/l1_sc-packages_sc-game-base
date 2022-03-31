@@ -6,8 +6,8 @@ import GameDefinition from "./../game-definition";
 
 export default class PlaceBetConsumer {
     DisplayMode = {
-        Landscape: 1,
-        Portrait: 2,
+        Landscape: "1",
+        Portrait: "2",
     };
 
     /**
