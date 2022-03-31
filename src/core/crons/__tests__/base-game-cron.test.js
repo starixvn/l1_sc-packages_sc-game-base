@@ -438,6 +438,30 @@ describe("proceed", () => {
             expect(gameCron.resetForNewRound).toHaveBeenCalled();
         });
 
+        it("should reset bot", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.remainingTime = 11;
+            gameCron.definition.durations = { wholeRound: 22 };
+            gameCron.isStartingTime = jest.fn();
+            when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
+            gameCron.resetForNewRound = jest.fn();
+            gameCron.roundResultConsumer = {
+                generateResultAndPublishHash: jest.fn(),
+            };
+            gameCron.gameData.lastResultRecord = { id: 122 };
+            gameCron.bot = { reset: jest.fn() };
+            gameCron.gameData.disabled = true;
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.bot.reset).toHaveBeenCalled();
+        });
+    });
+
+    describe("when placingBets time", () => {
         it("should generate result and publish hash", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
@@ -460,11 +484,11 @@ describe("proceed", () => {
             expect(gameCron.roundResultConsumer.generateResultAndPublishHash).toHaveBeenCalledWith({ id: 122 });
         });
 
-        it("should reset bot", async () => {
+        it("should reset settlementResultFromAdmin", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
-            gameCron.gameData.remainingTime = 11;
-            gameCron.definition.durations = { wholeRound: 22 };
+            gameCron.gameData.remainingTime = 20;
+            gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
             gameCron.isStartingTime = jest.fn();
             when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
             gameCron.resetForNewRound = jest.fn();
@@ -474,12 +498,13 @@ describe("proceed", () => {
             gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
             gameCron.gameData.disabled = true;
+            gameCron.gameData.settlementResultFromAdmin = { x: 123 };
 
             // Act
             await gameCron.proceed();
 
             // Assert
-            expect(gameCron.bot.reset).toHaveBeenCalled();
+            expect(gameCron.gameData.settlementResultFromAdmin).toEqual({});
         });
     });
 

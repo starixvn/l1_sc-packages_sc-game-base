@@ -136,6 +136,7 @@ export default class BaseGameCron {
 
         if (this.gameData.remainingTime === durations.placingBets) {
             await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
+            this.gameData.settlementResultFromAdmin = {};
         }
 
         if (this.gameData.remainingTime < 0) {
@@ -194,7 +195,6 @@ export default class BaseGameCron {
     resetForNewRound() {
         this.gameData.ingame = {};
         this.gameData.totalBets = {};
-        this.gameData.settlementResultFromAdmin = {};
     }
 
     async getSettingForNewRound() {
