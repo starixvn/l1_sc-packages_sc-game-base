@@ -138,7 +138,7 @@ export default class PlaceBetConsumer {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
             roundId: payload.roundId ?? this.gameData.roundId,
-            mode: payload.mode ?? this.DisplayMode.Landscape,
+            mode: payload.m ?? this.DisplayMode.Landscape,
             receivedTime: new Date(),
         });
 
