@@ -962,7 +962,7 @@ describe("ProcessBetQueue", () => {
                 freeBet: payload.freeBet,
                 clientSentTime: payload.time,
                 metadata: {
-                    mode: payload.mode,
+                    mode: `${payload.mode}`,
                 },
             });
         });

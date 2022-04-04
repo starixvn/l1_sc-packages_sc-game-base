@@ -169,7 +169,7 @@ export default class ProcessBetQueue {
             freeBet: payload.freeBet,
             clientSentTime: payload.time ?? new Date(),
             metadata: {
-                mode: payload.mode,
+                mode: `${payload.mode}`,
             },
         };
     }
