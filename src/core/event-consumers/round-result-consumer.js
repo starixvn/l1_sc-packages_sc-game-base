@@ -28,7 +28,8 @@ export default class RoundResultConsumer {
 
     generateResult() {
         const resultFromAdmin = this.gameData.settlementResultFromAdmin;
-        return this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
+        const { randomMode } = this.gameData.gameConfigs;
+        return this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult(randomMode);
     }
 
     buildResultHash() {

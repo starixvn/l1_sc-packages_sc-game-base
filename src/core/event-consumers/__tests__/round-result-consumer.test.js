@@ -42,6 +42,7 @@ describe("generateResultAndPublishHash", () => {
                 generateResult: jest.fn(),
                 generateRawResultForHash: jest.fn(),
             };
+            consumer.gameData.gameConfigs = {};
 
             // Act
             await consumer.generateResultAndPublishHash();
@@ -120,6 +121,7 @@ describe("generateResultAndPublishHash", () => {
             consumer.roundResultPublisher = {
                 publishResultHash: jest.fn(),
             };
+            consumer.gameData.gameConfigs = {};
 
             // Act
             await consumer.generateResultAndPublishHash();
@@ -149,6 +151,7 @@ describe("generateResultAndPublishHash", () => {
             consumer.roundResultPublisher = {
                 publishResultHash: jest.fn(),
             };
+            consumer.gameData.gameConfigs = {};
 
             // Act
             await consumer.generateResultAndPublishHash();
@@ -180,6 +183,7 @@ describe("generateResultAndPublishHash", () => {
                 publishResultHash: jest.fn(),
             };
             consumer.getNewDate = () => 123;
+            consumer.gameData.gameConfigs = {};
 
             // Act
             await consumer.generateResultAndPublishHash();
@@ -216,6 +220,7 @@ describe("generateResultAndPublishHash", () => {
             consumer.roundResultPublisher = {
                 publishResultHash: jest.fn(),
             };
+            consumer.gameData.gameConfigs = {};
 
             // Act
             await consumer.generateResultAndPublishHash();
@@ -245,6 +250,7 @@ describe("generateResultAndPublishHash", () => {
             consumer.roundResultPublisher = {
                 publishResultHash: jest.fn(),
             };
+            consumer.gameData.gameConfigs = {};
 
             // Act
             await consumer.generateResultAndPublishHash();
@@ -276,6 +282,7 @@ describe("generateResultAndPublishHash", () => {
                 publishResultHash: jest.fn(),
             };
             consumer.getNewDate = () => 123;
+            consumer.gameData.gameConfigs = {};
 
             // Act
             await consumer.generateResultAndPublishHash();
