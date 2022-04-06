@@ -1,3 +1,17 @@
+# [2.7.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.6.0...v2.7.0) (2022-04-06)
+
+
+### Bug Fixes
+
+* always convert metadata properties as string-string key pair ([65d1ab7](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/65d1ab7fddcf31f15cdfedd0752c8657fc7dc7e9))
+* shorten name of mode in bet payload ([4743304](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/4743304830cbd81575a656ad8f3a1efb281e7fd2))
+* update type of metadata as string ([bf763eb](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/bf763ebb7a5404e47c9b15b1a97771b24ac28cd7))
+
+
+### Features
+
+* add metadata to bet request for further statistics ([7f4f9a4](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/7f4f9a43877618f651b97edc8e1364bb71b8e261))
+
 # [2.6.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.5.0...v2.6.0) (2022-03-14)
 
 
