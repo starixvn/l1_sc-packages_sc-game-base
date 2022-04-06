@@ -168,6 +168,9 @@ export default class ProcessBetQueue {
             choiceId: this.definition.choicesMapper[payload.betChoice],
             freeBet: payload.freeBet,
             clientSentTime: payload.time ?? new Date(),
+            metadata: {
+                mode: `${payload.mode}`,
+            },
         };
     }
 

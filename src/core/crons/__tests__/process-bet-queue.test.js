@@ -945,6 +945,29 @@ describe("ProcessBetQueue", () => {
         });
     });
 
+    describe("formatApiBetInfo", () => {
+        it("should return approriate request for Api", () => {
+            // Arrange
+            const payload = mockPayload();
+
+            // Act
+            const actualResult = proceedBetQueue.formatApiBetInfo(payload);
+
+            // Assert
+            expect(actualResult).toStrictEqual({
+                amount: payload.amount,
+                gameId: definition.id,
+                gameRoundId: payload.roundId,
+                choiceId: definition.choicesMapper[payload.betChoice],
+                freeBet: payload.freeBet,
+                clientSentTime: payload.time,
+                metadata: {
+                    mode: `${payload.mode}`,
+                },
+            });
+        });
+    });
+
     const initBetQueue = (placeBet) => {
         return new ProcessBetQueue({
             definition,
@@ -984,6 +1007,7 @@ describe("ProcessBetQueue", () => {
             betChoice: "red2",
             roundId,
             receivedTime: new Date(),
+            time: new Date(),
         };
     };
 });

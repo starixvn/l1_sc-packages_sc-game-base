@@ -5,6 +5,11 @@ import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
 export default class PlaceBetConsumer {
+    DisplayMode = {
+        Landscape: "1",
+        Portrait: "2",
+    };
+
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
@@ -133,6 +138,7 @@ export default class PlaceBetConsumer {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
             roundId: payload.roundId ?? this.gameData.roundId,
+            mode: payload.m ?? this.DisplayMode.Landscape,
             receivedTime: new Date(),
         });
 
