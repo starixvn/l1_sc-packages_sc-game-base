@@ -1,3 +1,34 @@
+# [2.8.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.7.0...v2.8.0) (2022-04-19)
+
+
+### Bug Fixes
+
+* add param roundId in generateMD5Result function ([8a82ba8](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/8a82ba8166c991134af20f42593c9c1891b34efd))
+* fix typo ([9db62af](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/9db62afa8ee999fbb48b1e2d7025c7317df9ef30))
+* remove unused parameter for generateRawResultForMd5 ([f5fe1c0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f5fe1c050181bc89901685aee31bc71bb2ca8ccd))
+* update randomString length ([7f96a74](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/7f96a748cf7ad9171acb7fac1cacd53497e60c49))
+* update reset settlementResultFromAdmin ([f36ec79](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f36ec7989a609c5eecc4efa1d1bcb231bc4abf37))
+* update to call generateResultAndPublishHash at placingBets time ([c0842c6](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/c0842c6cc87cbd3ef6a8901e077cf0e37ccd5d2a))
+
+
+### Features
+
+* add md5 schema ([ff6e86e](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/ff6e86e5dad71358fa728816be14ab743c936fb8))
+* add Random Mode ([b93f2dd](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/b93f2dd5c0124d1244da4a6e626707c60321bf03))
+* check md5 value before publishing ([5a70f68](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/5a70f689e52a48f1ada9a4bd499d0fd3683b527e))
+* check md5sRepository and update md5 salt length ([a70d0ab](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/a70d0ab2d1ef48ff2460f693a375cdb08ae2e499))
+* remove duplication code, correct method name ([fbd3bb8](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/fbd3bb86e5cd3bc4f368be3f732fb5fb355e3458))
+* retur extra infos for rawValue ([c382b82](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/c382b82f5c4363aa3606d4ec668cc8509a51beb8))
+* save md5 ([f9e24e5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f9e24e5498e9fe9170820eeff538124205a24da0))
+* support md5 ([8bc32fb](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/8bc32fb5d88920cc99af0d4301dab98a037c7d4b))
+* update generateRoundResult and save md5 when settle ([4a0f494](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/4a0f4949c4ef8bf6554c92a2f9f03502a0367c1d))
+* update generateRoundResultFromAdmin ([976ed79](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/976ed798952a8c8c1a2e4316f06c6c7ffff505bb))
+* update md5 for ingame ([9b7bf86](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/9b7bf868efbe4b6d06033e5938c5322ec2b25755))
+* update md5 format ([87dce3e](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/87dce3e62bfa5731617edd71b61d8b07d27c3686))
+* update md5 to a more general term ([23291d2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/23291d2006c57fffdb3a06a0521af6c5184f61e6))
+* update resultsRepository ([16682e5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/16682e5978cd56d7877927b8e1cadd68adca69f2))
+* update yarn.lock after rebase ([85ad45b](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/85ad45b3747b5e8ff8e8ab99f2789533d71373fe))
+
 # [2.7.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.6.0...v2.7.0) (2022-04-06)
 
 
