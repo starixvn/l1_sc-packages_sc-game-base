@@ -24,21 +24,34 @@ describe("bearer authenticator test", () => {
 
     const bearerAuthenticator = new BearerAuthenticator(authConfigs);
 
-    it("autoUpdateToken_always_calls updateToken", async () => {
-        // arrange
-        spyOn(bearerAuthenticator, "updateToken");
-        spyOn(bearerAuthenticator, "refresh").and.returnValue(jest.fn());
+    describe("autoUpdateToken", () => {
+        it("should calls updateToken", async () => {
+            // arrange
+            spyOn(bearerAuthenticator, "updateToken");
+            spyOn(bearerAuthenticator, "refresh").and.returnValue(jest.fn());
 
-        // act
-        await bearerAuthenticator.autoUpdateToken();
+            // act
+            await bearerAuthenticator.autoUpdateToken();
 
-        // assert
-        expect(bearerAuthenticator.updateToken).toHaveBeenCalled();
-        expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 60000);
+            // assert
+            expect(bearerAuthenticator.updateToken).toHaveBeenCalled();
+        });
+
+        it("should calls setTimeout", async () => {
+            // arrange
+            spyOn(bearerAuthenticator, "updateToken");
+            spyOn(bearerAuthenticator, "refresh").and.returnValue(jest.fn());
+
+            // act
+            await bearerAuthenticator.autoUpdateToken();
+
+            // assert
+            expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 60000);
+        });
     });
 
-    describe("refresh_", () => {
-        it("always_calls setTimeout", async () => {
+    describe("refresh", () => {
+        it("should calls setTimeout", async () => {
             // arrange
             spyOn(bearerAuthenticator, "isTokenExpired").and.returnValue(false);
 
@@ -49,55 +62,72 @@ describe("bearer authenticator test", () => {
             expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 60000);
         });
 
-        it("token expired_calls update token", async () => {
-            // arrange
-            spyOn(bearerAuthenticator, "isTokenExpired").and.returnValue(true);
-            spyOn(bearerAuthenticator, "updateToken");
+        describe("when token expired", () => {
+            it("should calls update token", async () => {
+                // arrange
+                spyOn(bearerAuthenticator, "isTokenExpired").and.returnValue(true);
+                spyOn(bearerAuthenticator, "updateToken");
 
-            // act
-            await bearerAuthenticator.refresh();
-            expect(bearerAuthenticator.updateToken).toHaveBeenCalled();
+                // act
+                await bearerAuthenticator.refresh();
+                expect(bearerAuthenticator.updateToken).toHaveBeenCalled();
+            });
         });
     });
 
-    describe("updateToken_", () => {
-        it("normal_get bearer token", async () => {
-            // arrange
-            const token = {
-                token: "bearer_token",
-                expired: new Date(),
-            };
-            spyOn(bearerAuthenticator, "getBearerToken").and.returnValue(token);
+    describe("updateToken", () => {
+        describe("when normal", () => {
+            it("should get bearer token", async () => {
+                // arrange
+                const token = {
+                    token: "bearer_token",
+                    expired: new Date(),
+                };
+                spyOn(bearerAuthenticator, "getBearerToken").and.returnValue(token);
 
-            // act
-            await bearerAuthenticator.updateToken();
+                // act
+                await bearerAuthenticator.updateToken();
 
-            // assert
-            expect(bearerAuthenticator.getBearerToken).toHaveBeenCalled();
-            expect(bearerAuthenticator.token).toEqual(token.token);
-            expect(bearerAuthenticator.expired).toEqual(token.expired);
-            expect(logger.log).toHaveBeenCalledWith("Get bearer token successfully.");
+                // assert
+                expect(bearerAuthenticator.getBearerToken).toHaveBeenCalled();
+                expect(bearerAuthenticator.token).toEqual(token.token);
+                expect(bearerAuthenticator.expired).toEqual(token.expired);
+                expect(logger.log).toHaveBeenCalledWith("Get bearer token successfully.");
+            });
         });
 
-        it("have exception_log error", async () => {
-            // arrange
-            spyOn(bearerAuthenticator, "getBearerToken").and.throwError("error");
+        describe("when have exception", () => {
+            it("should log error", async () => {
+                // arrange
+                spyOn(bearerAuthenticator, "getBearerToken").and.throwError("error");
 
-            // act
-            await bearerAuthenticator.updateToken();
+                // act
+                await bearerAuthenticator.updateToken();
 
-            // assert
-            expect(logger.logError).toHaveBeenCalled();
+                // assert
+                expect(logger.logError).toHaveBeenCalled();
+            });
         });
     });
 
-    describe("isTokenExpired_", () => {
-        it.each([undefined, null])("undefined/null expired_returns true", (value) => {
-            // arrange
-            bearerAuthenticator.expired = value;
+    describe("isTokenExpired", () => {
+        describe("when expired is null", () => {
+            it("should returns true", () => {
+                // arrange
+                bearerAuthenticator.expired = null;
 
-            // act & assert
-            expect(bearerAuthenticator.isTokenExpired()).toBeTruthy();
+                // act & assert
+                expect(bearerAuthenticator.isTokenExpired()).toBeTruthy();
+            });
+        });
+        describe("when expired is undefined", () => {
+            it("should returns true", () => {
+                // arrange
+                bearerAuthenticator.expired = undefined;
+
+                // act & assert
+                expect(bearerAuthenticator.isTokenExpired()).toBeTruthy();
+            });
         });
     });
 });

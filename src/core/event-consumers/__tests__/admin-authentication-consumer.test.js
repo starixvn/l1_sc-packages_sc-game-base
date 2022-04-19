@@ -24,28 +24,32 @@ describe("admin authentication consumer test", () => {
         };
         const token = "token";
 
-        it("authenticate failed_publish unauthorized message", () => {
-            // arrange
-            utils.authentication.adminAuthenticate.mockReturnValue(false);
-            spyOn(adminPublisher, "publishUnauthorizedMessage");
+        describe("when authenticate failed", () => {
+            it("should publish unauthorized message", () => {
+                // arrange
+                utils.authentication.adminAuthenticate.mockReturnValue(false);
+                spyOn(adminPublisher, "publishUnauthorizedMessage");
 
-            // act
-            consumer.consume(socketClient, token);
+                // act
+                consumer.consume(socketClient, token);
 
-            // assert
-            expect(adminPublisher.publishUnauthorizedMessage).toHaveBeenCalledWith(socketClient);
+                // assert
+                expect(adminPublisher.publishUnauthorizedMessage).toHaveBeenCalledWith(socketClient);
+            });
         });
 
-        it("authenticate passed_publish authorized message", () => {
-            // arrange
-            utils.authentication.adminAuthenticate.mockReturnValue(true);
-            spyOn(adminPublisher, "publishAuthorizedMessage");
+        describe("when authenticate passed", () => {
+            it("should publish authorized message", () => {
+                // arrange
+                utils.authentication.adminAuthenticate.mockReturnValue(true);
+                spyOn(adminPublisher, "publishAuthorizedMessage");
 
-            // act
-            consumer.consume(socketClient, token);
+                // act
+                consumer.consume(socketClient, token);
 
-            // assert
-            expect(adminPublisher.publishAuthorizedMessage).toHaveBeenCalledWith(socketClient);
+                // assert
+                expect(adminPublisher.publishAuthorizedMessage).toHaveBeenCalledWith(socketClient);
+            });
         });
     });
 });

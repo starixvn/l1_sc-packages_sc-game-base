@@ -43,31 +43,33 @@ describe("table settle game round consumer test", () => {
         expect(consumer instanceof SettleGameRoundConsumer);
     });
 
-    it("queryBets_always_return correct result", async () => {
-        // arrange
-        const realPlayerBets = [{ round: 1, choice: "odd", amount: 10 }];
-        const botBets = [{ round: 1, choice: "even", amount: 1 }];
-        spyOn(betsRepository, "find").and.callFake(() => {
-            return {
-                exec: () => {
-                    return realPlayerBets;
-                },
-            };
+    describe("queryBets", () => {
+        it("should return correct result", async () => {
+            // arrange
+            const realPlayerBets = [{ round: 1, choice: "odd", amount: 10 }];
+            const botBets = [{ round: 1, choice: "even", amount: 1 }];
+            spyOn(betsRepository, "find").and.callFake(() => {
+                return {
+                    exec: () => {
+                        return realPlayerBets;
+                    },
+                };
+            });
+
+            spyOn(tempBetsRepository, "find").and.callFake(() => {
+                return {
+                    exec: () => {
+                        return botBets;
+                    },
+                };
+            });
+
+            // act
+            const actualResult = await consumer.queryBets(1);
+
+            // assert
+            expect(actualResult).toEqual(realPlayerBets.concat(botBets));
         });
-
-        spyOn(tempBetsRepository, "find").and.callFake(() => {
-            return {
-                exec: () => {
-                    return botBets;
-                },
-            };
-        });
-
-        // act
-        const actualResult = await consumer.queryBets(1);
-
-        // assert
-        expect(actualResult).toEqual(realPlayerBets.concat(botBets));
     });
 
     describe("captureBetResult_", () => {
@@ -76,7 +78,7 @@ describe("table settle game round consumer test", () => {
             spyOn(SettleGameRoundConsumer.prototype, "captureBetResult");
         });
 
-        it("always_calls super", () => {
+        it("should calls super", () => {
             // act
             consumer.captureBetResult(1, {});
 
@@ -84,57 +86,61 @@ describe("table settle game round consumer test", () => {
             expect(SettleGameRoundConsumer.prototype.captureBetResult).toHaveBeenCalled();
         });
 
-        it("totalWin > 0_assign correct winningStatus", () => {
-            // arrange
-            const uid = 1;
-            const betResult = {
-                totalBetAmount: 0,
-                totalWin: 1,
-                netWin: 0,
-                totalLost: 0,
-                winningByChoices: {},
-            };
-            gameData.winningPlayers = {};
-            const winningStatus = {
-                rate: 1,
-                win: true,
-                bet: 1,
-                winningByChoices: {},
-            };
-            const player = {
-                id: uid,
-                name: "name",
-                red: 1000,
-                avatarId: 1,
-                type: false,
-            };
-            gameData.players[uid] = player;
+        describe("totalWin > 0", () => {
+            it("should assign correct winningStatus", () => {
+                // arrange
+                const uid = 1;
+                const betResult = {
+                    totalBetAmount: 0,
+                    totalWin: 1,
+                    netWin: 0,
+                    totalLost: 0,
+                    winningByChoices: {},
+                };
+                gameData.winningPlayers = {};
+                const winningStatus = {
+                    rate: 1,
+                    win: true,
+                    bet: 1,
+                    winningByChoices: {},
+                };
+                const player = {
+                    id: uid,
+                    name: "name",
+                    red: 1000,
+                    avatarId: 1,
+                    type: false,
+                };
+                gameData.players[uid] = player;
 
-            // act
-            consumer.captureBetResult(uid, betResult);
+                // act
+                consumer.captureBetResult(uid, betResult);
 
-            // assert
-            expect(gameData.winningPlayers[uid]).toEqual(winningStatus);
-            expect(gameData.players[uid].red).toEqual(1001);
+                // assert
+                expect(gameData.winningPlayers[uid]).toEqual(winningStatus);
+                expect(gameData.players[uid].red).toEqual(1001);
+            });
         });
     });
 
-    it("collectRoundResult_always_calls super", () => {
-        // arrange
-        const result = { red1: true, red2: false, red3: true, red4: false };
-        const settlementResult = { odd: false, even: true };
-        const roundId = 1;
-        const roundResult = {
-            result,
-            settlementResult,
-            roundId,
-        };
-        spyOn(SettleGameRoundConsumer.prototype, "collectRoundResult").and.returnValue(roundResult);
+    describe("collectRoundResult", () => {
+        it("should calls super", () => {
+            // arrange
+            const result = { red1: true, red2: false, red3: true, red4: false };
+            const settlementResult = { odd: false, even: true };
+            const roundId = 1;
+            const roundResult = {
+                result,
+                settlementResult,
+                roundId,
+            };
+            spyOn(SettleGameRoundConsumer.prototype, "collectRoundResult").and.returnValue(roundResult);
 
-        // act
-        consumer.collectRoundResult(result, settlementResult, roundId);
+            // act
+            consumer.collectRoundResult(result, settlementResult, roundId);
 
-        // assert
-        expect(SettleGameRoundConsumer.prototype.collectRoundResult).toHaveBeenCalledWith(result, settlementResult, roundId);
+            // assert
+            expect(SettleGameRoundConsumer.prototype.collectRoundResult).toHaveBeenCalledWith(result, settlementResult, roundId);
+        });
     });
 });

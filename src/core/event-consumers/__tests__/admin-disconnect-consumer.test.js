@@ -4,17 +4,40 @@ import GameData from "../../game-data";
 jest.useFakeTimers();
 
 describe("consume test", () => {
-    test("delete real players in Game Data - gameData.realPlayers should be empty", () => {
-        const socketId = 123;
-        const gameData = new GameData();
-        gameData.admins = {
-            [socketId]: {},
-        };
+    describe("when delete real players in Game Data", () => {
+        it("should call setTimeout", () => {
+            // Arrange
+            const socketId = 123;
+            const gameData = new GameData();
+            gameData.admins = {
+                [socketId]: {},
+            };
 
-        const consumer = new AdminDisconnectConsumer(gameData);
-        consumer.consume({ id: socketId });
-        jest.runAllTimers();
-        expect(setTimeout).toHaveBeenCalled();
-        expect(gameData.admins[socketId]).toBeUndefined();
+            const consumer = new AdminDisconnectConsumer(gameData);
+
+            // Act
+            consumer.consume({ id: socketId });
+            jest.runAllTimers();
+
+            // Assert
+            expect(setTimeout).toHaveBeenCalled();
+        });
+        it("admins[socketId] should be undefined", () => {
+            // Arrange
+            const socketId = 123;
+            const gameData = new GameData();
+            gameData.admins = {
+                [socketId]: {},
+            };
+
+            const consumer = new AdminDisconnectConsumer(gameData);
+
+            // Act
+            consumer.consume({ id: socketId });
+            jest.runAllTimers();
+
+            // Assert
+            expect(gameData.admins[socketId]).toBeUndefined();
+        });
     });
 });

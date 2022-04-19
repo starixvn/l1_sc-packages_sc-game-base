@@ -48,45 +48,67 @@ describe("table user signin consumer in testing", () => {
     });
 
     describe("consume", () => {
-        it("disabled_publish UM Notice", () => {
-            // arrange
-            gameData.gameConfigs = { enabled: false, disabled_message: "disabled message" };
+        describe("when disabled", () => {
+            it("should publish UM Notice", () => {
+                // arrange
+                gameData.gameConfigs = { enabled: false, disabled_message: "disabled message" };
 
-            // act
-            consumer.consume(socketClient, {});
+                // act
+                consumer.consume(socketClient, {});
 
-            // assert
-            expect(userSignInPublisher.publishUmNotice).toHaveBeenCalled();
+                // assert
+                expect(userSignInPublisher.publishUmNotice).toHaveBeenCalled();
+            });
         });
 
-        it("enabled_calls super.consume", () => {
-            // arrange
-            spyOn(UserSignInConsumer.prototype, "consume");
-            gameData.gameConfigs = { enabled: true };
+        describe("when enabled", () => {
+            it("should calls super.consume", () => {
+                // arrange
+                spyOn(UserSignInConsumer.prototype, "consume");
+                gameData.gameConfigs = { enabled: true };
 
-            // act
-            consumer.consume(socketClient, {});
+                // act
+                consumer.consume(socketClient, {});
 
-            // assert
-            expect(UserSignInConsumer.prototype.consume).toHaveBeenCalled();
+                // assert
+                expect(UserSignInConsumer.prototype.consume).toHaveBeenCalled();
+            });
         });
     });
 
-    it("handleSignInSuccess_Always_Specific Methods", () => {
-        // arrange
-        spyOn(UserSignInConsumer.prototype, "handleSignInSuccess");
-        const storedSession = {
-            userId: "valid user ID",
-            username: "username",
-            browserUserAgent: "chrome",
-        };
-        const storedUserInfo = { name: "hello worlld" };
+    describe("handleSignInSuccess", () => {
+        it("should call handleSignInSuccess", () => {
+            // arrange
+            spyOn(UserSignInConsumer.prototype, "handleSignInSuccess");
+            const storedSession = {
+                userId: "valid user ID",
+                username: "username",
+                browserUserAgent: "chrome",
+            };
+            const storedUserInfo = { name: "hello worlld" };
 
-        // act
-        consumer.handleSignInSuccess(socketClient, storedUserInfo, storedSession);
+            // act
+            consumer.handleSignInSuccess(socketClient, storedUserInfo, storedSession);
 
-        // assert
-        expect(UserSignInConsumer.prototype.handleSignInSuccess).toHaveBeenCalled();
-        expect(userSignInPublisher.publishToGameMessage).toHaveBeenCalled();
+            // assert
+            expect(UserSignInConsumer.prototype.handleSignInSuccess).toHaveBeenCalled();
+        });
+
+        it("should call publishToGameMessage", () => {
+            // arrange
+            spyOn(UserSignInConsumer.prototype, "handleSignInSuccess");
+            const storedSession = {
+                userId: "valid user ID",
+                username: "username",
+                browserUserAgent: "chrome",
+            };
+            const storedUserInfo = { name: "hello worlld" };
+
+            // act
+            consumer.handleSignInSuccess(socketClient, storedUserInfo, storedSession);
+
+            // assert
+            expect(userSignInPublisher.publishToGameMessage).toHaveBeenCalled();
+        });
     });
 });

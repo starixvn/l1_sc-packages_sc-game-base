@@ -16,49 +16,75 @@ const initBot = function () {
 };
 
 describe("reset tests", () => {
-    it("should call removeAllBots when botenabled is false", async () => {
-        gameData.gameConfigs = { botenabled: false };
+    describe("when botenabled is false", () => {
+        it("should call removeAllBots", async () => {
+            // Arrange
+            gameData.gameConfigs = { botenabled: false };
 
-        const baseBot = initBot();
-        jest.spyOn(baseBot, "removeAllBots");
+            const baseBot = initBot();
+            jest.spyOn(baseBot, "removeAllBots");
 
-        await baseBot.reset();
+            // Act
+            await baseBot.reset();
 
-        expect(baseBot.removeAllBots).toHaveBeenCalled();
+            // Assert
+            expect(baseBot.removeAllBots).toHaveBeenCalled();
+        });
     });
 
-    it("should call processDisabledBots when botenabled is true and calculate maxNumberOfBots", async () => {
-        gameData.gameConfigs = { botenabled: true, maxbot: 0.5 };
-        userInfosRepository.countDocuments().exec.mockReturnValueOnce(100);
+    describe("when botenabled is true", () => {
+        it("should call processDisabledBots", async () => {
+            // Arrange
+            gameData.gameConfigs = { botenabled: true, maxbot: 0.5 };
+            userInfosRepository.countDocuments().exec.mockReturnValueOnce(100);
 
-        const baseBot = initBot();
-        jest.spyOn(baseBot, "processDisabledBots");
+            const baseBot = initBot();
+            jest.spyOn(baseBot, "processDisabledBots");
 
-        await baseBot.reset();
+            // Act
+            await baseBot.reset();
 
-        expect(baseBot.processDisabledBots).toHaveBeenCalled();
-        expect(baseBot.maxNumberOfBots).toEqual(100 * 0.5);
+            // Assert
+            expect(baseBot.processDisabledBots).toHaveBeenCalled();
+        });
+
+        it("should calculate maxNumberOfBots", async () => {
+            // Arrange
+            gameData.gameConfigs = { botenabled: true, maxbot: 0.5 };
+            userInfosRepository.countDocuments().exec.mockReturnValueOnce(100);
+
+            const baseBot = initBot();
+            jest.spyOn(baseBot, "processDisabledBots");
+
+            // Acct
+            await baseBot.reset();
+
+            // Assert
+            expect(baseBot.maxNumberOfBots).toEqual(100 * 0.5);
+        });
     });
 });
 
 describe("run tests", () => {
-    it("should add bot to indicesOfBotsToBeRemoved after placing bet", async () => {
-        gameData.gameConfigs = { botenabled: true };
-        const bots = [
-            { id: 1, name: "bot1", type: true, red: 2000 },
-            { id: 2, name: "bot2", type: true, red: 2000 },
-            { id: 3, name: "bot3", type: true, red: 2000 },
-            { id: 4, name: "bot4", type: true, red: 2000 },
-            { id: 5, name: "bot5", type: true, red: 2000 },
-            { id: 6, name: "bot6", type: true, red: 2000 },
-        ];
+    describe("when after placing bet", () => {
+        it("should add bot to indicesOfBotsToBeRemoved", async () => {
+            gameData.gameConfigs = { botenabled: true };
+            const bots = [
+                { id: 1, name: "bot1", type: true, red: 2000 },
+                { id: 2, name: "bot2", type: true, red: 2000 },
+                { id: 3, name: "bot3", type: true, red: 2000 },
+                { id: 4, name: "bot4", type: true, red: 2000 },
+                { id: 5, name: "bot5", type: true, red: 2000 },
+                { id: 6, name: "bot6", type: true, red: 2000 },
+            ];
 
-        const baseBot = initBot();
-        baseBot.bots = bots;
-        jest.spyOn(baseBot, "placeBet");
+            const baseBot = initBot();
+            baseBot.bots = bots;
+            jest.spyOn(baseBot, "placeBet");
 
-        await baseBot.run();
+            await baseBot.run();
 
-        expect(baseBot.placeBet).toHaveBeenCalled();
+            expect(baseBot.placeBet).toHaveBeenCalled();
+        });
     });
 });

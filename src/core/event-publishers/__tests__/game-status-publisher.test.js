@@ -49,7 +49,7 @@ gameData.gameConfigs = {
 gameData.umMessages = { "en-US": "UM" };
 
 describe("publishEnablingGameStatus test", () => {
-    it("should send to all users and admin clients", () => {
+    it("should send to admin clients", () => {
         // arrange
         const publisher = new GameStatusPublisher(gameName, gameData);
         publisher.publishToAllUsers = jest.fn();
@@ -64,32 +64,62 @@ describe("publishEnablingGameStatus test", () => {
 });
 
 describe("publishDisableGameStatus test", () => {
-    it("gameData.disabledMessage is undefined - should send to all users and admin clients with empty string", () => {
-        // arrange
-        const publisher = new GameStatusPublisher(gameName, gameData);
-        publisher.publishToAllUsers = jest.fn();
-        publisher.publishToAllAdmins = jest.fn();
+    describe("when gameData.disabledMessage is undefined", () => {
+        it("should send to all users with empty string", () => {
+            // arrange
+            const publisher = new GameStatusPublisher(gameName, gameData);
+            publisher.publishToAllUsers = jest.fn();
+            publisher.publishToAllAdmins = jest.fn();
 
-        // act
-        publisher.publishDisableGameStatus();
-        const payload = { um: true, um_message: gameData.umMessages };
+            // act
+            publisher.publishDisableGameStatus();
+            const payload = { um: true, um_message: gameData.umMessages };
 
-        // assert
-        expect(publisher.publishToAllAdmins).toHaveBeenCalledWith(payload);
+            // assert
+            expect(publisher.publishToAllUsers).toHaveBeenCalledWith(payload);
+        });
+
+        it("should send to all admins clients with empty string", () => {
+            // arrange
+            const publisher = new GameStatusPublisher(gameName, gameData);
+            publisher.publishToAllUsers = jest.fn();
+            publisher.publishToAllAdmins = jest.fn();
+
+            // act
+            publisher.publishDisableGameStatus();
+            const payload = { um: true, um_message: gameData.umMessages };
+
+            // assert
+            expect(publisher.publishToAllAdmins).toHaveBeenCalledWith(payload);
+        });
     });
 
-    it("gameData disabled_message has value - should send to all users and admin clients with disabled_message", () => {
-        // arrange
-        const publisher = new GameStatusPublisher(gameName, gameData);
-        publisher.publishToAllUsers = jest.fn();
-        publisher.publishToAllAdmins = jest.fn();
+    describe("when gameData disabled_message has value", () => {
+        it("should send to all users clients with disabled_message", () => {
+            // arrange
+            const publisher = new GameStatusPublisher(gameName, gameData);
+            publisher.publishToAllUsers = jest.fn();
+            publisher.publishToAllAdmins = jest.fn();
 
-        // act
-        publisher.publishDisableGameStatus();
-        const payload = { um: true, um_message: gameData.umMessages };
-        // assert
-        expect(publisher.publishToAllUsers).toHaveBeenCalledWith(payload);
-        expect(publisher.publishToAllAdmins).toHaveBeenCalledWith(payload);
+            // act
+            publisher.publishDisableGameStatus();
+            const payload = { um: true, um_message: gameData.umMessages };
+            // assert
+            expect(publisher.publishToAllUsers).toHaveBeenCalledWith(payload);
+        });
+
+        it("should send to all admin clients with disabled_message", () => {
+            // arrange
+            const publisher = new GameStatusPublisher(gameName, gameData);
+            publisher.publishToAllUsers = jest.fn();
+            publisher.publishToAllAdmins = jest.fn();
+
+            // act
+            publisher.publishDisableGameStatus();
+            const payload = { um: true, um_message: gameData.umMessages };
+            // assert
+            expect(publisher.publishToAllAdmins).toHaveBeenCalledWith(payload);
+        });
     });
 });
 
@@ -98,8 +128,10 @@ describe("publishStartGame test", () => {
         // arrange
         const publisher = new GameStatusPublisher(gameName, gameData);
         publisher.publishToAllUsers = jest.fn();
+
         // act
         publisher.publishStartGame();
+
         // assert
         expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ remainingTime: gameData.remainingTime });
     });

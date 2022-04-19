@@ -27,56 +27,66 @@ describe("table game bot test", () => {
         expect(tableBot instanceof BaseBot);
     });
 
-    it("generatePlaceBetPayload_always_returns correct result", () => {
-        // arrange
-        const playerId = "player-id";
-        const choice = "choice";
-        const amount = 200;
-        const balance = 10000;
-        const expectedResult = { playerChip: { playerId, betChoice: choice, amount, red: balance } };
+    describe("generatePlaceBetPayload", () => {
+        it("should returns correct result", () => {
+            // arrange
+            const playerId = "player-id";
+            const choice = "choice";
+            const amount = 200;
+            const balance = 10000;
+            const expectedResult = { playerChip: { playerId, betChoice: choice, amount, red: balance } };
 
-        // act & assert
-        expect(tableBot.generatePlaceBetPayload(playerId, choice, amount, balance)).toEqual(expectedResult);
+            // act & assert
+            expect(tableBot.generatePlaceBetPayload(playerId, choice, amount, balance)).toEqual(expectedResult);
+        });
     });
 
-    it("insertOrUpdateBet_always_calls update temp bet", async () => {
-        // arrange
-        const bot = { id: 1, name: "bot1", type: true, red: 20000 };
-        const choice = "odd";
-        const amount = 100;
+    describe("insertOrUpdateBet", () => {
+        it("should calls update temp bet", async () => {
+            // arrange
+            const bot = { id: 1, name: "bot1", type: true, red: 20000 };
+            const choice = "odd";
+            const amount = 100;
 
-        // act
-        await tableBot.insertOrUpdateBet(bot, choice, amount, null);
+            // act
+            await tableBot.insertOrUpdateBet(bot, choice, amount, null);
 
-        // assert
-        expect(tempBetsRepository.updateOne).toHaveBeenCalled();
+            // assert
+            expect(tempBetsRepository.updateOne).toHaveBeenCalled();
+        });
     });
 
-    it("processDisabledBots_exist disabled bot_remove bot", async () => {
-        // arrange
-        const disabledBots = [{ id: 1, name: "bot1", type: true }];
-        userInfosRepository.find().lean().exec.mockReturnValue(disabledBots);
+    describe("processDisabledBots", () => {
+        describe("when exist disabled bot", () => {
+            it("should remove bot", async () => {
+                // arrange
+                const disabledBots = [{ id: 1, name: "bot1", type: true }];
+                userInfosRepository.find().lean().exec.mockReturnValue(disabledBots);
 
-        spyOn(tableBot, "removeBot");
-        tableBot.botsInRoom[1] = { id: 1, name: "bot1", type: true };
+                spyOn(tableBot, "removeBot");
+                tableBot.botsInRoom[1] = { id: 1, name: "bot1", type: true };
 
-        // act
-        await tableBot.processDisabledBots();
+                // act
+                await tableBot.processDisabledBots();
 
-        // assert
-        expect(tableBot.removeBot).toHaveBeenCalledWith(1);
+                // assert
+                expect(tableBot.removeBot).toHaveBeenCalledWith(1);
+            });
+        });
     });
 
-    it("removeBotsIfRatioChanged_ratioChanged_remove bot", async () => {
-        // arrange
-        spyOn(tableBot.chance, "pickset").and.returnValue([1]);
-        spyOn(tableBot, "removeBot");
+    describe("removeBotsIfRatioChanged and ratioChanged", () => {
+        it("should remove bot", async () => {
+            // arrange
+            spyOn(tableBot.chance, "pickset").and.returnValue([1]);
+            spyOn(tableBot, "removeBot");
 
-        // act
-        await tableBot.removeBotsIfRatioChanged(1);
+            // act
+            await tableBot.removeBotsIfRatioChanged(1);
 
-        // assert
-        expect(tableBot.removeBot).toHaveBeenCalledWith(1);
+            // assert
+            expect(tableBot.removeBot).toHaveBeenCalledWith(1);
+        });
     });
 
     it("resetAllBotData", () => {
@@ -99,7 +109,7 @@ describe("table game bot test", () => {
             spyOn(tableBot, "leaveRoom");
         });
 
-        it("_should add bot_call join room", async () => {
+        it("should add bot_call join room", async () => {
             // arrange
             spyOn(tableBot, "shouldAddBot").and.returnValue(true);
 
@@ -109,7 +119,7 @@ describe("table game bot test", () => {
             expect(tableBot.joinRoom).toHaveBeenCalled();
         });
 
-        it("_should remove bot_call leave room", async () => {
+        it("should remove bot_call leave room", async () => {
             // arrange
             spyOn(tableBot, "shouldRemoveBot").and.returnValue(true);
 
@@ -120,7 +130,7 @@ describe("table game bot test", () => {
             expect(tableBot.leaveRoom).toHaveBeenCalled();
         });
 
-        it("_exist bot to place bet_calls place bet", async () => {
+        it("exist bot to place bet_calls place bet", async () => {
             // arrange
             const bots = [{ id: 1, name: "bot1", type: true, red: 2000 }];
             spyOn(tableBot, "getBotsToBet").and.returnValue(bots);
@@ -134,95 +144,118 @@ describe("table game bot test", () => {
         });
     });
 
-    it("removeAllBots_exist bots in game_call remove bot", async () => {
-        // arrange
-        gameData.players = [{ id: 1, name: "bot1", red: 1000, type: true }];
-        spyOn(tableBot, "removeBot");
+    describe("removeAllBots and exist bots in game", () => {
+        it("should call remove bot", async () => {
+            // arrange
+            gameData.players = [{ id: 1, name: "bot1", red: 1000, type: true }];
+            spyOn(tableBot, "removeBot");
 
-        // act
-        await tableBot.removeAllBots();
+            // act
+            await tableBot.removeAllBots();
 
-        // assert
-        expect(tableBot.removeBot).toHaveBeenCalled();
+            // assert
+            expect(tableBot.removeBot).toHaveBeenCalled();
+        });
     });
 
-    it("removeBot_always_call specific methods", async () => {
-        // arrange
-        spyOn(userInfosRepository, "updateOne");
-        spyOn(publisher, "publishToAllUsers");
+    describe("removeBot", () => {
+        it("should call specific methods", async () => {
+            // arrange
+            spyOn(userInfosRepository, "updateOne");
+            spyOn(publisher, "publishToAllUsers");
 
-        // act
-        await tableBot.removeBot(1);
+            // act
+            await tableBot.removeBot(1);
 
-        // assert
-        expect(userInfosRepository.updateOne).toHaveBeenCalledWith({ id: 1 }, { inRoom: false, inGameRoom: "", patternId: 0 });
-        expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalledWith(Systems.Mobi, null, { outgame: { playerId: 1 } });
+            // assert
+            expect(userInfosRepository.updateOne).toHaveBeenCalledWith({ id: 1 }, { inRoom: false, inGameRoom: "", patternId: 0 });
+            expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalledWith(Systems.Mobi, null, { outgame: { playerId: 1 } });
+        });
     });
 
-    it("joinRoom_exist bot_calls botJoinRoom", async () => {
-        // arrange
-        spyOn(tableBot, "getBotsToJoin").and.returnValue([{ id: 1, name: "bot1", type: true, red: 2000 }]);
-        spyOn(tableBot, "botJoinRoom");
-        spyOn(userInfosRepository, "find").and.callFake(() => {
-            return {
-                exec: () => {},
-            };
+    describe("joinRoom and exist bot", () => {
+        it("should calls botJoinRoom", async () => {
+            // arrange
+            spyOn(tableBot, "getBotsToJoin").and.returnValue([{ id: 1, name: "bot1", type: true, red: 2000 }]);
+            spyOn(tableBot, "botJoinRoom");
+            spyOn(userInfosRepository, "find").and.callFake(() => {
+                return {
+                    exec: () => {},
+                };
+            });
+
+            // act
+            await tableBot.joinRoom();
+
+            // assert
+            expect(tableBot.botJoinRoom).toHaveBeenCalled();
+        });
+    });
+
+    describe("botJoinRoom", () => {
+        it("should call updateOne", async () => {
+            // arrange
+            const bot = { id: 1, name: "bot1", type: true, red: 2000 };
+            spyOn(userInfosRepository, "updateOne");
+
+            // act
+            await tableBot.botJoinRoom(bot);
+
+            // assert
+            expect(userInfosRepository.updateOne).toHaveBeenCalled();
         });
 
-        // act
-        await tableBot.joinRoom();
+        it("should call publishToAllUsersExceptSystem", async () => {
+            // arrange
+            const bot = { id: 1, name: "bot1", type: true, red: 2000 };
+            spyOn(userInfosRepository, "updateOne");
 
-        // assert
-        expect(tableBot.botJoinRoom).toHaveBeenCalled();
+            // act
+            await tableBot.botJoinRoom(bot);
+
+            // assert
+            expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalled();
+        });
     });
 
-    it("botJoinRoom_always_update inRoom", async () => {
-        // arrange
-        const bot = { id: 1, name: "bot1", type: true, red: 2000 };
-        spyOn(userInfosRepository, "updateOne");
+    describe("resetInRoomTrackings", () => {
+        it("should calls update many user info", async () => {
+            // arrange
+            spyOn(userInfosRepository, "updateMany");
 
-        // act
-        await tableBot.botJoinRoom(bot);
+            //act
+            await tableBot.resetInRoomTrackings();
 
-        // assert
-        expect(userInfosRepository.updateOne).toHaveBeenCalled();
-        expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalled();
+            // assert
+            expect(userInfosRepository.updateMany).toHaveBeenCalled();
+        });
     });
 
-    it("resetInRoomTrackings_always_calls update many user info", async () => {
-        // arrange
-        spyOn(userInfosRepository, "updateMany");
+    describe("placeBet and meet condition", () => {
+        it("should calls specific methods", async () => {
+            // arrange
+            const bot = { id: 1, name: "bot1", type: true, red: 2000, save: jest.fn(), choices: [], betOnChoices: {} };
+            spyOn(bot, "save");
+            const choice = "odd";
+            const maxBet = 5000;
+            const minBet = 10;
+            const amount = 100;
+            spyOn(tableBot, "getBetChoice").and.returnValue(choice);
+            spyOn(tableBot, "getMaxBet").and.returnValue(maxBet);
+            spyOn(tableBot, "getMinBet").and.returnValue(minBet);
+            spyOn(tableBot, "convertAmountToChip").and.returnValue(amount);
+            gameData.remainingTime = 10;
+            gameData.gameConfigs = { bot_maxbet: 5000 };
+            tempBetsRepository.findOne().lean().exec.mockReturnValue(null);
+            userInfosRepository.findOneAndUpdate.mockReturnValueOnce(bot);
 
-        //act
-        await tableBot.resetInRoomTrackings();
+            spyOn(tableBot, "insertOrUpdateBet");
 
-        // assert
-        expect(userInfosRepository.updateMany).toHaveBeenCalled();
-    });
+            // act
+            await tableBot.placeBet(bot);
 
-    it("placeBet_meet condition_calls specific methods", async () => {
-        // arrange
-        const bot = { id: 1, name: "bot1", type: true, red: 2000, save: jest.fn(), choices: [], betOnChoices: {} };
-        spyOn(bot, "save");
-        const choice = "odd";
-        const maxBet = 5000;
-        const minBet = 10;
-        const amount = 100;
-        spyOn(tableBot, "getBetChoice").and.returnValue(choice);
-        spyOn(tableBot, "getMaxBet").and.returnValue(maxBet);
-        spyOn(tableBot, "getMinBet").and.returnValue(minBet);
-        spyOn(tableBot, "convertAmountToChip").and.returnValue(amount);
-        gameData.remainingTime = 10;
-        gameData.gameConfigs = { bot_maxbet: 5000 };
-        tempBetsRepository.findOne().lean().exec.mockReturnValue(null);
-        userInfosRepository.findOneAndUpdate.mockReturnValueOnce(bot);
-
-        spyOn(tableBot, "insertOrUpdateBet");
-
-        // act
-        await tableBot.placeBet(bot);
-
-        // assert
-        expect(tableBot.insertOrUpdateBet).toHaveBeenCalled();
+            // assert
+            expect(tableBot.insertOrUpdateBet).toHaveBeenCalled();
+        });
     });
 });

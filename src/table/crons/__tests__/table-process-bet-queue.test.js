@@ -41,31 +41,33 @@ describe("table process bet queue test", () => {
         expect(betQueue instanceof ProcessBetQueue);
     });
 
-    it("generatePlacingBetResult_always_calls super", () => {
-        // arrange
-        const socketClient = {
-            emit: jest.fn(),
-        };
-        const player = {
-            UID: "uid",
-            profile: {
-                name: "name",
-            },
-            socketClient,
-        };
-        const ownBet = {
-            ownBets: {},
-            endBet: 10,
-            freeBet: false,
-            user: { red: 2000 },
-        };
-        gameData.players[player.UID] = player;
-        spyOn(ProcessBetQueue.prototype, "generatePlacingBetResult").and.returnValue(ownBet);
+    describe("generatePlacingBetResult", () => {
+        it("should calls super", () => {
+            // arrange
+            const socketClient = {
+                emit: jest.fn(),
+            };
+            const player = {
+                UID: "uid",
+                profile: {
+                    name: "name",
+                },
+                socketClient,
+            };
+            const ownBet = {
+                ownBets: {},
+                endBet: 10,
+                freeBet: false,
+                user: { red: 2000 },
+            };
+            gameData.players[player.UID] = player;
+            spyOn(ProcessBetQueue.prototype, "generatePlacingBetResult").and.returnValue(ownBet);
 
-        // act
-        betQueue.generatePlacingBetResult(player, 2000, 10, 0.05);
+            // act
+            betQueue.generatePlacingBetResult(player, 2000, 10, 0.05);
 
-        // assert
-        expect(ProcessBetQueue.prototype.generatePlacingBetResult).toHaveBeenCalledWith(player, 2000, 10, 0.05);
+            // assert
+            expect(ProcessBetQueue.prototype.generatePlacingBetResult).toHaveBeenCalledWith(player, 2000, 10, 0.05);
+        });
     });
 });

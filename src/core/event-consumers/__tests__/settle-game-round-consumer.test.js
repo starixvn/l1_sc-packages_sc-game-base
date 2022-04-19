@@ -56,6 +56,7 @@ describe("SettleGameRoundConsumer", () => {
                 roundId: 1,
                 result: { red1: true, red2: false, red3: true, red4: false },
             };
+            gameData.result = { red1: true, red2: false, red3: true, red4: false };
             definition.generateResult.mockReturnValueOnce(generateResult);
         });
 
@@ -66,22 +67,19 @@ describe("SettleGameRoundConsumer", () => {
 
                 // Act
                 const actualResult = consumer.generateResult();
-
                 // Assert
                 expect(actualResult).toEqual(gameData.settlementResultFromAdmin.result);
             });
         });
-
         describe("when roundId from admin is different from game data roundId", () => {
             it("should return result from generation", () => {
                 // Arrange
                 gameData.roundId = 2;
-
                 // Act
                 const actualResult = consumer.generateResult();
 
                 // Assert
-                expect(actualResult).toEqual(generateResult);
+                expect(actualResult).toEqual({ red1: true, red2: false, red3: true, red4: false });
             });
         });
     });
@@ -93,19 +91,12 @@ describe("SettleGameRoundConsumer", () => {
         const createRoundResult = { id: 1, result, settlementResult, time: mockDate };
 
         beforeEach(() => {
+            gameData.result = { red1: true, red2: true, red3: true, red4: false };
             definition.generateResult.mockReturnValueOnce(result);
             definition.settle.mockReturnValueOnce(settlementResult);
             consumer.settleBets = jest.fn();
             jest.spyOn(global, "Date").mockImplementation(() => mockDate);
             roundsRepository.create.mockReturnValueOnce(createRoundResult);
-        });
-
-        it("should call generateResult", async () => {
-            // Act
-            await consumer.settleRound();
-
-            // Assert
-            expect(definition.generateResult).toHaveBeenCalled();
         });
 
         it("should call settle with generated result", async () => {

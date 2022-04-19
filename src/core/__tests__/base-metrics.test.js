@@ -9,45 +9,51 @@ describe("BaseMetrics test", () => {
     const socketServer = stub(socketIo);
     const prometheusSocket = stub(prometheus);
 
-    it("BaseMetrics should not init if missing configuration", () => {
-        // arrange
-        const baseMetrics = new BaseMetrics(appConfigs);
-        spyOn(prometheusSocket, "metrics").and.returnValue({});
+    describe("when missing configuration", () => {
+        it("BaseMetrics should not init ", () => {
+            // arrange
+            const baseMetrics = new BaseMetrics(appConfigs);
+            spyOn(prometheusSocket, "metrics").and.returnValue({});
 
-        // act
-        baseMetrics.init(socketServer);
+            // act
+            baseMetrics.init(socketServer);
 
-        // assert
-        expect(prometheusSocket.metrics).not.toHaveBeenCalled();
+            // assert
+            expect(prometheusSocket.metrics).not.toHaveBeenCalled();
+        });
     });
 
-    it("BaseMetrics should not init if disabled", () => {
-        // arrange
-        appConfigs.metrics = {
-            enable: false,
-        };
-        const baseMetrics = new BaseMetrics(appConfigs);
-        spyOn(prometheusSocket, "metrics").and.returnValue({});
+    describe("when disabled", () => {
+        it("BaseMetrics should not init", () => {
+            // arrange
+            appConfigs.metrics = {
+                enable: false,
+            };
+            const baseMetrics = new BaseMetrics(appConfigs);
+            spyOn(prometheusSocket, "metrics").and.returnValue({});
 
-        // act
-        baseMetrics.init(socketServer);
+            // act
+            baseMetrics.init(socketServer);
 
-        // assert
-        expect(prometheusSocket.metrics).not.toHaveBeenCalled();
+            // assert
+            expect(prometheusSocket.metrics).not.toHaveBeenCalled();
+        });
     });
 
-    it("BaseMetrics should init if enabled", () => {
-        // arrange
-        appConfigs.metrics = {
-            enable: true,
-        };
-        const baseMetrics = new BaseMetrics(appConfigs);
-        spyOn(prometheusSocket, "metrics").and.returnValue({ metrics: {} });
+    describe("when enabled", () => {
+        it("BaseMetrics should init", () => {
+            // arrange
+            appConfigs.metrics = {
+                enable: true,
+            };
+            const baseMetrics = new BaseMetrics(appConfigs);
+            spyOn(prometheusSocket, "metrics").and.returnValue({ metrics: {} });
 
-        // act
-        baseMetrics.init(socketServer);
+            // act
+            baseMetrics.init(socketServer);
 
-        // assert
-        expect(prometheusSocket.metrics).toHaveBeenCalled();
+            // assert
+            expect(prometheusSocket.metrics).toHaveBeenCalled();
+        });
     });
 });

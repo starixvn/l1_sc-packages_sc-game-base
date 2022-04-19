@@ -1,4 +1,5 @@
 import { stub } from "jest-micro-auto-stub";
+import { when } from "jest-when";
 import { logger } from "sc-common";
 
 import { AdminAuthenticationConsumer, AdminDisconnectConsumer, AdminMonitorConsumer } from "../../event-consumers";
@@ -42,40 +43,46 @@ describe("base admin socket router test", () => {
         spyOn(logService, "logError");
     });
 
-    it("init_always_binds socket events", () => {
-        // arrange
-        const socketClient = {
-            on: jest.fn(),
-        };
+    describe("init", () => {
+        it("should binds socket events", () => {
+            // arrange
+            const socketClient = {
+                on: jest.fn(),
+            };
 
-        // act
-        router.init(socketClient);
+            // act
+            router.init(socketClient);
 
-        // assert
-        expect(socketClient.on).toHaveBeenCalledTimes(2);
+            // assert
+            expect(socketClient.on).toHaveBeenCalledTimes(2);
+        });
     });
 
     describe("handleDisconnect_", () => {
-        it("normal_calls admin disconnect consumer", () => {
-            // arrange
-            spyOn(adminDisconnectConsumer, "consume");
+        describe("when normal", () => {
+            it("should calls admin disconnect consumer", () => {
+                // arrange
+                spyOn(adminDisconnectConsumer, "consume");
 
-            // act
-            router.handleDisconnect();
+                // act
+                router.handleDisconnect();
 
-            // assert
-            expect(adminDisconnectConsumer.consume).toHaveBeenCalled();
+                // assert
+                expect(adminDisconnectConsumer.consume).toHaveBeenCalled();
+            });
         });
 
-        it("have exception_calls admin disconnect consumer", () => {
-            // arrange
-            spyOn(adminDisconnectConsumer, "consume").and.throwError("error");
+        describe("when have exception", () => {
+            it("should calls admin disconnect consumer", () => {
+                // arrange
+                spyOn(adminDisconnectConsumer, "consume").and.throwError("error");
 
-            // act
-            router.handleDisconnect();
+                // act
+                router.handleDisconnect();
 
-            // assert
-            expect(logService.logError).toHaveBeenCalled();
+                // assert
+                expect(logService.logError).toHaveBeenCalled();
+            });
         });
     });
 
@@ -86,96 +93,118 @@ describe("base admin socket router test", () => {
             payload = {};
         });
 
-        it.each([null, undefined])(
-            "authentication in payload is null/undefined_does not call adminAuthenticationConsumer",
-            async (authentication) => {
+        describe("when authentication in payload is null", () => {
+            it("should not call adminAuthenticationConsumer", async () => {
                 // arrange
                 spyOn(adminAuthenticationConsumer, "consume");
-                payload.authentication = authentication;
+                payload.authentication = null;
 
                 // act
                 await router.handleMessage(payload);
 
                 // assert
                 expect(adminAuthenticationConsumer.consume).not.toHaveBeenCalled();
-            }
-        );
+            });
+        });
+        describe("when authentication in payload is undefined", () => {
+            it("should not call adminAuthenticationConsumer", async () => {
+                // arrange
+                spyOn(adminAuthenticationConsumer, "consume");
+                payload.authentication = undefined;
 
-        it("valid authentication_calls adminAuthenticationConsumer", async () => {
-            // arrange
-            payload.authentication = {
-                jwt: "jwt",
-            };
+                // act
+                await router.handleMessage(payload);
 
-            // act
-            await router.handleMessage(payload);
-
-            // assert
-            expect(adminAuthenticationConsumer.consume).toHaveBeenCalled();
+                // assert
+                expect(adminAuthenticationConsumer.consume).not.toHaveBeenCalled();
+            });
         });
 
-        it("getnew_validRequest_calls adminMonitorConsumer", async () => {
-            // arrange
-            payload[definition.name] = { get_new: true };
-            spyOn(router, "verify").and.returnValue(true);
+        describe("valid authentication", () => {
+            it("should calls adminAuthenticationConsumer", async () => {
+                // arrange
+                payload.authentication = {
+                    jwt: "jwt",
+                };
 
-            // act
-            await router.handleMessage(payload);
+                // act
+                await router.handleMessage(payload);
 
-            // assert
-            expect(adminMonitorConsumer.consume).toHaveBeenCalled();
+                // assert
+                expect(adminAuthenticationConsumer.consume).toHaveBeenCalled();
+            });
         });
 
-        it("setresult_validRequest_update settlementResultFromAdmin", async () => {
-            // arrange
-            router.appConfigs.sentry.env = "Local";
-            const settlementResult = {
-                roundId: 1,
-                result: { red1: true, red2: false, red3: true, red4: false },
-            };
-            payload[definition.name] = {
-                set_result: settlementResult,
-            };
-            spyOn(router, "verify").and.returnValue(true);
+        describe("when getnew", () => {
+            it("should calls adminMonitorConsumer", async () => {
+                // arrange
+                payload[definition.name] = { get_new: true };
+                spyOn(router, "verify").and.returnValue(true);
 
-            // act
-            await router.handleMessage(payload);
+                // act
+                await router.handleMessage(payload);
 
-            // assert
-            expect(gameData.settlementResultFromAdmin).toEqual(settlementResult);
+                // assert
+                expect(adminMonitorConsumer.consume).toHaveBeenCalled();
+            });
         });
 
-        it("setresult_environment_PROD_invalid settlementResultFromAdmin", async () => {
-            // arrange
-            router.appConfigs.sentry.env = "PROD";
-            gameData.settlementResultFromAdmin = null;
-            const settlementResult = {
-                roundId: 1,
-                result: { red1: true, red2: false, red3: true, red4: false },
-            };
-            payload[definition.name] = {
-                set_result: settlementResult,
-            };
+        describe("when setresult", () => {
+            it("should update settlementResultFromAdmin", async () => {
+                // arrange
+                router.appConfigs.sentry.env = "Local";
+                const settlementResult = {
+                    roundId: 1,
+                    result: { red1: true, red2: false, red3: true, red4: false },
+                };
+                payload[definition.name] = {
+                    set_result: settlementResult,
+                };
+                spyOn(router, "verify").and.returnValue(true);
 
-            // act
-            await router.handleMessage(payload);
+                // act
+                await router.handleMessage(payload);
 
-            // assert
-            expect(gameData.settlementResultFromAdmin).toEqual(null);
+                // assert
+                expect(gameData.settlementResultFromAdmin).toEqual(settlementResult);
+            });
         });
 
-        it("handleMessage_throwException_calls logError", async () => {
-            // arrange
-            payload.authentication = {
-                jwt: "jwt",
-            };
-            spyOn(adminAuthenticationConsumer, "consume").and.throwError("error");
+        describe("when setresult_environment_PROD_invalid", () => {
+            it("settlementResultFromAdmin is null", async () => {
+                // arrange
+                router.appConfigs.sentry.env = "PROD";
+                gameData.settlementResultFromAdmin = null;
+                const settlementResult = {
+                    roundId: 1,
+                    result: { red1: true, red2: false, red3: true, red4: false },
+                };
+                payload[definition.name] = {
+                    set_result: settlementResult,
+                };
 
-            // act
-            await router.handleMessage(payload);
+                // act
+                await router.handleMessage(payload);
 
-            // assert
-            expect(logService.logError).toHaveBeenCalled();
+                // assert
+                expect(gameData.settlementResultFromAdmin).toEqual(null);
+            });
+        });
+
+        describe("when throwException", () => {
+            it("should calls logError", async () => {
+                // arrange
+                payload.authentication = {
+                    jwt: "jwt",
+                };
+                spyOn(adminAuthenticationConsumer, "consume").and.throwError("error");
+
+                // act
+                await router.handleMessage(payload);
+
+                // assert
+                expect(logService.logError).toHaveBeenCalled();
+            });
         });
     });
 
@@ -186,29 +215,33 @@ describe("base admin socket router test", () => {
             disconnect: jest.fn(),
         };
 
-        it("validSocket_returns true", () => {
-            // arrange
-            router.socketClient = socketClient;
+        describe("when validSocket", () => {
+            it("should returns true", () => {
+                // arrange
+                router.socketClient = socketClient;
 
-            gameData.admins[socketClient.id] = socketClient;
+                gameData.admins[socketClient.id] = socketClient;
 
-            // act & assert
-            expect(router.verify()).toBeTruthy();
+                // act & assert
+                expect(router.verify()).toBeTruthy();
+            });
         });
 
-        it("invalidSocket_returns false", () => {
-            // arrange
-            gameData.admins = {};
-            router.socketClient = socketClient;
+        describe("when invalidSocket", () => {
+            it("should returns false", () => {
+                // arrange
+                gameData.admins = {};
+                router.socketClient = socketClient;
 
-            // act
-            const result = router.verify();
+                // act
+                const result = router.verify();
 
-            // assert
-            expect(socketClient.emit).toHaveBeenCalledWith("message", { unauth: { message: "Unauthorized!" } });
-            expect(socketClient.disconnect).toHaveBeenCalledWith(true);
-            expect(logService.logError).toHaveBeenCalledWith("Admin not found in server storage");
-            expect(result).toBeFalsy();
+                // assert
+                expect(socketClient.emit).toHaveBeenCalledWith("message", { unauth: { message: "Unauthorized!" } });
+                expect(socketClient.disconnect).toHaveBeenCalledWith(true);
+                expect(logService.logError).toHaveBeenCalledWith("Admin not found in server storage");
+                expect(result).toBeFalsy();
+            });
         });
     });
 });

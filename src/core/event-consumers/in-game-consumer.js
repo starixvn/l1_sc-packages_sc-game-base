@@ -55,7 +55,14 @@ export default class InGameConsumer {
             ownBets,
             totalBets,
             user: { ...user, rate },
+            resultHash: this.getResultHash(),
         };
+    }
+
+    getResultHash() {
+        return this.gameData.roundId > this.gameData.resultHash.roundId
+            ? { rawValue: this.gameData.resultHash.rawValue, extraInfos: this.gameData.result }
+            : { hashValue: this.gameData.resultHash.hashValue };
     }
 
     getUserInfo(uid) {

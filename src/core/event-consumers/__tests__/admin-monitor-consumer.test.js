@@ -14,21 +14,25 @@ describe("consume test", () => {
     /** @type {mongoose.Model}*/
     const roundsRepository = stubMongoose(mongoose.Model);
 
-    it("last round is found, publisher should call publishToAdmin", async () => {
-        const adminPublisher = new AdminPublisher("", gameData);
-        roundsRepository.findOne().lean().exec.mockReturnValueOnce({ id: 1, result: {}, settlementResult: {} });
-        const consumer = new AdminMonitorConsumer({}, gameData, adminPublisher, roundsRepository);
-        await consumer.consume({});
+    describe("when last round is found", () => {
+        it("should publisher should call publishToAdmin", async () => {
+            const adminPublisher = new AdminPublisher("", gameData);
+            roundsRepository.findOne().lean().exec.mockReturnValueOnce({ id: 1, result: {}, settlementResult: {} });
+            const consumer = new AdminMonitorConsumer({}, gameData, adminPublisher, roundsRepository);
+            await consumer.consume({});
 
-        expect(adminPublisher.publishToAdmin).toHaveBeenCalled();
+            expect(adminPublisher.publishToAdmin).toHaveBeenCalled();
+        });
     });
 
-    it("last round is null, do nothing", async () => {
-        const adminPublisher = new AdminPublisher("", gameData);
-        roundsRepository.findOne().lean().exec.mockReturnValueOnce(null);
-        const consumer = new AdminMonitorConsumer({}, gameData, adminPublisher, roundsRepository);
-        await consumer.consume({});
+    describe("when last round is null", () => {
+        it("should do nothing", async () => {
+            const adminPublisher = new AdminPublisher("", gameData);
+            roundsRepository.findOne().lean().exec.mockReturnValueOnce(null);
+            const consumer = new AdminMonitorConsumer({}, gameData, adminPublisher, roundsRepository);
+            await consumer.consume({});
 
-        expect(adminPublisher.publishToAdmin).not.toHaveBeenCalled();
+            expect(adminPublisher.publishToAdmin).not.toHaveBeenCalled();
+        });
     });
 });

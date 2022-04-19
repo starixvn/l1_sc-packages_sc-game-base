@@ -31,69 +31,63 @@ describe("publish test", () => {
         // assert
         expect(publisher.publishToUser).toHaveBeenCalled();
     });
-
-    it("should publish to all users & admins", async () => {
-        // arrange
-        const publisher = initPublisher();
-        publisher.publishToUser = jest.fn();
-        // act
-        await publisher.publish(1, { totalWin: 0 });
-        // assert
-        expect(publisher.publishToUser).toHaveBeenCalled();
-    });
 });
 
 describe("publishToUser test", () => {
-    it("found user - should call publish to user", async () => {
-        // arrange
-        gameData.realPlayers = {
-            1: {
-                UID: 1,
-                socketClient: {
-                    connected: true,
-                    emit: jest.fn(),
+    describe("when found user", () => {
+        it("should call publish to user", async () => {
+            // arrange
+            gameData.realPlayers = {
+                1: {
+                    UID: 1,
+                    socketClient: {
+                        connected: true,
+                        emit: jest.fn(),
+                    },
                 },
-            },
-            2: {
-                UID: 2,
-                socketClient: {
-                    connected: true,
-                    emit: jest.fn(),
+                2: {
+                    UID: 2,
+                    socketClient: {
+                        connected: true,
+                        emit: jest.fn(),
+                    },
                 },
-            },
-        };
-        const publisher = initPublisher();
-        // act
-        await publisher.publishToUser(1, {});
-        // assert
-        expect(gameData.realPlayers[1].socketClient.emit).toHaveBeenCalled();
+            };
+            const publisher = initPublisher();
+            // act
+            await publisher.publishToUser(1, {});
+            // assert
+            expect(gameData.realPlayers[1].socketClient.emit).toHaveBeenCalled();
+        });
     });
 
-    it("not found user - should call refreshBalance", async () => {
-        // arrange
-        gameData.realPlayers = {
-            1: {
-                UID: 1,
-                socketClient: {
-                    connected: true,
-                    emit: jest.fn(),
+    describe("when not found user", () => {
+        it("should call refreshBalance", async () => {
+            // arrange
+            gameData.realPlayers = {
+                1: {
+                    UID: 1,
+                    socketClient: {
+                        connected: true,
+                        emit: jest.fn(),
+                    },
                 },
-            },
-            2: {
-                UID: 2,
-                socketClient: {
-                    connected: true,
-                    emit: jest.fn(),
+                2: {
+                    UID: 2,
+                    socketClient: {
+                        connected: true,
+                        emit: jest.fn(),
+                    },
                 },
-            },
-        };
+            };
 
-        const publisher = initPublisher();
-        jest.spyOn(publisher, "refreshBalance");
-        // act
-        await publisher.publishToUser(3, {});
-        // assert
-        expect(publisher.refreshBalance).toHaveBeenCalled();
+            const publisher = initPublisher();
+            jest.spyOn(publisher, "refreshBalance");
+            // act
+            await publisher.publishToUser(3, {});
+            // assert
+            expect(publisher.refreshBalance).toHaveBeenCalled();
+        });
     });
 
     afterEach(() => {
@@ -102,32 +96,34 @@ describe("publishToUser test", () => {
 });
 
 describe("refreshBalance test", () => {
-    it("mainServiceCommunicator throw exception - should log the error", async () => {
-        // arrange
-        gameData.realPlayers = {
-            1: {
-                UID: 1,
-                socketClient: {
-                    connected: true,
-                    emit: jest.fn(),
+    describe("when mainServiceCommunicator throw exception", () => {
+        it("should log the error", async () => {
+            // arrange
+            gameData.realPlayers = {
+                1: {
+                    UID: 1,
+                    socketClient: {
+                        connected: true,
+                        emit: jest.fn(),
+                    },
                 },
-            },
-            2: {
-                UID: 2,
-                socketClient: {
-                    connected: true,
-                    emit: jest.fn(),
+                2: {
+                    UID: 2,
+                    socketClient: {
+                        connected: true,
+                        emit: jest.fn(),
+                    },
                 },
-            },
-        };
+            };
 
-        const publisher = initPublisher();
-        authenticationHelpers.post.mockImplementation(() => {
-            throw new TypeError();
+            const publisher = initPublisher();
+            authenticationHelpers.post.mockImplementation(() => {
+                throw new TypeError();
+            });
+            // act
+            await publisher.refreshBalance(3);
+            // assert
+            expect(logger.logError).toHaveBeenCalled();
         });
-        // act
-        await publisher.refreshBalance(3);
-        // assert
-        expect(logger.logError).toHaveBeenCalled();
     });
 });

@@ -46,6 +46,8 @@ export default class BaseGameCron {
         partnerConfigRepository,
         currencyGroupRepository,
         currencyRepository,
+        roundResultConsumer,
+        resultsRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -63,13 +65,38 @@ export default class BaseGameCron {
         this.partnerConfigRepository = partnerConfigRepository;
         this.currencyGroupRepository = currencyGroupRepository;
         this.currencyRepository = currencyRepository;
+        this.roundResultConsumer = roundResultConsumer;
+        this.resultsRepository = resultsRepository;
     }
 
     async start() {
+        await this.initRoundId();
+        await this.queryLastResult();
+        await this.getSettingForNewRound();
+        await this.updateExchangeRates();
+        this.startCron();
+    }
+
+    async initRoundId() {
         const lastRound = await this.roundsRepository
             .findOne({}, "id", { sort: { id: -1 } })
             .lean()
             .exec();
+
+        if (lastRound) {
+            this.gameData.roundId = lastRound.id + 1;
+        } else {
+            this.gameData.roundId = await this.getLastArchiveRound();
+        }
+    }
+
+    async queryLastResult() {
+        if (this.resultsRepository) {
+            this.gameData.lastResultRecord = await this.resultsRepository.findOne({ roundId: this.gameData.roundId }).lean().exec();
+        }
+    }
+
+    startCron() {
         const job = new cron.CronJob(
             "* * * * * *",
             () => this.proceed().catch(this.logService.logError),
@@ -80,15 +107,6 @@ export default class BaseGameCron {
                 job.start();
             }
         );
-
-        if (lastRound) {
-            this.gameData.roundId = lastRound.id + 1;
-        } else {
-            this.gameData.roundId = await this.getLastArchiveRound();
-        }
-
-        await this.getSettingForNewRound();
-        await this.updateExchangeRates();
 
         job.start();
     }
@@ -114,6 +132,11 @@ export default class BaseGameCron {
         if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
             this.bot && (await this.bot.reset());
+        }
+
+        if (this.gameData.remainingTime === durations.placingBets) {
+            await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
+            this.gameData.settlementResultFromAdmin = {};
         }
 
         if (this.gameData.remainingTime < 0) {
@@ -172,7 +195,6 @@ export default class BaseGameCron {
     resetForNewRound() {
         this.gameData.ingame = {};
         this.gameData.totalBets = {};
-        this.gameData.settlementResultFromAdmin = {};
     }
 
     async getSettingForNewRound() {

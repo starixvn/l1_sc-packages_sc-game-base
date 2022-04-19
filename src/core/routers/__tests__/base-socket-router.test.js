@@ -1,5 +1,6 @@
 import { stub } from "jest-micro-auto-stub";
 import { logger } from "sc-common";
+jest.mock("sc-common");
 
 import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "../../event-consumers";
 import { UserSignInPublisher } from "../../event-publishers";
@@ -54,204 +55,236 @@ describe("base socket router test", () => {
         spyOn(logService, "logError");
     });
 
-    it("init_always_binds socket events", () => {
-        // act
-        router.init(socketClient);
-
-        // assert
-        expect(socketClient.on).toHaveBeenCalledTimes(5);
-    });
-
-    describe("handlePlaceBet_", () => {
-        it("invalidRequest_does not call place bet consumer", async () => {
-            // arrange
-            spyOn(router, "verify").and.returnValue(false);
-            spyOn(placeBetConsumer, "consume");
-
+    describe("init", () => {
+        it("should binds socket events", () => {
             // act
-            await router.handlePlaceBet({});
+            router.init(socketClient);
 
             // assert
-            expect(placeBetConsumer.consume).not.toHaveBeenCalled();
-        });
-
-        it("validRequest_calls place bet consumer", async () => {
-            // arrange
-            spyOn(router, "verify").and.returnValue(true);
-            spyOn(placeBetConsumer, "consume");
-
-            // act
-            await router.handlePlaceBet({});
-
-            // assert
-            expect(placeBetConsumer.consume).toHaveBeenCalled();
-        });
-
-        it("haveException_logError", async () => {
-            // arrange
-            spyOn(router, "verify").and.returnValue(true);
-            spyOn(placeBetConsumer, "consume").and.throwError("error");
-
-            // act
-            await router.handlePlaceBet({});
-
-            // assert
-            expect(logService.logError).toHaveBeenCalled();
+            expect(socketClient.on).toHaveBeenCalledTimes(5);
         });
     });
 
-    describe("handleSignIn_", () => {
-        it("normal_calls sign in consumer", async () => {
-            // arrange
-            const payload = {};
-            spyOn(userSignInConsumer, "consume");
+    describe("handlePlaceBet", () => {
+        describe("when invalidRequest", () => {
+            it("should not call place bet consumer", async () => {
+                // arrange
+                spyOn(router, "verify").and.returnValue(false);
+                spyOn(placeBetConsumer, "consume");
 
-            // act
-            await router.handleSignIn(payload);
+                // act
+                await router.handlePlaceBet({});
 
-            // assert
-            expect(userSignInConsumer.consume).toHaveBeenCalledWith(socketClient, payload);
+                // assert
+                expect(placeBetConsumer.consume).not.toHaveBeenCalled();
+            });
         });
 
-        it("have exception_log error", async () => {
-            // arrange
-            spyOn(userSignInConsumer, "consume").and.throwError("error");
+        describe("when validRequest", () => {
+            it("should calls place bet consumer", async () => {
+                // arrange
+                spyOn(router, "verify").and.returnValue(true);
+                spyOn(placeBetConsumer, "consume");
 
-            // act
-            await router.handleSignIn({});
+                // act
+                await router.handlePlaceBet({});
 
-            // assert
-            expect(logService.logError).toHaveBeenCalled();
-        });
-    });
-
-    describe("handleInGame_", () => {
-        it("invalidRequest_does not call in game consumer", async () => {
-            // arrange
-            spyOn(router, "verify").and.returnValue(false);
-            spyOn(inGameConsumer, "consume");
-
-            // act
-            await router.handleInGame();
-
-            // assert
-            expect(inGameConsumer.consume).not.toHaveBeenCalled();
+                // assert
+                expect(placeBetConsumer.consume).toHaveBeenCalled();
+            });
         });
 
-        it("validRequest_calls in game consumer", async () => {
-            // arrange
-            spyOn(router, "verify").and.returnValue(true);
-            spyOn(inGameConsumer, "consume");
+        describe("when haveException", () => {
+            it("should logError", async () => {
+                // arrange
+                spyOn(router, "verify").and.returnValue(true);
+                spyOn(placeBetConsumer, "consume").and.throwError("error");
 
-            // act
-            await router.handleInGame();
+                // act
+                await router.handlePlaceBet({});
 
-            // assert
-            expect(inGameConsumer.consume).toHaveBeenCalled();
-        });
-
-        it("have exception_log error", async () => {
-            // arrange
-            spyOn(router, "verify").and.returnValue(true);
-            spyOn(inGameConsumer, "consume").and.throwError("error");
-
-            // act
-            await router.handleInGame();
-
-            // assert
-            expect(logService.logError).toHaveBeenCalled();
+                // assert
+                expect(logService.logError).toHaveBeenCalled();
+            });
         });
     });
 
-    describe("handleGetHistory_", () => {
-        it("invalidRequest_does not call query history", async () => {
-            // arrange
-            spyOn(router, "verify").and.returnValue(false);
-            spyOn(historyQuery, "queryHistory");
+    describe("handleSignIn", () => {
+        describe("when normal", () => {
+            it("should calls sign in consumer", async () => {
+                // arrange
+                const payload = {};
+                spyOn(userSignInConsumer, "consume");
 
-            // act
-            await router.handleGetHistory({});
+                // act
+                await router.handleSignIn(payload);
 
-            // assert
-            expect(historyQuery.queryHistory).not.toHaveBeenCalled();
+                // assert
+                expect(userSignInConsumer.consume).toHaveBeenCalledWith(socketClient, payload);
+            });
         });
 
-        it("validRequest_query history", async () => {
-            // arrange
-            spyOn(router, "verify").and.returnValue(true);
-            spyOn(historyQuery, "queryHistory");
+        describe("when have exception", () => {
+            it("should log error", async () => {
+                // arrange
+                spyOn(userSignInConsumer, "consume").and.throwError("error");
 
-            // act
-            await router.handleGetHistory({});
+                // act
+                await router.handleSignIn({});
 
-            // assert
-            expect(historyQuery.queryHistory).toHaveBeenCalled();
-            expect(socketClient.emit).toHaveBeenCalled();
-        });
-
-        it("have exception_log error", async () => {
-            // arrange
-            spyOn(router, "verify").and.returnValue(true);
-            spyOn(historyQuery, "queryHistory").and.throwError("error");
-
-            // act
-            await router.handleGetHistory({});
-
-            // assert
-            expect(logService.logError).toHaveBeenCalled();
+                // assert
+                expect(logService.logError).toHaveBeenCalled();
+            });
         });
     });
 
-    describe("handleDisconnect_", () => {
-        it("normal_calls user disconnect consumer", () => {
-            // arrange
-            spyOn(userDisconnectConsumer, "consume");
+    describe("handleInGame", () => {
+        describe("when invalidRequest", () => {
+            it("should not call in game consumer", async () => {
+                // arrange
+                spyOn(router, "verify").and.returnValue(false);
+                spyOn(inGameConsumer, "consume");
 
-            // act
-            router.handleDisconnect();
+                // act
+                await router.handleInGame();
 
-            // assert
-            expect(userDisconnectConsumer.consume).toHaveBeenCalledWith(socketClient);
+                // assert
+                expect(inGameConsumer.consume).not.toHaveBeenCalled();
+            });
         });
 
-        it("have exception_log error", () => {
-            // arrange
-            spyOn(userDisconnectConsumer, "consume").and.throwError("error");
+        describe("when validRequest", () => {
+            it("should calls in game consumer", async () => {
+                // arrange
+                spyOn(router, "verify").and.returnValue(true);
+                spyOn(inGameConsumer, "consume");
 
-            // act
-            router.handleDisconnect();
+                // act
+                await router.handleInGame();
 
-            // assert
-            expect(logService.logError).toHaveBeenCalled();
+                // assert
+                expect(inGameConsumer.consume).toHaveBeenCalled();
+            });
+        });
+
+        describe("when have exception", () => {
+            it("should log error", async () => {
+                // arrange
+                spyOn(router, "verify").and.returnValue(true);
+                spyOn(inGameConsumer, "consume").and.throwError("error");
+
+                // act
+                await router.handleInGame();
+
+                // assert
+                expect(logService.logError).toHaveBeenCalled();
+            });
         });
     });
 
-    describe("verify_", () => {
-        it("validSocket_returns true", async () => {
-            // arrange
-            router.socketClient = socketClient;
+    describe("handleGetHistory", () => {
+        describe("when invalidRequest", () => {
+            it("should not call query history", async () => {
+                // arrange
+                spyOn(router, "verify").and.returnValue(false);
+                spyOn(historyQuery, "queryHistory");
 
-            gameData.realPlayers[socketClient.id] = socketClient;
-            spyOn(playGamePermissionValidator, "validate").and.returnValue(true);
+                // act
+                await router.handleGetHistory({});
 
-            // act & assert
-            expect(await router.verify()).toBeTruthy();
+                // assert
+                expect(historyQuery.queryHistory).not.toHaveBeenCalled();
+            });
         });
 
-        it("invalidSocket_returns false", async () => {
-            // arrange
-            gameData.realPlayers = {};
-            router.socketClient = socketClient;
-            spyOn(userSignInPublisher, "publishUnauthorizedMessage");
+        describe("when validRequest", () => {
+            it("should query history", async () => {
+                // arrange
+                spyOn(router, "verify").and.returnValue(true);
+                spyOn(historyQuery, "queryHistory");
 
-            // act
-            const result = await router.verify();
+                // act
+                await router.handleGetHistory({});
 
-            // assert
-            expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
-            expect(socketClient.disconnect).toHaveBeenCalledWith(true);
-            expect(logService.logError).toHaveBeenCalledWith("User not found in server storage");
-            expect(result).toBeFalsy();
+                // assert
+                expect(historyQuery.queryHistory).toHaveBeenCalled();
+                expect(socketClient.emit).toHaveBeenCalled();
+            });
+        });
+
+        describe("when have exception", () => {
+            it("should log error", async () => {
+                // arrange
+                spyOn(router, "verify").and.returnValue(true);
+                spyOn(historyQuery, "queryHistory").and.throwError("error");
+
+                // act
+                await router.handleGetHistory({});
+
+                // assert
+                expect(logService.logError).toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe("handleDisconnect", () => {
+        describe("when normal", () => {
+            it("should calls user disconnect consumer", () => {
+                // arrange
+                spyOn(userDisconnectConsumer, "consume");
+
+                // act
+                router.handleDisconnect();
+
+                // assert
+                expect(userDisconnectConsumer.consume).toHaveBeenCalledWith(socketClient);
+            });
+        });
+
+        describe("when have exception", () => {
+            it("should log error", () => {
+                // arrange
+                spyOn(userDisconnectConsumer, "consume").and.throwError("error");
+
+                // act
+                router.handleDisconnect();
+
+                // assert
+                expect(logService.logError).toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe("verify", () => {
+        describe("when valid Socket", () => {
+            it("should returns true", async () => {
+                // arrange
+                router.socketClient = socketClient;
+
+                gameData.realPlayers[socketClient.id] = socketClient;
+                spyOn(playGamePermissionValidator, "validate").and.returnValue(true);
+
+                // act & assert
+                expect(await router.verify()).toBeTruthy();
+            });
+        });
+
+        describe("when invalid socket", () => {
+            it("should returns false", async () => {
+                // arrange
+                gameData.realPlayers = {};
+                router.socketClient = socketClient;
+                spyOn(userSignInPublisher, "publishUnauthorizedMessage");
+
+                // act
+                const result = await router.verify();
+
+                // assert
+                expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
+                expect(socketClient.disconnect).toHaveBeenCalledWith(true);
+                expect(logService.logError).toHaveBeenCalledWith("User not found in server storage");
+                expect(result).toBeFalsy();
+            });
         });
     });
 });

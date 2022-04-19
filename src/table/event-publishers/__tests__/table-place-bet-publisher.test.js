@@ -17,7 +17,7 @@ describe("table place bet publisher test", () => {
         expect(publisher instanceof PlaceBetPublisher).toBeTruthy();
     });
 
-    describe("publishSuccessBet_always", () => {
+    describe("publishSuccessBet", () => {
         beforeEach(() => {
             publisher.publishSuccessBet(1, {});
         });

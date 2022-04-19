@@ -13,67 +13,99 @@ describe("round query test", () => {
         spyOn(roundQuery, "convertSettlementResult");
     });
 
-    describe("getList_", () => {
-        it.each([null, undefined])("result is null/undefined_calls convertResult", async (result) => {
-            // arrange
-            const rounds = [{ id: 1, result }];
-            roundsRepository.find().lean().exec.mockReturnValueOnce(rounds);
+    describe("getList", () => {
+        describe("result is null", () => {
+            it("should calls convertResult", async () => {
+                // arrange
+                const rounds = [{ id: 1, result: null }];
+                roundsRepository.find().lean().exec.mockReturnValueOnce(rounds);
 
-            // act
-            await roundQuery.getList(10, {});
+                // act
+                await roundQuery.getList(10, {});
 
-            // assert
-            expect(roundQuery.convertResult).toHaveBeenCalled();
+                // assert
+                expect(roundQuery.convertResult).toHaveBeenCalled();
+            });
         });
 
-        it("result is not null/undefined_does not call convertResult", async () => {
-            // arrange
-            const result = { red1: true, red2: false, red3: true, red4: false };
-            const rounds = [{ id: 1, result }];
-            roundsRepository.find().lean().exec.mockReturnValueOnce(rounds);
+        describe("result is undefined", () => {
+            it("should calls convertResult", async () => {
+                // arrange
+                const rounds = [{ id: 1, result: undefined }];
+                roundsRepository.find().lean().exec.mockReturnValueOnce(rounds);
 
-            // act
-            await roundQuery.getList(10, {});
+                // act
+                await roundQuery.getList(10, {});
 
-            // assert
-            expect(roundQuery.convertResult).not.toHaveBeenCalled();
+                // assert
+                expect(roundQuery.convertResult).toHaveBeenCalled();
+            });
         });
 
-        it.each([null, undefined])("settlementResult  is null/undefined_calls convertSettlementResult", async (settlementResult) => {
-            // arrange
-            const rounds = [{ id: 1, settlementResult }];
-            roundsRepository.find().lean().exec.mockReturnValueOnce(rounds);
+        describe("when result is not null/undefined", () => {
+            it("should not call convertResult", async () => {
+                // arrange
+                const result = { red1: true, red2: false, red3: true, red4: false };
+                const rounds = [{ id: 1, result }];
+                roundsRepository.find().lean().exec.mockReturnValueOnce(rounds);
 
-            // act
-            await roundQuery.getList(10, {});
+                // act
+                await roundQuery.getList(10, {});
 
-            // assert
-            expect(roundQuery.convertSettlementResult).toHaveBeenCalled();
+                // assert
+                expect(roundQuery.convertResult).not.toHaveBeenCalled();
+            });
         });
 
-        it("settlementResult is not null/undefined_does not call convertResult", async () => {
-            // arrange
-            const settlementResult = { odd: true, even: false };
-            const rounds = [{ id: 1, settlementResult }];
-            roundsRepository.find().lean().exec.mockReturnValueOnce(rounds);
+        describe("when settlementResult is null", () => {
+            it("should calls convertSettlementResult", async () => {
+                // arrange
+                const rounds = [{ id: 1, settlementResult: null }];
+                roundsRepository.find().lean().exec.mockReturnValueOnce(rounds);
 
-            // act
-            await roundQuery.getList(10, {});
+                // act
+                await roundQuery.getList(10, {});
 
-            // assert
-            expect(roundQuery.convertSettlementResult).not.toHaveBeenCalled();
+                // assert
+                expect(roundQuery.convertSettlementResult).toHaveBeenCalled();
+            });
+        });
+
+        describe("when settlementResult is undefined", () => {
+            it("should calls convertSettlementResult", async () => {
+                // arrange
+                const rounds = [{ id: 1, settlementResult: undefined }];
+                roundsRepository.find().lean().exec.mockReturnValueOnce(rounds);
+
+                // act
+                await roundQuery.getList(10, {});
+
+                // assert
+                expect(roundQuery.convertSettlementResult).toHaveBeenCalled();
+            });
+        });
+
+        describe("when settlementResult is not null/undefined", () => {
+            it("should not call convertResult", async () => {
+                // arrange
+                const settlementResult = { odd: true, even: false };
+                const rounds = [{ id: 1, settlementResult }];
+                roundsRepository.find().lean().exec.mockReturnValueOnce(rounds);
+
+                // act
+                await roundQuery.getList(10, {});
+
+                // assert
+                expect(roundQuery.convertSettlementResult).not.toHaveBeenCalled();
+            });
         });
     });
 
     describe("getOne test", () => {
-        it.each([
-            [null, null],
-            [undefined, undefined],
-        ])(
-            "result/settlement is null/undefined, should calls convertResult && convertSettlementResult",
-            async (result, settlementResult) => {
+        describe("when result/settlement is null", () => {
+            it("should calls convertResult && convertSettlementResult", async () => {
                 // arrange
-                const round = { id: 1, result, settlementResult };
+                const round = { id: 1, result: null, settlementResult: null };
                 roundsRepository.findOne().lean().exec.mockReturnValueOnce(round);
 
                 // act
@@ -81,23 +113,39 @@ describe("round query test", () => {
                 // assert
                 expect(roundQuery.convertResult).toHaveBeenCalled();
                 expect(roundQuery.convertSettlementResult).toHaveBeenCalled();
-            }
-        );
+            });
+        });
 
-        it("result/settlementResult is valid, return them without converting", async () => {
-            // arrange
-            const result = { red1: true, red2: false };
-            const settlementResult = { odd: true, even: false };
-            const round = { id: 1, result, settlementResult };
-            roundsRepository.findOne().lean().exec.mockReturnValueOnce(round);
+        describe("when result/settlement is undefined", () => {
+            it("should calls convertResult && convertSettlementResult", async () => {
+                // arrange
+                const round = { id: 1, result: undefined, settlementResult: undefined };
+                roundsRepository.findOne().lean().exec.mockReturnValueOnce(round);
 
-            // act
-            var actualResult = await roundQuery.getOne(1);
-            // assert
-            expect(roundQuery.convertResult).not.toHaveBeenCalled();
-            expect(roundQuery.convertSettlementResult).not.toHaveBeenCalled();
+                // act
+                await roundQuery.getOne(1);
+                // assert
+                expect(roundQuery.convertResult).toHaveBeenCalled();
+                expect(roundQuery.convertSettlementResult).toHaveBeenCalled();
+            });
+        });
 
-            expect(actualResult).toEqual(round);
+        describe("when result/settlementResult is valid", () => {
+            it("should return them without converting", async () => {
+                // arrange
+                const result = { red1: true, red2: false };
+                const settlementResult = { odd: true, even: false };
+                const round = { id: 1, result, settlementResult };
+                roundsRepository.findOne().lean().exec.mockReturnValueOnce(round);
+
+                // act
+                var actualResult = await roundQuery.getOne(1);
+                // assert
+                expect(roundQuery.convertResult).not.toHaveBeenCalled();
+                expect(roundQuery.convertSettlementResult).not.toHaveBeenCalled();
+
+                expect(actualResult).toEqual(round);
+            });
         });
     });
 });
