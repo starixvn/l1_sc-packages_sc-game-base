@@ -7946,6 +7946,14 @@ sc-base-database@1.9.2:
     mongoose "^5.9.25"
     sc-common "^1.6.0"
 
+sc-base-database@1.9.3-beta.0:
+  version "1.9.3-beta.0"
+  resolved "http://npm.lumigame.com/sc-base-database/-/sc-base-database-1.9.3-beta.0.tgz#9a10f27732aa9b4fad0151ab428276d82be26296"
+  integrity sha512-RFdRicAaM+oY2+IALqp9VJqbyxQ0d9lO/9Kb8AuS/wexGaS5aHnnjOMLuTCUN5DLa/rNIrC7hWZOY1iEark3gw==
+  dependencies:
+    mongoose "^5.9.25"
+    sc-common "^1.6.0"
+
 sc-common@^1.6.0, sc-common@^1.8.0:
   version "1.8.0"
   resolved "https://npm.lumigame.com/sc-common/-/sc-common-1.8.0.tgz"
