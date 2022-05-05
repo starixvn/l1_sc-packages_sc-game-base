@@ -1,3 +1,22 @@
+# [2.9.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.8.0...v2.9.0) (2022-05-05)
+
+
+### Bug Fixes
+
+* operator token ([121525e](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/121525e886b4287e28127f7d056e5f6611bd1073))
+* rebase master ([1af3899](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/1af3899136af1772ecf457b700d644468609286d))
+* rebase master ([9bc9944](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/9bc99447aa0483609f1acc948df6df7038921221))
+* rebase master ([5fa64af](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/5fa64af61569ccb179911a1332880835500faae4))
+* register default resultsRepository ([4bf25f0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/4bf25f047bbb0073ba2288214ce3b740961de4be))
+* register default resultsRepository ([8d0dedf](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/8d0dedf57481bb72ff657a60f32ab74edd481693))
+* release version ([a132d09](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/a132d09643c5ce25f4e3a796c6cb39f498e50a8e))
+
+
+### Features
+
+* upgrade sc-base-apis@1.16.1-beta.2 ([33adbe8](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/33adbe875422a1f39b5842ec180caed71d261014))
+* upgrade sc-base-apis@1.16.1-beta.3 ([33f2ef1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/33f2ef172d78debb33f4c2c4c6f90062dc6ab395))
+
 # [2.8.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.7.0...v2.8.0) (2022-04-19)
 
 
