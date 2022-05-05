@@ -62,6 +62,7 @@ export default class ContainerRegistry {
         });
 
         this.container.register({
+            resultsRepository: asValue(undefined),
             roundsRepository: asValue(undefined),
             betsRepository: asValue(undefined),
             betLogsRepository: asValue(undefined),
