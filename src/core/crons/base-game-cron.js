@@ -106,6 +106,7 @@ export default class BaseGameCron {
                 .exec();
 
             if (previousResultRecord) {
+                this.gameData.result = JSON.parse(decrypt(previousResultRecord.encryptedResult));
                 this.gameData.resultHash = JSON.parse(decrypt(previousResultRecord.encryptedResultHash));
             }
         }
