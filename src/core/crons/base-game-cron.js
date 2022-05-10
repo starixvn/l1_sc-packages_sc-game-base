@@ -7,6 +7,7 @@ import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publi
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
+import { decrypt } from "../helpers/crypto-helper";
 
 export default class BaseGameCron {
     /**
@@ -72,6 +73,7 @@ export default class BaseGameCron {
     async start() {
         await this.initRoundId();
         await this.queryLastResult();
+        await this.initResultHash();
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
         this.startCron();
@@ -93,6 +95,19 @@ export default class BaseGameCron {
     async queryLastResult() {
         if (this.resultsRepository) {
             this.gameData.lastResultRecord = await this.resultsRepository.findOne({ roundId: this.gameData.roundId }).lean().exec();
+        }
+    }
+
+    async initResultHash() {
+        if (this.resultsRepository) {
+            const previousResultRecord = await this.resultsRepository
+                .findOne({ roundId: this.gameData.roundId - 1 })
+                .lean()
+                .exec();
+
+            if (previousResultRecord) {
+                this.gameData.resultHash = JSON.parse(decrypt(previousResultRecord.encryptedResultHash));
+            }
         }
     }
 
