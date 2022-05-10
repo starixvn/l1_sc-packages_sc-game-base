@@ -476,6 +476,7 @@ describe("proceed", () => {
             gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
             gameCron.gameData.disabled = true;
+            gameCron.resultsRepository = {};
 
             // Act
             await gameCron.proceed();
@@ -499,6 +500,7 @@ describe("proceed", () => {
             gameCron.bot = { reset: jest.fn() };
             gameCron.gameData.disabled = true;
             gameCron.gameData.settlementResultFromAdmin = { x: 123 };
+            gameCron.resultsRepository = {};
 
             // Act
             await gameCron.proceed();

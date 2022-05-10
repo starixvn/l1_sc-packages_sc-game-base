@@ -10,10 +10,6 @@ export default class RoundResultConsumer {
     }
 
     async generateResultAndPublishHash(lastResultRecord) {
-        if (!this.resultsRepository) {
-            return;
-        }
-
         if (lastResultRecord && lastResultRecord.roundId === this.gameData.roundId) {
             this.gameData.result = JSON.parse(decrypt(lastResultRecord.encryptedResult));
             this.gameData.resultHash = JSON.parse(decrypt(lastResultRecord.encryptedResultHash));

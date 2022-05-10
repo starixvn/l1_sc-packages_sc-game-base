@@ -150,7 +150,7 @@ export default class BaseGameCron {
             this.bot && (await this.bot.reset());
         }
 
-        if (this.gameData.remainingTime === durations.placingBets) {
+        if (this.gameData.remainingTime === durations.placingBets && this.resultsRepository) {
             await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
             this.gameData.settlementResultFromAdmin = {};
         }
