@@ -52,8 +52,13 @@ export default class SettleGameRoundConsumer {
     }
 
     generateResult() {
-        const { randomMode } = this.gameData.gameConfigs;
-        return this.gameData.result || this.definition.generateResult(randomMode);
+        if (this.gameData.result) {
+            return this.gameData.result;
+        } else {
+            const resultFromAdmin = this.gameData.settlementResultFromAdmin;
+            const { randomMode } = this.gameData.gameConfigs;
+            return this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult(randomMode);
+        }
     }
 
     queryBets(roundId) {

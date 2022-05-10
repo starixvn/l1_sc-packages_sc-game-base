@@ -11,22 +11,6 @@ jest.mock("../../helpers/crypto-helper", () => {
 });
 
 describe("generateResultAndPublishHash", () => {
-    describe("when resultsRepository null", () => {
-        it("should not publish result hash", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
-
-            // Act
-            await consumer.generateResultAndPublishHash();
-
-            // Assert
-            expect(consumer.roundResultPublisher.publishResultHash).not.toHaveBeenCalled();
-        });
-    });
-
     describe("when resultsRepository not null", () => {
         it("should publish result hash", async () => {
             // Arrange
