@@ -29,11 +29,13 @@ export default class RoundResultConsumer {
     generateResult() {
         const resultFromAdmin = this.gameData.settlementResultFromAdmin;
         const { randomMode } = this.gameData.gameConfigs;
+
         return this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult(randomMode);
     }
 
     buildResultHash() {
         const formattedResult = this.definition.generateRawResultForHash(this.gameData.result);
+
         return { ...generateMD5Result(formattedResult, this.gameData.roundId), roundId: this.gameData.roundId };
     }
 
