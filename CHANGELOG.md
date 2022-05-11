@@ -1,3 +1,13 @@
+# [3.0.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.9.0...v3.0.0) (2022-05-11)
+
+
+* feat!: add OperatorToken for PlaceBet, Balance and BetLimit apis ([9baa600](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/9baa600a1fa2c1116c0f16525f1a5237280390d7))
+
+
+### BREAKING CHANGES
+
+* OperatorToken for APIs
+
 # [2.9.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.8.0...v2.9.0) (2022-05-05)
 
 
