@@ -7,9 +7,9 @@ export default class RunningRoundInfoPublisher extends BaseEventPublisher {
         const inGame = {};
 
         Object.values(this.gameData.ingame).forEach((user) => {
-            const { name, currency, betTracks, system, partnerId, operatorId } = user;
+            const { name, currency, ownBets, system, partnerId, operatorId } = user;
 
-            inGame[user.name] = { name, currency, betTracks, system, partnerId, operatorId };
+            inGame[user.name] = { name, currency, betTracks: ownBets, system, partnerId, operatorId };
         });
 
         this.publishToAllAdmins({ inGame });
