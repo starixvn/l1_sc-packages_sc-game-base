@@ -41,7 +41,7 @@ export default class InGameConsumer {
         const rate = exchangeRates.code[session.currencyCode] * session.multiplier;
         const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === session.currencyGroupId);
         const gameConfigs = { ...settings, odds, enableFreeBet };
-        const { betTracks: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { betTracks: {} };
+        const { ownBets: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { ownBets: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
 
         await this.getBalance(realPlayer, true);

@@ -187,6 +187,8 @@ export default class ProcessBetQueue {
             this.adjustTotalBets(player, bet, rate);
         }
 
+        this.adjustOwnBets(player.profile.name, bet);
+
         this.notifyPlacingBetResult(player, balance, bet, rate);
 
         if (!bet.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
@@ -280,6 +282,20 @@ export default class ProcessBetQueue {
         }
     }
 
+    adjustOwnBets(playerName, bet) {
+        const { betChoice, amount } = bet;
+
+        if (this.gameData.ingame?.[playerName]) {
+            const playerInGame = this.gameData.ingame[playerName];
+
+            if (!playerInGame.ownBets) {
+                playerInGame.ownBets = {};
+            }
+
+            playerInGame.ownBets[betChoice] = (playerInGame.ownBets[betChoice] ?? 0) + amount;
+        }
+    }
+
     adjustTotalBets(player, bet, rate) {
         const { betChoice, amount } = bet;
 
@@ -294,10 +310,10 @@ export default class ProcessBetQueue {
 
     generatePlacingBetResult(player, balance, bet, rate) {
         const { amount, freeBet, betChoice } = bet;
-        const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
+        const { ownBets } = this.gameData.ingame[player.profile.name] || { ownBets: {} };
 
         return {
-            ownBets: betTracks,
+            ownBets: ownBets,
             endBet: amount,
             betChoice,
             freeBet,
