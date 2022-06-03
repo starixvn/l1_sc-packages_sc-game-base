@@ -1,3 +1,13 @@
+## [3.0.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.0...v3.0.1) (2022-06-03)
+
+
+### Bug Fixes
+
+* initResultHash ([47f3c5d](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/47f3c5df0124cd291d358ca56e737bf0444f0395))
+* only adjust ownbets when success bet ([87be8e8](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/87be8e81170735e9eac310d9d1d75dd8f471d91e))
+* update initResultHash ([a8b9dcd](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/a8b9dcd2dd76435fbafcac8b3c78e009c5650840))
+* update settle game round consumer - set result from admin ([57c78f8](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/57c78f8ae709d96d97b3344aa0836f6a7cdea31c))
+
 # [3.0.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v2.9.0...v3.0.0) (2022-05-11)
 
 
