@@ -79,7 +79,6 @@ export default class ContainerRegistry {
             getBalance: asValue(getBalance),
             placeBet: asValue(placeBet),
             logService: asValue(logger),
-            mainServiceCommunicator: asValue(authenticationHelpers),
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
             notifyLogin: asValue(notifyLogin),
