@@ -3,6 +3,7 @@ import { logger, utils } from "sc-common";
 
 import { HistoryQuery, MetricQuery } from "../query-apis";
 import GameData from "./../game-data";
+import Axios from "axios";
 
 export default class HttpRouter {
     /**
@@ -43,10 +44,12 @@ export default class HttpRouter {
 
     async verifySession(req, res, next) {
         const { session, username } = req.body;
-        const userAgent = req.headers["user-agent"];
-        const userSession = await this.userSessionsRepository.findOne({ sessionId: session }).lean().exec();
+        const url = `${this.appConfigs.userServiceSettings.url}/auth/session/verify`;
+        const params = { session, username, browserUserAgent: req.headers["user-agent"] };
+        const requestConfigs = { timeout: this.appConfigs.userServiceSettings.requestTimeout };
+        const verifySessionResult = (await Axios.post(url, params, requestConfigs)).data;
 
-        if (userSession && userSession.username === username && userSession.browserUserAgent.toUpperCase() === userAgent.toUpperCase()) {
+        if (verifySessionResult.isSuccessful) {
             next();
         } else {
             res.sendStatus(401);
