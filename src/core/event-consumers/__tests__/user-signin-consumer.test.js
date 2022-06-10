@@ -15,6 +15,24 @@ import * as baseApis from "sc-base-apis";
 
 jest.mock("sc-base-apis");
 
+const userServiceData = {
+    verifySessionResult: {
+        data: {
+            isSuccessful: true,
+            user: {},
+            userSession: {},
+        },
+    },
+};
+
+jest.mock("axios", () => {
+    return {
+        post: () => {
+            return userServiceData.verifySessionResult;
+        },
+    };
+});
+
 describe("UserSignInConsumer", () => {
     let payload, consumer;
     const gameData = new GameData(0);
@@ -33,6 +51,9 @@ describe("UserSignInConsumer", () => {
 
     /** @type {Socket} */
     const socketClient = stub(Socket);
+    socketClient.request.headers = { "user-agent": "" };
+
+    const appConfigs = { userServiceSettings: { url: "https://l1-proxy.lumigame.com/user", requestTimeout: 10000 } };
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -42,7 +63,8 @@ describe("UserSignInConsumer", () => {
             userSignInPublisher,
             userInfosRepository,
             userSessionsRepository,
-            playGamePermissionValidator
+            playGamePermissionValidator,
+            appConfigs
         );
     });
 
@@ -99,10 +121,10 @@ describe("UserSignInConsumer", () => {
             });
         });
 
-        describe("when session is not exist", () => {
+        describe("when verify session is false", () => {
             beforeEach(() => {
                 payload = Payloads.SignIn();
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
+                userServiceData.verifySessionResult.data.isSuccessful = false;
             });
 
             it("should publish unauthorized message", async () => {
@@ -122,88 +144,13 @@ describe("UserSignInConsumer", () => {
             });
         });
 
-        describe("when userInfo is not exist", () => {
-            beforeEach(() => {
-                payload = Payloads.SignIn();
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserSession());
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(null);
-            });
-
-            it("should publish unauthorized message to client", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
-            });
-
-            it("should disconnect the socket", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(socketClient.disconnect).toHaveBeenCalled();
-            });
-        });
-
-        describe("when username is mismatched between payload and stored session", () => {
-            beforeEach(() => {
-                payload = Payloads.SignIn();
-
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserSession());
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserInfo());
-            });
-
-            it("should publish unauthorized message", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
-            });
-
-            it("should disconnect the socket", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(socketClient.disconnect).toHaveBeenCalled();
-            });
-        });
-
-        describe("when browser agent is mismatched between payload and stored session", () => {
-            beforeEach(() => {
-                payload = Payloads.SignIn();
-
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserSession());
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserInfo());
-
-                socketClient.request = { headers: { "user-agent": "firefox" } };
-            });
-
-            it("should publish unauthorized message", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
-            });
-
-            it("should disconnect the socket", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(socketClient.disconnect).toHaveBeenCalled();
-            });
-        });
-
-        describe("when payload is valid", () => {
+        describe("when verify session is success", () => {
             const browserAgent = "chrome";
             let userSession;
 
             beforeEach(() => {
                 payload = Payloads.SignIn({ username: "validUser", browserUserAgent: browserAgent });
+                userServiceData.verifySessionResult.data.isSuccessful = true;
                 userSession = payload.ss;
 
                 userSessionsRepository.findOne().lean().exec.mockReturnValue(payload.ss);

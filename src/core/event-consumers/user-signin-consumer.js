@@ -5,6 +5,7 @@ import { Socket } from "socket.io";
 import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
+import Axios from "axios";
 
 export default class UserSignInConsumer {
     /**
@@ -13,13 +14,15 @@ export default class UserSignInConsumer {
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} userSessionsRepository
      * @param {PlayGamePermissionValidator} playGamePermissionValidator
+     * @param {Object} appConfigs
      */
-    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, playGamePermissionValidator) {
+    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, playGamePermissionValidator, appConfigs) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
         this.userInfosRepository = userInfosRepository;
         this.userSessionsRepository = userSessionsRepository;
         this.playGamePermissionValidator = playGamePermissionValidator;
+        this.appConfigs = appConfigs;
     }
 
     /**
@@ -32,15 +35,13 @@ export default class UserSignInConsumer {
             return;
         }
 
-        const userSession = await this.userSessionsRepository.findOne({ sessionId: payload.ss }).lean().exec();
-        const userInfo = userSession ? await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec() : null;
+        const url = `${this.appConfigs.userServiceSettings.url}/auth/session/verify`;
+        const params = { session: payload.ss, username: payload.username, browserUserAgent: socketClient.request.headers["user-agent"] };
+        const requestConfigs = { timeout: this.appConfigs.userServiceSettings.requestTimeout };
+        const verifySessionResult = (await Axios.post(url, params, requestConfigs)).data;
 
-        if (
-            userInfo &&
-            userSession &&
-            userSession.username === payload.username &&
-            userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
-        ) {
+        if (verifySessionResult.isSuccessful) {
+            const { user: userInfo, userSession } = verifySessionResult;
             if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
                 await this.getUserBetLimit(userSession, userInfo, socketClient);
 
