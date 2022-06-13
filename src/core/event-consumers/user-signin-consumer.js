@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { getBetLimit } from "sc-base-apis";
 import { Socket } from "socket.io";
 
@@ -11,16 +10,12 @@ export default class UserSignInConsumer {
     /**
      * @param {GameData} gameData
      * @param {UserSignInPublisher} userSignInPublisher
-     * @param {mongoose.Model} userInfosRepository
-     * @param {mongoose.Model} userSessionsRepository
      * @param {PlayGamePermissionValidator} playGamePermissionValidator
      * @param {Object} appConfigs
      */
-    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, playGamePermissionValidator, appConfigs) {
+    constructor(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
-        this.userInfosRepository = userInfosRepository;
-        this.userSessionsRepository = userSessionsRepository;
         this.playGamePermissionValidator = playGamePermissionValidator;
         this.appConfigs = appConfigs;
     }

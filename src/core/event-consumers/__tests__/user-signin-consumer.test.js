@@ -1,15 +1,13 @@
 import "jest-extended";
 
-import { stub, stubMongoose } from "jest-micro-auto-stub";
-import mongoose from "mongoose";
+import { stub } from "jest-micro-auto-stub";
 import { Socket } from "socket.io";
-
 import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
 import { PlayGamePermissionValidator } from "../../validators";
 import UserSignInConsumer from "../user-signin-consumer";
 
-import { Models, Payloads } from "jest-auto-fixture";
+import { Payloads } from "jest-auto-fixture";
 
 import * as baseApis from "sc-base-apis";
 
@@ -40,12 +38,6 @@ describe("UserSignInConsumer", () => {
     /** @type {UserSignInPublisher}*/
     const userSignInPublisher = stub(UserSignInPublisher);
 
-    /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongoose(mongoose.Model);
-
-    /** @type {mongoose.Model}*/
-    const userSessionsRepository = stubMongoose(mongoose.Model);
-
     /** @type {PlayGamePermissionValidator}*/
     const playGamePermissionValidator = stub(PlayGamePermissionValidator);
 
@@ -58,14 +50,7 @@ describe("UserSignInConsumer", () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        consumer = new UserSignInConsumer(
-            gameData,
-            userSignInPublisher,
-            userInfosRepository,
-            userSessionsRepository,
-            playGamePermissionValidator,
-            appConfigs
-        );
+        consumer = new UserSignInConsumer(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs);
     });
 
     describe("consume", () => {
@@ -152,9 +137,6 @@ describe("UserSignInConsumer", () => {
                 payload = Payloads.SignIn({ username: "validUser", browserUserAgent: browserAgent });
                 userServiceData.verifySessionResult.data.isSuccessful = true;
                 userSession = payload.ss;
-
-                userSessionsRepository.findOne().lean().exec.mockReturnValue(payload.ss);
-                userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
 
                 socketClient.request = { headers: { "user-agent": browserAgent } };
 
