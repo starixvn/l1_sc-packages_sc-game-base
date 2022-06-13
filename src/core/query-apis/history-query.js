@@ -42,6 +42,7 @@ export default class HistoryQuery {
             memberId: false,
             __v: false,
             __archive: false,
+            paid: false,
         };
         const bets = await this.betsRepository
             .find(filter, betProjection, { sort: { _id: -1 }, skip: numberOfSkippedBets, limit: pageSize })
