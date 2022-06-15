@@ -3,7 +3,7 @@ import { logger, utils } from "sc-common";
 
 import { HistoryQuery, MetricQuery } from "../query-apis";
 import GameData from "./../game-data";
-import Axios from "axios";
+import { verifySession as userServiceVerifySession } from "../helpers/user-service-helpers";
 
 export default class HttpRouter {
     /**
@@ -12,7 +12,7 @@ export default class HttpRouter {
      * @param {HistoryQuery} historyQuery
      * @param {mongoose.Model} userSessionsRepository
      * @param {MetricQuery} metricQuery
-     * @param {logger} ldependencies.logService
+     * @param {logger} dependencies.logService
      */
     constructor(appConfigs, gameData, historyQuery, userSessionsRepository, metricQuery, logService) {
         this.appConfigs = appConfigs;
@@ -44,10 +44,8 @@ export default class HttpRouter {
 
     async verifySession(req, res, next) {
         const { session, username } = req.body;
-        const url = `${this.appConfigs.userServiceSettings.url}/auth/session/verify`;
         const params = { session, username, browserUserAgent: req.headers["user-agent"] };
-        const requestConfigs = { timeout: this.appConfigs.userServiceSettings.requestTimeout };
-        const verifySessionResult = (await Axios.post(url, params, requestConfigs)).data;
+        const verifySessionResult = await userServiceVerifySession(this.appConfigs.userServiceSettings, params);
 
         if (verifySessionResult.isSuccessful) {
             next();

@@ -4,7 +4,7 @@ import { Socket } from "socket.io";
 import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
-import Axios from "axios";
+import { verifySession as userServiceVerifySession } from "../helpers/user-service-helpers";
 
 export default class UserSignInConsumer {
     /**
@@ -30,10 +30,8 @@ export default class UserSignInConsumer {
             return;
         }
 
-        const url = `${this.appConfigs.userServiceSettings.url}/auth/session/verify`;
         const params = { session: payload.ss, username: payload.username, browserUserAgent: socketClient.request.headers["user-agent"] };
-        const requestConfigs = { timeout: this.appConfigs.userServiceSettings.requestTimeout };
-        const verifySessionResult = (await Axios.post(url, params, requestConfigs)).data;
+        const verifySessionResult = await userServiceVerifySession(this.appConfigs.userServiceSettings, params);
 
         if (verifySessionResult.isSuccessful) {
             const { user: userInfo, userSession } = verifySessionResult;
