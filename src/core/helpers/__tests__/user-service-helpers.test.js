@@ -1,5 +1,5 @@
 import Chance from "chance";
-import { verifySession } from "../user-service-helpers";
+import { verifySession, signInGame } from "../user-service-helpers";
 
 jest.mock("axios", () => {
     return {
@@ -9,20 +9,48 @@ jest.mock("axios", () => {
     };
 });
 
-describe("verifySession", () => {
-    const chance = new Chance();
+jest.mock("../authentication-helpers", () => {
+    return {
+        post: () => {
+            return { data: "Post Result" };
+        },
+    };
+});
 
-    it("should return data from user service", async () => {
-        // Arrange
-        const userServiceSettings = { url: "user-service-uri", requestTimeout: 50000 };
-        const params = { session: chance.string(), username: chance.string(), browserUserAgent: chance.string() };
-        const expectedValue = "Post Result";
+describe("userServiceHelpers", () => {
+    describe("verifySession", () => {
+        const chance = new Chance();
 
-        // Act
-        const actualValue = await verifySession(userServiceSettings, params);
+        it("should return data from user service", async () => {
+            // Arrange
+            const userServiceSettings = { url: "user-service-uri", requestTimeout: 50000 };
+            const params = { session: chance.string(), username: chance.string(), browserUserAgent: chance.string() };
+            const expectedValue = "Post Result";
 
-        // Assert
+            // Act
+            const actualValue = await verifySession(userServiceSettings, params);
 
-        expect(actualValue).toStrictEqual(expectedValue);
+            // Assert
+
+            expect(actualValue).toStrictEqual(expectedValue);
+        });
+    });
+
+    describe("signInGame", () => {
+        const chance = new Chance();
+
+        it("should return data from user service", async () => {
+            // Arrange
+            const userServiceUrl = "user-service-uri";
+            const params = { session: chance.string(), username: chance.string(), browserUserAgent: chance.string() };
+            const expectedValue = { data: "Post Result" };
+
+            // Act
+            const actualValue = await signInGame(userServiceUrl, params);
+
+            // Assert
+
+            expect(actualValue).toStrictEqual(expectedValue);
+        });
     });
 });

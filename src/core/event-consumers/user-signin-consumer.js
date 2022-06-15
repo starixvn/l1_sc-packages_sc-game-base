@@ -4,7 +4,7 @@ import { Socket } from "socket.io";
 import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
-import { verifySession as userServiceVerifySession } from "../helpers/user-service-helpers";
+import { signInGame as userServiceSignInGame } from "../helpers/user-service-helpers";
 
 export default class UserSignInConsumer {
     /**
@@ -13,11 +13,12 @@ export default class UserSignInConsumer {
      * @param {PlayGamePermissionValidator} playGamePermissionValidator
      * @param {Object} appConfigs
      */
-    constructor(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs) {
+    constructor(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, userInfosRepository) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
         this.playGamePermissionValidator = playGamePermissionValidator;
         this.appConfigs = appConfigs;
+        this.userInfosRepository = userInfosRepository;
     }
 
     /**
@@ -31,10 +32,18 @@ export default class UserSignInConsumer {
         }
 
         const params = { session: payload.ss, username: payload.username, browserUserAgent: socketClient.request.headers["user-agent"] };
-        const verifySessionResult = await userServiceVerifySession(this.appConfigs.userServiceSettings, params);
+        const signInGameResult = await userServiceSignInGame(this.appConfigs.userServiceSettings.url, params);
 
-        if (verifySessionResult.isSuccessful) {
-            const { user: userInfo, userSession } = verifySessionResult;
+        if (signInGameResult.isSuccessful) {
+            const userSession = {
+                ...signInGameResult,
+                userId: signInGameResult.id,
+                currencyName: signInGameResult.currency,
+                partnerId: signInGameResult.operatorId,
+                memberId: signInGameResult.playerId,
+            };
+
+            const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
             if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
                 await this.getUserBetLimit(userSession, userInfo, socketClient);
 

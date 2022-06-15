@@ -1,32 +1,33 @@
 import "jest-extended";
-
-import { stub } from "jest-micro-auto-stub";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
+import mongoose from "mongoose";
 import { Socket } from "socket.io";
 import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
 import { PlayGamePermissionValidator } from "../../validators";
 import UserSignInConsumer from "../user-signin-consumer";
 
-import { Payloads } from "jest-auto-fixture";
+import { Models, Payloads } from "jest-auto-fixture";
 
 import * as baseApis from "sc-base-apis";
 
 jest.mock("sc-base-apis");
 
 const userServiceData = {
-    verifySessionResult: {
+    signInGameResult: {
         data: {
             isSuccessful: true,
             user: {},
             userSession: {},
         },
+        isSuccessful: true,
     },
 };
 
-jest.mock("axios", () => {
+jest.mock("../../helpers/authentication-helpers", () => {
     return {
         post: () => {
-            return userServiceData.verifySessionResult;
+            return userServiceData.signInGameResult;
         },
     };
 });
@@ -38,6 +39,9 @@ describe("UserSignInConsumer", () => {
     /** @type {UserSignInPublisher}*/
     const userSignInPublisher = stub(UserSignInPublisher);
 
+    /** @type {mongoose.Model}*/
+    const userInfosRepository = stubMongoose(mongoose.Model);
+
     /** @type {PlayGamePermissionValidator}*/
     const playGamePermissionValidator = stub(PlayGamePermissionValidator);
 
@@ -45,12 +49,12 @@ describe("UserSignInConsumer", () => {
     const socketClient = stub(Socket);
     socketClient.request.headers = { "user-agent": "" };
 
-    const appConfigs = { userServiceSettings: { url: "https://l1-proxy.lumigame.com/user", requestTimeout: 10000 } };
+    const appConfigs = { userServiceSettings: { url: "https://l1-proxy.lumigame.com/user" } };
 
     beforeEach(() => {
         jest.clearAllMocks();
 
-        consumer = new UserSignInConsumer(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs);
+        consumer = new UserSignInConsumer(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, userInfosRepository);
     });
 
     describe("consume", () => {
@@ -109,7 +113,7 @@ describe("UserSignInConsumer", () => {
         describe("when verify session is false", () => {
             beforeEach(() => {
                 payload = Payloads.SignIn();
-                userServiceData.verifySessionResult.data.isSuccessful = false;
+                userServiceData.signInGameResult.isSuccessful = false;
             });
 
             it("should publish unauthorized message", async () => {
@@ -135,8 +139,9 @@ describe("UserSignInConsumer", () => {
 
             beforeEach(() => {
                 payload = Payloads.SignIn({ username: "validUser", browserUserAgent: browserAgent });
-                userServiceData.verifySessionResult.data.isSuccessful = true;
+                userServiceData.signInGameResult.isSuccessful = true;
                 userSession = payload.ss;
+                userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
 
                 socketClient.request = { headers: { "user-agent": browserAgent } };
 

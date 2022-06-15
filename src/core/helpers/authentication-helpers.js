@@ -8,7 +8,7 @@ let bearerAuthenticator;
 
 const init = async (configs) => {
     authenticationConfigs = configs;
-    bearerAuthenticator = new BearerAuthenticator(configs.auth);
+    bearerAuthenticator = new BearerAuthenticator(configs);
 
     await bearerAuthenticator.autoUpdateToken();
 };
@@ -21,7 +21,7 @@ const post = async (endpoint, params, options) => {
     }
 
     const defaultRequestTimeout = 2500;
-    const { url, useAuthenticate, requestTimeout } = authenticationConfigs;
+    const { useAuthenticate, requestTimeout } = authenticationConfigs;
     const requestConfigs = {
         timeout: options?.requestTimeout || requestTimeout || defaultRequestTimeout,
         headers: {},
@@ -36,10 +36,7 @@ const post = async (endpoint, params, options) => {
         requestConfigs.headers.Authorization = bearerAuthenticator.token;
     }
 
-    return (await Axios.post(`${url}/${endpoint}`, params, requestConfigs)).data;
+    return (await Axios.post(endpoint, params, requestConfigs)).data;
 };
 
-export default {
-    init,
-    post,
-};
+export default { init, post };
