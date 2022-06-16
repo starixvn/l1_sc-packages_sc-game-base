@@ -214,19 +214,6 @@ describe("PlaceBetConsumer", () => {
                 });
             });
 
-            describe("when remaining time is equal to locking bet time", () => {
-                it("should return failure with place bet next round notice", () => {
-                    // Arrange
-                    gameData.remainingTime = durations.lockingBet;
-
-                    // Act
-                    const actualResult = consumer.composeBettingTimeValidationCriteria(chance.natural());
-
-                    // Assert
-                    expect(actualResult[2].failure).toBe(true);
-                });
-            });
-
             describe("when remaining time is greater than placing bet time", () => {
                 it("should return failure with place bet next round notice", () => {
                     // Arrange
