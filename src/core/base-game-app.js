@@ -13,6 +13,7 @@ import MsgpackParser from "socket.io-msgpack-parser";
 import { BaseStartup } from ".";
 import BaseMetrics from "./base-metrics";
 import { authenticationHelpers } from "./helpers";
+import trace from "./trace";
 
 export default class BaseGameApp {
     /**
@@ -28,6 +29,8 @@ export default class BaseGameApp {
     }
 
     async run() {
+        await trace.start();
+
         const app = express();
         await this.configureServices(app);
         app.get("/", (req, res, next) => {
