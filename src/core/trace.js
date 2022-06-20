@@ -34,16 +34,7 @@ const trace = new NodeSDK({
             }),
         ],
     }),
-    instrumentations: [
-        new HttpInstrumentation({
-            ignoreIncomingRequestHook: (req) => {
-                return req.method === "GET";
-            },
-        }),
-        new ExpressInstrumentation(),
-        new SocketIoInstrumentation(),
-        new MongooseInstrumentation(),
-    ],
+    instrumentations: [new SocketIoInstrumentation(), new MongooseInstrumentation()],
 });
 
 process.on("SIGTERM", () => {
