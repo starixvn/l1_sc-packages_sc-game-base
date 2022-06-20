@@ -34,11 +34,12 @@ export default class UserSignInConsumer {
         const params = { session: payload.ss, username: payload.username, browserUserAgent: socketClient.request.headers["user-agent"] };
         const signInGameResult = await userServiceSignInGame(this.appConfigs.userServiceSettings.url, params);
 
-        if (signInGameResult.isSuccessful) {
+        if (signInGameResult.statusCode) {
+            this.handleUnauthorizedSignIn(socketClient);
+        } else {
             const userSession = {
                 ...signInGameResult,
                 userId: signInGameResult.id,
-                currencyName: signInGameResult.currency,
                 partnerId: signInGameResult.operatorId,
                 memberId: signInGameResult.playerId,
             };
@@ -56,8 +57,6 @@ export default class UserSignInConsumer {
 
                 this.handleSignInSuccess(socketClient, userInfo, userSession);
             }
-        } else {
-            this.handleUnauthorizedSignIn(socketClient);
         }
     }
 

@@ -15,12 +15,9 @@ jest.mock("sc-base-apis");
 
 const userServiceData = {
     signInGameResult: {
-        data: {
-            isSuccessful: true,
-            user: {},
-            userSession: {},
-        },
-        isSuccessful: true,
+        statusCode: 0,
+        user: {},
+        userSession: {},
     },
 };
 
@@ -113,7 +110,7 @@ describe("UserSignInConsumer", () => {
         describe("when verify session is false", () => {
             beforeEach(() => {
                 payload = Payloads.SignIn();
-                userServiceData.signInGameResult.isSuccessful = false;
+                userServiceData.signInGameResult.statusCode = 1;
             });
 
             it("should publish unauthorized message", async () => {
@@ -139,7 +136,7 @@ describe("UserSignInConsumer", () => {
 
             beforeEach(() => {
                 payload = Payloads.SignIn({ username: "validUser", browserUserAgent: browserAgent });
-                userServiceData.signInGameResult.isSuccessful = true;
+                userServiceData.signInGameResult.statusCode = 0;
                 userSession = payload.ss;
                 userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
 
