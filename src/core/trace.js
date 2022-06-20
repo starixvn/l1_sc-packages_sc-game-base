@@ -1,5 +1,5 @@
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { JaegerExporter } from "@opentelemetry/exporter-jaeger";
 import { JaegerPropagator } from "@opentelemetry/propagator-jaeger";
 import { Resource } from "@opentelemetry/resources";
@@ -17,7 +17,7 @@ const trace = new NodeSDK({
         [SemanticResourceAttributes.SERVICE_NAME]: "MiniSedie Service",
         [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: "LOCAL",
     }),
-    spanProcessor: new BatchSpanProcessor(
+    spanProcessor: new SimpleSpanProcessor(
         new JaegerExporter({
             tags: [],
             endpoint: "http://10.10.50.69:14268/api/traces",
