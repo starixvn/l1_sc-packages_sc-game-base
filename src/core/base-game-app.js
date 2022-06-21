@@ -100,6 +100,6 @@ export default class BaseGameApp {
 
         await initBaseDatabase(this.appConfigs.database);
         await initApis(this.appConfigs.apiSettings);
-        await authenticationHelpers.init(this.appConfigs.authSettings);
+        await authenticationHelpers.init(this.appConfigs.authenticateSettings);
     }
 }
