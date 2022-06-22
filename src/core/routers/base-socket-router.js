@@ -5,6 +5,7 @@ import { PlayGamePermissionValidator } from "../validators";
 import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
 import { HistoryQuery } from "./../query-apis";
+import { startInstrument } from "../instrumentation";
 
 export default class BaseSocketRouter {
     /**
@@ -58,11 +59,13 @@ export default class BaseSocketRouter {
 
     handlePlaceBet(payload) {
         try {
+            const span = startInstrument("PlaceBet");
             if (!this.verify()) {
                 return;
             }
 
             this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
+            span.end();
         } catch (error) {
             this.logService.logError(error);
         }
