@@ -12,7 +12,7 @@ export const startInstrument = (action) => {
         },
     });
 
-    trace.setSpan(context.active(), span);
+    context.with(trace.setSpan(context.active(), span), () => {});
 
     return span;
 };
