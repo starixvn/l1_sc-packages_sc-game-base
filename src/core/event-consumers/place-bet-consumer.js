@@ -3,6 +3,7 @@ import { helpers } from "sc-common";
 import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
+import { instrumentation } from "../instrumentation";
 
 export default class PlaceBetConsumer {
     DisplayMode = {
@@ -134,6 +135,8 @@ export default class PlaceBetConsumer {
     }
 
     consume(player, payload) {
+        const span = instrumentation.startSpan("placeBet");
+
         Object.assign(payload, {
             amount: payload.amount >> 0,
             freeBet: payload.freeBet ?? false,
@@ -146,6 +149,7 @@ export default class PlaceBetConsumer {
         const name = player.profile.name;
 
         if (!this.validateBetRequest(player, betChoice, amount, freeBet, roundId)) {
+            span.end();
             return;
         }
 
@@ -167,6 +171,7 @@ export default class PlaceBetConsumer {
         this.adjustBetTracks(player.profile.name, payload);
 
         this.gameData.ingame[name].betQueue.push({ player, payload });
+        span.end();
     }
 
     adjustBetTracks(playerName, bet) {

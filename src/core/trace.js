@@ -1,5 +1,5 @@
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { JaegerExporter } from "@opentelemetry/exporter-jaeger";
 import { JaegerPropagator } from "@opentelemetry/propagator-jaeger";
 import { Resource } from "@opentelemetry/resources";
@@ -7,17 +7,14 @@ import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions"
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from "@opentelemetry/core";
 import { B3InjectEncoding, B3Propagator } from "@opentelemetry/propagator-b3";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
-import { MongooseInstrumentation } from "opentelemetry-instrumentation-mongoose";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
-import { ExpressInstrumentation } from "@opentelemetry/instrumentation-express";
-import { SocketIoInstrumentation } from "opentelemetry-instrumentation-socket.io";
 
 const trace = new NodeSDK({
     resource: new Resource({
         [SemanticResourceAttributes.SERVICE_NAME]: "MiniSedie Service",
         [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: "LOCAL",
     }),
-    spanProcessor: new SimpleSpanProcessor(
+    spanProcessor: new BatchSpanProcessor(
         new JaegerExporter({
             tags: [],
             endpoint: "http://10.10.50.69:14268/api/traces",
@@ -34,7 +31,7 @@ const trace = new NodeSDK({
             }),
         ],
     }),
-    instrumentations: [new SocketIoInstrumentation(), new MongooseInstrumentation()],
+    instrumentations: [new HttpInstrumentation()],
 });
 
 process.on("SIGTERM", () => {
