@@ -85,6 +85,8 @@ export default class BaseSocketRouter {
     }
 
     async handleInGame() {
+        const span = startInstrument("InGame");
+
         try {
             if (!this.verify()) {
                 return;
@@ -93,6 +95,8 @@ export default class BaseSocketRouter {
             await this.inGameConsumer.consume(this.gameData.realPlayers[this.socketClient.id]);
         } catch (error) {
             this.logService.logError(error);
+        } finally {
+            span.end();
         }
     }
 
