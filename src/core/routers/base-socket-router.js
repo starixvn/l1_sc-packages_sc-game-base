@@ -58,24 +58,29 @@ export default class BaseSocketRouter {
     }
 
     handlePlaceBet(payload) {
+        const span = startInstrument("PlaceBet");
         try {
-            const span = startInstrument("PlaceBet");
             if (!this.verify()) {
                 return;
             }
 
             this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
-            span.end();
         } catch (error) {
             this.logService.logError(error);
+        } finally {
+            span.end();
         }
     }
 
     async handleSignIn(payload) {
+        const span = startInstrument("SignIn");
+
         try {
             await this.userSignInConsumer.consume(this.socketClient, payload);
         } catch (error) {
             this.logService.logError(error);
+        } finally {
+            span.end();
         }
     }
 
