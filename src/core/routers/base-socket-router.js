@@ -85,15 +85,15 @@ export default class BaseSocketRouter {
     }
 
     async handleInGame() {
-        const span = startInstrument("SignIn");
+        const span = startInstrument("InGame");
+        const self = this;
+
         try {
             if (!this.verify()) {
                 return;
             }
 
-            tracer.withSpan(parentSpan, async () => this.inGameConsumer.consume(this.gameData.realPlayers[this.socketClient.id]));
-
-            span.end();
+            tracer.withSpan(span, async () => self.inGameConsumer.consume(self.gameData.realPlayers[self.socketClient.id]));
         } catch (error) {
             this.logService.logError(error);
         } finally {
