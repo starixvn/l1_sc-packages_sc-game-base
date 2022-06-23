@@ -5,7 +5,7 @@ import { PlayGamePermissionValidator } from "../validators";
 import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
 import { HistoryQuery } from "./../query-apis";
-import { startInstrument, tracer } from "../instrumentation";
+import { startInstrument, tracer, spanOptions } from "../instrumentation";
 
 export default class BaseSocketRouter {
     /**
@@ -85,7 +85,6 @@ export default class BaseSocketRouter {
     }
 
     async handleInGame() {
-        const span = startInstrument("InGame");
         const self = this;
 
         try {
@@ -93,11 +92,14 @@ export default class BaseSocketRouter {
                 return;
             }
 
-            tracer.withSpan(span, async () => self.inGameConsumer.consume(self.gameData.realPlayers[self.socketClient.id]));
+            tracer.startActiveSpan("InGame", async (span) => {
+                console.log("inside of span");
+                await self.inGameConsumer.consume(self.gameData.realPlayers[self.socketClient.id]);
+
+                span.end();
+            });
         } catch (error) {
             this.logService.logError(error);
-        } finally {
-            span.end();
         }
     }
 
