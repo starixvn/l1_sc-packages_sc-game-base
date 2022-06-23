@@ -1,5 +1,5 @@
 import { logger } from "sc-common";
-import { Socket } from "socket.io";
+import { Socket } from "sc-instrument";
 
 import { PlayGamePermissionValidator } from "../validators";
 import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
@@ -93,7 +93,6 @@ export default class BaseSocketRouter {
             }
 
             tracer.startActiveSpan("InGame", async (span) => {
-                console.log("inside of span");
                 await self.inGameConsumer.consume(self.gameData.realPlayers[self.socketClient.id]);
 
                 span.end();

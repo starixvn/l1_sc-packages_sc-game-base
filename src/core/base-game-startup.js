@@ -1,7 +1,7 @@
 import * as awilix from "awilix";
 import express from "express";
 import { logger } from "sc-common";
-import { Server, Socket } from "socket.io";
+import { Server, Socket } from "sc-instrument";
 
 export default class BaseGameStartup {
     dependencies = {
