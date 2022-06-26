@@ -1,3 +1,4 @@
+import trace from "./trace";
 import * as awilix from "awilix";
 import cors from "cors";
 import express from "express";
@@ -7,13 +8,12 @@ import morgan from "morgan";
 import { init as initApis } from "sc-base-apis";
 import { init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
-import { Server } from "socket.io";
+import { Server } from "sc-instrument";
 import MsgpackParser from "socket.io-msgpack-parser";
 
 import { BaseStartup } from ".";
 import BaseMetrics from "./base-metrics";
 import { authenticationHelpers } from "./helpers";
-import trace from "./trace";
 
 export default class BaseGameApp {
     /**
@@ -29,8 +29,6 @@ export default class BaseGameApp {
     }
 
     async run() {
-        await trace.start();
-
         const app = express();
         await this.configureServices(app);
         app.get("/", (req, res, next) => {

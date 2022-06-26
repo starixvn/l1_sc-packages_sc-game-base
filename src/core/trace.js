@@ -45,4 +45,6 @@ process.on("SIGTERM", () => {
         .finally(() => process.exit(0));
 });
 
+await trace.start();
+
 export default trace;
