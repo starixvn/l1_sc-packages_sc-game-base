@@ -7280,6 +7280,15 @@
     "object-hash" "^2.0.1"
     "oidc-token-hash" "^5.0.1"
 
+"opentelemetry-instrumentation-mongoose@^0.28.0":
+  "integrity" "sha512-tFI6cs47whGyBDFLS+knDYuIah9IeERVJhwHklU74z19RE32EbFmgCL1rGQJx4rbrU4GvAB5CGj47cbrq3ikvQ=="
+  "resolved" "http://npm.lumigame.com/opentelemetry-instrumentation-mongoose/-/opentelemetry-instrumentation-mongoose-0.28.0.tgz"
+  "version" "0.28.0"
+  dependencies:
+    "@opentelemetry/core" "^1.0.0"
+    "@opentelemetry/instrumentation" "^0.28.0"
+    "@opentelemetry/semantic-conventions" "^1.0.0"
+
 "opentelemetry-instrumentation-socket.io@^0.28.0":
   "integrity" "sha512-cc4eG58OV/8yPN0AtTuAS+Fs6lFBeRvoJKUeq7hiF2/iA9mRkJP2jzke0iLdIlXVk1JnL3RCz+JPqThLde3YpA=="
   "resolved" "http://npm.lumigame.com/opentelemetry-instrumentation-socket.io/-/opentelemetry-instrumentation-socket.io-0.28.0.tgz"

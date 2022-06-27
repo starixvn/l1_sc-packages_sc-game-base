@@ -9,6 +9,7 @@ import { B3InjectEncoding, B3Propagator } from "@opentelemetry/propagator-b3";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { SocketIoInstrumentation } from "opentelemetry-instrumentation-socket.io";
+import { MongooseInstrumentation } from "opentelemetry-instrumentation-mongoose";
 
 const trace = new NodeSDK({
     resource: new Resource({
@@ -32,7 +33,7 @@ const trace = new NodeSDK({
             }),
         ],
     }),
-    instrumentations: [new HttpInstrumentation(), new SocketIoInstrumentation()],
+    instrumentations: [new HttpInstrumentation(), new SocketIoInstrumentation(), new MongooseInstrumentation()],
 });
 
 process.on("SIGTERM", () => {
