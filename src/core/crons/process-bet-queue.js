@@ -5,6 +5,7 @@ import BaseMetrics from "../base-metrics";
 import { PlaceBetPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
+import { tracer } from "../instrumentation";
 
 export default class ProcessBetQueue {
     processTimeOut = 50;
@@ -56,12 +57,19 @@ export default class ProcessBetQueue {
         if (this.gameData.ingame) {
             Object.values(this.gameData.ingame).forEach((playerInGame) => {
                 if (!playerInGame.betProcessing && playerInGame.betQueue && playerInGame.betQueue.length > 0) {
+                    const self = this;
                     const { player, payload } = playerInGame.betQueue.shift();
 
                     playerInGame.betProcessing = true;
-                    this.proceedBet(player, payload)
-                        .then(() => (playerInGame.betProcessing = false))
-                        .catch(this.logService.logError);
+
+                    tracer.startActiveSpan("dequeueBet", async (span) => {
+                        self.proceedBet(player, payload)
+                            .then(() => (playerInGame.betProcessing = false))
+                            .catch(self.logService.logError)
+                            .finally(() => span.end());
+
+                        span.end();
+                    });
                 }
             });
         }
