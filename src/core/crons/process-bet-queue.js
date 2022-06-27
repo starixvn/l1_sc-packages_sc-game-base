@@ -67,8 +67,6 @@ export default class ProcessBetQueue {
                             .then(() => (playerInGame.betProcessing = false))
                             .catch(self.logService.logError)
                             .finally(() => span.end());
-
-                        span.end();
                     });
                 }
             });
