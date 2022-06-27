@@ -1,4 +1,3 @@
-import trace from "./trace";
 import * as awilix from "awilix";
 import cors from "cors";
 import express from "express";
@@ -8,7 +7,7 @@ import morgan from "morgan";
 import { init as initApis } from "sc-base-apis";
 import { init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
-import { Server } from "sc-instrument";
+import { Server } from "sc-instrument/lib/helpers";
 import MsgpackParser from "socket.io-msgpack-parser";
 
 import { BaseStartup } from ".";

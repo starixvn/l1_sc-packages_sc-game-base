@@ -1,11 +1,11 @@
-import { mongoose } from "sc-instrument";
+import { mongoose } from "sc-instrument/lib/helpers";
 import { helpers, logger } from "sc-common";
 
 import BaseMetrics from "../base-metrics";
 import { PlaceBetPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import { tracer } from "../instrumentation";
+import { tracer } from "sc-instrument";
 
 export default class ProcessBetQueue {
     processTimeOut = 50;

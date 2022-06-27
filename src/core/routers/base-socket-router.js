@@ -1,5 +1,5 @@
 import { logger } from "sc-common";
-import { Socket } from "sc-instrument";
+import { Socket } from "sc-instrument/lib/helpers";
 
 import { PlayGamePermissionValidator } from "../validators";
 import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";

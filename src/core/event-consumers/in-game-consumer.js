@@ -1,4 +1,4 @@
-import { mongoose } from "sc-instrument";
+import { mongoose } from "sc-instrument/lib/helpers";
 
 import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";

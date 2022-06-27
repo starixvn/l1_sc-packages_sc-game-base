@@ -1,4 +1,4 @@
-import { mongoose } from "sc-instrument";
+import { mongoose } from "sc-instrument/lib/helpers";
 import { getBetLimit } from "sc-base-apis";
 import { Socket } from "socket.io";
 
