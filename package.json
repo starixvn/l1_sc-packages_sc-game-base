@@ -54,7 +54,7 @@
         "sc-base-apis": "1.17.0",
         "sc-base-database": "1.10.0",
         "sc-common": "1.8.1",
-        "sc-instrument": "^0.0.1-beta.1",
+        "sc-instrument": "^0.0.1-beta.2",
         "socket.io": "^4.1.2",
         "socket.io-msgpack-parser": "^3.0.1",
         "socket.io-prom-metrics": "^1.0.3"
