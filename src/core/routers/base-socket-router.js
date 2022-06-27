@@ -5,7 +5,6 @@ import { PlayGamePermissionValidator } from "../validators";
 import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
 import { HistoryQuery } from "./../query-apis";
-import { startInstrument, tracer, spanOptions } from "../instrumentation";
 
 export default class BaseSocketRouter {
     /**
@@ -58,7 +57,6 @@ export default class BaseSocketRouter {
     }
 
     handlePlaceBet(payload) {
-        const span = startInstrument("PlaceBet");
         try {
             if (!this.verify()) {
                 return;
@@ -67,36 +65,24 @@ export default class BaseSocketRouter {
             this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
         } catch (error) {
             this.logService.logError(error);
-        } finally {
-            span.end();
         }
     }
 
     async handleSignIn(payload) {
-        const span = startInstrument("SignIn");
-
         try {
             await this.userSignInConsumer.consume(this.socketClient, payload);
         } catch (error) {
             this.logService.logError(error);
-        } finally {
-            span.end();
         }
     }
 
     async handleInGame() {
-        const self = this;
-
         try {
             if (!this.verify()) {
                 return;
             }
 
-            tracer.startActiveSpan("InGame", async (span) => {
-                await self.inGameConsumer.consume(self.gameData.realPlayers[self.socketClient.id]);
-
-                span.end();
-            });
+            await this.inGameConsumer.consume(this.gameData.realPlayers[this.socketClient.id]);
         } catch (error) {
             this.logService.logError(error);
         }
