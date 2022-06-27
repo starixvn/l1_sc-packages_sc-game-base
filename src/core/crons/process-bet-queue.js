@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import { mongoose } from "sc-instrument";
 import { helpers, logger } from "sc-common";
 
 import BaseMetrics from "../base-metrics";
