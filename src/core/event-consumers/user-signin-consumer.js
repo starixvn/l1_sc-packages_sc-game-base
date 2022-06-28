@@ -1,25 +1,24 @@
-import mongoose from "mongoose";
 import { getBetLimit } from "sc-base-apis";
 import { Socket } from "socket.io";
 
 import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
+import { signInGame as userServiceSignInGame } from "../helpers/user-service-helpers";
 
 export default class UserSignInConsumer {
     /**
      * @param {GameData} gameData
      * @param {UserSignInPublisher} userSignInPublisher
-     * @param {mongoose.Model} userInfosRepository
-     * @param {mongoose.Model} userSessionsRepository
      * @param {PlayGamePermissionValidator} playGamePermissionValidator
+     * @param {Object} appConfigs
      */
-    constructor(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, playGamePermissionValidator) {
+    constructor(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, userInfosRepository) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
-        this.userInfosRepository = userInfosRepository;
-        this.userSessionsRepository = userSessionsRepository;
         this.playGamePermissionValidator = playGamePermissionValidator;
+        this.appConfigs = appConfigs;
+        this.userInfosRepository = userInfosRepository;
     }
 
     /**
@@ -32,15 +31,20 @@ export default class UserSignInConsumer {
             return;
         }
 
-        const userSession = await this.userSessionsRepository.findOne({ sessionId: payload.ss }).lean().exec();
-        const userInfo = userSession ? await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec() : null;
+        const params = { session: payload.ss, username: payload.username, browserUserAgent: socketClient.request.headers["user-agent"] };
+        const signInGameResult = await userServiceSignInGame(this.appConfigs.userServiceSettings.url, params);
 
-        if (
-            userInfo &&
-            userSession &&
-            userSession.username === payload.username &&
-            userSession.browserUserAgent.toUpperCase() === socketClient.request.headers["user-agent"].toUpperCase()
-        ) {
+        if (signInGameResult.statusCode) {
+            this.handleUnauthorizedSignIn(socketClient);
+        } else {
+            const userSession = {
+                ...signInGameResult,
+                userId: signInGameResult.id,
+                partnerId: signInGameResult.operatorId,
+                memberId: signInGameResult.playerId,
+            };
+
+            const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
             if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
                 await this.getUserBetLimit(userSession, userInfo, socketClient);
 
@@ -53,8 +57,6 @@ export default class UserSignInConsumer {
 
                 this.handleSignInSuccess(socketClient, userInfo, userSession);
             }
-        } else {
-            this.handleUnauthorizedSignIn(socketClient);
         }
     }
 

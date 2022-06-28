@@ -1,7 +1,5 @@
-import { stub, stubMongoose } from "jest-micro-auto-stub";
-import mongoose from "mongoose";
+import { stub } from "jest-micro-auto-stub";
 import { logger } from "sc-common";
-
 import { HttpRouter } from "..";
 import GameData from "../../game-data";
 import { HistoryQuery, MetricQuery } from "../../query-apis";
@@ -23,12 +21,10 @@ describe("http router test", () => {
     const historyQuery = stub(HistoryQuery);
     /** @type {logger} */
     const logService = stub(logger);
-    /** @type {mongoose.Model}*/
-    const userSessionsRepository = stubMongoose(mongoose.Model);
     /** @type {MetricQuery} */
     const metricQuery = stub(MetricQuery);
 
-    const router = new HttpRouter(appConfigs, gameData, historyQuery, userSessionsRepository, metricQuery, logService);
+    const router = new HttpRouter(appConfigs, gameData, historyQuery, metricQuery, logService);
 
     it("should calls app.get", () => {
         // act

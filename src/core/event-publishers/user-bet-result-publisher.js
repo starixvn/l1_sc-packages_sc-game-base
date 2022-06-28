@@ -1,20 +1,17 @@
 import { logger } from "sc-common";
 
 import GameData from "./../game-data";
-import { authenticationHelpers } from "./../helpers";
 import BaseEventPublisher from "./base-event-publisher";
 
 export default class UserBetResultPublisher extends BaseEventPublisher {
     /**
      * @param {string} gameName
      * @param {GameData} gameData
-     * @param {authenticationHelpers} mainServiceCommunicator
      * @param {logger} logService
      */
-    constructor(gameName, gameData, mainServiceCommunicator, logService) {
+    constructor(gameName, gameData, logService) {
         super(gameName, gameData);
 
-        this.mainServiceCommunicator = mainServiceCommunicator;
         this.logService = logService;
     }
     async publish(userId, betResult) {
@@ -38,16 +35,6 @@ export default class UserBetResultPublisher extends BaseEventPublisher {
 
         if (realPlayer && realPlayer.socketClient) {
             realPlayer.socketClient.emit(path, payload);
-        } else {
-            await this.refreshBalance(userId);
-        }
-    }
-
-    async refreshBalance(userId) {
-        try {
-            await this.mainServiceCommunicator.post("refreshBalance", { uid: userId });
-        } catch (error) {
-            this.logService.logError(error);
         }
     }
 }

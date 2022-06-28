@@ -8,7 +8,6 @@ import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
-import { authenticationHelpers } from "./helpers";
 import { ArchiveStatuses, CurrencyGroupGames, ExchangeRates, Notifications, PartnerConfigs, CurrencyGroups, Currencies } from "./models";
 import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
@@ -79,7 +78,6 @@ export default class ContainerRegistry {
             getBalance: asValue(getBalance),
             placeBet: asValue(placeBet),
             logService: asValue(logger),
-            mainServiceCommunicator: asValue(authenticationHelpers),
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
             notifyLogin: asValue(notifyLogin),

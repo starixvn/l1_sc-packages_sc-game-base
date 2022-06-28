@@ -1,23 +1,20 @@
-import mongoose from "mongoose";
 import { logger, utils } from "sc-common";
-
 import { HistoryQuery, MetricQuery } from "../query-apis";
 import GameData from "./../game-data";
+import { signInGame as userServiceSignInGame } from "../helpers/user-service-helpers";
 
 export default class HttpRouter {
     /**
      * @param {Object} appConfigs
-     * @param {GameData} gameData]
+     * @param {GameData} gameData
      * @param {HistoryQuery} historyQuery
-     * @param {mongoose.Model} userSessionsRepository
      * @param {MetricQuery} metricQuery
-     * @param {logger} ldependencies.logService
+     * @param {logger} dependencies.logService
      */
-    constructor(appConfigs, gameData, historyQuery, userSessionsRepository, metricQuery, logService) {
+    constructor(appConfigs, gameData, historyQuery, metricQuery, logService) {
         this.appConfigs = appConfigs;
         this.gameData = gameData;
         this.historyQuery = historyQuery;
-        this.userSessionsRepository = userSessionsRepository;
         this.metricQuery = metricQuery;
         this.logService = logService;
     }
@@ -32,34 +29,27 @@ export default class HttpRouter {
             (_req, res) => this.handleOnlineUsers(res)
         );
 
-        app.post(
-            "/api/history",
-            (_req, res, next) => this.verifySession(_req, res, next),
-            (_req, res) => this.handleHistoryRequest(_req, res)
-        );
+        app.post("/api/history", (_req, res) => this.verifySession(_req, res, this.handleHistoryRequest.bind(this)));
 
         app.get("/api/metrics", (_req, res) => this.handleMetrics(_req, res));
     }
 
-    async verifySession(req, res, next) {
+    async verifySession(req, res, callback) {
         const { session, username } = req.body;
-        const userAgent = req.headers["user-agent"];
-        const userSession = await this.userSessionsRepository.findOne({ sessionId: session }).lean().exec();
+        const params = { session, username, browserUserAgent: req.headers["user-agent"] };
+        const signInGameResult = await userServiceSignInGame(this.appConfigs.userServiceSettings.url, params);
 
-        if (userSession && userSession.username === username && userSession.browserUserAgent.toUpperCase() === userAgent.toUpperCase()) {
-            next();
-        } else {
+        if (signInGameResult.statusCode) {
             res.sendStatus(401);
+        } else {
+            callback && callback(req, res, verifySessionResult.session);
         }
     }
 
-    async handleHistoryRequest(req, res) {
+    async handleHistoryRequest(req, res, userSession) {
         try {
-            const { session, page, pageSize } = req.body;
-
-            const userSession = await this.userSessionsRepository.findOne({ sessionId: session }).lean().exec();
+            const { page, pageSize } = req.body;
             const result = await this.historyQuery.queryHistory({ UID: userSession.userId }, +page, +pageSize);
-
             res.send(result);
         } catch (error) {
             this.logService.logError(error);

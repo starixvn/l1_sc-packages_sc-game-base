@@ -1,9 +1,7 @@
 import "jest-extended";
-
 import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { Socket } from "socket.io";
-
 import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
 import { PlayGamePermissionValidator } from "../../validators";
@@ -15,6 +13,22 @@ import * as baseApis from "sc-base-apis";
 
 jest.mock("sc-base-apis");
 
+const userServiceData = {
+    signInGameResult: {
+        statusCode: 0,
+        user: {},
+        userSession: {},
+    },
+};
+
+jest.mock("../../helpers/authentication-helpers", () => {
+    return {
+        post: () => {
+            return userServiceData.signInGameResult;
+        },
+    };
+});
+
 describe("UserSignInConsumer", () => {
     let payload, consumer;
     const gameData = new GameData(0);
@@ -25,25 +39,19 @@ describe("UserSignInConsumer", () => {
     /** @type {mongoose.Model}*/
     const userInfosRepository = stubMongoose(mongoose.Model);
 
-    /** @type {mongoose.Model}*/
-    const userSessionsRepository = stubMongoose(mongoose.Model);
-
     /** @type {PlayGamePermissionValidator}*/
     const playGamePermissionValidator = stub(PlayGamePermissionValidator);
 
     /** @type {Socket} */
     const socketClient = stub(Socket);
+    socketClient.request.headers = { "user-agent": "" };
+
+    const appConfigs = { userServiceSettings: { url: "https://l1-proxy.lumigame.com/user" } };
 
     beforeEach(() => {
         jest.clearAllMocks();
 
-        consumer = new UserSignInConsumer(
-            gameData,
-            userSignInPublisher,
-            userInfosRepository,
-            userSessionsRepository,
-            playGamePermissionValidator
-        );
+        consumer = new UserSignInConsumer(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, userInfosRepository);
     });
 
     describe("consume", () => {
@@ -99,10 +107,10 @@ describe("UserSignInConsumer", () => {
             });
         });
 
-        describe("when session is not exist", () => {
+        describe("when verify session is false", () => {
             beforeEach(() => {
                 payload = Payloads.SignIn();
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(null);
+                userServiceData.signInGameResult.statusCode = 1;
             });
 
             it("should publish unauthorized message", async () => {
@@ -122,91 +130,14 @@ describe("UserSignInConsumer", () => {
             });
         });
 
-        describe("when userInfo is not exist", () => {
-            beforeEach(() => {
-                payload = Payloads.SignIn();
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserSession());
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(null);
-            });
-
-            it("should publish unauthorized message to client", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
-            });
-
-            it("should disconnect the socket", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(socketClient.disconnect).toHaveBeenCalled();
-            });
-        });
-
-        describe("when username is mismatched between payload and stored session", () => {
-            beforeEach(() => {
-                payload = Payloads.SignIn();
-
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserSession());
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserInfo());
-            });
-
-            it("should publish unauthorized message", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
-            });
-
-            it("should disconnect the socket", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(socketClient.disconnect).toHaveBeenCalled();
-            });
-        });
-
-        describe("when browser agent is mismatched between payload and stored session", () => {
-            beforeEach(() => {
-                payload = Payloads.SignIn();
-
-                userSessionsRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserSession());
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce(Models.UserInfo());
-
-                socketClient.request = { headers: { "user-agent": "firefox" } };
-            });
-
-            it("should publish unauthorized message", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
-            });
-
-            it("should disconnect the socket", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(socketClient.disconnect).toHaveBeenCalled();
-            });
-        });
-
-        describe("when payload is valid", () => {
+        describe("when verify session is success", () => {
             const browserAgent = "chrome";
             let userSession;
 
             beforeEach(() => {
                 payload = Payloads.SignIn({ username: "validUser", browserUserAgent: browserAgent });
+                userServiceData.signInGameResult.statusCode = 0;
                 userSession = payload.ss;
-
-                userSessionsRepository.findOne().lean().exec.mockReturnValue(payload.ss);
                 userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
 
                 socketClient.request = { headers: { "user-agent": browserAgent } };

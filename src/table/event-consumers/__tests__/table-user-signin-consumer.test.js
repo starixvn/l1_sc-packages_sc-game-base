@@ -1,5 +1,4 @@
 import "jest-extended";
-
 import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { Socket } from "socket.io";
@@ -14,12 +13,9 @@ import TableUserSignInConsumer from "../table-user-signin-consumer";
 describe("table user signin consumer in testing", () => {
     /** @type {TableUserSignInPublisher}*/
     const userSignInPublisher = stub(TableUserSignInPublisher);
-
     /** @type {mongoose.Model}*/
     const userInfosRepository = stubMongoose(mongoose.Model);
 
-    /** @type {mongoose.Model}*/
-    const userSessionsRepository = stubMongoose(mongoose.Model);
     const definition = new TableGameDefinition({ name: "game name" });
 
     /** @type {PlayGamePermissionValidator}*/
@@ -37,9 +33,9 @@ describe("table user signin consumer in testing", () => {
             definition,
             gameData,
             userSignInPublisher,
-            userInfosRepository,
-            userSessionsRepository,
-            playGamePermissionValidator
+            playGamePermissionValidator,
+            null,
+            userInfosRepository
         );
     });
 

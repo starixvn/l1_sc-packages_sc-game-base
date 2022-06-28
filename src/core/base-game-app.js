@@ -9,7 +9,6 @@ import { init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
 import { Server } from "socket.io";
 import MsgpackParser from "socket.io-msgpack-parser";
-
 import { BaseStartup } from ".";
 import BaseMetrics from "./base-metrics";
 import { authenticationHelpers } from "./helpers";
@@ -100,7 +99,7 @@ export default class BaseGameApp {
         }
 
         await initBaseDatabase(this.appConfigs.database);
-        await authenticationHelpers.init(this.appConfigs.mainServerApiSettings);
         await initApis(this.appConfigs.apiSettings);
+        await authenticationHelpers.init(this.appConfigs.authenticateSettings);
     }
 }

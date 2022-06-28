@@ -492,10 +492,10 @@ describe("ProcessBetQueue", () => {
             });
         });
 
-        describe("when remaining time is less or equal locking bet time", () => {
+        describe("when remaining time is less than locking bet time", () => {
             it("should return result with fail criteria place bet next round", () => {
                 // Arrange
-                gameData.remainingTime = definition.durations.lockingBet;
+                gameData.remainingTime = definition.durations.lockingBet - 1;
 
                 // Act
                 const actualResult = proceedBetQueue.composeBettingTimeValidationCriteria(gameData.roundId);

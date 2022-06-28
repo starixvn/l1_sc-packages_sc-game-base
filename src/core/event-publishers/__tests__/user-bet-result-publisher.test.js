@@ -1,7 +1,6 @@
 import { logger } from "sc-common";
 import GameData from "../../game-data";
 import UserBetResultPublisher from "../user-bet-result-publisher";
-import authenticationHelpers from "../../helpers/authentication-helpers";
 
 jest.mock("../../helpers/authentication-helpers", () => ({
     init: jest.fn(),
@@ -18,7 +17,7 @@ const gameData = new GameData();
 const gameName = "game";
 
 const initPublisher = function () {
-    return new UserBetResultPublisher(gameName, gameData, authenticationHelpers, logger);
+    return new UserBetResultPublisher(gameName, gameData, logger);
 };
 
 describe("publish test", () => {
@@ -61,69 +60,7 @@ describe("publishToUser test", () => {
         });
     });
 
-    describe("when not found user", () => {
-        it("should call refreshBalance", async () => {
-            // arrange
-            gameData.realPlayers = {
-                1: {
-                    UID: 1,
-                    socketClient: {
-                        connected: true,
-                        emit: jest.fn(),
-                    },
-                },
-                2: {
-                    UID: 2,
-                    socketClient: {
-                        connected: true,
-                        emit: jest.fn(),
-                    },
-                },
-            };
-
-            const publisher = initPublisher();
-            jest.spyOn(publisher, "refreshBalance");
-            // act
-            await publisher.publishToUser(3, {});
-            // assert
-            expect(publisher.refreshBalance).toHaveBeenCalled();
-        });
-    });
-
     afterEach(() => {
         gameData.realPlayers = {};
-    });
-});
-
-describe("refreshBalance test", () => {
-    describe("when mainServiceCommunicator throw exception", () => {
-        it("should log the error", async () => {
-            // arrange
-            gameData.realPlayers = {
-                1: {
-                    UID: 1,
-                    socketClient: {
-                        connected: true,
-                        emit: jest.fn(),
-                    },
-                },
-                2: {
-                    UID: 2,
-                    socketClient: {
-                        connected: true,
-                        emit: jest.fn(),
-                    },
-                },
-            };
-
-            const publisher = initPublisher();
-            authenticationHelpers.post.mockImplementation(() => {
-                throw new TypeError();
-            });
-            // act
-            await publisher.refreshBalance(3);
-            // assert
-            expect(logger.logError).toHaveBeenCalled();
-        });
     });
 });

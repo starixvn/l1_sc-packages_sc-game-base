@@ -7,15 +7,11 @@ export default class HistoryQuery {
      * @param {RoundQuery} roundQuery
      * @param {mongoose.Model} betsRepository
      * @param {mongoose.Model} betLogsRepository
-     * @param {mongoose.Model} userInfosRepository
-     * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(roundQuery, betsRepository, betLogsRepository, userInfosRepository, userSessionsRepository) {
+    constructor(roundQuery, betsRepository, betLogsRepository) {
         this.roundQuery = roundQuery;
         this.betsRepository = betsRepository;
         this.betLogsRepository = betLogsRepository;
-        this.userInfosRepository = userInfosRepository;
-        this.userSessionsRepository = userSessionsRepository;
     }
 
     convertBet(bet) {
@@ -42,7 +38,12 @@ export default class HistoryQuery {
             memberId: false,
             __v: false,
             __archive: false,
+            currency: false,
+            partnerId: false,
+            operatorId: false,
+            paid: false,
         };
+
         const bets = await this.betsRepository
             .find(filter, betProjection, { sort: { _id: -1 }, skip: numberOfSkippedBets, limit: pageSize })
             .lean()
