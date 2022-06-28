@@ -1,6 +1,4 @@
-import mongoose from "mongoose";
 import { Socket } from "socket.io";
-
 import { Systems } from "../../constants";
 import UserSignInConsumer from "./../../core/event-consumers/user-signin-consumer";
 import TableUserSignInPublisher from "./../event-publishers/table-user-signin-publisher";
@@ -12,11 +10,11 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
      * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
      * @param {TableUserSignInPublisher} userSignInPublisher
+     * @param {Object} appConfigs
      * @param {mongoose.Model} userInfosRepository
-     * @param {mongoose.Model} userSessionsRepository
      */
-    constructor(definition, gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, playGamePermissionValidator) {
-        super(gameData, userSignInPublisher, userInfosRepository, userSessionsRepository, playGamePermissionValidator);
+    constructor(definition, gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, userInfosRepository) {
+        super(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, userInfosRepository);
 
         this.definition = definition;
     }
