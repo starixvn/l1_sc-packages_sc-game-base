@@ -1,3 +1,23 @@
+## [3.0.2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.1...v3.0.2) (2022-06-28)
+
+
+### Bug Fixes
+
+* add sign in game ([f2b16e1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f2b16e1497395d89a7844eab9198e8f38518a750))
+* centralize code ([d58319b](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/d58319beb979051839fb8ff358ec673b67133191))
+* combine authenticateSettings ([3be8a9e](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/3be8a9ee15df56247252c6d6d02e3211df461f49))
+* history api - verify session ([3c5e301](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/3c5e30138a25d3b3095b981aa87eb8264e632cd9))
+* query history - hide unused fields ([02198d7](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/02198d7efd7cf6ad1e112766d36b219b7dd4d51c))
+* rebase branch ([3740a28](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/3740a281e420617fe4ca960b4a75101b7b15f5c0))
+* remove refresh balance ([c4929ea](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/c4929ea3c9cfafcc21f34fe88fce3d7536d79a75))
+* remove unused fields ([a65a3b5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/a65a3b5821b38569776f10bd3aa8857384320cf2))
+* remove unused fields ([90b01b5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/90b01b56a626b9967e381968d457bbba9d5a8c32))
+* review code ([5f5d6f7](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/5f5d6f73b793074037f831d7463cec1d88903174))
+* separate branch ([ee73ca9](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/ee73ca9c5fb75fea177881ed06a91cca37fd215f))
+* signin - verify session ([e7ff56d](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e7ff56d69a41542fa3c546b40ec3e88f338721c2))
+* update composeBettingTimeValidationCriteria - update blocking time checking ([fbfc084](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/fbfc0843fd0d84a9bd438e90d2dbbfec4c12ad48))
+* update place-bet-consumer - update blocking time ([7fd2f0e](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/7fd2f0ecf66b193826076c650799a1b21c2b89a1))
+
 ## [3.0.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.0...v3.0.1) (2022-06-03)
 
 
