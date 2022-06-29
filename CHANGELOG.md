@@ -1,3 +1,10 @@
+## [3.0.4](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.3...v3.0.4) (2022-06-29)
+
+
+### Bug Fixes
+
+* query history ([0de81a0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/0de81a0b65bc14bd29ac741ed527caafda836511))
+
 ## [3.0.3](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.2...v3.0.3) (2022-06-29)
 
 
