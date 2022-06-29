@@ -42,7 +42,7 @@ export default class HttpRouter {
         if (signInGameResult.statusCode) {
             res.sendStatus(401);
         } else {
-            callback && callback(req, res, verifySessionResult.session);
+            callback && callback(req, res, signInGameResult.session);
         }
     }
 
