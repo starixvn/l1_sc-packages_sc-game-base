@@ -6,14 +6,12 @@ import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
 import { PlayGamePermissionValidator } from "../../validators";
 import UserSignInConsumer from "../user-signin-consumer";
-
 import { Models, Payloads } from "jest-auto-fixture";
-
 import * as baseApis from "sc-base-apis";
 
 jest.mock("sc-base-apis");
 
-const userServiceData = {
+const userServiceMock = {
     signInGameResult: {
         statusCode: 0,
         user: {},
@@ -24,12 +22,14 @@ const userServiceData = {
 jest.mock("../../helpers/authentication-helpers", () => {
     return {
         post: () => {
-            return userServiceData.signInGameResult;
+            return userServiceMock.signInGameResult;
         },
     };
 });
 
 describe("UserSignInConsumer", () => {
+    const ForbiddenCode = 403;
+
     let payload, consumer;
     const gameData = new GameData(0);
 
@@ -48,10 +48,20 @@ describe("UserSignInConsumer", () => {
 
     const appConfigs = { userServiceSettings: { url: "https://l1-proxy.lumigame.com/user" } };
 
+    /** @type {logger} */
+    const logService = { logError: jest.fn(), logWarning: jest.fn() };
+
     beforeEach(() => {
         jest.clearAllMocks();
 
-        consumer = new UserSignInConsumer(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, userInfosRepository);
+        consumer = new UserSignInConsumer(
+            gameData,
+            userSignInPublisher,
+            playGamePermissionValidator,
+            appConfigs,
+            userInfosRepository,
+            logService
+        );
     });
 
     describe("consume", () => {
@@ -107,10 +117,29 @@ describe("UserSignInConsumer", () => {
             });
         });
 
+        describe("when have payload and has error", () => {
+            it("should call handleErrors", async () => {
+                // Arrange
+                payload = { username: "username" };
+                userServiceMock.signInGameResult = { statusCode: 0, user: {}, userSession: {} };
+                consumer.handleUnauthorizedSignIn = jest.fn();
+                consumer.handleErrors = jest.fn();
+                playGamePermissionValidator.validate.mockImplementationOnce(() => {
+                    throw new Error();
+                });
+
+                // Act
+                await consumer.consume(socketClient, payload);
+
+                // Assert
+                expect(consumer.handleErrors).toHaveBeenCalled();
+            });
+        });
+
         describe("when verify session is false", () => {
             beforeEach(() => {
                 payload = Payloads.SignIn();
-                userServiceData.signInGameResult.statusCode = 1;
+                userServiceMock.signInGameResult = { statusCode: 1, user: {}, userSession: {} };
             });
 
             it("should publish unauthorized message", async () => {
@@ -136,7 +165,7 @@ describe("UserSignInConsumer", () => {
 
             beforeEach(() => {
                 payload = Payloads.SignIn({ username: "validUser", browserUserAgent: browserAgent });
-                userServiceData.signInGameResult.statusCode = 0;
+                userServiceMock.signInGameResult = { statusCode: 0, user: {}, userSession: {} };
                 userSession = payload.ss;
                 userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
 
@@ -189,6 +218,74 @@ describe("UserSignInConsumer", () => {
                 const allCachedRealPlayers = Object.values(gameData.realPlayers);
 
                 expect(allCachedRealPlayers.filter((realPlayer) => realPlayer.UID === userSession.userId).length).toBe(1);
+            });
+        });
+    });
+
+    describe("handleErrors", () => {
+        describe("when Forbidden Code", () => {
+            beforeEach(async () => {
+                // Arrange
+                payload = { username: "username" };
+                const e = { response: { status: ForbiddenCode } };
+                consumer.handleUnauthorizedSignIn = jest.fn();
+
+                // Act
+                consumer.handleErrors(socketClient, payload, e);
+            });
+
+            it("should call handleUnauthorizedSignIn", async () => {
+                // Assert
+                expect(consumer.handleUnauthorizedSignIn).toHaveBeenCalled();
+            });
+
+            it("should call logService.logWarning", async () => {
+                // Assert
+                expect(logService.logWarning).toHaveBeenCalled();
+            });
+        });
+
+        describe("when Other Code", () => {
+            beforeEach(() => {
+                // Arrange
+                payload = { username: "username" };
+                const e = { response: { status: 404 } };
+                consumer.handleUnauthorizedSignIn = jest.fn();
+
+                // Act
+                consumer.handleErrors(socketClient, payload, e);
+            });
+
+            it("should call handleUnauthorizedSignIn", async () => {
+                // Assert
+                expect(consumer.handleUnauthorizedSignIn).toHaveBeenCalled();
+            });
+
+            it("should call logService.logError", async () => {
+                // Assert
+                expect(logService.logError).toHaveBeenCalled();
+            });
+        });
+
+        describe("when not have response", () => {
+            beforeEach(() => {
+                // Arrange
+                payload = { username: "username" };
+                const e = { response: null };
+                consumer.handleUnauthorizedSignIn = jest.fn();
+
+                // Act
+                consumer.handleErrors(socketClient, payload, e);
+            });
+
+            it("should call handleUnauthorizedSignIn", async () => {
+                // Assert
+                expect(consumer.handleUnauthorizedSignIn).toHaveBeenCalled();
+            });
+
+            it("should call logService.logError", async () => {
+                // Assert
+                expect(logService.logError).toHaveBeenCalled();
             });
         });
     });
