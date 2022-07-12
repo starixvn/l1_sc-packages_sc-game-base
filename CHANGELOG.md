@@ -1,3 +1,11 @@
+## [3.0.5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.4...v3.0.5) (2022-07-12)
+
+
+### Bug Fixes
+
+* treasure island service ([51ad95b](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/51ad95b235cf3b70274ee08fa23a292f6ce3c8c2))
+* upgrade sc-base-apis@1.17.1-beta.0 ([2cde21a](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/2cde21a82f3fe7c38463d7a3425ca2e8ecc7243d))
+
 ## [3.0.4](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.3...v3.0.4) (2022-06-29)
 
 
