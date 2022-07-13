@@ -7,7 +7,8 @@ import GameData from "./../game-data";
 import { signInGame as userServiceSignInGame } from "../helpers/user-service-helpers";
 
 export default class UserSignInConsumer {
-    ForbiddenCode = 403;
+    forbiddenCode = 403;
+    waringCodes = [this.forbiddenCode];
 
     /**
      * @param {GameData} gameData
@@ -44,33 +45,29 @@ export default class UserSignInConsumer {
 
             const signInGameResult = await userServiceSignInGame(this.appConfigs.userServiceSettings.url, params);
 
-            if (signInGameResult.statusCode) {
-                this.handleUnauthorizedSignIn(socketClient);
-            } else {
-                const userSession = {
-                    ...signInGameResult,
-                    userId: signInGameResult.id,
-                    partnerId: signInGameResult.operatorId,
-                    memberId: signInGameResult.playerId,
-                };
+            const userSession = {
+                ...signInGameResult,
+                userId: signInGameResult.id,
+                partnerId: signInGameResult.operatorId,
+                memberId: signInGameResult.playerId,
+            };
 
-                const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
-                if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
-                    await this.getUserBetLimit(userSession, userInfo, socketClient);
+            const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
+            if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
+                await this.getUserBetLimit(userSession, userInfo, socketClient);
 
-                    Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
-                        if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
-                            realPlayer.socketClient.disconnect(true);
-                            delete this.gameData.realPlayers[realPlayer.socketClient.id];
-                        }
-                    });
+                Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
+                    if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
+                        realPlayer.socketClient.disconnect(true);
+                        delete this.gameData.realPlayers[realPlayer.socketClient.id];
+                    }
+                });
 
-                    this.handleSignInSuccess(socketClient, userInfo, userSession);
-                }
+                this.handleSignInSuccess(socketClient, userInfo, userSession);
             }
         } catch (e) {
             this.handleUnauthorizedSignIn(socketClient);
-            this.handleErrors(socketClient, payload, e);
+            this.handleErrors(payload, e);
         }
     }
 
@@ -108,10 +105,9 @@ export default class UserSignInConsumer {
         socketClient.disconnect(true);
     }
 
-    handleErrors(socketClient, payload, e) {
-        const waringCodes = [this.ForbiddenCode];
+    handleErrors(payload, e) {
         const message = `Error when signin: ${JSON.stringify(payload)}. ${e}`;
-        const isWarning = e.response?.status && waringCodes.indexOf(e.response.status) !== -1;
+        const isWarning = e.response?.status && this.waringCodes.some((c) => e.response.status === c);
         if (isWarning) {
             this.logService.logWarning(message);
         } else {
