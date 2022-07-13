@@ -112,7 +112,7 @@ export default class UserSignInConsumer {
 
         const waringCodes = [this.ForbiddenCode];
         const message = `Error when signin: ${JSON.stringify(payload)}. ${e}`;
-        const isWarning = e.response?.status && waringCodes.indexOf(e.response.status) != -1;
+        const isWarning = e.response?.status && waringCodes.indexOf(e.response.status) !== -1;
         if (isWarning) {
             this.logService.logWarning(message);
         } else {
