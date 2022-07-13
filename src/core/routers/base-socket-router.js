@@ -7,6 +7,9 @@ import { UserSignInPublisher } from "./../event-publishers";
 import { HistoryQuery } from "./../query-apis";
 
 export default class BaseSocketRouter {
+    forbiddenCode = 403;
+    waringCodes = [this.forbiddenCode];
+
     /**
      * @param {Object} dependencies
      * @param {GameDefinition} dependencies.definition
@@ -72,7 +75,7 @@ export default class BaseSocketRouter {
         try {
             await this.userSignInConsumer.consume(this.socketClient, payload);
         } catch (error) {
-            this.logService.logError(error);
+            this.handleError(payload, error);
         }
     }
 
@@ -135,5 +138,15 @@ export default class BaseSocketRouter {
         this.logService.setTag({ id: "username", value: "" });
 
         return false;
+    }
+
+    handleError(payload, e) {
+        const message = `Error when signin: ${JSON.stringify(payload)}. ${e}`;
+
+        if (this.waringCodes.includes(e.response?.status)) {
+            this.logService.logWarning(message);
+        } else {
+            this.logService.logError(message);
+        }
     }
 }

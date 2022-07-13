@@ -27,8 +27,6 @@ jest.mock("../../helpers/authentication-helpers", () => {
 });
 
 describe("UserSignInConsumer", () => {
-    const ForbiddenCode = 403;
-
     let payload, consumer;
     const gameData = new GameData(0);
 
@@ -47,20 +45,10 @@ describe("UserSignInConsumer", () => {
 
     const appConfigs = { userServiceSettings: { url: "https://l1-proxy.lumigame.com/user" } };
 
-    /** @type {logger} */
-    const logService = { logError: jest.fn(), logWarning: jest.fn() };
-
     beforeEach(() => {
         jest.clearAllMocks();
 
-        consumer = new UserSignInConsumer(
-            gameData,
-            userSignInPublisher,
-            playGamePermissionValidator,
-            appConfigs,
-            userInfosRepository,
-            logService
-        );
+        consumer = new UserSignInConsumer(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, userInfosRepository);
     });
 
     describe("consume", () => {
@@ -113,32 +101,6 @@ describe("UserSignInConsumer", () => {
 
                 // Assert
                 expect(socketClient.disconnect).toHaveBeenCalled();
-            });
-        });
-
-        describe("when have payload and has error", () => {
-            beforeEach(async () => {
-                // Arrange
-                payload = { username: "username" };
-                userServiceMock.signInGameResult = { user: {}, userSession: {} };
-                consumer.handleUnauthorizedSignIn = jest.fn();
-                consumer.handleErrors = jest.fn();
-                playGamePermissionValidator.validate.mockImplementationOnce(() => {
-                    throw new Error();
-                });
-
-                // Act
-                await consumer.consume(socketClient, payload);
-            });
-
-            it("should call handleUnauthorizedSignIn", async () => {
-                // Assert
-                expect(consumer.handleUnauthorizedSignIn).toHaveBeenCalled();
-            });
-
-            it("should call handleErrors", async () => {
-                // Assert
-                expect(consumer.handleErrors).toHaveBeenCalled();
             });
         });
 
@@ -201,50 +163,6 @@ describe("UserSignInConsumer", () => {
                 const allCachedRealPlayers = Object.values(gameData.realPlayers);
 
                 expect(allCachedRealPlayers.filter((realPlayer) => realPlayer.UID === userSession.userId).length).toBe(1);
-            });
-        });
-    });
-
-    describe("handleErrors", () => {
-        describe("when Forbidden Code", () => {
-            it("should call logService.logWarning", async () => {
-                // Arrange
-                payload = { username: "username" };
-                const e = { response: { status: ForbiddenCode } };
-
-                // Act
-                consumer.handleErrors(payload, e);
-
-                // Assert
-                expect(logService.logWarning).toHaveBeenCalled();
-            });
-        });
-
-        describe("when Other Code", () => {
-            it("should call logService.logError", async () => {
-                // Arrange
-                payload = { username: "username" };
-                const e = { response: { status: 404 } };
-
-                // Act
-                consumer.handleErrors(payload, e);
-
-                // Assert
-                expect(logService.logError).toHaveBeenCalled();
-            });
-        });
-
-        describe("when not have response", () => {
-            it("should call logService.logError", async () => {
-                // Arrange
-                payload = { username: "username" };
-                const e = { response: null };
-
-                // Act
-                consumer.handleErrors(payload, e);
-
-                // Assert
-                expect(logService.logError).toHaveBeenCalled();
             });
         });
     });
