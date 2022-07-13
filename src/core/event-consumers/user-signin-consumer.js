@@ -69,6 +69,7 @@ export default class UserSignInConsumer {
                 }
             }
         } catch (e) {
+            this.handleUnauthorizedSignIn(socketClient);
             this.handleErrors(socketClient, payload, e);
         }
     }
@@ -108,8 +109,6 @@ export default class UserSignInConsumer {
     }
 
     handleErrors(socketClient, payload, e) {
-        this.handleUnauthorizedSignIn(socketClient);
-
         const waringCodes = [this.ForbiddenCode];
         const message = `Error when signin: ${JSON.stringify(payload)}. ${e}`;
         const isWarning = e.response?.status && waringCodes.indexOf(e.response.status) !== -1;

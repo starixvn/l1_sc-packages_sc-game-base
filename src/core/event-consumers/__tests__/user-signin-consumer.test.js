@@ -118,7 +118,7 @@ describe("UserSignInConsumer", () => {
         });
 
         describe("when have payload and has error", () => {
-            it("should call handleErrors", async () => {
+            beforeEach(async () => {
                 // Arrange
                 payload = { username: "username" };
                 userServiceMock.signInGameResult = { statusCode: 0, user: {}, userSession: {} };
@@ -130,7 +130,14 @@ describe("UserSignInConsumer", () => {
 
                 // Act
                 await consumer.consume(socketClient, payload);
+            });
 
+            it("should call handleUnauthorizedSignIn", async () => {
+                // Assert
+                expect(consumer.handleUnauthorizedSignIn).toHaveBeenCalled();
+            });
+
+            it("should call handleErrors", async () => {
                 // Assert
                 expect(consumer.handleErrors).toHaveBeenCalled();
             });
@@ -224,7 +231,7 @@ describe("UserSignInConsumer", () => {
 
     describe("handleErrors", () => {
         describe("when Forbidden Code", () => {
-            beforeEach(async () => {
+            it("should call logService.logWarning", async () => {
                 // Arrange
                 payload = { username: "username" };
                 const e = { response: { status: ForbiddenCode } };
@@ -232,21 +239,14 @@ describe("UserSignInConsumer", () => {
 
                 // Act
                 consumer.handleErrors(socketClient, payload, e);
-            });
 
-            it("should call handleUnauthorizedSignIn", async () => {
-                // Assert
-                expect(consumer.handleUnauthorizedSignIn).toHaveBeenCalled();
-            });
-
-            it("should call logService.logWarning", async () => {
                 // Assert
                 expect(logService.logWarning).toHaveBeenCalled();
             });
         });
 
         describe("when Other Code", () => {
-            beforeEach(() => {
+            it("should call logService.logError", async () => {
                 // Arrange
                 payload = { username: "username" };
                 const e = { response: { status: 404 } };
@@ -254,21 +254,14 @@ describe("UserSignInConsumer", () => {
 
                 // Act
                 consumer.handleErrors(socketClient, payload, e);
-            });
 
-            it("should call handleUnauthorizedSignIn", async () => {
-                // Assert
-                expect(consumer.handleUnauthorizedSignIn).toHaveBeenCalled();
-            });
-
-            it("should call logService.logError", async () => {
                 // Assert
                 expect(logService.logError).toHaveBeenCalled();
             });
         });
 
         describe("when not have response", () => {
-            beforeEach(() => {
+            it("should call logService.logError", async () => {
                 // Arrange
                 payload = { username: "username" };
                 const e = { response: null };
@@ -276,14 +269,7 @@ describe("UserSignInConsumer", () => {
 
                 // Act
                 consumer.handleErrors(socketClient, payload, e);
-            });
 
-            it("should call handleUnauthorizedSignIn", async () => {
-                // Assert
-                expect(consumer.handleUnauthorizedSignIn).toHaveBeenCalled();
-            });
-
-            it("should call logService.logError", async () => {
                 // Assert
                 expect(logService.logError).toHaveBeenCalled();
             });
