@@ -1,3 +1,15 @@
+## [3.0.6](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.5...v3.0.6) (2022-07-14)
+
+
+### Bug Fixes
+
+* add player id to error log ([0922878](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/09228787c2e01d299d7f513826d0b756a77b092a))
+* add player id to error log ([319b23a](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/319b23ad089bbeacd9ee3df297dec0b7003bcd56))
+* change log type for 1001, 1002 ([bdb4e11](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/bdb4e1178f176ec22ac8958deadb17d7d48997e4))
+* change log type for 1001, 1002 ([2e37755](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/2e37755a0d30bf0eb1ee15d4cbae6ece796acf9e))
+* change log type for 1001, 1002 ([7f1379c](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/7f1379cb3c58d319d4a876f1765a564f0ea06bfe))
+* release package ([067bc08](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/067bc08acf12536740066033cd63f0739fcddc40))
+
 ## [3.0.5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.4...v3.0.5) (2022-07-12)
 
 
