@@ -11,6 +11,8 @@ import { PlayGamePermissionValidator } from "../../validators";
 import BaseSocketRouter from "../base-socket-router";
 
 describe("base socket router test", () => {
+    const ForbiddenCode = 403;
+
     const definition = new GameDefinition({ id: 1, name: "game name" });
     const gameData = new GameData(0);
     /** @type {UserSignInConsumer} */
@@ -53,6 +55,7 @@ describe("base socket router test", () => {
 
     beforeEach(() => {
         spyOn(logService, "logError");
+        spyOn(logService, "logWarning");
     });
 
     describe("init", () => {
@@ -125,15 +128,16 @@ describe("base socket router test", () => {
         });
 
         describe("when have exception", () => {
-            it("should log error", async () => {
+            it("should call handleError", async () => {
                 // arrange
                 spyOn(userSignInConsumer, "consume").and.throwError("error");
+                spyOn(router, "handleError");
 
                 // act
                 await router.handleSignIn({});
 
                 // assert
-                expect(logService.logError).toHaveBeenCalled();
+                expect(router.handleError).toHaveBeenCalled();
             });
         });
     });
@@ -284,6 +288,52 @@ describe("base socket router test", () => {
                 expect(socketClient.disconnect).toHaveBeenCalledWith(true);
                 expect(logService.logError).toHaveBeenCalledWith("User not found in server storage");
                 expect(result).toBeFalsy();
+            });
+        });
+    });
+
+    describe("handleError", () => {
+        let payload;
+
+        describe("when Forbidden Code", () => {
+            it("should call logService.logWarning", () => {
+                // Arrange
+                payload = { username: "username" };
+                const e = { response: { status: ForbiddenCode } };
+
+                // Act
+                router.handleError(payload, e);
+
+                // Assert
+                expect(router.logService.logWarning).toHaveBeenCalled();
+            });
+        });
+
+        describe("when Other Code", () => {
+            it("should call logService.logError", () => {
+                // Arrange
+                payload = { username: "username" };
+                const e = { response: { status: 404 } };
+
+                // Act
+                router.handleError(payload, e);
+
+                // Assert
+                expect(router.logService.logError).toHaveBeenCalled();
+            });
+        });
+
+        describe("when not have response", () => {
+            it("should call logService.logError", () => {
+                // Arrange
+                payload = { username: "username" };
+                const e = { response: null };
+
+                // Act
+                router.handleError(payload, e);
+
+                // Assert
+                expect(router.logService.logError).toHaveBeenCalled();
             });
         });
     });

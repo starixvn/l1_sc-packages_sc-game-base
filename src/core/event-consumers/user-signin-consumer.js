@@ -31,32 +31,33 @@ export default class UserSignInConsumer {
             return;
         }
 
-        const params = { session: payload.ss, username: payload.username, browserUserAgent: socketClient.request.headers["user-agent"] };
+        const params = {
+            session: payload.ss,
+            username: payload.username,
+            browserUserAgent: socketClient.request.headers["user-agent"],
+        };
+
         const signInGameResult = await userServiceSignInGame(this.appConfigs.userServiceSettings.url, params);
 
-        if (signInGameResult.statusCode) {
-            this.handleUnauthorizedSignIn(socketClient);
-        } else {
-            const userSession = {
-                ...signInGameResult,
-                userId: signInGameResult.id,
-                partnerId: signInGameResult.operatorId,
-                memberId: signInGameResult.playerId,
-            };
+        const userSession = {
+            ...signInGameResult,
+            userId: signInGameResult.id,
+            partnerId: signInGameResult.operatorId,
+            memberId: signInGameResult.playerId,
+        };
 
-            const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
-            if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
-                await this.getUserBetLimit(userSession, userInfo, socketClient);
+        const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
+        if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
+            await this.getUserBetLimit(userSession, userInfo, socketClient);
 
-                Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
-                    if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
-                        realPlayer.socketClient.disconnect(true);
-                        delete this.gameData.realPlayers[realPlayer.socketClient.id];
-                    }
-                });
+            Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
+                if (realPlayer.UID === userSession.userId && realPlayer.socketClient) {
+                    realPlayer.socketClient.disconnect(true);
+                    delete this.gameData.realPlayers[realPlayer.socketClient.id];
+                }
+            });
 
-                this.handleSignInSuccess(socketClient, userInfo, userSession);
-            }
+            this.handleSignInSuccess(socketClient, userInfo, userSession);
         }
     }
 

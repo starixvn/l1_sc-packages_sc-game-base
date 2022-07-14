@@ -6,16 +6,13 @@ import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
 import { PlayGamePermissionValidator } from "../../validators";
 import UserSignInConsumer from "../user-signin-consumer";
-
 import { Models, Payloads } from "jest-auto-fixture";
-
 import * as baseApis from "sc-base-apis";
 
 jest.mock("sc-base-apis");
 
-const userServiceData = {
+const userServiceMock = {
     signInGameResult: {
-        statusCode: 0,
         user: {},
         userSession: {},
     },
@@ -24,7 +21,7 @@ const userServiceData = {
 jest.mock("../../helpers/authentication-helpers", () => {
     return {
         post: () => {
-            return userServiceData.signInGameResult;
+            return userServiceMock.signInGameResult;
         },
     };
 });
@@ -107,36 +104,13 @@ describe("UserSignInConsumer", () => {
             });
         });
 
-        describe("when verify session is false", () => {
-            beforeEach(() => {
-                payload = Payloads.SignIn();
-                userServiceData.signInGameResult.statusCode = 1;
-            });
-
-            it("should publish unauthorized message", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
-            });
-
-            it("should disconnect the socket", async () => {
-                // Act
-                await consumer.consume(socketClient, payload);
-
-                // Assert
-                expect(socketClient.disconnect).toHaveBeenCalled();
-            });
-        });
-
         describe("when verify session is success", () => {
             const browserAgent = "chrome";
             let userSession;
 
             beforeEach(() => {
                 payload = Payloads.SignIn({ username: "validUser", browserUserAgent: browserAgent });
-                userServiceData.signInGameResult.statusCode = 0;
+                userServiceMock.signInGameResult = { user: {}, userSession: {} };
                 userSession = payload.ss;
                 userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
 
