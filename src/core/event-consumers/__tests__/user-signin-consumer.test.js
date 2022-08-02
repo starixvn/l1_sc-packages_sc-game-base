@@ -110,8 +110,8 @@ describe("UserSignInConsumer", () => {
 
             beforeEach(() => {
                 payload = Payloads.SignIn({ username: "validUser", browserUserAgent: browserAgent });
-                userServiceMock.signInGameResult = { user: {}, userSession: {} };
                 userSession = payload.ss;
+                userServiceMock.signInGameResult = { id: userSession.userId };
                 userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
 
                 socketClient.request = { headers: { "user-agent": browserAgent } };
@@ -139,48 +139,62 @@ describe("UserSignInConsumer", () => {
             });
 
             describe("when already have user info", () => {
-                beforeEach(() => {
-                    userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
+                describe("when not have play game permission", () => {
+                    it("should publish unauthorized message", async () => {
+                        // Arrange
+                        userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
+                        playGamePermissionValidator.validate.mockReturnValueOnce(false);
+
+                        // Act
+                        await consumer.consume(socketClient, payload);
+
+                        // Assert
+                        expect(userSignInPublisher.publishUnauthorizedMessage).toBeCalledWith(socketClient);
+                    });
                 });
 
-                it("should publish signedIn message", async () => {
-                    // Arrange
-                    playGamePermissionValidator.validate.mockReturnValueOnce(true);
+                describe("when have play game permission", () => {
+                    beforeEach(() => {
+                        // Arrange
+                        userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
+                        playGamePermissionValidator.validate.mockReturnValueOnce(true);
+                    });
 
-                    // Act
-                    await consumer.consume(socketClient, payload);
+                    it("should publish signedIn message", async () => {
+                        // Act
+                        await consumer.consume(socketClient, payload);
 
-                    // Assert
-                    expect(socketClient.emit).toBeCalledWith("signedIn");
-                });
+                        // Assert
+                        expect(socketClient.emit).toBeCalledWith("signedIn");
+                    });
 
-                it("should add to realPlayers", async () => {
-                    // Arrange
-                    const socketClientId = "socket id";
-                    gameData.realPlayers = [];
-                    socketClient.id = socketClientId;
-                    playGamePermissionValidator.validate.mockReturnValueOnce(true);
+                    it("should add to realPlayers", async () => {
+                        // Arrange
+                        const socketClientId = "socket id";
+                        gameData.realPlayers = [];
+                        socketClient.id = socketClientId;
 
-                    // Act
-                    await consumer.consume(socketClient, payload);
+                        // Act
+                        await consumer.consume(socketClient, payload);
 
-                    // Assert
-                    expect(gameData.realPlayers).toContainKey(socketClientId);
-                });
+                        // Assert
+                        expect(gameData.realPlayers).toContainKey(socketClientId);
+                    });
 
-                it("should cached unique member", async () => {
-                    // Arrange
-                    const socketClientId = "socket id";
-                    gameData.realPlayers[socketClientId] = { UID: userSession.userId, socketClient: stub(Socket) };
-                    socketClient.id = socketClientId;
+                    it("should cached unique member", async () => {
+                        // Arrange
+                        const socketClientId = "socket id";
+                        gameData.realPlayers[socketClientId] = { UID: userSession.userId, socketClient: stub(Socket) };
+                        socketClient.id = socketClientId;
 
-                    // Act
-                    await consumer.consume(socketClient, payload);
+                        // Act
+                        await consumer.consume(socketClient, payload);
 
-                    // Assert
-                    const allCachedRealPlayers = Object.values(gameData.realPlayers);
+                        // Assert
+                        const allCachedRealPlayers = Object.values(gameData.realPlayers);
 
-                    expect(allCachedRealPlayers.filter((realPlayer) => realPlayer.UID === userSession.userId).length).toBe(1);
+                        expect(allCachedRealPlayers.filter((realPlayer) => realPlayer.UID === userSession.userId).length).toBe(1);
+                    });
                 });
             });
         });
