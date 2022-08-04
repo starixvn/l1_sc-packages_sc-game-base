@@ -14,6 +14,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
         const configs = {
             odds: gameConfigs.odds,
             enableFreeBet: gameConfigs.enableFreeBet,
+            boostedChoices: gameConfigs.boostedChoices,
         };
 
         const realPlayers = Object.values(this.gameData.realPlayers);

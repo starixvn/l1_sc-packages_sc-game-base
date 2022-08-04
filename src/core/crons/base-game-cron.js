@@ -8,6 +8,7 @@ import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
 import { decrypt } from "../helpers/crypto-helper";
+import { getEffectivePromotion } from "../helpers/promotion-helper";
 
 export default class BaseGameCron {
     /**
@@ -49,6 +50,7 @@ export default class BaseGameCron {
         currencyRepository,
         roundResultConsumer,
         resultsRepository,
+        promotionRepository,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -68,6 +70,7 @@ export default class BaseGameCron {
         this.currencyRepository = currencyRepository;
         this.roundResultConsumer = roundResultConsumer;
         this.resultsRepository = resultsRepository;
+        this.promotionRepository = promotionRepository;
     }
 
     async start() {
@@ -187,6 +190,7 @@ export default class BaseGameCron {
             (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
 
         this.gameData.gameConfigs = configs ?? {};
+        await this.updatePromotionOdds();
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.getSettingForNewRound();
 
@@ -205,6 +209,27 @@ export default class BaseGameCron {
             await this.enableGame();
         } else {
             this.gameStatusPublisher.publishStartGame();
+        }
+    }
+
+    async updatePromotionOdds() {
+        if (!this.gameData.gameConfigs || !this.gameData.gameConfigs.odds) {
+            return;
+        }
+
+        const promotions = await this.promotionRepository.find({ gameId: this.definition.id, status: "enabled" }).lean().exec();
+        const promotion = getEffectivePromotion(promotions);
+
+        if (promotion) {
+            this.gameData.gameConfigs.boostedChoices = [];
+            const boostedOdds = promotion.odds;
+            const originOdds = this.gameData.gameConfigs.odds;
+            Object.keys(originOdds).forEach((choice) => {
+                if (boostedOdds[choice] && boostedOdds[choice] !== originOdds[choice]) {
+                    this.gameData.gameConfigs.boostedChoices.push(choice);
+                    this.gameData.gameConfigs.odds[choice] = boostedOdds[choice];
+                }
+            });
         }
     }
 

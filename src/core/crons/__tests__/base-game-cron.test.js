@@ -18,6 +18,15 @@ jest.mock("../../event-consumers/settle-game-round-consumer");
 jest.mock("../../event-publishers/running-round-info-publisher");
 jest.mock("../../event-publishers/game-status-publisher");
 jest.mock("cron");
+jest.mock("../../helpers/promotion-helper", () => {
+    return {
+        getEffectivePromotion: jest.fn(() => {
+            return {
+                odds: { big: 10, small: 11 },
+            };
+        }),
+    };
+});
 
 const gameData = new GameData(3);
 const definition = new GameDefinition(
@@ -910,5 +919,95 @@ describe("enableGame", () => {
 
         // Assert
         expect(gameCron.gameStatusPublisher.publishEnablingGameStatus).toHaveBeenCalled();
+    });
+});
+
+describe("updatePromotionOdds", () => {
+    describe("when gameConfigs not existed", () => {
+        it("should do nothing", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.gameConfigs = {
+                x: 123,
+            };
+
+            // Act
+            await gameCron.updatePromotionOdds();
+
+            // Assert
+            expect(gameCron.gameData.gameConfigs).toEqual({ x: 123 });
+        });
+    });
+
+    describe("when gameConfigs.odds not existed", () => {
+        it("should do nothing", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.gameConfigs = {
+                x: 123,
+            };
+
+            // Act
+            await gameCron.updatePromotionOdds();
+
+            // Assert
+            expect(gameCron.gameData.gameConfigs).toEqual({ x: 123 });
+        });
+    });
+
+    describe("when having effective promotion", () => {
+        it("should update game config odds", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.gameConfigs = {
+                x: 123,
+                odds: { big: 10, small: 10 },
+            };
+            const promotions = [];
+            gameCron.promotionRepository = {
+                find: jest.fn(() => {
+                    return {
+                        lean: jest.fn(() => {
+                            return {
+                                exec: jest.fn(() => promotions),
+                            };
+                        }),
+                    };
+                }),
+            };
+
+            // Act
+            await gameCron.updatePromotionOdds();
+
+            // Assert
+            expect(gameCron.gameData.gameConfigs.odds).toEqual({ big: 10, small: 11 });
+        });
+
+        it("should update boostedChoices", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.gameConfigs = {
+                x: 123,
+                odds: { big: 10, small: 10 },
+            };
+            const promotions = [];
+            gameCron.promotionRepository = {
+                find: jest.fn(() => {
+                    return {
+                        lean: jest.fn(() => {
+                            return {
+                                exec: jest.fn(() => promotions),
+                            };
+                        }),
+                    };
+                }),
+            };
+
+            // Act
+            await gameCron.updatePromotionOdds();
+
+            // Assert
+            expect(gameCron.gameData.gameConfigs.boostedChoices).toEqual(["small"]);
+        });
     });
 });
