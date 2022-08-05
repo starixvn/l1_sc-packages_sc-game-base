@@ -9,6 +9,7 @@ import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
 import { decrypt } from "../helpers/crypto-helper";
 import { getEffectivePromotion } from "../helpers/promotion-helper";
+import { chatBotHelper } from "../helpers";
 
 export default class BaseGameCron {
     /**
@@ -190,7 +191,7 @@ export default class BaseGameCron {
             (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
 
         this.gameData.gameConfigs = configs ?? {};
-        await this.updatePromotionOdds();
+        await this.updatePromotionOddsAndNotify();
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.getSettingForNewRound();
 
@@ -230,6 +231,30 @@ export default class BaseGameCron {
                     this.gameData.gameConfigs.odds[choice] = boostedOdds[choice];
                 }
             });
+        }
+
+        return promotion;
+    }
+
+    async updatePromotionOddsAndNotify() {
+        const isUsingPromotion = () => {
+            return this.gameData.gameConfigs.boostedChoices && this.gameData.gameConfigs.boostedChoices.length > 0;
+        };
+
+        const havingPreviousPromotion = isUsingPromotion();
+        const promotion = await this.updatePromotionOdds();
+        const havingNewPromotion = isUsingPromotion();
+
+        if (!havingPreviousPromotion && havingNewPromotion) {
+            await chatBotHelper.post(
+                `Started to apply boosted odds for game ${this.definition.name}, boostedOdds: ${JSON.stringify(promotion?.odds)} `
+            );
+        } else if (havingPreviousPromotion && !havingNewPromotion) {
+            await chatBotHelper.post(
+                `Finish applying boosted odds for game ${this.definition.name}, originalOdds: ${JSON.stringify(
+                    this.gameData.gameConfigs?.odds
+                )} `
+            );
         }
     }
 

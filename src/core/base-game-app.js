@@ -11,7 +11,7 @@ import { Server } from "socket.io";
 import MsgpackParser from "socket.io-msgpack-parser";
 import { BaseStartup } from ".";
 import BaseMetrics from "./base-metrics";
-import { authenticationHelpers } from "./helpers";
+import { authenticationHelpers, chatBotHelper } from "./helpers";
 
 export default class BaseGameApp {
     /**
@@ -101,5 +101,6 @@ export default class BaseGameApp {
         await initBaseDatabase(this.appConfigs.database);
         await initApis(this.appConfigs.apiSettings);
         await authenticationHelpers.init(this.appConfigs.authenticateSettings);
+        chatBotHelper.init(this.appConfigs.chatBotSettings);
     }
 }
