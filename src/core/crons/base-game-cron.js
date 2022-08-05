@@ -190,7 +190,7 @@ export default class BaseGameCron {
         this.gameData.umMessages =
             (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
 
-        this.gameData.gameConfigs = configs ?? {};
+        this.gameData.gameConfigs = configs ? { ...configs, boostedChoices: this.gameData.gameConfigs.boostedChoices ?? [] } : {};
         await this.updatePromotionOddsAndNotify();
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.getSettingForNewRound();
@@ -215,7 +215,7 @@ export default class BaseGameCron {
 
     async updatePromotionOdds() {
         if (!this.gameData.gameConfigs || !this.gameData.gameConfigs.odds) {
-            return;
+            return {};
         }
 
         const promotions = await this.promotionRepository.find({ gameId: this.definition.id, status: "enabled" }).lean().exec();
@@ -246,11 +246,11 @@ export default class BaseGameCron {
         const havingNewPromotion = isUsingPromotion();
 
         if (!havingPreviousPromotion && havingNewPromotion) {
-            await chatBotHelper.post(
+            chatBotHelper.post(
                 `Started to apply boosted odds for game ${this.definition.name}, boostedOdds: ${JSON.stringify(promotion?.odds)} `
             );
         } else if (havingPreviousPromotion && !havingNewPromotion) {
-            await chatBotHelper.post(
+            chatBotHelper.post(
                 `Finish applying boosted odds for game ${this.definition.name}, originalOdds: ${JSON.stringify(
                     this.gameData.gameConfigs?.odds
                 )} `

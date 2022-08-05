@@ -595,7 +595,7 @@ describe("checkGameStatus tests", () => {
     describe("when game is enabled", () => {
         it("should update gameData.gameConfigs", async () => {
             // Arrange
-            const gameConfigs = { enabled: true };
+            const gameConfigs = { enabled: true, boostedChoices: [] };
             gameData.disabled = false;
             gameData.remainingTime = definition.durations.wholeRound;
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
@@ -629,7 +629,7 @@ describe("checkGameStatus tests", () => {
     describe("game is disabled", () => {
         it("should update game configs", async () => {
             // Arrange
-            const gameConfigs = { enabled: false };
+            const gameConfigs = { enabled: false, boostedChoices: [] };
             gameData.disabled = false;
             gameData.remainingTime = definition.durations.wholeRound;
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
@@ -695,7 +695,7 @@ describe("checkGameStatus tests", () => {
     describe("when game is currently disabled, then being enabled", () => {
         it("should update gameConfig", async () => {
             // Arrange
-            const gameConfigs = { enabled: true };
+            const gameConfigs = { enabled: true, boostedChoices: [] };
             gameData.disabled = true;
             gameData.remainingTime = definition.durations.wholeRound;
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
