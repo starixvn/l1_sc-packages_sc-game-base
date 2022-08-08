@@ -1,4 +1,4 @@
-import { getCurrentTime } from "./time-helper";
+import { getCurrentTime, getDateTimeStringAtGMT7 } from "./time-helper";
 
 export const getEffectivePromotion = (promotions) => {
     const promotionPeriods = [];
@@ -32,13 +32,13 @@ export const getEffectivePromotion = (promotions) => {
 export const getStartPromotionMessage = (gameName, promotion) => {
     return `Started to apply boosted odds for game {{BeginBold}}${gameName}{{EndBold}}
     {{NewLine}}{{BeginBold}}Boosted Odds{{EndBold}}: ${JSON.stringify(promotion?.odds)}
-    {{NewLine}}{{BeginBold}}From{{EndBold}}: ${promotion?.startDateTime} 
-    {{NewLine}}{{BeginBold}}To{{EndBold}}: ${promotion?.endDateTime} `;
+    {{NewLine}}{{BeginBold}}From{{EndBold}}: ${getDateTimeStringAtGMT7(promotion?.startDateTime)} 
+    {{NewLine}}{{BeginBold}}To{{EndBold}}      : ${getDateTimeStringAtGMT7(promotion?.endDateTime)} `;
 };
 
 export const getFinishPromotionMessage = (gameName, promotion, originalOdds) => {
     return `Finish applying boosted odds for game {{BeginBold}}${gameName}{{EndBold}} 
     {{NewLine}}{{BeginBold}}Original Odds{{EndBold}}: ${JSON.stringify(originalOdds)}
-    {{NewLine}}{{BeginBold}}From{{EndBold}}: ${promotion?.startDateTime}
-    {{NewLine}}{{BeginBold}}To{{EndBold}}: ${promotion?.endDateTime} `;
+    {{NewLine}}{{BeginBold}}From{{EndBold}}: ${getDateTimeStringAtGMT7(promotion?.startDateTime)}
+    {{NewLine}}{{BeginBold}}To{{EndBold}}      : ${getDateTimeStringAtGMT7(promotion?.endDateTime)} `;
 };
