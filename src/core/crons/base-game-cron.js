@@ -8,7 +8,7 @@ import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
 import { decrypt } from "../helpers/crypto-helper";
-import { getEffectivePromotion } from "../helpers/promotion-helper";
+import { getEffectivePromotion, getStartPromotionMessage, getFinishPromotionMessage } from "../helpers/promotion-helper";
 import { chatBotHelper } from "../helpers";
 
 export default class BaseGameCron {
@@ -244,17 +244,12 @@ export default class BaseGameCron {
         const havingPreviousPromotion = isUsingPromotion();
         const promotion = await this.updatePromotionOdds();
         const havingNewPromotion = isUsingPromotion();
+        const channel = "boostedOdds";
 
         if (!havingPreviousPromotion && havingNewPromotion) {
-            chatBotHelper.post(
-                `Started to apply boosted odds for game ${this.definition.name}, boostedOdds: ${JSON.stringify(promotion?.odds)} `
-            );
+            chatBotHelper.post(channel, getStartPromotionMessage(this.definition.name, promotion));
         } else if (havingPreviousPromotion && !havingNewPromotion) {
-            chatBotHelper.post(
-                `Finish applying boosted odds for game ${this.definition.name}, originalOdds: ${JSON.stringify(
-                    this.gameData.gameConfigs?.odds
-                )} `
-            );
+            chatBotHelper.post(channel, getFinishPromotionMessage(this.definition.name, promotion, this.gameData.gameConfigs?.odds));
         }
     }
 

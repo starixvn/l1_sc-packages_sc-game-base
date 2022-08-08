@@ -28,3 +28,17 @@ export const getEffectivePromotion = (promotions) => {
 
     return effectivePromotion?.promotion;
 };
+
+export const getStartPromotionMessage = (gameName, promotion) => {
+    return `Started to apply boosted odds for game {{BeginBold}}${gameName}{{EndBold}}
+    {{NewLine}}{{BeginBold}}Boosted Odds{{EndBold}}: ${JSON.stringify(promotion?.odds)}
+    {{NewLine}}{{BeginBold}}From{{EndBold}}: ${promotion?.startDateTime} 
+    {{NewLine}}{{BeginBold}}To{{EndBold}}: ${promotion?.endDateTime} `;
+};
+
+export const getFinishPromotionMessage = (gameName, promotion, originalOdds) => {
+    return `Finish applying boosted odds for game {{BeginBold}}${gameName}{{EndBold}} 
+    {{NewLine}}{{BeginBold}}Original Odds{{EndBold}}: ${JSON.stringify(originalOdds)}
+    {{NewLine}}{{BeginBold}}From{{EndBold}}: ${promotion?.startDateTime}
+    {{NewLine}}{{BeginBold}}To{{EndBold}}: ${promotion?.endDateTime} `;
+};
