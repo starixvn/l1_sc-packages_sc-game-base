@@ -52,6 +52,7 @@ export default class BaseGameCron {
         roundResultConsumer,
         resultsRepository,
         promotionRepository,
+        appConfigs,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -72,6 +73,7 @@ export default class BaseGameCron {
         this.roundResultConsumer = roundResultConsumer;
         this.resultsRepository = resultsRepository;
         this.promotionRepository = promotionRepository;
+        this.appConfigs = appConfigs;
     }
 
     async start() {
@@ -191,7 +193,10 @@ export default class BaseGameCron {
             (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
 
         this.gameData.gameConfigs = configs ? { ...configs, boostedChoices: this.gameData.gameConfigs.boostedChoices ?? [] } : {};
-        await this.updatePromotionOddsAndNotify();
+        if (this.appConfigs.enabledBoostedOdds) {
+            await this.updatePromotionOddsAndNotify();
+        }
+
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.getSettingForNewRound();
 
