@@ -192,7 +192,7 @@ export default class BaseGameCron {
         this.gameData.umMessages =
             (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
 
-        this.gameData.gameConfigs = configs ? { ...configs, boostedChoices: this.gameData.gameConfigs.boostedChoices ?? [] } : {};
+        this.gameData.gameConfigs = configs ?? {};
         if (this.appConfigs.enabledBoostedOdds) {
             await this.updatePromotionOddsAndNotify();
         }
@@ -225,9 +225,10 @@ export default class BaseGameCron {
 
         const promotions = await this.promotionRepository.find({ gameId: this.definition.id, status: "enabled" }).lean().exec();
         const promotion = getEffectivePromotion(promotions);
+        this.gameData.promotion = promotion;
 
+        this.gameData.gameConfigs.boostedChoices = [];
         if (promotion) {
-            this.gameData.gameConfigs.boostedChoices = [];
             const boostedOdds = promotion.odds;
             const originOdds = this.gameData.gameConfigs.odds;
             Object.keys(originOdds).forEach((choice) => {
@@ -243,18 +244,20 @@ export default class BaseGameCron {
 
     async updatePromotionOddsAndNotify() {
         const isUsingPromotion = () => {
-            return this.gameData.gameConfigs.boostedChoices && this.gameData.gameConfigs.boostedChoices.length > 0;
+            return !!this.gameData.promotion;
         };
 
+        const previousPromotion = this.gameData.promotion;
         const havingPreviousPromotion = isUsingPromotion();
         const promotion = await this.updatePromotionOdds();
         const havingNewPromotion = isUsingPromotion();
-        const channel = "boostedOdds";
 
         if (!havingPreviousPromotion && havingNewPromotion) {
-            chatBotHelper.post(channel, getStartPromotionMessage(this.definition.name, promotion));
+            chatBotHelper.sendBoostedOddsMessage(getStartPromotionMessage(this.definition.name, promotion));
         } else if (havingPreviousPromotion && !havingNewPromotion) {
-            chatBotHelper.post(channel, getFinishPromotionMessage(this.definition.name, promotion, this.gameData.gameConfigs?.odds));
+            chatBotHelper.sendBoostedOddsMessage(
+                getFinishPromotionMessage(this.definition.name, previousPromotion, this.gameData.gameConfigs?.odds)
+            );
         }
     }
 

@@ -3,6 +3,10 @@ import { logger } from "sc-common";
 
 let chatBotConfigs;
 
+const channels = {
+    boostedOdds: "boostedOdds",
+};
+
 const init = async (configs) => {
     chatBotConfigs = configs;
 };
@@ -30,4 +34,8 @@ const post = async (channel, message, options) => {
     }
 };
 
-export default { init, post };
+const sendBoostedOddsMessage = async (message) => {
+    await post(channels.boostedOdds, message);
+};
+
+export default { init, post, sendBoostedOddsMessage };

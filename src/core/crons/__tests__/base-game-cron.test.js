@@ -601,6 +601,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -617,6 +618,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -635,6 +637,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -651,6 +654,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -667,6 +671,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -683,6 +688,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -701,6 +707,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -717,6 +724,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
