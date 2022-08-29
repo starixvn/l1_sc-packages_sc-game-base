@@ -7787,10 +7787,10 @@ sc-api-client@1.3.2-beta.0:
   dependencies:
     axios "^0.19.2"
 
-sc-base-apis@1.17.3-beta.0:
-  version "1.17.3-beta.0"
-  resolved "http://npm.lumigame.com/sc-base-apis/-/sc-base-apis-1.17.3-beta.0.tgz#8f28bf0600356441ac62c1777868dbfbd09b9f01"
-  integrity sha512-NtRajLQabuzm4Dxe6iqUM6BSkWiAy2TS91t0rSsS4gthYPaK+IBnxTpAkF4sn5pmhvn8U8XOGGVArYXN0zeHJg==
+sc-base-apis@1.17.3-beta.1:
+  version "1.17.3-beta.1"
+  resolved "http://npm.lumigame.com/sc-base-apis/-/sc-base-apis-1.17.3-beta.1.tgz#f544cdfeff21ca632526d0c227a4ee612f4b5b4a"
+  integrity sha512-Ef48v/197V4F+oTDT6CV5VTNv+Y4DaRYl+chiHF0bUgTVA6oDG8MwPYWnnD4QrvLXjzyQ1JEK4SE+XEcQaJX2w==
   dependencies:
     moment "^2.27.0"
     sc-api-client "1.3.2-beta.0"
