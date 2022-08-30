@@ -150,12 +150,10 @@ export default class SettleGameRoundConsumer {
         const gameInfo = {
             gameId: this.definition.id,
             gameRoundId: roundId,
-            memberId: bet.memberId,
             siteId: bet.siteId,
-            partnerId: bet.partnerId,
             time: time,
-            operatorId: bet.partnerId,
-            playerId: bet.memberId,
+            operatorId: bet.operatorId,
+            playerId: bet.playerId,
         };
         const settlementInfo = {
             redPlay: betResult.totalBetAmount,

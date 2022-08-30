@@ -42,8 +42,7 @@ export default class UserSignInConsumer {
         const userSession = {
             ...signInGameResult,
             userId: signInGameResult.id,
-            partnerId: signInGameResult.operatorId,
-            memberId: signInGameResult.playerId,
+            playerName: signInGameResult.memberName
         };
 
         const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();

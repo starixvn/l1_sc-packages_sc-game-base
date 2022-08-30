@@ -175,11 +175,11 @@ describe("SettleGameRoundConsumer", () => {
         const result = { red1: true, red2: true, red3: true, red4: false };
         const settlementResult = { odd: true, even: false };
         const queryBets = [
-            { uid: chance.guid(), odd: chance.natural(), memberId: chance.natural(), siteId: chance.natural(), save: jest.fn() },
+            { uid: chance.guid(), odd: chance.natural(), playerId: chance.natural(), siteId: chance.natural(), save: jest.fn() },
             {
                 uid: chance.guid(),
                 even: chance.natural(),
-                memberId: chance.natural(),
+                playerId: chance.natural(),
                 siteId: chance.natural(),
                 freeBet: true,
                 save: jest.fn(),
@@ -281,7 +281,7 @@ describe("SettleGameRoundConsumer", () => {
         it("should return value from betsRepository find query", async () => {
             // Arrange
             const queryResult = [
-                { uid: chance.guid(), odd: chance.natural(), memberId: chance.natural(), siteId: chance.natural(), save: jest.fn() },
+                { uid: chance.guid(), odd: chance.natural(), playerId: chance.natural(), siteId: chance.natural(), save: jest.fn() },
             ];
             betsRepository.find().exec.mockResolvedValue(queryResult);
 
@@ -298,7 +298,7 @@ describe("SettleGameRoundConsumer", () => {
 
         it("should return result with correct gameInfo", () => {
             // Arrange
-            const bet = { freeBet: false, memberId: chance.guid(), partnerId: chance.string(), siteId: chance.guid() };
+            const bet = { freeBet: false, playerId: chance.guid(), operatorId: chance.string(), siteId: chance.guid() };
             const betResult = {
                 totalBetAmount: 2000,
                 totalWin: 3000,
@@ -313,12 +313,10 @@ describe("SettleGameRoundConsumer", () => {
             expect(actualResult.gameInfo).toStrictEqual({
                 gameId: definition.id,
                 gameRoundId: roundId,
-                memberId: bet.memberId,
                 siteId: bet.siteId,
-                partnerId: bet.partnerId,
                 time: time,
-                operatorId: bet.partnerId,
-                playerId: bet.memberId,
+                operatorId: bet.operatorId,
+                playerId: bet.playerId,
             });
         });
 

@@ -100,24 +100,24 @@ describe("http router test", () => {
             const players = [
                 {
                     session: {
-                        memberName: "player1",
-                        memberId: 1,
+                        playerName: "player1",
+                        playerId: 1,
                         isTestCurrency: false,
                         characterName: "character1",
                         currencyName: "USD",
-                        partnerId: "1W",
+                        operatorId: "1W",
                         system: 1,
                     },
                     socketClient,
                 },
                 {
                     session: {
-                        memberName: "player2",
-                        memberId: 2,
+                        playerName: "player2",
+                        playerId: 2,
                         isTestCurrency: true,
                         characterName: "character2",
                         currencyName: "USD",
-                        partnerId: "1W",
+                        operatorId: "1W",
                         system: 1,
                     },
                     socketClient,

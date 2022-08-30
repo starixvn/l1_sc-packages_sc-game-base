@@ -35,11 +35,10 @@ export default class HistoryQuery {
             uid: false,
             thanhtoan: false,
             siteId: false,
-            memberId: false,
+            playerId: false,
             __v: false,
             __archive: false,
             currency: false,
-            partnerId: false,
             operatorId: false,
             paid: false,
         };
