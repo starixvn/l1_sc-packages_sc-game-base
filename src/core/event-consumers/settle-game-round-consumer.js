@@ -76,7 +76,6 @@ export default class SettleGameRoundConsumer {
                     const betResult = this.calculateBetResult(settlementResult, bet, odds);
 
                     bet.betwin = betResult.totalWin;
-                    bet.thanhtoan = true;
                     bet.paid = true;
 
                     await bet.save();

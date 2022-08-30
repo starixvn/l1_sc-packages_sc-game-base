@@ -27,13 +27,12 @@ export default class HistoryQuery {
             return {};
         }
 
-        const filter = { uid: player.UID, thanhtoan: true };
+        const filter = { uid: player.UID, paid: true };
         const numberOfSkippedBets = (page - 1) * pageSize;
         const total = await this.betsRepository.countDocuments(filter).exec();
         const betProjection = {
             _id: false,
             uid: false,
-            thanhtoan: false,
             siteId: false,
             playerId: false,
             __v: false,
