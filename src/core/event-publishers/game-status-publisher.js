@@ -14,7 +14,6 @@ export default class GameStatusPublisher extends BaseEventPublisher {
         const configs = {
             odds: gameConfigs.odds,
             enableFreeBet: gameConfigs.enableFreeBet,
-            boostedChoices: gameConfigs.boostedChoices,
         };
 
         const realPlayers = Object.values(this.gameData.realPlayers);
@@ -35,11 +34,18 @@ export default class GameStatusPublisher extends BaseEventPublisher {
     publishStartGame() {
         this.publishToAllUsers({
             remainingTime: this.gameData.remainingTime,
-            odds: { values: this.gameData.gameConfigs.odds, boostedChoices: this.gameData.gameConfigs.boostedChoices },
         });
         this.publishToAllAdmins({
             currencies: this.gameData.currencies,
             exchangeRates: this.gameData.exchangeRates,
         });
+    }
+
+    publishBoostedOdds() {
+        if (this.gameData.gameConfigs) {
+            this.publishToAllUsers({
+                odds: { values: this.gameData.gameConfigs.odds, boostedChoices: this.gameData.gameConfigs.boostedChoices },
+            });
+        }
     }
 }

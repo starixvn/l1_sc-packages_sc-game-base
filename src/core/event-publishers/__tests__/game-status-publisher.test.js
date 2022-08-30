@@ -135,13 +135,6 @@ describe("publishStartGame test", () => {
         // assert
         expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
             remainingTime: gameData.remainingTime,
-            odds: {
-                boostedChoices: undefined,
-                values: {
-                    big: 2,
-                    small: 2,
-                },
-            },
         });
     });
 });

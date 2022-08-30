@@ -250,8 +250,10 @@ export default class BaseGameCron {
         const havingNewPromotion = isUsingPromotion();
 
         if (!havingPreviousPromotion && havingNewPromotion) {
+            this.gameStatusPublisher.publishBoostedOdds();
             chatBotHelper.sendBoostedOddsMessage(getStartPromotionMessage(this.definition.name, promotion));
         } else if (havingPreviousPromotion && !havingNewPromotion) {
+            this.gameStatusPublisher.publishBoostedOdds();
             chatBotHelper.sendBoostedOddsMessage(
                 getFinishPromotionMessage(this.definition.name, previousPromotion, this.gameData.gameConfigs?.odds)
             );
