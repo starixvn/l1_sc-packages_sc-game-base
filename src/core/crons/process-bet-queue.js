@@ -214,13 +214,12 @@ export default class ProcessBetQueue {
         const newBet = {
             uid: player.UID,
             name: player.profile.name,
-            phien: roundId,
             time: new Date(),
             odds: configs.odds,
             freeBet: bet.freeBet,
             roundId,
         };
-        const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
+        const existingBetFilter = { uid: player.UID, roundId, freeBet: bet.freeBet };
         const existingBetIncrement = {
             [bet.betChoice]: bet.amount,
             totalAmount: bet.amount,
@@ -246,7 +245,6 @@ export default class ProcessBetQueue {
         const newBetLog = {
             uid: player.UID,
             name: player.profile.name,
-            phien: roundId,
             time: new Date(),
             choice: bet.betChoice,
             amount: bet.amount,

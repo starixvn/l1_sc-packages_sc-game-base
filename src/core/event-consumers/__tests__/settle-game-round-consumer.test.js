@@ -275,7 +275,7 @@ describe("SettleGameRoundConsumer", () => {
             consumer.queryBets(queryRoundId);
 
             // Assert
-            expect(betsRepository.find).toHaveBeenCalledWith({ phien: queryRoundId });
+            expect(betsRepository.find).toHaveBeenCalledWith({ roundId: queryRoundId });
         });
 
         it("should return value from betsRepository find query", async () => {

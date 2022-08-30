@@ -219,7 +219,7 @@ export default class TableGameBot extends BaseBot {
         const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
 
         if (this.gameData.remainingTime > this.definition.durations.lockingBet) {
-            const currentBet = await this.tempBetsRepository.findOne({ uid: bot.id, phien: this.gameData.roundId }).lean().exec();
+            const currentBet = await this.tempBetsRepository.findOne({ uid: bot.id, roundId: this.gameData.roundId }).lean().exec();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
@@ -279,13 +279,12 @@ export default class TableGameBot extends BaseBot {
         const create = {
             uid: bot.id,
             name: bot.name,
-            phien: this.gameData.roundId,
             roundId: this.gameData.roundId,
             time: new Date(),
         };
 
         await this.tempBetsRepository.updateOne(
-            { uid: bot.id, phien: this.gameData.roundId },
+            { uid: bot.id, roundId: this.gameData.roundId },
             { $set: update, $setOnInsert: create },
             { upsert: true, setDefaultsOnInsert: true }
         );

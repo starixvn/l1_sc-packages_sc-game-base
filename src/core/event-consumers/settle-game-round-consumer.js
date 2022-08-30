@@ -62,7 +62,7 @@ export default class SettleGameRoundConsumer {
     }
 
     queryBets(roundId) {
-        return this.betsRepository.find({ phien: roundId }).exec();
+        return this.betsRepository.find({ roundId }).exec();
     }
 
     async settleBets({ result, settlementResult, roundId, time }) {

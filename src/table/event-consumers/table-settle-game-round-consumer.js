@@ -47,8 +47,8 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
     }
 
     async queryBets(roundId) {
-        const realPlayerBets = await this.betsRepository.find({ phien: roundId }).exec();
-        const botBets = await this.tempBetsRepository.find({ phien: roundId }).exec();
+        const realPlayerBets = await this.betsRepository.find({  roundId }).exec();
+        const botBets = await this.tempBetsRepository.find({  roundId }).exec();
 
         return realPlayerBets.concat(botBets);
     }
