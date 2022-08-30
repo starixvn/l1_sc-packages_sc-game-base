@@ -154,6 +154,7 @@ export default class BaseGameCron {
         if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
             this.bot && (await this.bot.reset());
+            this.appConfigs.enabledBoostedOdds && (await this.updatePromotionOddsAndNotify());
         }
 
         if (this.gameData.remainingTime === durations.placingBets && this.resultsRepository) {
@@ -193,10 +194,6 @@ export default class BaseGameCron {
             (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
 
         this.gameData.gameConfigs = configs ?? {};
-        if (this.appConfigs.enabledBoostedOdds) {
-            await this.updatePromotionOddsAndNotify();
-        }
-
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.getSettingForNewRound();
 

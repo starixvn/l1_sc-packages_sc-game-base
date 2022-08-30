@@ -439,6 +439,10 @@ describe("proceed", () => {
             gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
             gameCron.gameData.disabled = true;
+            gameCron.appConfigs = {
+                enabledBoostedOdds: true,
+            };
+            gameCron.updatePromotionOddsAndNotify = jest.fn();
 
             // Act
             await gameCron.proceed();
@@ -461,6 +465,10 @@ describe("proceed", () => {
             gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
             gameCron.gameData.disabled = true;
+            gameCron.appConfigs = {
+                enabledBoostedOdds: true,
+            };
+            gameCron.updatePromotionOddsAndNotify = jest.fn();
 
             // Act
             await gameCron.proceed();
