@@ -23,7 +23,7 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
      * @param {Socket} socketClient
      */
     async consume(socketClient, payload) {
-        if (payload?.system === Systems.Mobi) {
+        if (payload?.system === Systems.Mobi || payload?.system === Systems.Mini) {
             await super.consume(socketClient, payload);
             return;
         }
