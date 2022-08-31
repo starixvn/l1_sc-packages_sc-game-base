@@ -56,6 +56,7 @@ export default class HistoryQuery {
 
                     return {
                         ...this.convertBet(bet),
+                        phien: bet.roundId,
                         result: round.result,
                         settlementResult: round.settlementResult,
                         betLogDetails: this.convertBetLogs(betLogDetails),
