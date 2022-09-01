@@ -30,22 +30,20 @@ export default class TableInGameConsumer extends InGameConsumer {
 
     async buildPayload(realPlayer) {
         const payload = await super.buildPayload(realPlayer);
-        const { remainingTime, chips } = this.gameData;
+        const { remainingTime, chips, gameConfigs } = this.gameData;
+        const disabled = !gameConfigs || !gameConfigs.enabled;
         const players = realPlayer.session?.system === Systems.Mobi ? {} : this.buildPlayersPayload(realPlayer);
 
-        return {
-            ...payload,
-            remainingTime,
-            players,
-            chips,
-        };
+        return disabled && realPlayer.session?.system === Systems.Mini
+            ? { ...payload, players, chips }
+            : { ...payload, remainingTime, players, chips };
     }
 
     buildPlayersPayload(realPlayer) {
         return Object.values(this.gameData.players).reduce((playerList, player) => {
             const { id, name, red, avatarId, type, patternId, rate } = player;
 
-            if(id !== realPlayer.UID){
+            if (id !== realPlayer.UID) {
                 playerList[id] = {
                     id,
                     name,
