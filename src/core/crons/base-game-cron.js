@@ -194,6 +194,7 @@ export default class BaseGameCron {
             (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
 
         this.gameData.gameConfigs = configs ?? {};
+        this.gameData.gameConfigs.originalOdds = configs ? Object.assign({}, configs.odds) : {};
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.getSettingForNewRound();
 

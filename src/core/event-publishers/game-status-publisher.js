@@ -13,6 +13,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
         const { gameConfigs, remainingTime, roundId } = this.gameData;
         const configs = {
             odds: gameConfigs.odds,
+            originalOdds: gameConfigs.originalOdds,
             enableFreeBet: gameConfigs.enableFreeBet,
         };
 
