@@ -1,3 +1,11 @@
+## [3.0.7](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.6...v3.0.7) (2022-09-09)
+
+
+### Bug Fixes
+
+* do not return remaining time when disable for SI ([0bc4e4a](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/0bc4e4a3d466874edf458f3c60e450bacc97ee50))
+* update table user signin consumer ([e1ff696](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e1ff696180b5f7362e768c991807663765372217))
+
 ## [3.0.6](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.5...v3.0.6) (2022-07-14)
 
 
