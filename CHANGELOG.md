@@ -1,3 +1,19 @@
+# [3.1.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.7...v3.1.0) (2022-09-14)
+
+
+### Bug Fixes
+
+* check user info when signin game ([642c7ba](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/642c7bad4064832d31135abd9290b59cf5c0c04d))
+* history-query - add phien ([440420f](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/440420f4206eea3a98a2f158fb1a8eafbe9dbb7c))
+* upgrade sc-base-apis@1.17.3-beta.0 ([11513e5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/11513e5d091d3d9e462d4d1727b7d091e779bb79))
+
+
+### Features
+
+* remove memberId, memberName, partnerId ([cd2b556](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/cd2b556c93171ff7d05e4c132502cf126835a9eb))
+* remove phien ([287308b](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/287308bb291117541932185c0808301a1f0128d0))
+* remove thanhtoan ([5f691f3](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/5f691f3818a6000c5f41b1bf1bbceb5f75c89179))
+
 ## [3.0.7](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.6...v3.0.7) (2022-09-09)
 
 
