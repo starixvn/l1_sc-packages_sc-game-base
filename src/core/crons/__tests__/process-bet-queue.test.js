@@ -988,7 +988,7 @@ describe("ProcessBetQueue", () => {
             profile: { name: "player01", minBet: 1, maxBet: 5000 },
             session: {
                 userId: 1,
-                memberId: 1,
+                playerId: 1,
                 siteId: "123456",
                 currencyCode: "USD",
                 currencyName: "USD",

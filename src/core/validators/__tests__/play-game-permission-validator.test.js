@@ -48,7 +48,7 @@ describe("isSiteExcluded", () => {
         it("should return true", () => {
             // arrange
             const validator = new PlayGamePermissionValidator(definition, gameData, userSignInPublisher);
-            const userSession = { siteName: "lumi", partnerId: "2W" };
+            const userSession = { siteName: "lumi", operatorId: "2W" };
             gameData.partnerGameSiteExclusions = [
                 {
                     partnerId: "2W",
@@ -71,7 +71,7 @@ describe("isSiteExcluded", () => {
         it("should return false", () => {
             // arrange
             const validator = new PlayGamePermissionValidator(definition, gameData, userSignInPublisher);
-            const userSession = { siteName: "lumi", partnerId: "2W" };
+            const userSession = { siteName: "lumi", operatorId: "2W" };
             gameData.partnerGameSiteExclusions = [
                 {
                     partnerId: "2W",
@@ -94,7 +94,7 @@ describe("isSiteExcluded", () => {
         it("should return false", () => {
             // arrange
             const validator = new PlayGamePermissionValidator(definition, gameData, userSignInPublisher);
-            const userSession = { siteName: "lumi", partnerId: "2W" };
+            const userSession = { siteName: "lumi", operatorId: "2W" };
             gameData.partnerGameSiteExclusions = [
                 {
                     partnerId: "2W",

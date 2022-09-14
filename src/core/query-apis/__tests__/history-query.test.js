@@ -37,13 +37,13 @@ describe("history quer test", () => {
                 betsRepository
                     .find()
                     .lean()
-                    .exec.mockReturnValueOnce([{ uid: 1, phien: 1, odd: 100, even: 50 }]);
+                    .exec.mockReturnValueOnce([{ uid: 1, roundId: 1, odd: 100, even: 50 }]);
                 betLogsRepository
                     .find()
                     .lean()
                     .exec.mockReturnValueOnce([
-                        { uid: 1, phien: 1, choice: "odd" },
-                        { uid: 1, phien: 1, choice: "even" },
+                        { uid: 1, roundId: 1, choice: "odd" },
+                        { uid: 1, roundId: 1, choice: "even" },
                     ]);
 
                 var actualResult = await historyQuery.queryHistory({ UID: 1 }, 1, 10);

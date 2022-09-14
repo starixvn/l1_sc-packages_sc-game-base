@@ -27,19 +27,17 @@ export default class HistoryQuery {
             return {};
         }
 
-        const filter = { uid: player.UID, thanhtoan: true };
+        const filter = { uid: player.UID, paid: true };
         const numberOfSkippedBets = (page - 1) * pageSize;
         const total = await this.betsRepository.countDocuments(filter).exec();
         const betProjection = {
             _id: false,
             uid: false,
-            thanhtoan: false,
             siteId: false,
-            memberId: false,
+            playerId: false,
             __v: false,
             __archive: false,
             currency: false,
-            partnerId: false,
             operatorId: false,
             paid: false,
         };
@@ -53,11 +51,12 @@ export default class HistoryQuery {
         if (bets && bets.length > 0) {
             betLogs = await Promise.all(
                 bets.map(async (bet) => {
-                    const round = await this.roundQuery.getOne(bet.phien, { _id: false });
-                    const betLogDetails = this.betLogsRepository ? await this.getBetLogDetails(player, bet.phien) : [];
+                    const round = await this.roundQuery.getOne(bet.roundId, { _id: false });
+                    const betLogDetails = this.betLogsRepository ? await this.getBetLogDetails(player, bet.roundId) : [];
 
                     return {
                         ...this.convertBet(bet),
+                        phien: bet.roundId,
                         result: round.result,
                         settlementResult: round.settlementResult,
                         betLogDetails: this.convertBetLogs(betLogDetails),
@@ -72,7 +71,7 @@ export default class HistoryQuery {
     getBetLogDetails(player, roundId) {
         return this.betLogsRepository
             .find(
-                { phien: roundId, uid: player.UID },
+                { roundId, uid: player.UID },
                 { _id: false, time: true, choice: true, amount: true, select: true, bet: true },
                 { sort: { _id: -1 } }
             )

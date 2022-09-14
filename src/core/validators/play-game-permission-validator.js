@@ -36,7 +36,7 @@ export default class PlayGamePermissionValidator {
     isValidCurrency(userSession) {
         return this.gameData.currencies.some(
             (currency) =>
-                userSession.currencyName.toUpperCase() === currency.name.toUpperCase() && currency.partnerId === userSession.partnerId
+                userSession.currencyName.toUpperCase() === currency.name.toUpperCase() && currency.partnerId === userSession.operatorId
         );
     }
 
@@ -49,7 +49,7 @@ export default class PlayGamePermissionValidator {
     }
 
     isSiteExcluded(userSession) {
-        const gameSiteExclusion = this.gameData.partnerGameSiteExclusions.find((config) => config.partnerId === userSession.partnerId);
+        const gameSiteExclusion = this.gameData.partnerGameSiteExclusions.find((config) => config.partnerId === userSession.operatorId);
 
         const excludeSiteConfig = gameSiteExclusion?.value[this.definition.id];
 

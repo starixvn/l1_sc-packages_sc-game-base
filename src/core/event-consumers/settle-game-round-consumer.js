@@ -62,7 +62,7 @@ export default class SettleGameRoundConsumer {
     }
 
     queryBets(roundId) {
-        return this.betsRepository.find({ phien: roundId }).exec();
+        return this.betsRepository.find({ roundId }).exec();
     }
 
     async settleBets({ result, settlementResult, roundId, time }) {
@@ -76,7 +76,6 @@ export default class SettleGameRoundConsumer {
                     const betResult = this.calculateBetResult(settlementResult, bet, odds);
 
                     bet.betwin = betResult.totalWin;
-                    bet.thanhtoan = true;
                     bet.paid = true;
 
                     await bet.save();
@@ -150,12 +149,10 @@ export default class SettleGameRoundConsumer {
         const gameInfo = {
             gameId: this.definition.id,
             gameRoundId: roundId,
-            memberId: bet.memberId,
             siteId: bet.siteId,
-            partnerId: bet.partnerId,
             time: time,
-            operatorId: bet.partnerId,
-            playerId: bet.memberId,
+            operatorId: bet.operatorId,
+            playerId: bet.playerId,
         };
         const settlementInfo = {
             redPlay: betResult.totalBetAmount,

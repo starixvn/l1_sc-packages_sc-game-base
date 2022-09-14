@@ -42,12 +42,11 @@ export default class UserSignInConsumer {
         const userSession = {
             ...signInGameResult,
             userId: signInGameResult.id,
-            partnerId: signInGameResult.operatorId,
-            memberId: signInGameResult.playerId,
+            playerName: signInGameResult.memberName
         };
 
         const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
-        if (this.playGamePermissionValidator.validate(userSession, socketClient)) {
+        if (userInfo && this.playGamePermissionValidator.validate(userSession, socketClient)) {
             await this.getUserBetLimit(userSession, userInfo, socketClient);
 
             Object.values(this.gameData.realPlayers).forEach((realPlayer) => {
@@ -58,6 +57,8 @@ export default class UserSignInConsumer {
             });
 
             this.handleSignInSuccess(socketClient, userInfo, userSession);
+        } else {
+            this.handleUnauthorizedSignIn(socketClient);
         }
     }
 

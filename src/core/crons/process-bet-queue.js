@@ -214,27 +214,24 @@ export default class ProcessBetQueue {
         const newBet = {
             uid: player.UID,
             name: player.profile.name,
-            phien: roundId,
             time: new Date(),
             odds: configs.odds,
             freeBet: bet.freeBet,
             roundId,
         };
-        const existingBetFilter = { uid: player.UID, phien: roundId, freeBet: bet.freeBet };
+        const existingBetFilter = { uid: player.UID, roundId, freeBet: bet.freeBet };
         const existingBetIncrement = {
             [bet.betChoice]: bet.amount,
             totalAmount: bet.amount,
         };
 
         if (player.session) {
-            newBet.memberId = player.session.memberId;
             newBet.siteId = player.session.siteId;
-            newBet.partnerId = player.session.partnerId;
             newBet.currency = player.session.currencyName;
             newBet.rate = rate;
 
-            newBet.operatorId = player.session.partnerId;
-            newBet.playerId = player.session.memberId;
+            newBet.operatorId = player.session.operatorId;
+            newBet.playerId = player.session.playerId;
         }
 
         await this.betsRepository.updateOne(
@@ -248,7 +245,6 @@ export default class ProcessBetQueue {
         const newBetLog = {
             uid: player.UID,
             name: player.profile.name,
-            phien: roundId,
             time: new Date(),
             choice: bet.betChoice,
             amount: bet.amount,
@@ -259,14 +255,12 @@ export default class ProcessBetQueue {
         };
 
         if (player.session) {
-            newBetLog.memberId = player.session.memberId;
             newBetLog.siteId = player.session.siteId;
-            newBetLog.partnerId = player.session.partnerId;
             newBetLog.currency = player.session.currencyName;
             newBetLog.rate = rate;
 
-            newBetLog.operatorId = player.session.partnerId;
-            newBetLog.playerId = player.session.memberId;
+            newBetLog.operatorId = player.session.operatorId;
+            newBetLog.playerId = player.session.playerId;
         }
 
         await this.betLogsRepository.create(newBetLog);

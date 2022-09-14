@@ -86,13 +86,13 @@ export default class HttpRouter {
         players.forEach((player) => {
             if (player && player.session && player.socketClient && player.socketClient.connected) {
                 const user = {
-                    name: player.session.memberName,
-                    id: player.session.memberId,
+                    name: player.session.playerName,
+                    id: player.session.playerId,
                     currency: player.session.currencyName,
                     character: player.session.characterName,
                     system: player.session.system,
-                    partnerId: player.session.partnerId,
-                    operatorId: player.session.partnerId,
+                    operatorId: player.session.operatorId,
+                    partnerId: player.session.operatorId,
                 };
 
                 if (player.session.isTestCurrency) {
