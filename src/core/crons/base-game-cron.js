@@ -193,7 +193,14 @@ export default class BaseGameCron {
         this.gameData.umMessages =
             (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
 
-        this.gameData.gameConfigs = configs ?? {};
+        if (this.gameData.gameConfigs && this.gameData.gameConfigs.boostedChoices && this.gameData.gameConfigs.boostedChoices.length > 0) {
+            this.gameData.gameConfigs = configs
+                ? Object.assign(configs, { odds: this.gameData.gameConfigs.odds, boostedChoices: this.gameData.gameConfigs.boostedChoices })
+                : {};
+        } else {
+            this.gameData.gameConfigs = configs ?? {};
+        }
+
         this.gameData.gameConfigs.originalOdds = configs ? Object.assign({}, configs.odds) : {};
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.getSettingForNewRound();
