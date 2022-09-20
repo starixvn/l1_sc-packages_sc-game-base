@@ -235,9 +235,9 @@ export default class BaseGameCron {
         this.gameData.gameConfigs.boostedChoices = [];
         if (promotion) {
             const boostedOdds = promotion.odds;
-            const originOdds = this.gameData.gameConfigs.odds;
-            Object.keys(originOdds).forEach((choice) => {
-                if (boostedOdds[choice] && boostedOdds[choice] !== originOdds[choice]) {
+            const originalOdds = this.gameData.gameConfigs.originalOdds;
+            Object.keys(originalOdds).forEach((choice) => {
+                if (boostedOdds[choice] && boostedOdds[choice] !== originalOdds[choice]) {
                     this.gameData.gameConfigs.boostedChoices.push(choice);
                     this.gameData.gameConfigs.odds[choice] = boostedOdds[choice];
                 }
