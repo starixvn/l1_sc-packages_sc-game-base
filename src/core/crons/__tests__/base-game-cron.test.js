@@ -978,6 +978,7 @@ describe("updatePromotionOdds", () => {
             gameCron.gameData.gameConfigs = {
                 x: 123,
                 odds: { big: 10, small: 10 },
+                originalOdds: { big: 10, small: 10 },
             };
             const promotions = [];
             gameCron.promotionRepository = {
@@ -1005,6 +1006,7 @@ describe("updatePromotionOdds", () => {
             gameCron.gameData.gameConfigs = {
                 x: 123,
                 odds: { big: 10, small: 10 },
+                originalOdds: { big: 10, small: 10 },
             };
             const promotions = [];
             gameCron.promotionRepository = {
