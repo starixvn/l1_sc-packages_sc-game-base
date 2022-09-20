@@ -257,11 +257,11 @@ export default class BaseGameCron {
         const promotion = await this.updatePromotionOdds();
         const havingNewPromotion = isUsingPromotion();
 
+        this.gameStatusPublisher.publishBoostedOdds();
+
         if (!havingPreviousPromotion && havingNewPromotion) {
-            this.gameStatusPublisher.publishBoostedOdds();
             chatBotHelper.sendBoostedOddsMessage(getStartPromotionMessage(this.definition.name, promotion));
         } else if (havingPreviousPromotion && !havingNewPromotion) {
-            this.gameStatusPublisher.publishBoostedOdds();
             chatBotHelper.sendBoostedOddsMessage(
                 getFinishPromotionMessage(this.definition.name, previousPromotion, this.gameData.gameConfigs?.odds)
             );

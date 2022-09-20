@@ -43,7 +43,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
     }
 
     publishBoostedOdds() {
-        if (this.gameData.gameConfigs) {
+        if (this.gameData.gameConfigs && this.gameData.gameConfigs.boostedChoices) {
             this.publishToAllUsers({
                 odds: { values: this.gameData.gameConfigs.odds, boostedChoices: this.gameData.gameConfigs.boostedChoices },
             });
