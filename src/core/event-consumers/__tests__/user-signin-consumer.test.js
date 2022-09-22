@@ -139,20 +139,6 @@ describe("UserSignInConsumer", () => {
             });
 
             describe("when already have user info", () => {
-                describe("when not have play game permission", () => {
-                    it("should publish unauthorized message", async () => {
-                        // Arrange
-                        userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
-                        playGamePermissionValidator.validate.mockReturnValueOnce(false);
-
-                        // Act
-                        await consumer.consume(socketClient, payload);
-
-                        // Assert
-                        expect(userSignInPublisher.publishUnauthorizedMessage).toBeCalledWith(socketClient);
-                    });
-                });
-
                 describe("when have play game permission", () => {
                     beforeEach(() => {
                         // Arrange
