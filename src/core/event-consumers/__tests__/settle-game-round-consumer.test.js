@@ -14,7 +14,9 @@ describe("SettleGameRoundConsumer", () => {
     const roundId = chance.natural();
 
     const defaultGameData = new GameData(30);
-    defaultGameData.gameConfigs = Models.GameConfig({ odds: { odd: 1.96, even: 1.96 } });
+    defaultGameData.gameConfigs = Models.GameConfig({
+        odds: { odd: 1.96, even: 1.96, red3: 3.75, red4: 14.4, white3: 3.75, white4: 14.4 },
+    });
 
     let gameData, definition, consumer;
 
@@ -207,23 +209,70 @@ describe("SettleGameRoundConsumer", () => {
             consumer.queryBets = jest.fn(() => queryBets);
             consumer.calculateBetResult = jest.fn(() => betResult);
             consumer.collectRoundResult = jest.fn(() => collectRoundResult);
+            consumer.captureBetResult = jest.fn();
         });
 
-        it("should call end game with all bet", async () => {
+        it("should call queryBets", async () => {
             // Act
             await consumer.settleBets(settleBetParams);
 
             // Assert
-            expect(consumer.callEndGame).toHaveBeenCalledTimes(queryBets.length);
+            expect(consumer.queryBets).toBeCalledWith(settleBetParams.roundId);
         });
 
-        test.each(Object.keys(queryBets).map((index) => [+index]))("should  publish to user bet result", async (betIndex) => {
-            // Act
-            await consumer.settleBets(settleBetParams);
+        Object.keys(queryBets)
+            .map((index) => +index)
+            .forEach((betIndex) => {
+                describe(`with bet ${betIndex + 1}`, () => {
+                    it("should call calculateBetResult", async () => {
+                        // Act
+                        await consumer.settleBets(settleBetParams);
 
-            // Assert
-            expect(userBetResultPublisher.publish).toHaveBeenNthCalledWith(betIndex + 1, queryBets[betIndex].uid, betResult);
-        });
+                        // Assert
+                        expect(consumer.calculateBetResult).toHaveBeenNthCalledWith(
+                            betIndex + 1,
+                            settlementResult,
+                            queryBets[betIndex],
+                            defaultGameData.gameConfigs.odds
+                        );
+                    });
+
+                    it("should call endGame", async () => {
+                        // Act
+                        await consumer.settleBets(settleBetParams);
+
+                        // Assert
+                        expect(consumer.callEndGame).toHaveBeenNthCalledWith(
+                            betIndex + 1,
+                            queryBets[betIndex],
+                            settleBetParams.roundId,
+                            settleBetParams.time,
+                            betResult
+                        );
+                    });
+
+                    it("should call captureBetResult", async () => {
+                        // Act
+                        await consumer.settleBets(settleBetParams);
+
+                        // Assert
+                        expect(consumer.captureBetResult).toHaveBeenNthCalledWith(
+                            betIndex + 1,
+                            queryBets[betIndex].uid,
+                            betResult,
+                            queryBets[betIndex].rate
+                        );
+                    });
+
+                    it("should publish bet result to user", async () => {
+                        // Act
+                        await consumer.settleBets(settleBetParams);
+
+                        // Assert
+                        expect(userBetResultPublisher.publish).toHaveBeenNthCalledWith(betIndex + 1, queryBets[betIndex].uid, betResult);
+                    });
+                });
+            });
 
         it("should publish round result to client", async () => {
             // Act
@@ -431,7 +480,7 @@ describe("SettleGameRoundConsumer", () => {
     });
 
     describe("calculateBetResult", () => {
-        const settlementResult = { odd: true, even: false };
+        const settlementResult = { odd: true, even: false, red3: true, red4: false, white3: false, white4: false };
         const odds = defaultGameData.gameConfigs.odds;
 
         it("should return totalWin amount with format #.##", () => {
@@ -471,15 +520,14 @@ describe("SettleGameRoundConsumer", () => {
         });
 
         describe("when bet result is win", () => {
-            const choice = "odd";
-            const bet = { [choice]: 1000 };
+            const bet = { odd: 1000, red3: 100, white4: 100 };
 
             it("should return result with correct net win", () => {
                 // Act
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.netWin).toBe(960);
+                expect(actualResult.netWin).toBe(1235);
             });
 
             it("should return with correct total bet amount", () => {
@@ -487,7 +535,7 @@ describe("SettleGameRoundConsumer", () => {
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.totalBetAmount).toBe(1000);
+                expect(actualResult.totalBetAmount).toBe(1200);
             });
 
             it("should return result with total win includes net win and total bet", () => {
@@ -495,15 +543,15 @@ describe("SettleGameRoundConsumer", () => {
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.totalWin).toBe(1960);
+                expect(actualResult.totalWin).toBe(2335);
             });
 
-            it("should return result with total lost is zero", () => {
+            it("should return result with correct total lost", () => {
                 // Act
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.totalLost).toBe(0);
+                expect(actualResult.totalLost).toBe(100);
             });
 
             it("should return correct choice winning", () => {
@@ -511,12 +559,12 @@ describe("SettleGameRoundConsumer", () => {
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.winningByChoices).toStrictEqual({ odd: 1960, even: 0 });
+                expect(actualResult.winningByChoices).toStrictEqual({ odd: 1960, even: 0, red3: 375, red4: 0, white3: 0, white4: 0 });
             });
         });
 
         describe("when bet result is lose", () => {
-            const bet = { even: 500 };
+            const bet = { even: 500, red4: 50, white3: 50, white4: 50 };
 
             it("should return result with net win is 0", () => {
                 // Act
@@ -539,7 +587,7 @@ describe("SettleGameRoundConsumer", () => {
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.totalLost).toBe(500);
+                expect(actualResult.totalLost).toBe(650);
             });
 
             it("should return correct choice winning", () => {
@@ -547,7 +595,7 @@ describe("SettleGameRoundConsumer", () => {
                 const actualResult = consumer.calculateBetResult(settlementResult, bet, odds);
 
                 // Assert
-                expect(actualResult.winningByChoices).toStrictEqual({ even: 0, odd: 0 });
+                expect(actualResult.winningByChoices).toStrictEqual({ even: 0, odd: 0, red3: 0, red4: 0, white3: 0, white4: 0 });
             });
         });
     });
