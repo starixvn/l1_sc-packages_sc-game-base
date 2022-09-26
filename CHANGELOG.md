@@ -1,3 +1,10 @@
+## [3.1.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.1.0...v3.1.1) (2022-09-26)
+
+
+### Bug Fixes
+
+* publish unauthorized when not permit to play ([31f4b1f](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/31f4b1f26853c1cfdad01410c5218073b161b6bc))
+
 # [3.1.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.0.7...v3.1.0) (2022-09-14)
 
 
