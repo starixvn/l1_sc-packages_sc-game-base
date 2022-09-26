@@ -20,7 +20,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
         const realPlayers = Object.values(this.gameData.realPlayers);
         realPlayers.forEach((realPlayer) => {
             const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === realPlayer.session.currencyGroupId);
-            const payload = { gameConfigs: { ...configs, ...settings }, remainingTime };
+            const payload = { gameConfigs: { ...configs, ...settings }, remainingTime, snr: true };
             realPlayer.socketClient && realPlayer.socketClient.emit(this.gameName, payload);
         });
 
@@ -35,6 +35,7 @@ export default class GameStatusPublisher extends BaseEventPublisher {
     publishStartGame() {
         this.publishToAllUsers({
             remainingTime: this.gameData.remainingTime,
+            snr: true,
         });
         this.publishToAllAdmins({
             currencies: this.gameData.currencies,
@@ -48,5 +49,17 @@ export default class GameStatusPublisher extends BaseEventPublisher {
                 odds: { values: this.gameData.gameConfigs.odds, boostedChoices: this.gameData.gameConfigs.boostedChoices },
             });
         }
+    }
+
+    publishStartPlacingBetStatus() {
+        this.publishToAllUsers({
+            spb: true,
+        });
+    }
+
+    publishEndPlacingBetStatus() {
+        this.publishToAllUsers({
+            epb: true,
+        });
     }
 }

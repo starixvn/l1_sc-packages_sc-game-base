@@ -155,11 +155,16 @@ export default class BaseGameCron {
             this.resetForNewRound();
             this.bot && (await this.bot.reset());
             this.appConfigs.enabledBoostedOdds && (await this.updatePromotionOddsAndNotify());
+            this.gameStatusPublisher.publishStartPlacingBetStatus();
         }
 
         if (this.gameData.remainingTime === durations.placingBets && this.resultsRepository) {
             await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
             this.gameData.settlementResultFromAdmin = {};
+        }
+
+        if (this.gameData.remainingTime === durations.lockingBet - 1) {
+            this.gameStatusPublisher.publishEndPlacingBetStatus();
         }
 
         if (this.gameData.remainingTime < 0) {
