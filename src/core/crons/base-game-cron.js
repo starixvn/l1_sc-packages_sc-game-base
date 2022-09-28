@@ -246,9 +246,9 @@ export default class BaseGameCron {
             const boostedOdds = promotion.odds;
             const originalOdds = this.gameData.gameConfigs.originalOdds;
             Object.keys(originalOdds).forEach((choice) => {
+                this.gameData.gameConfigs.odds[choice] = boostedOdds[choice];
                 if (boostedOdds[choice] && boostedOdds[choice] !== originalOdds[choice]) {
                     this.gameData.gameConfigs.boostedChoices.push(choice);
-                    this.gameData.gameConfigs.odds[choice] = boostedOdds[choice];
                 }
             });
         }
