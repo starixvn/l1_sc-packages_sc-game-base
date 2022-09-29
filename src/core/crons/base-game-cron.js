@@ -242,12 +242,11 @@ export default class BaseGameCron {
         this.gameData.promotion = promotion;
 
         this.gameData.gameConfigs.boostedChoices = [];
+        this.gameData.gameConfigs.odds = Object.assign({}, this.gameData.gameConfigs.originalOdds);
         if (promotion) {
-            const boostedOdds = promotion.odds;
-            const originalOdds = this.gameData.gameConfigs.originalOdds;
-            Object.keys(originalOdds).forEach((choice) => {
-                this.gameData.gameConfigs.odds[choice] = boostedOdds[choice];
-                if (boostedOdds[choice] && boostedOdds[choice] !== originalOdds[choice]) {
+            Object.keys(this.gameData.gameConfigs.odds).forEach((choice) => {
+                if (promotion.odds[choice] && promotion.odds[choice] !== this.gameData.gameConfigs.odds[choice]) {
+                    this.gameData.gameConfigs.odds[choice] = promotion.odds[choice];
                     this.gameData.gameConfigs.boostedChoices.push(choice);
                 }
             });
