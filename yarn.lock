@@ -7787,22 +7787,14 @@ sc-api-client@1.4.0:
   dependencies:
     axios "^0.19.2"
 
-sc-base-apis@1.18.0:
-  version "1.18.0"
-  resolved "https://npm.lumigame.com/sc-base-apis/-/sc-base-apis-1.18.0.tgz#70cf9bae9e5366b2b46f04bb8df1b1fe2c45b70b"
-  integrity sha512-rAbnKrJ0PkiEy5nKIdGXEv6Hzytde+VYmHqTO751g4eW2ooOQJEa0K8IKd6p975BSLYu/JlTeCWyLOHvEXASrA==
+sc-base-apis@1.18.1-beta.0:
+  version "1.18.1-beta.0"
+  resolved "http://npm.lumigame.com/sc-base-apis/-/sc-base-apis-1.18.1-beta.0.tgz#8339a8e074ca46f237e1ef3d1a0285f74add396c"
+  integrity sha512-Awdc3kzIMOuquOKN2sEDxe9MDFvBmDKJ8wMrEwM41AAiwhRVQqbM+2tf8yob1BELmP8x4MANvLIftOJBdwKWEA==
   dependencies:
     moment "^2.27.0"
     sc-api-client "1.4.0"
-    sc-base-database "1.10.1"
-    sc-common "1.8.1"
-
-sc-base-database@1.10.1:
-  version "1.10.1"
-  resolved "http://npm.lumigame.com/sc-base-database/-/sc-base-database-1.10.1.tgz#ffa166dafa4ec9220fb42990b973bc80489de232"
-  integrity sha512-VQh7D72S3JcpDlZKU0QL40EVEionhnjXWTOP5pCr/NYPX4vMY7W+5U10p5Lr0KkeNtOM1hCN/IYtxzhlQOtrpg==
-  dependencies:
-    mongoose "^5.9.25"
+    sc-base-database "1.11.2-beta.0"
     sc-common "1.8.1"
 
 sc-base-database@1.11.2-beta.0:
