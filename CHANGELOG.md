@@ -1,3 +1,33 @@
+# [3.2.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.1.1...v3.2.0) (2022-10-12)
+
+
+### Bug Fixes
+
+* add enabledBoostedOdds config ([95e70e5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/95e70e5108baebf9c17cf2691e9d79134b7a267e))
+* add originalOdds ([e42d7f9](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e42d7f91d558049ba335d300794491b874801e35))
+* always publish boosted odds at start placing bet time ([d249f76](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/d249f768d0197b259898266b22c3396e6a059a49))
+* fix original odds when calculating promotion ([f77be9e](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f77be9e1a1f8b74f2f57d685d563c9ee69ae329c))
+* fix original odds when calculating promotion ([be844d2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/be844d2ffd4692cacb141483e0d01d2e4f279aff))
+* fix original odds when calculating promotion ([e7cc8c5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e7cc8c57c47d8c7a7a06c50c6ae080e1bf1625be))
+* format time at gmt+7 ([8c872bd](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/8c872bdbe7f22a1a5b2ac8a961931b744b90095a))
+* publish boosed odds when starting time ([214a78c](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/214a78c43c1a36d295e6ff58accc46245472bece))
+* publish more events ([63f3a5c](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/63f3a5c6eca890648843020e204753b73a366062))
+* publish more events ([562b5ba](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/562b5ba137884242114abf9cede33aaacde67260))
+* publish odds when starting round ([97105ea](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/97105ea26bea5a19ce8897eee03276951527741a))
+* reset odds before apply promotion ([c2b4322](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/c2b43227f4ce0bf8f1bfe158a93e879f6bb76cd2))
+* save current boosted odds for joining game at settled time ([7ec6846](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/7ec68468dcbf6354a222b48796d13b7a6f2f4288))
+* update all odds when having promotion ([4dcf273](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/4dcf27359e797564faf44585c9fedf901b110d5d))
+* update chat bot helper ([793240a](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/793240a28f2c240379a55772f5a9acc42a889638))
+* update finish promotion message ([d14aaba](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/d14aaba1601e2a5c2feeac6f284d3a4ee32ade85))
+* update gameConfigs boostedChoices ([8e32642](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/8e3264292ed03a3cb10d93acce7a11db10c07f73))
+* update odds when starting time ([b58c1a4](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/b58c1a4a7894e661a39273c54cccba793677f665))
+
+
+### Features
+
+* add chat bot notification ([fdec32e](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/fdec32ec632997b8f317e2aabe4e639db2419ec3))
+* update promotion odds ([be8865e](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/be8865ea8751634079979646d3cb0aa0f1f9a869))
+
 ## [3.1.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.1.0...v3.1.1) (2022-09-26)
 
 
