@@ -35,12 +35,12 @@ export default class InGameConsumer {
     }
 
     async buildPayload(realPlayer) {
-        const { odds, enableFreeBet } = this.gameData.gameConfigs;
+        const { odds, originalOdds, enableFreeBet, boostedChoices } = this.gameData.gameConfigs;
         const { totalBets, roundId, exchangeRates } = this.gameData;
         const { session } = realPlayer;
         const rate = exchangeRates.code[session.currencyCode] * session.multiplier;
         const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === session.currencyGroupId);
-        const gameConfigs = { ...settings, odds, enableFreeBet };
+        const gameConfigs = { ...settings, odds, originalOdds, enableFreeBet, boostedChoices };
         const { ownBets: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { ownBets: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
 

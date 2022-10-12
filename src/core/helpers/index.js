@@ -1,3 +1,4 @@
 import authenticationHelpers from "./authentication-helpers";
+import chatBotHelper from "./chat-bot-helper";
 
-export { authenticationHelpers };
+export { authenticationHelpers, chatBotHelper };

@@ -8,7 +8,16 @@ import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
-import { ArchiveStatuses, CurrencyGroupGames, ExchangeRates, Notifications, PartnerConfigs, CurrencyGroups, Currencies } from "./models";
+import {
+    ArchiveStatuses,
+    CurrencyGroupGames,
+    ExchangeRates,
+    Notifications,
+    PartnerConfigs,
+    CurrencyGroups,
+    Currencies,
+    Promotions,
+} from "./models";
 import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
 import { PlayGamePermissionValidator } from "./validators";
@@ -58,6 +67,7 @@ export default class ContainerRegistry {
             partnerConfigRepository: asValue(PartnerConfigs),
             currencyGroupRepository: asValue(CurrencyGroups),
             currencyRepository: asValue(Currencies),
+            promotionRepository: asValue(Promotions),
         });
 
         this.container.register({

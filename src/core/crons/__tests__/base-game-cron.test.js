@@ -18,6 +18,15 @@ jest.mock("../../event-consumers/settle-game-round-consumer");
 jest.mock("../../event-publishers/running-round-info-publisher");
 jest.mock("../../event-publishers/game-status-publisher");
 jest.mock("cron");
+jest.mock("../../helpers/promotion-helper", () => {
+    return {
+        getEffectivePromotion: jest.fn(() => {
+            return {
+                odds: { big: 10, small: 11 },
+            };
+        }),
+    };
+});
 
 const gameData = new GameData(3);
 const definition = new GameDefinition(
@@ -430,6 +439,10 @@ describe("proceed", () => {
             gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
             gameCron.gameData.disabled = true;
+            gameCron.appConfigs = {
+                enabledBoostedOdds: true,
+            };
+            gameCron.updatePromotionOddsAndNotify = jest.fn();
 
             // Act
             await gameCron.proceed();
@@ -452,6 +465,10 @@ describe("proceed", () => {
             gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
             gameCron.gameData.disabled = true;
+            gameCron.appConfigs = {
+                enabledBoostedOdds: true,
+            };
+            gameCron.updatePromotionOddsAndNotify = jest.fn();
 
             // Act
             await gameCron.proceed();
@@ -586,12 +603,13 @@ describe("checkGameStatus tests", () => {
     describe("when game is enabled", () => {
         it("should update gameData.gameConfigs", async () => {
             // Arrange
-            const gameConfigs = { enabled: true };
+            const gameConfigs = { enabled: true, boostedChoices: [] };
             gameData.disabled = false;
             gameData.remainingTime = definition.durations.wholeRound;
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -608,6 +626,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -620,12 +639,13 @@ describe("checkGameStatus tests", () => {
     describe("game is disabled", () => {
         it("should update game configs", async () => {
             // Arrange
-            const gameConfigs = { enabled: false };
+            const gameConfigs = { enabled: false, boostedChoices: [] };
             gameData.disabled = false;
             gameData.remainingTime = definition.durations.wholeRound;
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -642,6 +662,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -658,6 +679,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -674,6 +696,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -686,12 +709,13 @@ describe("checkGameStatus tests", () => {
     describe("when game is currently disabled, then being enabled", () => {
         it("should update gameConfig", async () => {
             // Arrange
-            const gameConfigs = { enabled: true };
+            const gameConfigs = { enabled: true, boostedChoices: [] };
             gameData.disabled = true;
             gameData.remainingTime = definition.durations.wholeRound;
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -708,6 +732,7 @@ describe("checkGameStatus tests", () => {
             gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
 
             const baseGameCron = createBaseGameCron();
+            baseGameCron.appConfigs = {};
 
             // Act
             await baseGameCron.checkGameStatus();
@@ -910,5 +935,97 @@ describe("enableGame", () => {
 
         // Assert
         expect(gameCron.gameStatusPublisher.publishEnablingGameStatus).toHaveBeenCalled();
+    });
+});
+
+describe("updatePromotionOdds", () => {
+    describe("when gameConfigs not existed", () => {
+        it("should do nothing", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.gameConfigs = {
+                x: 123,
+            };
+
+            // Act
+            await gameCron.updatePromotionOdds();
+
+            // Assert
+            expect(gameCron.gameData.gameConfigs).toEqual({ x: 123 });
+        });
+    });
+
+    describe("when gameConfigs.odds not existed", () => {
+        it("should do nothing", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.gameConfigs = {
+                x: 123,
+            };
+
+            // Act
+            await gameCron.updatePromotionOdds();
+
+            // Assert
+            expect(gameCron.gameData.gameConfigs).toEqual({ x: 123 });
+        });
+    });
+
+    describe("when having effective promotion", () => {
+        it("should update game config odds", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.gameConfigs = {
+                x: 123,
+                odds: { big: 10, small: 10 },
+                originalOdds: { big: 10, small: 10 },
+            };
+            const promotions = [];
+            gameCron.promotionRepository = {
+                find: jest.fn(() => {
+                    return {
+                        lean: jest.fn(() => {
+                            return {
+                                exec: jest.fn(() => promotions),
+                            };
+                        }),
+                    };
+                }),
+            };
+
+            // Act
+            await gameCron.updatePromotionOdds();
+
+            // Assert
+            expect(gameCron.gameData.gameConfigs.odds).toEqual({ big: 10, small: 11 });
+        });
+
+        it("should update boostedChoices", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.gameConfigs = {
+                x: 123,
+                odds: { big: 10, small: 10 },
+                originalOdds: { big: 10, small: 10 },
+            };
+            const promotions = [];
+            gameCron.promotionRepository = {
+                find: jest.fn(() => {
+                    return {
+                        lean: jest.fn(() => {
+                            return {
+                                exec: jest.fn(() => promotions),
+                            };
+                        }),
+                    };
+                }),
+            };
+
+            // Act
+            await gameCron.updatePromotionOdds();
+
+            // Assert
+            expect(gameCron.gameData.gameConfigs.boostedChoices).toEqual(["small"]);
+        });
     });
 });

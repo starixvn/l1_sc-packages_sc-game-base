@@ -133,6 +133,9 @@ describe("publishStartGame test", () => {
         publisher.publishStartGame();
 
         // assert
-        expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ remainingTime: gameData.remainingTime });
+        expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
+            remainingTime: gameData.remainingTime,
+            snr: true,
+        });
     });
 });

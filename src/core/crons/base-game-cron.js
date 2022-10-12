@@ -8,6 +8,8 @@ import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
 import { decrypt } from "../helpers/crypto-helper";
+import { getEffectivePromotion, getStartPromotionMessage, getFinishPromotionMessage } from "../helpers/promotion-helper";
+import { chatBotHelper } from "../helpers";
 
 export default class BaseGameCron {
     /**
@@ -49,6 +51,8 @@ export default class BaseGameCron {
         currencyRepository,
         roundResultConsumer,
         resultsRepository,
+        promotionRepository,
+        appConfigs,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -68,6 +72,8 @@ export default class BaseGameCron {
         this.currencyRepository = currencyRepository;
         this.roundResultConsumer = roundResultConsumer;
         this.resultsRepository = resultsRepository;
+        this.promotionRepository = promotionRepository;
+        this.appConfigs = appConfigs;
     }
 
     async start() {
@@ -148,11 +154,20 @@ export default class BaseGameCron {
         if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
             this.bot && (await this.bot.reset());
+            this.appConfigs.enabledBoostedOdds && (await this.updatePromotionOddsAndNotify());
         }
 
         if (this.gameData.remainingTime === durations.placingBets && this.resultsRepository) {
             await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
             this.gameData.settlementResultFromAdmin = {};
+        }
+
+        if (this.gameData.remainingTime === durations.placingBets) {
+            this.gameStatusPublisher.publishStartPlacingBetStatus();
+        }
+
+        if (this.gameData.remainingTime === durations.lockingBet - 1) {
+            this.gameStatusPublisher.publishEndPlacingBetStatus();
         }
 
         if (this.gameData.remainingTime < 0) {
@@ -186,7 +201,16 @@ export default class BaseGameCron {
         this.gameData.umMessages =
             (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
 
-        this.gameData.gameConfigs = configs ?? {};
+        const originalOdds = configs ? Object.assign({}, configs.odds) : {};
+        if (this.gameData.gameConfigs && this.gameData.gameConfigs.boostedChoices && this.gameData.gameConfigs.boostedChoices.length > 0) {
+            this.gameData.gameConfigs = configs
+                ? Object.assign(configs, { odds: this.gameData.gameConfigs.odds, boostedChoices: this.gameData.gameConfigs.boostedChoices })
+                : {};
+        } else {
+            this.gameData.gameConfigs = configs ?? {};
+        }
+        this.gameData.gameConfigs.originalOdds = originalOdds;
+
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
         await this.getSettingForNewRound();
 
@@ -205,6 +229,50 @@ export default class BaseGameCron {
             await this.enableGame();
         } else {
             this.gameStatusPublisher.publishStartGame();
+        }
+    }
+
+    async updatePromotionOdds() {
+        if (!this.gameData.gameConfigs || !this.gameData.gameConfigs.odds) {
+            return {};
+        }
+
+        const promotions = await this.promotionRepository.find({ gameId: this.definition.id, status: "enabled" }).lean().exec();
+        const promotion = getEffectivePromotion(promotions);
+        this.gameData.promotion = promotion;
+
+        this.gameData.gameConfigs.boostedChoices = [];
+        this.gameData.gameConfigs.odds = Object.assign({}, this.gameData.gameConfigs.originalOdds);
+        if (promotion) {
+            Object.keys(this.gameData.gameConfigs.odds).forEach((choice) => {
+                if (promotion.odds[choice] && promotion.odds[choice] !== this.gameData.gameConfigs.odds[choice]) {
+                    this.gameData.gameConfigs.odds[choice] = promotion.odds[choice];
+                    this.gameData.gameConfigs.boostedChoices.push(choice);
+                }
+            });
+        }
+
+        return promotion;
+    }
+
+    async updatePromotionOddsAndNotify() {
+        const isUsingPromotion = () => {
+            return !!this.gameData.promotion;
+        };
+
+        const previousPromotion = this.gameData.promotion;
+        const havingPreviousPromotion = isUsingPromotion();
+        const promotion = await this.updatePromotionOdds();
+        const havingNewPromotion = isUsingPromotion();
+
+        this.gameStatusPublisher.publishBoostedOdds();
+
+        if (!havingPreviousPromotion && havingNewPromotion) {
+            chatBotHelper.sendBoostedOddsMessage(getStartPromotionMessage(this.definition.name, promotion));
+        } else if (havingPreviousPromotion && !havingNewPromotion) {
+            chatBotHelper.sendBoostedOddsMessage(
+                getFinishPromotionMessage(this.definition.name, previousPromotion, this.gameData.gameConfigs?.odds)
+            );
         }
     }
 
