@@ -1,6 +1,6 @@
 {
     "name": "sc-game-base",
-    "version": "3.2.1-beta.0",
+    "version": "3.2.1",
     "description": "SC Game base for game services",
     "main": "./src/index.js",
     "scripts": {
@@ -14,7 +14,7 @@
         "pubbeta": "npm publish --registry https://npm.lumigame.com --tag beta",
         "semantic-release": "semantic-release"
     },
-    "jestSonar": { 
+    "jestSonar": {
         "reportPath": "reports",
         "reportFile": "test-reporter.xml",
         "indent": 4

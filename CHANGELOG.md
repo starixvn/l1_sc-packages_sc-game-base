@@ -1,3 +1,10 @@
+## [3.2.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.2.0...v3.2.1) (2022-10-24)
+
+
+### Bug Fixes
+
+* Add required field table bot ([c9ebdf2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/c9ebdf222ac7af6bee799e2b3f027b7b7458cb73))
+
 # [3.2.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.1.1...v3.2.0) (2022-10-12)
 
 
