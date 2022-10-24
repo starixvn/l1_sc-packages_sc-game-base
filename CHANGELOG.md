@@ -1,3 +1,10 @@
+## [3.2.2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.2.1...v3.2.2) (2022-10-24)
+
+
+### Bug Fixes
+
+* tableProcessBetQueue.updateGameDataChips - fix issue update chip incorrectly ([68a2b0d](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/68a2b0d59452a84240e4f0e179a8c3bece2ce9ac))
+
 ## [3.2.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.2.0...v3.2.1) (2022-10-24)
 
 
