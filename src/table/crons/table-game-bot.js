@@ -281,6 +281,8 @@ export default class TableGameBot extends BaseBot {
             name: bot.name,
             roundId: this.gameData.roundId,
             time: new Date(),
+            currency: " ",
+            operatorId: " ",
         };
 
         await this.tempBetsRepository.updateOne(
