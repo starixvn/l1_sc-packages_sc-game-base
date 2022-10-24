@@ -20,7 +20,7 @@ export default class TableProcessBetQueue extends ProcessBetQueue {
         const { betChoice, amount } = bet;
 
         if (!this.gameData.chips[rate]) {
-            this.gameData.chips[rate] = { [betChoice]: { amount: 1 } };
+            this.gameData.chips[rate] = { [betChoice]: { [amount]: 1 } };
         } else {
             this.gameData.chips[rate][betChoice] = this.gameData.chips[rate][betChoice] ?? {};
             this.gameData.chips[rate][betChoice][amount] = (this.gameData.chips[rate][betChoice][amount] ?? 0) + 1;
