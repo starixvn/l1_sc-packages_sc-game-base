@@ -1,3 +1,10 @@
+## [3.2.3](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.2.2...v3.2.3) (2022-10-28)
+
+
+### Bug Fixes
+
+* [bot] - issue when updating gamedata chips from bot ([0921e10](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/0921e101f22a22978c418b7a952b30cc8cda404f))
+
 ## [3.2.2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.2.1...v3.2.2) (2022-10-24)
 
 
