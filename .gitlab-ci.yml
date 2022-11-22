@@ -10,5 +10,5 @@ include:
       ref: master
       file: "sonarqube/sonarqube.js-unittest.gitlab-ci.yml"
     - project: "ci/common-ci"
-      ref: update-npm-pubish
+      ref: update-npm-publish
       file: "npm/publish-npm.gitlab-ci.yml"
