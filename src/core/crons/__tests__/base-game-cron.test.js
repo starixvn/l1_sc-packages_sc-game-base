@@ -354,9 +354,11 @@ describe("startCron", () => {
 
 describe("getLastArchiveRound", () => {
     describe("when archive exists", () => {
-        it("should return last phien + 1", async () => {
+        const testCases = [{ _phiens: 123 }, { _rounds: 123 }];
+
+        it.each(testCases)("should return last phien + 1", async (data) => {
             // Arrange
-            const archiveStatus = { lastArcId: { _phiens: 123 } };
+            const archiveStatus = { lastArcId: data };
             const configName = "config name 1";
             const gameCron = createBaseGameCron();
             gameCron.definition.configName = configName;

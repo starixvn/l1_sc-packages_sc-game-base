@@ -137,7 +137,7 @@ export default class BaseGameCron {
         const { configName } = this.definition;
         const archiveStatus = await this.archiveStatusesRepository.findOne({ name: configName }, "lastArcId").lean().exec();
 
-        return archiveStatus ? archiveStatus.lastArcId["_phiens"] + 1 : 1;
+        return archiveStatus ? (archiveStatus.lastArcId["_phiens"] ?? archiveStatus.lastArcId["_rounds"]) + 1 : 1;
     }
 
     async proceed() {
