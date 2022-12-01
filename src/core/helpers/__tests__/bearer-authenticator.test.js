@@ -41,6 +41,7 @@ describe("bearer authenticator test", () => {
             // arrange
             spyOn(bearerAuthenticator, "updateToken");
             spyOn(bearerAuthenticator, "refresh").and.returnValue(jest.fn());
+            spyOn(global, "setTimeout");
 
             // act
             await bearerAuthenticator.autoUpdateToken();
@@ -54,6 +55,7 @@ describe("bearer authenticator test", () => {
         it("should calls setTimeout", async () => {
             // arrange
             spyOn(bearerAuthenticator, "isTokenExpired").and.returnValue(false);
+            spyOn(global, "setTimeout");
 
             // act
             await bearerAuthenticator.refresh();

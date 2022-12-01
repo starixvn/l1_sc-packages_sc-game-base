@@ -12,7 +12,7 @@ describe("consume test", () => {
             gameData.admins = {
                 [socketId]: {},
             };
-
+            jest.spyOn(global, "setTimeout");
             const consumer = new AdminDisconnectConsumer(gameData);
 
             // Act

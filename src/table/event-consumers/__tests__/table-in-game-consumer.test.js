@@ -123,7 +123,7 @@ describe("TableInGameConsumer", () => {
             const result = consumer.buildPlayersPayload({ UID: "player1" });
 
             // assert
-            expect(result).toBeEmpty();
+            expect(result).toMatchObject({});
         });
 
         it("returns list of other players", () => {

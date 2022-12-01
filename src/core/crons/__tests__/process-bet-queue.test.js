@@ -184,7 +184,7 @@ describe("ProcessBetQueue", () => {
                     proceedBetQueue.dequeueBets();
 
                     // Assert
-                    expect(gameData.ingame.player01.betProcessing).toBeTrue();
+                    expect(gameData.ingame.player01.betProcessing).toBeTruthy();
                 });
             });
         });

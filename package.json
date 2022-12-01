@@ -12,7 +12,8 @@
         "betaver": "npm version prerelease --preid beta",
         "pub": "npm publish --registry https://npm.lumigame.com",
         "pubbeta": "npm publish --registry https://npm.lumigame.com --tag beta",
-        "semantic-release": "semantic-release"
+        "semantic-release": "semantic-release",
+        "prepare": "husky install"
     },
     "jestSonar": {
         "reportPath": "reports",
@@ -66,11 +67,5 @@
         "jest-when": "^3.5.1",
         "sc-semantic-release": "^1.2.0",
         "semantic-release": "^19.0.0"
-    },
-    "husky": {
-        "hooks": {
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-            "pre-push": "npm test"
-        }
     }
 }

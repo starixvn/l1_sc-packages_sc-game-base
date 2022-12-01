@@ -1,5 +1,4 @@
 import { stub } from "jest-micro-auto-stub";
-import { when } from "jest-when";
 import { logger } from "sc-common";
 
 import { AdminAuthenticationConsumer, AdminDisconnectConsumer, AdminMonitorConsumer } from "../../event-consumers";

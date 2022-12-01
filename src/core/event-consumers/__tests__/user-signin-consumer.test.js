@@ -164,7 +164,7 @@ describe("UserSignInConsumer", () => {
                         await consumer.consume(socketClient, payload);
 
                         // Assert
-                        expect(gameData.realPlayers).toContainKey(socketClientId);
+                        expect(gameData.realPlayers).toHaveProperty(socketClientId);
                     });
 
                     it("should cached unique member", async () => {

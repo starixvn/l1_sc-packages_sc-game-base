@@ -75,7 +75,7 @@ describe("build payload test", () => {
 
         expect(roundQuery.getList).toHaveBeenCalledWith(definition.numberOfRoundHistory);
         expect(getBalance).toHaveBeenCalledWith(realPlayer, true);
-        expect(actualResult).not.toBeEmpty();
+        expect(Object.keys(actualResult).length).toBeGreaterThan(0);
     });
 
     afterEach(() => {
