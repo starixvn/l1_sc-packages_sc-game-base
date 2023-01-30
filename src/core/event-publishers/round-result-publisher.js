@@ -21,4 +21,15 @@ export default class RoundResultPublisher extends BaseEventPublisher {
             this.publishToAllUsers({ resultHash: { hashValue: this.gameData.resultHash.hashValue } });
         }
     }
+
+    publishWinners(roundId, winningPlayers) {
+        const payload = {
+            roundId,
+            winningPlayers,
+        };
+
+        this.publishToAllUsers({
+            winners: payload,
+        });
+    }
 }

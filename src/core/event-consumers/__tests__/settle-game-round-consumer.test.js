@@ -90,15 +90,23 @@ describe("SettleGameRoundConsumer", () => {
         const result = { red1: true, red2: true, red3: true, red4: false };
         const settlementResult = { odd: true, even: false };
         const mockDate = new Date();
-        const createRoundResult = { id: 1, result, settlementResult, time: mockDate };
+        const createRoundResult = { id: roundId, result, settlementResult, time: mockDate };
+        const collectRoundResult = {
+            result,
+            settlementResult,
+            roundId,
+        };
 
         beforeEach(() => {
+            gameData.roundId = roundId;
             gameData.result = { red1: true, red2: true, red3: true, red4: false };
+            gameData.winningPlayers = {};
             definition.generateResult.mockReturnValueOnce(result);
             definition.settle.mockReturnValueOnce(settlementResult);
             consumer.settleBets = jest.fn();
             jest.spyOn(global, "Date").mockImplementation(() => mockDate);
             roundsRepository.create.mockReturnValueOnce(createRoundResult);
+            consumer.collectRoundResult = jest.fn(() => collectRoundResult);
         });
 
         it("should call settle with generated result", async () => {
@@ -115,7 +123,7 @@ describe("SettleGameRoundConsumer", () => {
 
             // Assert
             expect(roundsRepository.create).toHaveBeenCalledWith({
-                id: 1,
+                id: roundId,
                 result,
                 settlementResult,
                 time: mockDate,
@@ -123,6 +131,14 @@ describe("SettleGameRoundConsumer", () => {
         });
 
         describe("when create new round successfully", () => {
+            it("should publish round result to client", async () => {
+                // Act
+                await consumer.settleRound();
+
+                // Assert
+                expect(roundResultPublisher.publishRoundResult).toHaveBeenCalledWith(collectRoundResult);
+            });
+
             it("should increase roundId", async () => {
                 // Act
                 await consumer.settleRound();
@@ -142,6 +158,14 @@ describe("SettleGameRoundConsumer", () => {
                     roundId: createRoundResult.id,
                     time: createRoundResult.time,
                 });
+            });
+
+            it("should publish winning player to client", async () => {
+                // Act
+                await consumer.settleRound();
+
+                // Assert
+                expect(roundResultPublisher.publishWinners).toHaveBeenCalledWith(roundId, gameData.winningPlayers);
             });
         });
 
@@ -194,11 +218,7 @@ describe("SettleGameRoundConsumer", () => {
             totalLost: chance.natural(),
             winningByChoices: {},
         };
-        const collectRoundResult = {
-            result,
-            settlementResult,
-            roundId,
-        };
+
         const settleBetParams = { result, settlementResult, roundId, time: new Date() };
 
         beforeEach(() => {
@@ -208,7 +228,6 @@ describe("SettleGameRoundConsumer", () => {
             consumer.callEndGame = jest.fn();
             consumer.queryBets = jest.fn(() => queryBets);
             consumer.calculateBetResult = jest.fn(() => betResult);
-            consumer.collectRoundResult = jest.fn(() => collectRoundResult);
             consumer.captureBetResult = jest.fn();
         });
 
@@ -273,14 +292,6 @@ describe("SettleGameRoundConsumer", () => {
                     });
                 });
             });
-
-        it("should publish round result to client", async () => {
-            // Act
-            await consumer.settleBets(settleBetParams);
-
-            // Assert
-            expect(roundResultPublisher.publishRoundResult).toHaveBeenCalledWith(collectRoundResult);
-        });
     });
 
     describe("callEndGame", () => {

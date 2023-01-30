@@ -1,4 +1,4 @@
-import GameData from "../../game-data";
+import Chance from "chance";
 import RoundResultPublisher from "../round-result-publisher";
 
 describe("publishRoundResult", () => {
@@ -120,6 +120,29 @@ describe("publishResultHash", () => {
 
             // Assert
             expect(publisher.publishToAllUsers).not.toHaveBeenCalled();
+        });
+    });
+});
+
+describe("publishWinners", () => {
+    it("should publish winners to all users", () => {
+        // Arrange
+        const chance = new Chance();
+        const roundId = chance.natural();
+        const winningPlayers = {};
+        const publisher = new RoundResultPublisher();
+
+        publisher.publishToAllUsers = jest.fn();
+
+        // Act
+        publisher.publishWinners(roundId, winningPlayers);
+
+        // Assert
+        expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
+            winners: {
+                roundId,
+                winningPlayers,
+            },
         });
     });
 });

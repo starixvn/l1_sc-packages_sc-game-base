@@ -38,6 +38,8 @@ export default class SettleGameRoundConsumer {
         });
 
         if (newRound) {
+            this.roundResultPublisher.publishRoundResult(this.collectRoundResult(result, settlementResult, roundId));
+
             const finish = {
                 settlementResult,
                 result,
@@ -48,6 +50,8 @@ export default class SettleGameRoundConsumer {
             this.gameData.roundId = finish.roundId + 1;
 
             await this.settleBets(finish);
+
+            this.roundResultPublisher.publishWinners(roundId, this.gameData.winningPlayers);
         }
     }
 
@@ -65,7 +69,7 @@ export default class SettleGameRoundConsumer {
         return this.betsRepository.find({ roundId }).exec();
     }
 
-    async settleBets({ result, settlementResult, roundId, time }) {
+    async settleBets({ settlementResult, roundId, time }) {
         const bets = await this.queryBets(roundId);
 
         if (bets && bets.length) {
@@ -86,8 +90,6 @@ export default class SettleGameRoundConsumer {
                 })
             );
         }
-
-        this.roundResultPublisher.publishRoundResult(this.collectRoundResult(result, settlementResult, roundId));
     }
 
     calculateBetResult(settlementResult, bet, odds) {
