@@ -7,6 +7,7 @@ import Currencies from "./currencies";
 import CurrencyGroups from "./currency-groups";
 import ResultSchema from "./result-schema";
 import Promotions from "./promotions";
+import Domains from "./domains";
 
 export {
     ArchiveStatuses,
@@ -18,4 +19,5 @@ export {
     CurrencyGroups,
     ResultSchema,
     Promotions,
+    Domains,
 };

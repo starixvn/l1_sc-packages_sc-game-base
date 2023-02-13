@@ -12,6 +12,7 @@ import MsgpackParser from "socket.io-msgpack-parser";
 import { BaseStartup } from ".";
 import BaseMetrics from "./base-metrics";
 import { authenticationHelpers, chatBotHelper } from "./helpers";
+import { isAllowAccess, startCorsCron } from "./helpers/cors-helper";
 
 export default class BaseGameApp {
     /**
@@ -61,12 +62,17 @@ export default class BaseGameApp {
      * @param {http.Server} httpServer
      */
     initSocketServer(httpServer) {
-        const { socketOptions, enableCorsWs, corsUrls } = this.appConfigs;
+        const { socketOptions, disableCors } = this.appConfigs;
         const opts = socketOptions ?? { pingInterval: 25 * 1000, pingTimeout: 60 * 1000 };
         opts.allowEIO3 = true;
-        opts.cors = {
-            origin: enableCorsWs ? corsUrls : "*",
-            credentials: true,
+
+        opts.allowRequest = (req, callback) => {
+            let allowAccess = false;
+            if (disableCors || isAllowAccess(req.headers.origin)) {
+                allowAccess = true;
+            }
+
+            callback(null, allowAccess);
         };
 
         if (this.appConfigs.enableMsgpackParser) {
@@ -77,9 +83,10 @@ export default class BaseGameApp {
     }
 
     async configureServices(app) {
+        const { disableCors } = this.appConfigs;
         const corsOptions = {
             origin: (origin, callback) => {
-                if (this.appConfigs.corsUrls.includes(origin) || !origin) {
+                if (disableCors || isAllowAccess(origin)) {
                     callback(null, true);
                 } else {
                     callback(new Error(`Not allowed by CORS ${origin}`));
@@ -102,5 +109,6 @@ export default class BaseGameApp {
         await initApis(this.appConfigs.apiSettings);
         await authenticationHelpers.init(this.appConfigs.authenticateSettings);
         chatBotHelper.init(this.appConfigs.chatBotSettings);
+        !disableCors && startCorsCron();
     }
 }
