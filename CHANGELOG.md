@@ -1,3 +1,10 @@
+# [3.3.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.2.3...v3.3.0) (2023-02-24)
+
+
+### Features
+
+* update cors for http and websocket ([213b843](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/213b84321121abfe85a5a8b7ca46cb3cf6c61940))
+
 ## [3.2.3](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.2.2...v3.2.3) (2022-10-28)
 
 
