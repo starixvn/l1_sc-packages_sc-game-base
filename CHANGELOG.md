@@ -1,3 +1,16 @@
+# [4.0.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.3.0...v4.0.0) (2023-03-15)
+
+
+### Features
+
+* prepare release ([56de841](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/56de84143f260b3fdbf5abd5abe0b4ea73dd586c))
+
+
+### BREAKING CHANGES
+
+* - Winning Notification
+- Major Dependencies
+
 # [3.3.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.2.3...v3.3.0) (2023-02-24)
 
 
