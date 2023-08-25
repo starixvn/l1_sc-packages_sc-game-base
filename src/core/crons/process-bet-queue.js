@@ -1,3 +1,4 @@
+import { tracer } from "sc-instrument";
 import mongoose from "mongoose";
 import { helpers, logger } from "sc-common";
 
@@ -56,12 +57,17 @@ export default class ProcessBetQueue {
         if (this.gameData.ingame) {
             Object.values(this.gameData.ingame).forEach((playerInGame) => {
                 if (!playerInGame.betProcessing && playerInGame.betQueue && playerInGame.betQueue.length > 0) {
+                    const self = this;
                     const { player, payload } = playerInGame.betQueue.shift();
 
                     playerInGame.betProcessing = true;
-                    this.proceedBet(player, payload)
-                        .then(() => (playerInGame.betProcessing = false))
-                        .catch(this.logService.logError);
+
+                    tracer.startActiveSpan("dequeueBet", async (span) => {
+                        self.proceedBet(player, payload)
+                            .then(() => (playerInGame.betProcessing = false))
+                            .catch(self.logService.logError)
+                            .finally(() => span.end());
+                    });
                 }
             });
         }
