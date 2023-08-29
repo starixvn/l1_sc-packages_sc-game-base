@@ -1,3 +1,5 @@
+import { mongoose } from "sc-instrument-helper";
+
 import * as awilix from "awilix";
 import cors from "cors";
 import express from "express";
