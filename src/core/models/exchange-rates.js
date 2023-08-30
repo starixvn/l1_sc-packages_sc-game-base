@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import { mongoose } from "sc-instrument-helper";
 
 const schema = new mongoose.Schema({
     exId: { type: Number, require: true },
