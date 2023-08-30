@@ -1,4 +1,4 @@
-import { mongoose } from "sc-instrument-helper";
+import { mongoose } from "mongoose";
 
 const modelName = "domains";
 
