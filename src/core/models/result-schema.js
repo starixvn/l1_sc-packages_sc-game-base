@@ -1,4 +1,4 @@
-import { mongoose } from "mongoose";
+import mongoose from "mongoose";
 
 const resultSchema = new mongoose.Schema({
     roundId: { type: Number, required: true },
