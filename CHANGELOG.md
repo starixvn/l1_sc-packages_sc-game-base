@@ -1,3 +1,11 @@
+## [4.0.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v4.0.0...v4.0.1) (2023-09-12)
+
+
+### Bug Fixes
+
+* update getBalance ingame ([eee42b0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/eee42b081ebf65e79f6f8c9092bbdbff18fdfced))
+* update gitlabci ([afcc0ad](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/afcc0ad39ad4a144fad5de952cbceeaafbd8f56f))
+
 # [4.0.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v3.3.0...v4.0.0) (2023-03-15)
 
 
