@@ -35,6 +35,7 @@ export default class InGameConsumer {
     }
 
     async buildPayload(realPlayer) {
+        await this.getBalance(realPlayer, true);
         const { odds, originalOdds, enableFreeBet, boostedChoices } = this.gameData.gameConfigs;
         const { totalBets, roundId, exchangeRates } = this.gameData;
         const { session } = realPlayer;
@@ -43,8 +44,6 @@ export default class InGameConsumer {
         const gameConfigs = { ...settings, odds, originalOdds, enableFreeBet, boostedChoices };
         const { ownBets: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { ownBets: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
-
-        await this.getBalance(realPlayer, true);
 
         const user = await this.getUserInfo(realPlayer.UID);
 
