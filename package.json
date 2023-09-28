@@ -44,8 +44,8 @@
         "socket.io": "^4.5.4",
         "socket.io-msgpack-parser": "^3.0.1",
         "socket.io-prom-metrics": "^1.0.3",
-        "sc-instrument": "0.0.1-beta.19",
-        "sc-instrument-helper": "^0.0.1-beta.1"
+        "sc-instrument": "1.0.0",
+        "sc-instrument-helper": "1.0.0"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.12.11",

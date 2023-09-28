@@ -8843,19 +8843,19 @@ sc-common@1.8.1:
     mongoose-long "^0.3.0"
     numeral "^2.0.6"
 
-sc-instrument-helper@^0.0.1-beta.1:
-  version "0.0.1-beta.1"
-  resolved "http://npm.lumigame.com/sc-instrument-helper/-/sc-instrument-helper-0.0.1-beta.1.tgz#810da320b26e050b85061370b1b6b55ab7ec3521"
-  integrity sha512-7ePfh7wnlZWk00aIvsc7VY7HqoUZsxKdH7iGabNmyzY1cJA0gwo1KCxZsGDVN/Dznbhl2Yv+U40vSTopZuYr7A==
+sc-instrument-helper@1.0.0:
+  version "1.0.0"
+  resolved "http://npm.lumigame.com/sc-instrument-helper/-/sc-instrument-helper-1.0.0.tgz#c00cf6b76bc51574cb9b909c3f148914a6648066"
+  integrity sha512-XtUFHavpVtqK4kxv0V8gOFxMrkQxm6z5FGjhw6gcUKN0JchXntkDsR1T306Pe5ZEPFQ/5RPxKRORraVxtMqIWw==
   dependencies:
     mongoose "^5.9.25"
     socket.io "^4.1.2"
     socket.io-msgpack-parser "^3.0.1"
 
-sc-instrument@0.0.1-beta.19:
-  version "0.0.1-beta.19"
-  resolved "http://npm.lumigame.com/sc-instrument/-/sc-instrument-0.0.1-beta.19.tgz#d9beb7af4319627fa0ab7f100e650900e4d9c519"
-  integrity sha512-11LCVMFcm/Po7q8CdHJzGUe2QH8PVVGT205nDW1ZbBuwe5wDSYoTGNEnBfZXc9k+wRgJr3cTxLK68TGUergvnQ==
+sc-instrument@1.0.0:
+  version "1.0.0"
+  resolved "http://npm.lumigame.com/sc-instrument/-/sc-instrument-1.0.0.tgz#e9b1606e6069c97b939f0466f6f06ac5f2695fcc"
+  integrity sha512-RRnQgBDls/PDs27GVAEFk/fE+BdBRRRtdSXZ0TFAlTKC8g6tW6iRnYIAJp/WCdM4q/LE/lzmkIALaTLRWVwfcw==
   dependencies:
     "@opentelemetry/context-async-hooks" "1.15.2"
     "@opentelemetry/core" "1.15.2"
