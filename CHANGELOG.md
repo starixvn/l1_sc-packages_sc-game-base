@@ -1,3 +1,17 @@
+# [4.1.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v4.0.1...v4.1.0) (2023-09-28)
+
+
+### Bug Fixes
+
+* correct imports ([f10c938](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f10c938f6478bacfa6a2064976cdafed549a725a))
+* import mongoose from instrument helper ([adecb32](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/adecb329a16562b055e079904bcdbb96513e85a0))
+* upgrade sc-instrument, remove import mongoose from helper ([1966d83](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/1966d8393cafc7e186b2c8925b599f9093d8046f))
+
+
+### Features
+
+* add OTEL ([1234126](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/1234126049c093fcff87acdfa71470054f5b2124))
+
 ## [4.0.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v4.0.0...v4.0.1) (2023-09-12)
 
 
