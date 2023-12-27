@@ -1,6 +1,6 @@
 {
     "name": "sc-game-base",
-    "version": "4.1.1-beta.49",
+    "version": "4.1.1-beta.50",
     "description": "SC Game base for game services",
     "main": "./src/index.js",
     "scripts": {
