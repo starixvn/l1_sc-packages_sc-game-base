@@ -1,6 +1,5 @@
 import "jest-extended";
-import { stub, stubMongoose } from "jest-micro-auto-stub";
-import mongoose from "mongoose";
+import { stub } from "jest-micro-auto-stub";
 import { Socket } from "socket.io";
 
 import UserSignInConsumer from "../../../core/event-consumers/user-signin-consumer";
@@ -9,12 +8,13 @@ import TableUserSignInPublisher from "../../event-publishers/table-user-signin-p
 import TableGameData from "../../table-game-data";
 import TableGameDefinition from "../../table-game-definition";
 import TableUserSignInConsumer from "../table-user-signin-consumer";
+import GameManagementApiClientFactory from "../../../core/game-management-api";
+
+jest.mock("sc-game-management-client");
 
 describe("table user signin consumer in testing", () => {
     /** @type {TableUserSignInPublisher}*/
     const userSignInPublisher = stub(TableUserSignInPublisher);
-    /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongoose(mongoose.Model);
 
     const definition = new TableGameDefinition({ name: "game name" });
 
@@ -23,6 +23,7 @@ describe("table user signin consumer in testing", () => {
 
     /** @type {Socket} */
     const socketClient = stub(Socket);
+    const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
     let gameData;
     let consumer;
@@ -35,7 +36,7 @@ describe("table user signin consumer in testing", () => {
             userSignInPublisher,
             playGamePermissionValidator,
             null,
-            userInfosRepository
+            gameManagementApiClientFactory
         );
     });
 

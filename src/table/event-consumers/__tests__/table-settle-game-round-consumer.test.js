@@ -6,6 +6,9 @@ import { RoundResultPublisher, UserBetResultPublisher } from "../../../core/even
 import TableGameData from "../../table-game-data";
 import TableGameDefinition from "../../table-game-definition";
 import TableSettleGameRoundConsumer from "../table-settle-game-round-consumer";
+import GameManagementApiClientFactory from "../../../core/game-management-api";
+
+jest.mock("sc-game-management-client");
 
 describe("table settle game round consumer test", () => {
     const definition = new TableGameDefinition({ id: 1, name: "game name" });
@@ -27,6 +30,7 @@ describe("table settle game round consumer test", () => {
 
     /** @type {mongoose.Model}*/
     const tempBetsRepository = { find: () => {} };
+    const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
     const consumer = new TableSettleGameRoundConsumer({
         definition,
@@ -37,6 +41,7 @@ describe("table settle game round consumer test", () => {
         roundsRepository,
         betsRepository,
         tempBetsRepository,
+        gameManagementApiClientFactory,
     });
 
     it("inherit settle game round consumer", () => {

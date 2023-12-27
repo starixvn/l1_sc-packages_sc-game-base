@@ -1,7 +1,7 @@
 import Chance from "chance";
-import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
+import GameManagementApiClientFactory, { getOrDefault } from "../game-management-api";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
@@ -9,12 +9,12 @@ export default class BaseBot {
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
-     * @param {mongoose.Model} userInfosRepository
+     * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
      */
-    constructor(definition, gameData, userInfosRepository) {
+    constructor(definition, gameData, gameManagementApiClientFactory) {
         this.definition = definition;
         this.gameData = gameData;
-        this.userInfosRepository = userInfosRepository;
+        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
 
         this.bots = [];
         this.currentBotRatio = 0;
@@ -26,6 +26,7 @@ export default class BaseBot {
 
         this.chance = new Chance();
         this.botRate = 1;
+        this.totalBots = 0;
     }
 
     async reset() {
@@ -37,8 +38,9 @@ export default class BaseBot {
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
 
-                const totalBots = await this.userInfosRepository.countDocuments({ type: true, banned: false }).exec();
-                this.maxNumberOfBots = Math.floor(totalBots * this.currentBotRatio);
+                this.totalBots = await getOrDefault(this.gameManagementApiClient.users.getTotalBots(), this.totalBots);
+
+                this.maxNumberOfBots = Math.floor(this.totalBots * this.currentBotRatio);
             }
 
             await this.processDisabledBots();
@@ -80,7 +82,7 @@ export default class BaseBot {
         this.maxNumberOfBots = 0;
     }
 
-    async removeBot(botId) {}
+    removeBot(botId) {}
 
     async processDisabledBots() {}
 

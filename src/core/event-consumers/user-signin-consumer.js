@@ -1,10 +1,11 @@
 import { getBetLimit } from "sc-base-apis";
 import { Socket } from "socket.io";
 
+import GameManagementApiClientFactory, { getOrDefault, callAndForget, post } from "../game-management-api";
+import { signInGame as userServiceSignInGame } from "../helpers/user-service-helpers";
 import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
-import { signInGame as userServiceSignInGame } from "../helpers/user-service-helpers";
 
 export default class UserSignInConsumer {
     /**
@@ -12,13 +13,14 @@ export default class UserSignInConsumer {
      * @param {UserSignInPublisher} userSignInPublisher
      * @param {PlayGamePermissionValidator} playGamePermissionValidator
      * @param {Object} appConfigs
+     * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
      */
-    constructor(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, userInfosRepository) {
+    constructor(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, gameManagementApiClientFactory) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
         this.playGamePermissionValidator = playGamePermissionValidator;
         this.appConfigs = appConfigs;
-        this.userInfosRepository = userInfosRepository;
+        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
     }
 
     /**
@@ -45,7 +47,7 @@ export default class UserSignInConsumer {
             playerName: signInGameResult.memberName,
         };
 
-        const userInfo = await this.userInfosRepository.findOne({ id: userSession.userId }).lean().exec();
+        const userInfo = await getOrDefault(this.gameManagementApiClient.users.getUserInfo(userSession.userId));
 
         if (!userInfo) {
             this.handleUnauthorizedSignIn(socketClient);
@@ -75,6 +77,13 @@ export default class UserSignInConsumer {
             if (response.minBet > 0 && response.maxBet > 0) {
                 userInfo.minBet = response.minBet;
                 userInfo.maxBet = response.maxBet;
+                callAndForget(
+                    this.gameManagementApiClient.users.updateUserStakeLevel({
+                        id: userSession.userId,
+                        minBet: response.minBet,
+                        maxBet: response.maxBet,
+                    })
+                );
             }
 
             const userStakeLevel = { minBet: userInfo.minBet, maxBet: userInfo.maxBet };

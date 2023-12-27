@@ -111,6 +111,6 @@ export default class BaseGameApp {
         await initApis(this.appConfigs.apiSettings);
         await authenticationHelpers.init(this.appConfigs.authenticateSettings);
         chatBotHelper.init(this.appConfigs.chatBotSettings);
-        !disableCors && startCorsCron();
+        !disableCors && startCorsCron(this.appConfigs);
     }
 }

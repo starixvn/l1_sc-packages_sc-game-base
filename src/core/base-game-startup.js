@@ -12,7 +12,6 @@ export default class BaseGameStartup {
         socketRouter: "socketRouter",
         adminSocketRouter: "adminSocketRouter",
         httpRouter: "httpRouter",
-        gameConfigsRepository: "gameConfigsRepository",
     };
 
     /**
@@ -73,9 +72,6 @@ export default class BaseGameStartup {
         });
 
         try {
-            const gameConfigsRepository = this.container.resolve(this.dependencies.gameConfigsRepository);
-            this.gameData.gameConfigs = await gameConfigsRepository.findOne({ name: this.definition.configName }).lean().exec();
-
             await this.gameCron.start();
             this.processBetQueue.start();
         } catch (error) {

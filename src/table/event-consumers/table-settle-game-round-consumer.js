@@ -31,6 +31,7 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
         endGame,
         roundsRepository,
         betsRepository,
+        gameManagementApiClientFactory,
         tempBetsRepository,
     }) {
         super({
@@ -41,14 +42,15 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
             endGame,
             roundsRepository,
             betsRepository,
+            gameManagementApiClientFactory,
         });
 
         this.tempBetsRepository = tempBetsRepository;
     }
 
     async queryBets(roundId) {
-        const realPlayerBets = await this.betsRepository.find({  roundId }).exec();
-        const botBets = await this.tempBetsRepository.find({  roundId }).exec();
+        const realPlayerBets = await this.betsRepository.find({ roundId }).exec();
+        const botBets = await this.tempBetsRepository.find({ roundId }).exec();
 
         return realPlayerBets.concat(botBets);
     }

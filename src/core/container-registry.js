@@ -1,6 +1,5 @@
 import { asClass, asValue, createContainer, InjectionMode } from "awilix";
-import { endGame, getBalance, notifyLogin, placeBet } from "sc-base-apis";
-import { gameConfigs, userInfos, userSessions } from "sc-base-database";
+import { endGame, getBalance, placeBet } from "sc-base-apis";
 import { logger } from "sc-common";
 
 import * as Crons from "./crons";
@@ -8,16 +7,8 @@ import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
-import {
-    ArchiveStatuses,
-    CurrencyGroupGames,
-    ExchangeRates,
-    Notifications,
-    PartnerConfigs,
-    CurrencyGroups,
-    Currencies,
-    Promotions,
-} from "./models";
+import GameManagementApiClientFactory from "./game-management-api";
+
 import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
 import { PlayGamePermissionValidator } from "./validators";
@@ -52,33 +43,17 @@ export default class ContainerRegistry {
         this.registerConsumers();
         this.registerCrons();
         this.registerRouters();
+        this.registerGameManagementService();
 
         return this.container;
     }
 
     registerModels() {
         this.container.register({
-            gameConfigsRepository: asValue(gameConfigs),
-            userInfosRepository: asValue(userInfos),
-            userSessionsRepository: asValue(userSessions),
-            notificationRepository: asValue(Notifications),
-            currencyGroupGamesRepository: asValue(CurrencyGroupGames),
-            exchangeRatesRepository: asValue(ExchangeRates),
-            partnerConfigRepository: asValue(PartnerConfigs),
-            currencyGroupRepository: asValue(CurrencyGroups),
-            currencyRepository: asValue(Currencies),
-            promotionRepository: asValue(Promotions),
-        });
-
-        this.container.register({
             resultsRepository: asValue(undefined),
             roundsRepository: asValue(undefined),
             betsRepository: asValue(undefined),
             betLogsRepository: asValue(undefined),
-        });
-
-        this.container.register({
-            archiveStatusesRepository: asValue(ArchiveStatuses),
         });
     }
 
@@ -90,7 +65,6 @@ export default class ContainerRegistry {
             logService: asValue(logger),
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
-            notifyLogin: asValue(notifyLogin),
             metricQuery: asClass(MetricQuery).singleton(),
         });
     }
@@ -122,6 +96,7 @@ export default class ContainerRegistry {
             userDisconnectConsumer: asClass(EventConsumers.UserDisconnectConsumer).singleton(),
             userSignInConsumer: asClass(EventConsumers.UserSignInConsumer).singleton(),
             roundResultConsumer: asClass(EventConsumers.RoundResultConsumer).singleton(),
+            roundIdConsumer: asClass(EventConsumers.RoundIdConsumer).singleton(),
         });
     }
 
@@ -144,6 +119,12 @@ export default class ContainerRegistry {
     registerValidators() {
         this.container.register({
             playGamePermissionValidator: asClass(PlayGamePermissionValidator).singleton(),
+        });
+    }
+
+    registerGameManagementService() {
+        this.container.register({
+            gameManagementApiClientFactory: asClass(GameManagementApiClientFactory).singleton(),
         });
     }
 }

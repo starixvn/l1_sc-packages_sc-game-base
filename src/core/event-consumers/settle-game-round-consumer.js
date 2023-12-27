@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import { RoundResultPublisher, UserBetResultPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
+import GameManagementApiClientFactory from "../game-management-api";
+import { callAndForget, post } from "../game-management-api";
 
 export default class SettleGameRoundConsumer {
     /**
@@ -14,8 +16,18 @@ export default class SettleGameRoundConsumer {
      * @param {*} dependencies.endGame
      * @param {mongoose.Model} dependencies.roundsRepository
      * @param {mongoose.Model} dependencies.betsRepository
+     * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
      */
-    constructor({ definition, gameData, roundResultPublisher, userBetResultPublisher, endGame, roundsRepository, betsRepository }) {
+    constructor({
+        definition,
+        gameData,
+        roundResultPublisher,
+        userBetResultPublisher,
+        endGame,
+        roundsRepository,
+        betsRepository,
+        gameManagementApiClientFactory,
+    }) {
         this.definition = definition;
         this.gameData = gameData;
         this.roundResultPublisher = roundResultPublisher;
@@ -23,6 +35,7 @@ export default class SettleGameRoundConsumer {
         this.endGame = endGame;
         this.roundsRepository = roundsRepository;
         this.betsRepository = betsRepository;
+        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
     }
 
     async settleRound() {
@@ -142,7 +155,10 @@ export default class SettleGameRoundConsumer {
 
         const apiResult = await this.endGame(bet.uid, gameInfo, settlementInfo);
 
-        if (!apiResult.isOk) {
+        if (apiResult.isOk) {
+            settlementInfo.red > 0 &&
+                callAndForget(this.gameManagementApiClient.users.updateBalance({ id: bet.uid, deductionAmount: -settlementInfo.red }));
+        } else {
             this.userBetResultPublisher.publishApiError(bet.uid, apiResult.response);
         }
     }
@@ -163,14 +179,6 @@ export default class SettleGameRoundConsumer {
 
         if (betResult.totalWin > 0) {
             settlementInfo.red = betResult.totalWin;
-        }
-
-        if (betResult.netWin > 0) {
-            settlementInfo.redWin = betResult.netWin;
-        }
-
-        if (betResult.totalLost > 0) {
-            settlementInfo.redLost = betResult.totalLost;
         }
 
         return { gameInfo, settlementInfo };

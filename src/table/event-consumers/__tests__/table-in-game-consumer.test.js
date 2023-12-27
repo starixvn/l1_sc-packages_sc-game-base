@@ -1,5 +1,4 @@
-import { stub, stubMongoose } from "jest-micro-auto-stub";
-import mongoose from "mongoose";
+import { stub } from "jest-micro-auto-stub";
 
 import InGameConsumer from "../../../core/event-consumers/in-game-consumer";
 import BaseEventPublisher from "../../../core/event-publishers/base-event-publisher";
@@ -7,18 +6,20 @@ import RoundQuery from "../../../core/query-apis/round-query";
 import TableGameData from "../../table-game-data";
 import TableGameDefinition from "../../table-game-definition";
 import TableInGameConsumer from "../table-in-game-consumer";
+import GameManagementApiClientFactory from "../../../core/game-management-api";
+
+jest.mock("sc-game-management-client");
 
 describe("TableInGameConsumer", () => {
     const definition = new TableGameDefinition({ id: 1, name: "name" });
     const gameData = new TableGameData(0);
 
-    /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongoose(mongoose.Model);
     const roundQuery = stub(RoundQuery);
     /** @type {BaseEventPublisher}*/
     const publisher = stub(BaseEventPublisher);
     const getBalance = jest.fn();
-    const consumer = new TableInGameConsumer(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository);
+    const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
+    const consumer = new TableInGameConsumer(definition, gameData, roundQuery, publisher, getBalance, gameManagementApiClientFactory);
 
     const stubPlayer = (uid, name) => {
         return {

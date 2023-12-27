@@ -31,10 +31,10 @@ export default class BearerAuthenticator {
 
     async updateToken() {
         try {
-            const token = await this.getBearerToken();
+            const result = await this.getBearerToken();
 
-            this.token = token.token;
-            this.expired = token.expired;
+            this.token = result.token;
+            this.expired = result.expired;
 
             logger.log("Get bearer token successfully.");
         } catch (error) {
@@ -54,9 +54,13 @@ export default class BearerAuthenticator {
 
         return token.access_token
             ? {
-                  token: `${token.token_type} ${token.access_token}`,
+                  token,
                   expired: token.expires_at,
               }
             : null;
+    }
+
+    formatToken() {
+        return this.token ? `${this.token.token_type} ${this.token.access_token}` : "";
     }
 }

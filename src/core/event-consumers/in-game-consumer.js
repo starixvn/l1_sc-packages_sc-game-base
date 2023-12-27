@@ -1,9 +1,8 @@
-import mongoose from "mongoose";
-
 import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import { RoundQuery } from "./../query-apis";
+import GameManagementApiClientFactory, { getOrDefault } from "../game-management-api";
 
 export default class InGameConsumer {
     /**
@@ -12,15 +11,15 @@ export default class InGameConsumer {
      * @param {RoundQuery} roundQuery
      * @param {BaseEventPublisher} publisher
      * @param {*} getBalance
-     * @param {mongoose.Model} userInfosRepository
+     * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
      */
-    constructor(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository) {
+    constructor(definition, gameData, roundQuery, publisher, getBalance, gameManagementApiClientFactory) {
         this.definition = definition;
         this.gameData = gameData;
         this.roundQuery = roundQuery;
         this.publisher = publisher;
         this.getBalance = getBalance;
-        this.userInfosRepository = userInfosRepository;
+        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
     }
 
     async consume(realPlayer) {
@@ -35,7 +34,8 @@ export default class InGameConsumer {
     }
 
     async buildPayload(realPlayer) {
-        await this.getBalance(realPlayer, true);
+        const user = await this.getUserInfo(realPlayer);
+
         const { odds, originalOdds, enableFreeBet, boostedChoices } = this.gameData.gameConfigs;
         const { totalBets, roundId, exchangeRates } = this.gameData;
         const { session } = realPlayer;
@@ -44,8 +44,6 @@ export default class InGameConsumer {
         const gameConfigs = { ...settings, odds, originalOdds, enableFreeBet, boostedChoices };
         const { ownBets: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { ownBets: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
-
-        const user = await this.getUserInfo(realPlayer.UID);
 
         return {
             roundId,
@@ -64,24 +62,31 @@ export default class InGameConsumer {
             : { hashValue: this.gameData.resultHash.hashValue };
     }
 
-    getUserInfo(uid) {
-        return this.userInfosRepository
-            .findOne(
-                { id: uid },
-                {
-                    _id: false,
-                    UID: true,
-                    name: true,
-                    avatarId: true,
-                    red: true,
-                    scoins: true,
-                    joinedOn: true,
-                    security: true,
-                    currency: true,
-                    type: true,
-                }
-            )
-            .lean()
-            .exec();
+    async getUserInfo(realPlayer) {
+        const resultGetBalance = await this.getBalance(realPlayer);
+        const { response } = resultGetBalance;
+
+        let user = {};
+        if (resultGetBalance.isOk) {
+            user = await getOrDefault(this.gameManagementApiClient.users.setBalance({ id: realPlayer.UID, balance: response.red }), user);
+        } else {
+            user = await getOrDefault(this.gameManagementApiClient.users.getUserInfo(realPlayer.UID), user);
+        }
+        return this.formatUserInfo(user);
+    }
+
+    formatUserInfo(userInfo) {
+        if (userInfo && Object.keys(userInfo).length !== 0) {
+            return {
+                UID: userInfo.UID,
+                name: userInfo.name,
+                avatarId: userInfo.avatarId,
+                red: userInfo.red,
+                scoins: userInfo.scoins,
+                currency: userInfo.currency,
+                type: userInfo.type,
+            };
+        }
+        return {};
     }
 }

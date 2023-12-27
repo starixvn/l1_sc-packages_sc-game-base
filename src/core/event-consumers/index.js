@@ -7,6 +7,7 @@ import SettleGameRoundConsumer from "./settle-game-round-consumer";
 import UserDisconnectConsumer from "./user-disconnect-consumer";
 import UserSignInConsumer from "./user-signin-consumer";
 import RoundResultConsumer from "./round-result-consumer";
+import RoundIdConsumer from "./round-id-consumer";
 
 export {
     AdminAuthenticationConsumer,
@@ -18,4 +19,5 @@ export {
     PlaceBetConsumer,
     SettleGameRoundConsumer,
     RoundResultConsumer,
+    RoundIdConsumer,
 };

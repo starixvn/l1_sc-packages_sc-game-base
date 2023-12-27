@@ -1,15 +1,15 @@
 import cron from "cron";
 import mongoose from "mongoose";
-import { logger } from "sc-common";
 
-import SettleGameRoundConsumer from "./../event-consumers/settle-game-round-consumer";
+import GameManagementApiClientFactory, { getOrDefault, post } from "../game-management-api";
+import { chatBotHelper } from "../helpers";
+import { decrypt } from "../helpers/crypto-helper";
+import { getEffectivePromotion, getFinishPromotionMessage, getStartPromotionMessage } from "../helpers/promotion-helper";
+import { RoundResultConsumer, SettleGameRoundConsumer, RoundIdConsumer } from "./../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
-import { decrypt } from "../helpers/crypto-helper";
-import { getEffectivePromotion, getStartPromotionMessage, getFinishPromotionMessage } from "../helpers/promotion-helper";
-import { chatBotHelper } from "../helpers";
 
 export default class BaseGameCron {
     /**
@@ -22,15 +22,10 @@ export default class BaseGameCron {
      * @param {GameStatusPublisher} dependencies.gameStatusPublisher
      * @param {RunningRoundInfoPublisher} dependencies.runningRoundInfoPublisher
      * @param {logger} dependencies.logService
-     * @param {mongoose.Model} dependencies.gameConfigsRepository
-     * @param {mongoose.Model} dependencies.roundsRepository
-     * @param {mongoose.Model} dependencies.archiveStatusesRepository
-     * @param {mongoose.Model} dependencies.notificationRepository
-     * @param {mongoose.Model} dependencies.exchangeRatesRepository
-     * @param {mongoose.Model} dependencies.currencyGroupGamesRepository
-     * @param {mongoose.Model} dependencies.partnerConfigRepository
-     * @param {mongoose.Model} dependencies.currencyGroupRepository
-     * @param {mongoose.Model} dependencies.currencyRepository
+     * @param {RoundResultConsumer} dependencies.roundResultConsumer
+     * @param {mongoose.Model} dependencies.resultsRepository
+     * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
+     * @param {RoundIdConsumer} dependencies.roundIdConsumer
      */
     constructor({
         definition,
@@ -40,19 +35,11 @@ export default class BaseGameCron {
         gameStatusPublisher,
         runningRoundInfoPublisher,
         logService,
-        gameConfigsRepository,
-        roundsRepository,
-        archiveStatusesRepository,
-        notificationRepository,
-        exchangeRatesRepository,
-        currencyGroupGamesRepository,
-        partnerConfigRepository,
-        currencyGroupRepository,
-        currencyRepository,
         roundResultConsumer,
         resultsRepository,
-        promotionRepository,
         appConfigs,
+        gameManagementApiClientFactory,
+        roundIdConsumer,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -61,41 +48,20 @@ export default class BaseGameCron {
         this.gameStatusPublisher = gameStatusPublisher;
         this.runningRoundInfoPublisher = runningRoundInfoPublisher;
         this.logService = logService;
-        this.gameConfigsRepository = gameConfigsRepository;
-        this.roundsRepository = roundsRepository;
-        this.archiveStatusesRepository = archiveStatusesRepository;
-        this.notificationRepository = notificationRepository;
-        this.exchangeRatesRepository = exchangeRatesRepository;
-        this.currencyGroupGamesRepository = currencyGroupGamesRepository;
-        this.partnerConfigRepository = partnerConfigRepository;
-        this.currencyGroupRepository = currencyGroupRepository;
-        this.currencyRepository = currencyRepository;
         this.roundResultConsumer = roundResultConsumer;
         this.resultsRepository = resultsRepository;
-        this.promotionRepository = promotionRepository;
         this.appConfigs = appConfigs;
+        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
+        this.roundIdConsumer = roundIdConsumer;
     }
 
     async start() {
-        await this.initRoundId();
+        await this.roundIdConsumer.initRoundId();
         await this.queryLastResult();
         await this.initResultHash();
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
         this.startCron();
-    }
-
-    async initRoundId() {
-        const lastRound = await this.roundsRepository
-            .findOne({}, "id", { sort: { id: -1 } })
-            .lean()
-            .exec();
-
-        if (lastRound) {
-            this.gameData.roundId = lastRound.id + 1;
-        } else {
-            this.gameData.roundId = await this.getLastArchiveRound();
-        }
     }
 
     async queryLastResult() {
@@ -131,13 +97,6 @@ export default class BaseGameCron {
         );
 
         job.start();
-    }
-
-    async getLastArchiveRound() {
-        const { configName } = this.definition;
-        const archiveStatus = await this.archiveStatusesRepository.findOne({ name: configName }, "lastArcId").lean().exec();
-
-        return archiveStatus ? (archiveStatus.lastArcId["_phiens"] ?? archiveStatus.lastArcId["_rounds"]) + 1 : 1;
     }
 
     async proceed() {
@@ -185,46 +144,66 @@ export default class BaseGameCron {
     }
 
     async checkGameStatus() {
-        const { configName, durations } = this.definition;
-        const configs = await this.gameConfigsRepository.findOne({ name: configName }).lean().exec();
+        const { configName } = this.definition;
+
+        const newGameConfigs = await getOrDefault(
+            this.gameManagementApiClient.gameConfigs.getGameConfigs(configName),
+            this.gameData.gameConfigs
+        );
+
+        if (!newGameConfigs) {
+            this.logService.logError(`Cannot get game configs of ${this.definition.name}.`);
+        }
+
         const previouslyDisabled = this.gameData.disabled;
-        const configuredlyDisabled = !configs || !configs.enabled;
+        const configuredlyDisabled = !newGameConfigs || !newGameConfigs.enabled;
 
         if (previouslyDisabled) {
-            if (this.gameData.delayStartTime > 0) {
-                this.gameData.delayStartTime--;
-            } else if (!configuredlyDisabled) {
-                this.gameData.delayStartTime = configs?.delayStartTime ?? 0;
-            }
+            this.gameData.delayStartTime = this.getDelayStartTime(configuredlyDisabled, newGameConfigs);
         }
 
-        this.gameData.umMessages =
-            (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
-
-        const originalOdds = configs ? Object.assign({}, configs.odds) : {};
-        if (this.gameData.gameConfigs && this.gameData.gameConfigs.boostedChoices && this.gameData.gameConfigs.boostedChoices.length > 0) {
-            this.gameData.gameConfigs = configs
-                ? Object.assign(configs, { odds: this.gameData.gameConfigs.odds, boostedChoices: this.gameData.gameConfigs.boostedChoices })
-                : {};
-        } else {
-            this.gameData.gameConfigs = configs ?? {};
-        }
-        this.gameData.gameConfigs.originalOdds = originalOdds;
+        this.assignNewGameConfigs(newGameConfigs);
 
         this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
+
         await this.getSettingForNewRound();
 
         if (this.gameData.gameConfigs.exchangeReload) {
             await this.updateExchangeRates();
-            await this.gameConfigsRepository.updateOne({ name: configName }, { exchangeReload: false });
-            this.gameData.gameConfigs.exchangeReload = false;
+
+            await post(this.gameManagementApiClient.gameConfigs.updateExchangeReload(false, configName));
         }
 
+        this.handleGameStatus(previouslyDisabled);
+    }
+
+    assignNewGameConfigs(newGameConfigs) {
+        newGameConfigs.originalOdds = newGameConfigs.odds;
+
+        const { gameConfigs: currentGameConfig } = this.gameData;
+
+        if (currentGameConfig.boostedChoices?.length > 0) {
+            newGameConfigs = Object.assign(newGameConfigs, {
+                odds: currentGameConfig.odds,
+                boostedChoices: currentGameConfig.boostedChoices,
+            });
+        }
+
+        this.gameData.gameConfigs = newGameConfigs ?? {};
+    }
+
+    async handleGameStatus(previouslyDisabled) {
+        const { configName } = this.definition;
+
         if (this.gameData.disabled) {
+            const { durations } = this.definition;
+
+            const notification = await getOrDefault(this.gameManagementApiClient.notification.getUmMessages(configName), {});
+
+            this.gameData.umMessages = notification;
+
             this.gameData.remainingTime = durations.wholeRound;
             this.gameStatusPublisher.publishDisableGameStatus();
-
-            await this.gameConfigsRepository.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
         } else if (previouslyDisabled) {
             await this.enableGame();
         } else {
@@ -237,12 +216,14 @@ export default class BaseGameCron {
             return {};
         }
 
-        const promotions = await this.promotionRepository.find({ gameId: this.definition.id, status: "enabled" }).lean().exec();
+        const promotions = await getOrDefault(this.gameManagementApiClient.promotion.getPromotions(this.definition.id), []);
+
         const promotion = getEffectivePromotion(promotions);
         this.gameData.promotion = promotion;
 
         this.gameData.gameConfigs.boostedChoices = [];
         this.gameData.gameConfigs.odds = Object.assign({}, this.gameData.gameConfigs.originalOdds);
+
         if (promotion) {
             Object.keys(this.gameData.gameConfigs.odds).forEach((choice) => {
                 if (promotion.odds[choice] && promotion.odds[choice] !== this.gameData.gameConfigs.odds[choice]) {
@@ -282,45 +263,64 @@ export default class BaseGameCron {
     }
 
     async getSettingForNewRound() {
-        await this.updateCurrencyGroupGames();
-        await this.updatePartnerGameSiteExclusions();
-        await this.updateCurrencyGroups();
-        await this.updateCurrencies();
+        const data = await getOrDefault(this.gameManagementApiClient.aggregation.getSettingForNewRound(this.definition.id), {
+            currencyGroupGames: this.gameData.currencyGroupGames,
+            partnerGameSiteExclusions: this.gameData.partnerGameSiteExclusions,
+            currencyGroups: this.gameData.currencyGroups,
+            currencies: this.gameData.currencies,
+        });
+
+        this.gameData.currencyGroupGames = data.currencyGroupGames;
+        this.gameData.partnerGameSiteExclusions = data.partnerGameSiteExclusions;
+        this.gameData.currencyGroups = data.currencyGroups;
+        this.gameData.currencies = data.currencies;
     }
 
     async updateExchangeRates() {
-        this.gameData.exchangeRates = await this.exchangeRatesRepository
-            .findOne({}, "exId code", { sort: { exId: -1 } })
-            .lean()
-            .exec();
+        this.gameData.exchangeRates = await getOrDefault(
+            this.gameManagementApiClient.exchangeRates.getExchangeRates(),
+            this.gameData.exchangeRates
+        );
     }
 
     async updateCurrencyGroupGames() {
-        this.gameData.currencyGroupGames = await this.currencyGroupGamesRepository
-            .find({ gameId: this.definition.id, enabled: true }, "groupId minBet maxBet maxBetPerChoices chips stakeLevels")
-            .lean()
-            .exec();
+        this.gameData.currencyGroupGames = await getOrDefault(
+            this.gameManagementApiClient.currencyGroupGames.getCurrencyGroupGamesByGameId(this.definition.id),
+            this.gameData.currencyGroupGames
+        );
     }
 
     async updatePartnerGameSiteExclusions() {
-        this.gameData.partnerGameSiteExclusions = await this.partnerConfigRepository
-            .find({ type: "game_site_exclusions" }, "partnerId type value")
-            .lean()
-            .exec();
+        this.gameData.partnerGameSiteExclusions = await getOrDefault(
+            this.gameManagementApiClient.operatorConfig.getGameSiteExclusions(),
+            this.gameData.partnerGameSiteExclusions
+        );
     }
 
     async updateCurrencyGroups() {
-        this.gameData.currencyGroups = await this.currencyGroupRepository.find({ enabled: true }, "name enabled partnerId").lean().exec();
+        this.gameData.currencyGroups = await getOrDefault(
+            this.gameManagementApiClient.currencyGroups.getCurrencyGroups(),
+            this.gameData.currencyGroups
+        );
     }
 
     async updateCurrencies() {
-        this.gameData.currencies = await this.currencyRepository
-            .find({ enabled: true }, "name code multiplier enabled partnerId groupId isTest isUncountOnTotal")
-            .lean()
-            .exec();
+        this.gameData.currencies = await getOrDefault(this.gameManagementApiClient.currencies.getCurrencies(), this.gameData.currencies);
     }
 
     async enableGame() {
         this.gameStatusPublisher.publishEnablingGameStatus();
+    }
+
+    getDelayStartTime(configuredlyDisabled, newGameConfigs) {
+        if (this.gameData.delayStartTime > 0) {
+            return this.gameData.delayStartTime - 1;
+        }
+
+        if (!configuredlyDisabled) {
+            return newGameConfigs?.delayStartTime ?? 0;
+        }
+
+        return 0;
     }
 }

@@ -1,15 +1,16 @@
 import "jest-extended";
-import { stub, stubMongoose } from "jest-micro-auto-stub";
-import mongoose from "mongoose";
+import { stub } from "jest-micro-auto-stub";
 import { Socket } from "socket.io";
 import UserSignInPublisher from "../../event-publishers/user-signin-publisher";
 import GameData from "../../game-data";
 import { PlayGamePermissionValidator } from "../../validators";
 import UserSignInConsumer from "../user-signin-consumer";
-import { Models, Payloads } from "jest-auto-fixture";
+import { Payloads } from "jest-auto-fixture";
 import * as baseApis from "sc-base-apis";
+import GameManagementApiClientFactory from "../../game-management-api";
 
 jest.mock("sc-base-apis");
+jest.mock("sc-game-management-client");
 
 const userServiceMock = {
     signInGameResult: {
@@ -26,15 +27,14 @@ jest.mock("../../helpers/authentication-helpers", () => {
     };
 });
 
+const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
+
 describe("UserSignInConsumer", () => {
     let payload, consumer;
     const gameData = new GameData(0);
 
     /** @type {UserSignInPublisher}*/
     const userSignInPublisher = stub(UserSignInPublisher);
-
-    /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongoose(mongoose.Model);
 
     /** @type {PlayGamePermissionValidator}*/
     const playGamePermissionValidator = stub(PlayGamePermissionValidator);
@@ -48,7 +48,13 @@ describe("UserSignInConsumer", () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        consumer = new UserSignInConsumer(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, userInfosRepository);
+        consumer = new UserSignInConsumer(
+            gameData,
+            userSignInPublisher,
+            playGamePermissionValidator,
+            appConfigs,
+            gameManagementApiClientFactory
+        );
     });
 
     describe("consume", () => {
@@ -112,7 +118,6 @@ describe("UserSignInConsumer", () => {
                 payload = Payloads.SignIn({ username: "validUser", browserUserAgent: browserAgent });
                 userSession = payload.ss;
                 userServiceMock.signInGameResult = { id: userSession.userId };
-                userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
 
                 socketClient.request = { headers: { "user-agent": browserAgent } };
 
@@ -128,7 +133,8 @@ describe("UserSignInConsumer", () => {
             describe("when not have user info", () => {
                 it("should publish unauthorized message", async () => {
                     // Arrange
-                    userInfosRepository.findOne().lean().exec.mockReturnValue(null);
+                    const data = { data: null, isSuccessful: true };
+                    consumer.gameManagementApiClient.users.getUserInfo.mockReturnValueOnce(data);
 
                     // Act
                     await consumer.consume(socketClient, payload);
@@ -142,8 +148,32 @@ describe("UserSignInConsumer", () => {
                 describe("when have play game permission", () => {
                     beforeEach(() => {
                         // Arrange
-                        userInfosRepository.findOne().lean().exec.mockReturnValue(Models.UserInfo());
+                        const data = { data: { id: 123 }, isSuccessful: true };
+                        consumer.gameManagementApiClient.users.getUserInfo.mockResolvedValueOnce(data);
                         playGamePermissionValidator.validate.mockReturnValueOnce(true);
+                    });
+
+                    it("should update stake level", async () => {
+                        // Act
+                        await consumer.consume(socketClient, payload);
+
+                        // Assert
+                        expect(consumer.gameManagementApiClient.users.updateUserStakeLevel).toBeCalledWith({
+                            id: userSession.userId,
+                            minBet: 1,
+                            maxBet: 100,
+                        });
+                    });
+
+                    it("should public new stake level", async () => {
+                        // arrange
+                        const userStakeLevel = { minBet: 1, maxBet: 100 };
+
+                        // Act
+                        await consumer.consume(socketClient, payload);
+
+                        // Assert
+                        expect(socketClient.emit).toBeCalledWith("message", { userStakeLevel });
                     });
 
                     it("should publish signedIn message", async () => {

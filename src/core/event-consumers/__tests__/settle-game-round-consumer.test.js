@@ -7,6 +7,9 @@ import GameDefinition from "../../game-definition";
 import SettleGameRoundConsumer from "../settle-game-round-consumer";
 import Chance from "chance";
 import { Models } from "jest-auto-fixture";
+import GameManagementApiClientFactory from "../../game-management-api";
+
+jest.mock("sc-game-management-client");
 
 describe("SettleGameRoundConsumer", () => {
     const chance = new Chance();
@@ -33,6 +36,7 @@ describe("SettleGameRoundConsumer", () => {
     const betsRepository = stubMongoose(mongoose.Model);
 
     const endGame = jest.fn();
+    const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -47,6 +51,7 @@ describe("SettleGameRoundConsumer", () => {
             endGame,
             roundsRepository,
             betsRepository,
+            gameManagementApiClientFactory,
         });
     });
 
@@ -300,10 +305,18 @@ describe("SettleGameRoundConsumer", () => {
         };
 
         describe("when api result is ok", () => {
-            it("should not publish api error", async () => {
-                // Arrange
-                endGame.mockReturnValueOnce({ isOk: true, response: {} });
+            beforeEach(() => {
+                endGame.mockReturnValueOnce({ isOk: true });
+            });
+            it("should update balance when total win > 0", async () => {
+                // Act
+                await consumer.callEndGame(bet, roundId, new Date(), { totalWin: 10 });
 
+                // Assert
+                expect(consumer.gameManagementApiClient.users.updateBalance).toHaveBeenCalledWith({ id: bet.uid, deductionAmount: -10 });
+            });
+
+            it("should not publish api error", async () => {
                 // Act
                 await consumer.callEndGame(bet, roundId, new Date(), {});
 
@@ -414,78 +427,6 @@ describe("SettleGameRoundConsumer", () => {
 
                 // Assert
                 expect(actualResult.settlementInfo.red).toBeUndefined();
-            });
-        });
-
-        describe("when net win is greater than zero", () => {
-            it("should return settlementInfo with correct redWin", () => {
-                // Arrange
-                const betResult = {
-                    totalBetAmount: 2000,
-                    totalWin: 3000,
-                    netWin: 1000,
-                    totalLost: 0,
-                };
-
-                // Act
-                const actualResult = consumer.formatEndGameInfo({}, roundId, time, betResult);
-
-                // Assert
-                expect(actualResult.settlementInfo.redWin).toBe(betResult.netWin);
-            });
-        });
-
-        describe("when net win is not greater than zero", () => {
-            it("should return settlementInfo with undefined redWin", () => {
-                // Arrange
-                const betResult = {
-                    totalBetAmount: 2000,
-                    totalWin: 0,
-                    netWin: 0,
-                    totalLost: 2000,
-                };
-
-                // Act
-                const actualResult = consumer.formatEndGameInfo({}, roundId, time, betResult);
-
-                // Assert
-                expect(actualResult.settlementInfo.redWin).toBeUndefined();
-            });
-        });
-
-        describe("when total lost is greater than zero", () => {
-            it("should return settlementInfo with correct redLost", () => {
-                // Arrange
-                const betResult = {
-                    totalBetAmount: 2000,
-                    totalWin: 0,
-                    netWin: 0,
-                    totalLost: 2000,
-                };
-
-                // Act
-                const actualResult = consumer.formatEndGameInfo({}, roundId, time, betResult);
-
-                // Assert
-                expect(actualResult.settlementInfo.redLost).toBe(betResult.totalLost);
-            });
-        });
-
-        describe("when total lost is not greater than zero", () => {
-            it("should return settlementInfo with undefined redLost", () => {
-                // Arrange
-                const betResult = {
-                    totalBetAmount: 2000,
-                    totalWin: 3500,
-                    netWin: 1500,
-                    totalLost: 0,
-                };
-
-                // Act
-                const actualResult = consumer.formatEndGameInfo({}, roundId, time, betResult);
-
-                // Assert
-                expect(actualResult.settlementInfo.redLost).toBeUndefined();
             });
         });
     });

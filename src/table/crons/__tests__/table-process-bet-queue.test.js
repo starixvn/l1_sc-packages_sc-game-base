@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { logger } from "sc-common";
 
 import ProcessBetQueue from "../../../core/crons/process-bet-queue";
+import GameManagementApiClientFactory from "../../../core/game-management-api";
 import PlaceBetPublisher from "../../event-publishers/table-place-bet-publisher";
 import TableGameData from "../../table-game-data";
 import TableGameDefinition from "../../table-game-definition";
@@ -23,8 +24,7 @@ describe("table process bet queue test", () => {
     /** @type {mongoose.Model}*/
     const betLogsRepository = stubMongoose(mongoose.Model);
 
-    /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongoose(mongoose.Model);
+    const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
     const betQueue = new TableProcessBetQueue({
         definition,
@@ -34,7 +34,7 @@ describe("table process bet queue test", () => {
         logService,
         betsRepository,
         betLogsRepository,
-        userInfosRepository,
+        gameManagementApiClientFactory,
     });
 
     it("inherit ProcessBetQueue", () => {

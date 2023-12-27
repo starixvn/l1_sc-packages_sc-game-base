@@ -8,7 +8,11 @@ import BaseMetrics from "../../base-metrics";
 import PlaceBetPublisher from "../../event-publishers/place-bet-publisher";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
+import GameManagementApiClientFactory from "../../game-management-api";
 import ProcessBetQueue from "../process-bet-queue";
+
+jest.mock("sc-game-management-client");
+jest.mock("sc-common");
 
 describe("ProcessBetQueue", () => {
     jest.mock("../../event-publishers/place-bet-publisher");
@@ -58,9 +62,7 @@ describe("ProcessBetQueue", () => {
     const betLogsRepository = stubMongoose(mongoose.Model);
     betLogsRepository.create = jest.fn();
 
-    /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongoose(mongoose.Model);
-    userInfosRepository.updateOne = jest.fn();
+    const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
     const baseMetrics = stub(BaseMetrics);
     let player = null,
@@ -205,15 +207,16 @@ describe("ProcessBetQueue", () => {
 
             proceedBetQueue.formatApiBetInfo = jest.fn().mockReturnValue({ ...apiBetInfo });
             proceedBetQueue.proceedBetQueue = jest.fn();
-            proceedBetQueue.validateBetRequest = jest.fn();
+            proceedBetQueue.validateBetRequest = jest.fn().mockReturnValue(true);
             proceedBetQueue.handleSuccessBet = jest.fn();
             proceedBetQueue.handleFailedBet = jest.fn();
+            proceedBetQueue.getCoinBalance = jest.fn().mockReturnValueOnce(0);
             baseMetrics.collectBetProcessedTime = jest.fn();
         });
 
         it("should call formatApiBetInfo", async () => {
             // Arrange
-            placeBet.mockResolvedValueOnce({ isOk: true });
+            placeBet.mockReturnValueOnce({ isOk: true });
 
             // Act
             await proceedBetQueue.proceedBet(player, payload);
@@ -224,7 +227,7 @@ describe("ProcessBetQueue", () => {
 
         it("should call validateBetRequest", async () => {
             // Arrange
-            placeBet.mockResolvedValueOnce({ isOk: true });
+            placeBet.mockReturnValueOnce({ isOk: true });
 
             // Act
             await proceedBetQueue.proceedBet(player, payload);
@@ -589,21 +592,20 @@ describe("ProcessBetQueue", () => {
     });
 
     describe("getCoinBalance", () => {
-        it("should call userInfosRepository.findOne", async () => {
+        it("should call gameManagementApiClient.users.getUserScoins", async () => {
             // Arrange
-            userInfosRepository.findOne().lean().exec.mockReturnValueOnce({});
-
+            proceedBetQueue.gameManagementApiClient.users.getUserScoins.mockReturnValueOnce({ isSuccessful: true, data: { scoins: 100 } });
             // Act
             await proceedBetQueue.getCoinBalance(player);
 
             // Assert
-            expect(userInfosRepository.findOne).toBeCalled();
+            expect(proceedBetQueue.gameManagementApiClient.users.getUserScoins).toBeCalled();
         });
 
         describe("when user scoins is undefined", () => {
             it("should return 0", async () => {
                 // Arrange
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce({});
+                proceedBetQueue.gameManagementApiClient.users.getUserScoins.mockReturnValueOnce({ isSuccessful: false, data: null });
 
                 // Act
                 const actualResult = await proceedBetQueue.getCoinBalance(player);
@@ -617,7 +619,10 @@ describe("ProcessBetQueue", () => {
             it("should return user scoins", async () => {
                 // Arrange
                 const userScoins = 100;
-                userInfosRepository.findOne().lean().exec.mockReturnValueOnce({ scoins: userScoins });
+                proceedBetQueue.gameManagementApiClient.users.getUserScoins.mockReturnValueOnce({
+                    isSuccessful: true,
+                    data: userScoins,
+                });
 
                 // Act
                 const actualResult = await proceedBetQueue.getCoinBalance(player);
@@ -632,14 +637,14 @@ describe("ProcessBetQueue", () => {
         const minBet = 100;
         const maxBet = 20000;
 
-        it("should call userInfosRepository.updateOne", async () => {
+        it("should call users.updateUserStakeLevel", async () => {
             // Act
             const mockDate = new Date();
             jest.spyOn(global, "Date").mockImplementation(() => mockDate);
             await proceedBetQueue.updateUserStakeLevel(player, minBet, maxBet);
 
             // Assert
-            expect(userInfosRepository.updateOne).toBeCalledWith({ id: player.UID }, { minBet, maxBet, betLimitModifiedDate: mockDate });
+            expect(proceedBetQueue.gameManagementApiClient.users.updateUserStakeLevel).toBeCalledWith({ id: player.UID, minBet, maxBet });
         });
 
         it("should update user profile minBet", async () => {
@@ -796,6 +801,23 @@ describe("ProcessBetQueue", () => {
 
             // Assert
             expect(proceedBetQueue.notifyPlacingBetResult).toBeCalledWith(player, response, payload, userCurrencyRate);
+        });
+
+        it("should call setBalanceAndDecreaseScoins", async () => {
+            // Arrange
+            const userCurrencyRate = chance.floating({ min: 1 });
+            jest.spyOn(proceedBetQueue, "notifyPlacingBetResult");
+            proceedBetQueue.calculateCurrencyRate = jest.fn().mockReturnValueOnce(userCurrencyRate);
+
+            // Act
+            await proceedBetQueue.handleSuccessBet(player, { ...response, red: 2000 }, roundId, { ...payload, freeBet: false });
+
+            // Assert
+            expect(proceedBetQueue.gameManagementApiClient.users.setBalanceAndDecreaseScoins).toBeCalledWith({
+                id: player.UID,
+                balance: 2000,
+                deductionscoins: 0,
+            });
         });
 
         describe("when betLogsRepository is available", () => {
@@ -977,7 +999,7 @@ describe("ProcessBetQueue", () => {
             logService,
             betsRepository,
             betLogsRepository,
-            userInfosRepository,
+            gameManagementApiClientFactory,
             baseMetrics,
         });
     };

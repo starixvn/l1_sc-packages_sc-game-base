@@ -33,10 +33,12 @@ const post = async (endpoint, params, options) => {
     }
 
     if (useAuthenticate) {
-        requestConfigs.headers.Authorization = bearerAuthenticator.token;
+        requestConfigs.headers.Authorization = bearerAuthenticator.formatToken();
     }
 
     return (await Axios.post(endpoint, params, requestConfigs)).data;
 };
 
-export default { init, post };
+const getBearerToken = () => bearerAuthenticator.token.access_token;
+
+export default { init, post, getBearerToken };

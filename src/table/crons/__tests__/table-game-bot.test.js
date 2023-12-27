@@ -4,9 +4,13 @@ import mongoose from "mongoose";
 import { Systems } from "../../../constants/systems";
 import BaseBot from "../../../core/crons/base-bot";
 import BaseEventPublisher from "../../../core/event-publishers/base-event-publisher";
+import GameManagementApiClientFactory from "../../../core/game-management-api";
 import TableGameData from "../../table-game-data";
 import TableGameDefinition from "../../table-game-definition";
 import TableGameBot from "../table-game-bot";
+
+jest.mock("sc-game-management-client");
+jest.mock("sc-common");
 
 describe("table game bot test", () => {
     const definition = new TableGameDefinition({ id: 1, name: "game name", durations: { lockingBet: 5 } });
@@ -16,13 +20,15 @@ describe("table game bot test", () => {
     const publisher = stub(BaseEventPublisher);
 
     /** @type {mongoose.Model}*/
-    const userInfosRepository = stubMongoose(mongoose.Model);
-
-    /** @type {mongoose.Model}*/
     const tempBetsRepository = stubMongoose(mongoose.Model);
 
-    const tableBot = new TableGameBot(definition, gameData, publisher, userInfosRepository, tempBetsRepository);
+    const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
+    const tableBot = new TableGameBot(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository);
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
     it("inherit base bot", () => {
         expect(tableBot instanceof BaseBot);
     });
@@ -61,7 +67,7 @@ describe("table game bot test", () => {
             it("should remove bot", async () => {
                 // arrange
                 const disabledBots = [{ id: 1, name: "bot1", type: true }];
-                userInfosRepository.find().lean().exec.mockReturnValue(disabledBots);
+                tableBot.gameManagementApiClient.users.getDisableBots.mockReturnValueOnce({ isSuccessful: true, data: disabledBots });
 
                 spyOn(tableBot, "removeBot");
                 tableBot.botsInRoom[1] = { id: 1, name: "bot1", type: true };
@@ -161,14 +167,12 @@ describe("table game bot test", () => {
     describe("removeBot", () => {
         it("should call specific methods", async () => {
             // arrange
-            spyOn(userInfosRepository, "updateOne");
             spyOn(publisher, "publishToAllUsers");
 
             // act
-            await tableBot.removeBot(1);
+            tableBot.removeBot(1);
 
             // assert
-            expect(userInfosRepository.updateOne).toHaveBeenCalledWith({ id: 1 }, { inRoom: false, inGameRoom: "", patternId: 0 });
             expect(publisher.publishToAllUsersExceptSystem).toHaveBeenCalledWith(Systems.Mobi, null, { outgame: { playerId: 1 } });
         });
     });
@@ -176,12 +180,11 @@ describe("table game bot test", () => {
     describe("joinRoom and exist bot", () => {
         it("should calls botJoinRoom", async () => {
             // arrange
-            spyOn(tableBot, "getBotsToJoin").and.returnValue([{ id: 1, name: "bot1", type: true, red: 2000 }]);
             spyOn(tableBot, "botJoinRoom");
-            spyOn(userInfosRepository, "find").and.callFake(() => {
-                return {
-                    exec: () => {},
-                };
+            spyOn(tableBot, "getNumberOfBotsToJoin").and.returnValue(1);
+            tableBot.gameManagementApiClient.users.getAllBots.mockReturnValueOnce({
+                data: [{ id: 1, name: "bot1", type: true, red: 2000 }],
+                isSuccessful: true,
             });
 
             // act
@@ -193,22 +196,9 @@ describe("table game bot test", () => {
     });
 
     describe("botJoinRoom", () => {
-        it("should call updateOne", async () => {
-            // arrange
-            const bot = { id: 1, name: "bot1", type: true, red: 2000 };
-            spyOn(userInfosRepository, "updateOne");
-
-            // act
-            await tableBot.botJoinRoom(bot);
-
-            // assert
-            expect(userInfosRepository.updateOne).toHaveBeenCalled();
-        });
-
         it("should call publishToAllUsersExceptSystem", async () => {
             // arrange
             const bot = { id: 1, name: "bot1", type: true, red: 2000 };
-            spyOn(userInfosRepository, "updateOne");
 
             // act
             await tableBot.botJoinRoom(bot);
@@ -220,14 +210,11 @@ describe("table game bot test", () => {
 
     describe("resetInRoomTrackings", () => {
         it("should calls update many user info", async () => {
-            // arrange
-            spyOn(userInfosRepository, "updateMany");
-
             //act
             await tableBot.resetInRoomTrackings();
 
             // assert
-            expect(userInfosRepository.updateMany).toHaveBeenCalled();
+            expect(tableBot.gameManagementApiClient.users.resetBotsInRoom).toHaveBeenCalled();
         });
     });
 
@@ -247,8 +234,10 @@ describe("table game bot test", () => {
             gameData.remainingTime = 10;
             gameData.gameConfigs = { bot_maxbet: 5000 };
             tempBetsRepository.findOne().lean().exec.mockReturnValue(null);
-            userInfosRepository.findOneAndUpdate.mockReturnValueOnce(bot);
-
+            tableBot.gameManagementApiClient.users.updateBalance.mockResolvedValueOnce({
+                isSuccessful: true,
+                data: { ...bot, amount: bot.red - amount },
+            });
             spyOn(tableBot, "insertOrUpdateBet");
 
             // act

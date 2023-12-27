@@ -1,19 +1,25 @@
-import { stubMongoose } from "jest-micro-auto-stub";
-import mongoose from "mongoose";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
 
+import GameManagementApiClientFactory from "../../game-management-api";
 import BaseBot from "../base-bot";
+
+const mockGetTotalBots = jest.fn();
+
+jest.mock("sc-game-management-client");
 
 const gameData = new GameData(3);
 const definition = new GameDefinition({ id: 1, name: "game name", durations: { lockingBet: 2 } });
-/** @type {mongoose.Model}*/
-const userInfosRepository = stubMongoose(mongoose.Model);
-userInfosRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
+
+const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
 const initBot = function () {
-    return new BaseBot(definition, gameData, userInfosRepository);
+    return new BaseBot(definition, gameData, gameManagementApiClientFactory);
 };
+
+afterEach(() => {
+    jest.clearAllMocks();
+});
 
 describe("reset tests", () => {
     describe("when botenabled is false", () => {
@@ -36,9 +42,8 @@ describe("reset tests", () => {
         it("should call processDisabledBots", async () => {
             // Arrange
             gameData.gameConfigs = { botenabled: true, maxbot: 0.5 };
-            userInfosRepository.countDocuments().exec.mockReturnValueOnce(100);
-
             const baseBot = initBot();
+            baseBot.gameManagementApiClient.users.getTotalBots.mockReturnValueOnce({ isSuccessful: true, data: 100 });
             jest.spyOn(baseBot, "processDisabledBots");
 
             // Act
@@ -51,9 +56,9 @@ describe("reset tests", () => {
         it("should calculate maxNumberOfBots", async () => {
             // Arrange
             gameData.gameConfigs = { botenabled: true, maxbot: 0.5 };
-            userInfosRepository.countDocuments().exec.mockReturnValueOnce(100);
 
             const baseBot = initBot();
+            baseBot.gameManagementApiClient.users.getTotalBots.mockReturnValueOnce({ isSuccessful: true, data: 100 });
             jest.spyOn(baseBot, "processDisabledBots");
 
             // Acct

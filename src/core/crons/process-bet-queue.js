@@ -1,11 +1,13 @@
-import { tracer } from "sc-instrument";
 import mongoose from "mongoose";
-import { helpers, logger } from "sc-common";
+import { helpers } from "sc-common";
+import { tracer } from "sc-instrument";
 
 import BaseMetrics from "../base-metrics";
+import GameManagementApiClientFactory, { getOrDefault } from "../game-management-api";
 import { PlaceBetPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
+import { post, callAndForget } from "../game-management-api";
 
 export default class ProcessBetQueue {
     processTimeOut = 50;
@@ -19,7 +21,7 @@ export default class ProcessBetQueue {
      * @param {logger} dependencies.logService
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.betLogsRepository
-     * @param {mongoose.Model} dependencies.userInfosRepository
+     * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
      * @param {BaseMetrics} dependencies.baseMetrics
      */
     constructor({
@@ -30,7 +32,7 @@ export default class ProcessBetQueue {
         logService,
         betsRepository,
         betLogsRepository,
-        userInfosRepository,
+        gameManagementApiClientFactory,
         baseMetrics,
     }) {
         this.definition = definition;
@@ -40,8 +42,8 @@ export default class ProcessBetQueue {
         this.logService = logService;
         this.betsRepository = betsRepository;
         this.betLogsRepository = betLogsRepository;
-        this.userInfosRepository = userInfosRepository;
         this.baseMetrics = baseMetrics;
+        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
     }
 
     start() {
@@ -93,7 +95,7 @@ export default class ProcessBetQueue {
                 response.apiError?.minBet > 0 &&
                 response.apiError?.maxBet > 0
             ) {
-                await this.updateUserStakeLevel(player, response.apiError.minBet, response.apiError.maxBet);
+                this.updateUserStakeLevel(player, response.apiError.minBet, response.apiError.maxBet);
             }
         }
 
@@ -152,13 +154,18 @@ export default class ProcessBetQueue {
     }
 
     async getCoinBalance(player) {
-        const userInfo = await this.userInfosRepository.findOne({ id: player.UID }, "scoins").lean().exec();
-
-        return userInfo.scoins ?? 0;
+        return getOrDefault(this.gameManagementApiClient.users.getUserScoins(player.UID), 0);
     }
 
-    async updateUserStakeLevel(player, minBet, maxBet) {
-        await this.userInfosRepository.updateOne({ id: player.UID }, { minBet, maxBet, betLimitModifiedDate: new Date() });
+    updateUserStakeLevel(player, minBet, maxBet) {
+        callAndForget(
+            this.gameManagementApiClient.users.updateUserStakeLevel({
+                id: player.UID,
+                minBet,
+                maxBet,
+            })
+        );
+
         player.profile.minBet = minBet;
         player.profile.maxBet = maxBet;
 
@@ -195,10 +202,29 @@ export default class ProcessBetQueue {
 
         this.adjustOwnBets(player.profile.name, bet);
 
-        this.notifyPlacingBetResult(player, balance, bet, rate);
+        if (bet.freeBet) {
+            const user = await getOrDefault(
+                this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({
+                    id: player.UID,
+                    balance: balance.red,
+                    deductionscoins: bet.amount,
+                }),
+                { red: balance.red, scoins: 0 }
+            );
+            this.notifyPlacingBetResult(player, { ...balance, scoins: user.scoins }, bet, rate);
+        } else {
+            callAndForget(
+                this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({
+                    id: player.UID,
+                    balance: balance.red,
+                    deductionscoins: 0,
+                })
+            );
+            this.notifyPlacingBetResult(player, balance, bet, rate);
+        }
 
         if (!bet.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
-            await this.updateUserStakeLevel(player, balance.minBet, balance.maxBet);
+            this.updateUserStakeLevel(player, balance.minBet, balance.maxBet);
         }
     }
 
@@ -311,7 +337,6 @@ export default class ProcessBetQueue {
     generatePlacingBetResult(player, balance, bet, rate) {
         const { amount, freeBet, betChoice } = bet;
         const { ownBets } = this.gameData.ingame[player.profile.name] || { ownBets: {} };
-
         return {
             ownBets: ownBets,
             endBet: amount,

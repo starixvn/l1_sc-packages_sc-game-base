@@ -1,16 +1,18 @@
-import { Domains } from "../models";
 import cron from "cron";
 import { logger } from "sc-common";
+import GameManagementApiClientFactory, { getOrDefault } from "../game-management-api";
 
 let configuredDomains = "";
+let domains = null;
 
 export const updateConfiguredDomains = (value) => {
     configuredDomains = value;
 };
 
-const queryDomains = async () => {
+const queryDomains = async (appConfigs) => {
     try {
-        const domains = await Domains.findOne({}).lean().exec();
+        const gameManagementApiClientFactory = new GameManagementApiClientFactory(appConfigs);
+        domains = await getOrDefault(gameManagementApiClientFactory.instance().domain.getDomain(), domains);
         configuredDomains = domains.value;
     } catch (err) {
         logger.logError("queryDomains error: " + err.toString());
@@ -36,12 +38,16 @@ export const getMainDomain = (domain) => {
     return `${domainParts[domainParts.length - 2]}.${domainParts[domainParts.length - 1]}`;
 };
 
-export const startCorsCron = () => {
-    const job = new cron.CronJob("*/10 * * * *", queryDomains, () => {
-        logger.logError("cors job unexpectedly stopped");
-        job.start();
-    });
+export const startCorsCron = (appConfigs) => {
+    const job = new cron.CronJob(
+        "*/10 * * * *",
+        () => queryDomains(appConfigs),
+        () => {
+            logger.logError("cors job unexpectedly stopped");
+            job.start();
+        }
+    );
 
-    queryDomains();
+    queryDomains(appConfigs);
     job.start();
 };

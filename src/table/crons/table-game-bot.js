@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
 import { Systems } from "../../constants/systems";
+import { getOrDefault, post } from "../../core/game-management-api";
 import BaseBot from "./../../core/crons/base-bot";
 import { BaseEventPublisher } from "./../../core/event-publishers";
 import TableGameData from "./../table-game-data";
@@ -13,11 +14,10 @@ export default class TableGameBot extends BaseBot {
      * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
      * @param {BaseEventPublisher} publisher
-     * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} tempBetsRepository
      */
-    constructor(definition, gameData, publisher, userInfosRepository, tempBetsRepository) {
-        super(definition, gameData, userInfosRepository);
+    constructor(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository) {
+        super(definition, gameData, gameManagementApiClientFactory);
 
         this.publisher = publisher;
         this.tempBetsRepository = tempBetsRepository;
@@ -34,27 +34,22 @@ export default class TableGameBot extends BaseBot {
     }
 
     async processDisabledBots() {
-        const disabledBots = await this.userInfosRepository.find({ type: true, disabled: true }).lean().exec();
+        const disabledBots = await getOrDefault(this.gameManagementApiClient.users.getDisableBots(), []);
 
-        await Promise.all(
-            disabledBots.map(async (bot) => {
-                if (this.botsInRoom[bot.id]) {
-                    await this.removeBot(bot.id);
-                    delete this.botsInRoom[bot.id];
-                }
-            })
-        );
+        if (disabledBots.length > 0) {
+            await this.removeBots(disabledBots.map((bot) => bot.id));
+        }
+    }
+
+    async removeBots(botIds) {
+        await post(this.gameManagementApiClient.users.updateBotsOutRoom({ botIds }));
+        botIds.forEach((id) => this.removeBot(id));
     }
 
     async removeBotsIfRatioChanged(totalRemoved) {
         const removedIds = this.chance.pickset(Object.keys(this.botsInRoom), totalRemoved);
 
-        await Promise.all(
-            removedIds.map(async (id) => {
-                await this.removeBot(id);
-                delete this.botsInRoom[id];
-            })
-        );
+        await this.removeBots(removedIds);
     }
 
     resetAllBotData() {
@@ -108,19 +103,17 @@ export default class TableGameBot extends BaseBot {
     async removeAllBots() {
         const bots = Object.values(this.gameData.players).filter((player) => player.type);
 
-        await Promise.all(bots.map((bot) => this.removeBot(bot.id)));
+        await this.removeBots(bots.map((bot) => bot.id));
 
         this.botsInRoom = {};
         this.maxNumberOfBots = 0;
         this.currentBotRatio = 0;
     }
 
-    async removeBot(botId) {
-        await this.userInfosRepository.updateOne({ id: botId }, { inRoom: false, inGameRoom: "", patternId: 0 });
-
+    removeBot(botId) {
         this.publisher.publishToAllUsersExceptSystem(Systems.Mobi, null, { outgame: { playerId: botId } });
-
         delete this.gameData.players[botId];
+        delete this.botsInRoom[botId];
     }
 
     resetBot(bot) {
@@ -135,29 +128,31 @@ export default class TableGameBot extends BaseBot {
     }
 
     async joinRoom() {
-        const botUsers = await this.userInfosRepository
-            .find({ type: true, inRoom: false, disabled: false }, "-_id id name red avatarId type")
-            .lean();
-        const newBots = this.getBotsToJoin(botUsers);
+        const numberOfBots = this.getNumberOfBotsToJoin();
+        const newBots = await getOrDefault(this.gameManagementApiClient.users.getAllBots(numberOfBots), []);
 
-        await Promise.all(newBots.map((bot) => this.botJoinRoom(bot)));
+        if (newBots.length > 0) {
+            await post(
+                this.gameManagementApiClient.users.updateBotsJoinRoom({
+                    botIds: newBots.map((bot) => bot.id),
+                    gameName: this.definition.configName,
+                })
+            );
+
+            newBots.forEach((bot) => this.botJoinRoom(bot));
+        }
     }
 
-    getBotsToJoin(botUsers) {
+    getNumberOfBotsToJoin() {
         const remaining = this.maxNumberOfBots - Object.keys(this.botsInRoom).length;
         const maxBotRandom =
             remaining > 0
                 ? Math.min(Math.max(1, this.maxNumberOfBots / this.gameData.remainingTime), remaining)
                 : Math.max(1, this.maxNumberOfBots / this.gameData.remainingTime);
-        const numberOfBotsToJoin = this.chance.integer({ min: 1, max: maxBotRandom });
-        const shuffleBots = this.chance.shuffle(botUsers);
-
-        return shuffleBots.slice(0, numberOfBotsToJoin);
+        return this.chance.integer({ min: 1, max: maxBotRandom });
     }
 
     async botJoinRoom(bot) {
-        await this.userInfosRepository.updateOne({ id: bot.id }, { inRoom: true, inGameRoom: this.definition.configName });
-
         this.resetBot(bot);
         this.botsInRoom[bot.id] = bot;
 
@@ -180,10 +175,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async resetInRoomTrackings() {
-        await this.userInfosRepository.updateMany(
-            { type: true, inGameRoom: this.definition.configName },
-            { inRoom: false, inGameRoom: "" }
-        );
+        await post(this.gameManagementApiClient.users.resetBotsInRoom({ gameName: this.definition.configName }));
     }
 
     async leaveRoom() {
@@ -191,12 +183,7 @@ export default class TableGameBot extends BaseBot {
         const totalRemoval = this.chance.integer({ min: 1, max: Math.max(maxBotRemoveRandom, 1) });
         const removalIds = this.getRemovalBotIds(totalRemoval);
 
-        await Promise.all(
-            removalIds.map(async (botId) => {
-                await this.removeBot(botId);
-                delete this.botsInRoom[botId];
-            })
-        );
+        await this.removeBots(removalIds);
     }
 
     getRemovalBotIds(totalRemoval) {
@@ -213,21 +200,17 @@ export default class TableGameBot extends BaseBot {
     }
 
     async placeBet(bot) {
-        const choice = this.getBetChoice(bot);
-        const maxBet = this.getMaxBet(bot, choice);
-        const minBet = this.getMinBet();
-        const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
-
         if (this.gameData.remainingTime > this.definition.durations.lockingBet) {
+            const choice = this.getBetChoice(bot);
+            const maxBet = this.getMaxBet(bot, choice);
+            const minBet = this.getMinBet();
+            const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
+
             const currentBet = await this.tempBetsRepository.findOne({ uid: bot.id, roundId: this.gameData.roundId }).lean().exec();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
 
-            if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
-                const user = await this.userInfosRepository.findOneAndUpdate(
-                    { id: bot.id, red: { $gt: amount } },
-                    { $inc: { red: -amount } },
-                    { new: true, lean: true }
-                );
+            if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet && amount < bot.red) {
+                const user = await getOrDefault(this.gameManagementApiClient.users.updateBalance({ id: bot.id, deductionAmount: amount }));
 
                 if (user) {
                     await this.insertOrUpdateBet(bot, choice, amount, currentBet);

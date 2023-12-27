@@ -11,6 +11,7 @@ import TableGameDefinition from "../../table-game-definition";
 import TableGameBot from "../table-game-bot";
 import TableGameCron from "../table-game-cron";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../../../core/event-publishers";
+import GameManagementApiClientFactory from "./../../../core/game-management-api";
 
 describe("table game cron test", () => {
     const definition = new TableGameDefinition({ name: "game name" });
@@ -32,10 +33,9 @@ describe("table game cron test", () => {
     const logService = stub(logger);
 
     /** @type {mongoose.Model}*/
-    const gameConfigsRepository = stubMongoose(mongoose.Model);
-
-    /** @type {mongoose.Model}*/
     const roundsRepository = stubMongoose(mongoose.Model);
+
+    const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
     /** @type {TableGameCron}*/
     const tableGameCron = new TableGameCron({
@@ -46,8 +46,8 @@ describe("table game cron test", () => {
         gameStatusPublisher: gameStatusPublisher,
         runningRoundInfoPublisher: runningRoundInfoPublisher,
         logService: logService,
-        gameConfigsRepository: gameConfigsRepository,
         roundsRepository: roundsRepository,
+        gameManagementApiClientFactory,
     });
 
     it("inherit BaseGameCron", () => {
