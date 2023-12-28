@@ -8699,10 +8699,10 @@ sc-common@1.8.1:
     mongoose-long "^0.3.0"
     numeral "^2.0.6"
 
-sc-game-management-client@^0.0.2-beta.20:
-  version "0.0.2-beta.20"
-  resolved "http://npm.lumigame.com/sc-game-management-client/-/sc-game-management-client-0.0.2-beta.20.tgz#5190de9636c133fca37d14146c97e74dcc943520"
-  integrity sha512-vTgS9bU8NMs2pmbEVC8k+90S1is4LClQLStQwPRAzbIy4Ogtc6Rdkhj3t4zTS+wWa9AnKwXYBjWyWKjPFbWUBg==
+sc-game-management-client@^0.0.2-beta.21:
+  version "0.0.2-beta.21"
+  resolved "http://npm.lumigame.com/sc-game-management-client/-/sc-game-management-client-0.0.2-beta.21.tgz#bf802cf8daf1726f253689f6a7392bf6e1a8d2f9"
+  integrity sha512-sUpKKgXf2enHDVXoHLgd5bDhwJPfLzxzLZZ7Jnxv+yUuape8NIkdgL4irJpHH6RGrp8XLMLeJ2HkVCjzS1R06g==
   dependencies:
     axios "1.6.2"
     axios-retry "^4.0.0"
