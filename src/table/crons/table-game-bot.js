@@ -73,7 +73,7 @@ export default class TableGameBot extends BaseBot {
             const botsToBet = this.getBotsToBet();
 
             console.log("--place bets---", botsToBet.length, new Date());
-            await Promise.all(botsToBet.map((bot) => this.placeBet(bot)));
+            await this.placeBets(botsToBet);
             console.log("done place bets", botsToBet.length, new Date());
         }
     }
@@ -201,30 +201,37 @@ export default class TableGameBot extends BaseBot {
         return botIds?.length > totalRemoval ? this.chance.pickset(Object.keys(this.botsInRoom), totalRemoval) : botIds;
     }
 
-    async placeBet(bot) {
-        if (this.gameData.remainingTime > this.definition.durations.lockingBet) {
-            const choice = this.getBetChoice(bot);
-            const maxBet = this.getMaxBet(bot, choice);
-            const minBet = this.getMinBet();
-            const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
+    async placeBets(botsToBet) {
+        const botBets = (await Promise.all(botsToBet.map(async (bot) => await this.calculateBet(bot)))).filter((bet) => bet);
+        const payload = { bots: botBets.map((bet) => ({ id: bet.id, deductionAmount: bet.amount })) };
+        const validBots = await getOrDefault(this.gameManagementApiClient.users.updateBotsBalance(payload));
+        console.log("updateBotsBalance", JSON.stringify(validBots));
+        validBots.forEach(async (validBot) => {
+            const bet = botBets.find((bet) => bet.id === validBot.id);
+            const { bot, choice, amount, currentBet } = bet;
 
-            const currentBet = await this.tempBetsRepository.findOne({ uid: bot.id, roundId: this.gameData.roundId }).lean().exec();
-            const totalBetAmount = this.getTotalBetAmount(currentBet);
+            await this.insertOrUpdateBet(bot, choice, amount, currentBet);
+            this.totalTickets += 1;
+            this.updateTotalBetsAndChips(choice, amount);
+            this.updateBotInRoomData(bot, choice, amount, validBot.red);
+            this.updateBalanceAndPublishBetPayload(bot.id, choice, amount, validBot.red);
+        });
+    }
 
-            if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet && amount < bot.red) {
-                const user = await getOrDefault(this.gameManagementApiClient.users.updateBalance({ id: bot.id, deductionAmount: amount }));
-                console.log("call updateBalance", bot.red, user?.red, amount);
-                if (user) {
-                    await this.insertOrUpdateBet(bot, choice, amount, currentBet);
+    async calculateBet(bot) {
+        const choice = this.getBetChoice(bot);
+        const maxBet = this.getMaxBet(bot, choice);
+        const minBet = this.getMinBet();
+        const amount = this.convertAmountToChip(helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true));
 
-                    this.totalTickets += 1;
+        const currentBet = await this.tempBetsRepository.findOne({ uid: bot.id, roundId: this.gameData.roundId }).lean().exec();
+        const totalBetAmount = this.getTotalBetAmount(currentBet);
 
-                    this.updateTotalBetsAndChips(choice, amount);
-                    this.updateBotInRoomData(bot, choice, amount, user.red);
-                    this.updateBalanceAndPublishBetPayload(bot.id, choice, amount, user.red);
-                }
-            }
+        if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet && amount < bot.red) {
+            return { id: bot.id, choice, amount, currentBet, bot };
         }
+
+        return null;
     }
 
     convertAmountToChip(amount) {
