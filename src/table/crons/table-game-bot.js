@@ -72,7 +72,9 @@ export default class TableGameBot extends BaseBot {
 
             const botsToBet = this.getBotsToBet();
 
+            console.log("--place bets---", botsToBet.length, new Date());
             await Promise.all(botsToBet.map((bot) => this.placeBet(bot)));
+            console.log("done place bets", botsToBet.length, new Date());
         }
     }
 
@@ -211,7 +213,7 @@ export default class TableGameBot extends BaseBot {
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet && amount < bot.red) {
                 const user = await getOrDefault(this.gameManagementApiClient.users.updateBalance({ id: bot.id, deductionAmount: amount }));
-
+                console.log("call updateBalance", bot.red, user?.red, amount);
                 if (user) {
                     await this.insertOrUpdateBet(bot, choice, amount, currentBet);
 
