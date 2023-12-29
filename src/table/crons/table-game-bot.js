@@ -72,9 +72,7 @@ export default class TableGameBot extends BaseBot {
 
             const botsToBet = this.getBotsToBet();
 
-            console.log("--place bets---", botsToBet.length, new Date());
             await this.placeBets(botsToBet);
-            console.log("done place bets", botsToBet.length, new Date());
         }
     }
 
@@ -204,8 +202,7 @@ export default class TableGameBot extends BaseBot {
     async placeBets(botsToBet) {
         const botBets = (await Promise.all(botsToBet.map(async (bot) => await this.calculateBet(bot)))).filter((bet) => bet);
         const payload = { bots: botBets.map((bet) => ({ id: bet.id, deductionAmount: bet.amount })) };
-        const validBots = await getOrDefault(this.gameManagementApiClient.users.updateBotsBalance(payload));
-        console.log("updateBotsBalance", JSON.stringify(validBots));
+        const validBots = await getOrDefault(this.gameManagementApiClient.users.updateBotsBalance(payload), []);
         validBots.forEach(async (validBot) => {
             const bet = botBets.find((bet) => bet.id === validBot.id);
             const { bot, choice, amount, currentBet } = bet;

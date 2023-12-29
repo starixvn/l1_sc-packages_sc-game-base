@@ -30,7 +30,6 @@ export default class BaseBot {
     }
 
     async reset() {
-        console.log("----------reset bot---------------");
         const configs = this.gameData.gameConfigs;
 
         if (configs.botenabled) {
