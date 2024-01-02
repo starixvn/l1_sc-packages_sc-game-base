@@ -12,6 +12,7 @@ export const gameManagementClient = jest.fn(() => ({
         setBalanceAndDecreaseScoins: jest.fn().mockReturnValue({ catch: jest.fn() }),
         getUserInfo: jest.fn(),
         setBalance: jest.fn(),
+        updateBotsBalance: jest.fn(),
     },
     gameConfigs: {
         getGameConfigs: jest.fn(),

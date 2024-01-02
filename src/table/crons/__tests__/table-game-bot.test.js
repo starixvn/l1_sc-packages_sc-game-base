@@ -136,17 +136,17 @@ describe("table game bot test", () => {
             expect(tableBot.leaveRoom).toHaveBeenCalled();
         });
 
-        it("exist bot to place bet_calls place bet", async () => {
+        it("exist bot to place bet_calls place bets", async () => {
             // arrange
             const bots = [{ id: 1, name: "bot1", type: true, red: 2000 }];
             spyOn(tableBot, "getBotsToBet").and.returnValue(bots);
-            spyOn(tableBot, "placeBet");
+            spyOn(tableBot, "placeBets");
 
             // act
             await tableBot.run();
 
             // assert
-            expect(tableBot.placeBet).toHaveBeenCalled();
+            expect(tableBot.placeBets).toHaveBeenCalled();
         });
     });
 
@@ -215,36 +215,6 @@ describe("table game bot test", () => {
 
             // assert
             expect(tableBot.gameManagementApiClient.users.resetBotsInRoom).toHaveBeenCalled();
-        });
-    });
-
-    describe("placeBet and meet condition", () => {
-        it("should calls specific methods", async () => {
-            // arrange
-            const bot = { id: 1, name: "bot1", type: true, red: 2000, save: jest.fn(), choices: [], betOnChoices: {} };
-            spyOn(bot, "save");
-            const choice = "odd";
-            const maxBet = 5000;
-            const minBet = 10;
-            const amount = 100;
-            spyOn(tableBot, "getBetChoice").and.returnValue(choice);
-            spyOn(tableBot, "getMaxBet").and.returnValue(maxBet);
-            spyOn(tableBot, "getMinBet").and.returnValue(minBet);
-            spyOn(tableBot, "convertAmountToChip").and.returnValue(amount);
-            gameData.remainingTime = 10;
-            gameData.gameConfigs = { bot_maxbet: 5000 };
-            tempBetsRepository.findOne().lean().exec.mockReturnValue(null);
-            tableBot.gameManagementApiClient.users.updateBalance.mockResolvedValueOnce({
-                isSuccessful: true,
-                data: { ...bot, amount: bot.red - amount },
-            });
-            spyOn(tableBot, "insertOrUpdateBet");
-
-            // act
-            await tableBot.placeBet(bot);
-
-            // assert
-            expect(tableBot.insertOrUpdateBet).toHaveBeenCalled();
         });
     });
 });
