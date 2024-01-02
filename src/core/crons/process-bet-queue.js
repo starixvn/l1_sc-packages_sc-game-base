@@ -3,11 +3,10 @@ import { helpers } from "sc-common";
 import { tracer } from "sc-instrument";
 
 import BaseMetrics from "../base-metrics";
-import GameManagementApiClientFactory, { getOrDefault } from "../game-management-api";
+import GameManagementApiClientFactory, { getOrDefault, callAndForget } from "../game-management-api";
 import { PlaceBetPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import { post, callAndForget } from "../game-management-api";
 
 export default class ProcessBetQueue {
     processTimeOut = 50;

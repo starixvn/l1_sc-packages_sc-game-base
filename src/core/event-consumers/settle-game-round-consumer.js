@@ -3,8 +3,7 @@ import mongoose from "mongoose";
 import { RoundResultPublisher, UserBetResultPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import GameManagementApiClientFactory from "../game-management-api";
-import { callAndForget, post } from "../game-management-api";
+import GameManagementApiClientFactory, { callAndForget } from "../game-management-api";
 
 export default class SettleGameRoundConsumer {
     /**

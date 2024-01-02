@@ -121,11 +121,7 @@ export default class BaseSocketRouter {
         const realPlayer = this.gameData.realPlayers[this.socketClient.id];
 
         if (realPlayer) {
-            if (this.playGamePermissionValidator.validate(realPlayer.session, this.socketClient)) {
-                return true;
-            }
-
-            return false;
+            return this.playGamePermissionValidator.validate(realPlayer.session, this.socketClient);
         }
 
         this.userSignInPublisher.publishUnauthorizedMessage(this.socketClient);
