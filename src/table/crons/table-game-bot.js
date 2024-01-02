@@ -72,7 +72,7 @@ export default class TableGameBot extends BaseBot {
 
             const botsToBet = this.getBotsToBet();
 
-            await this.placeBets(botsToBet);
+            botsToBet.length > 0 && (await this.placeBets(botsToBet));
         }
     }
 
