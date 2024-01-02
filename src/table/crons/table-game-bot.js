@@ -200,7 +200,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async placeBets(botsToBet) {
-        const botBets = (await Promise.all(botsToBet.map(async (bot) => await this.calculateBet(bot)))).filter((bet) => bet);
+        const botBets = (await Promise.all(botsToBet.map(async (bot) => this.calculateBet(bot)))).filter((bet) => bet);
         const payload = { bots: botBets.map((bet) => ({ id: bet.id, deductionAmount: bet.amount })) };
         const validBots = await getOrDefault(this.gameManagementApiClient.users.updateBotsBalance(payload), []);
         validBots.forEach(async (validBot) => {
