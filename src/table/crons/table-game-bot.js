@@ -152,7 +152,7 @@ export default class TableGameBot extends BaseBot {
         return this.chance.integer({ min: 1, max: maxBotRandom });
     }
 
-    async botJoinRoom(bot) {
+    botJoinRoom(bot) {
         this.resetBot(bot);
         this.botsInRoom[bot.id] = bot;
 
