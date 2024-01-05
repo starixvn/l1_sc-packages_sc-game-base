@@ -110,31 +110,32 @@ export default class BaseGameCron {
             this.gameData.remainingTime--;
         }
 
-        if (this.isStartingTime(this.gameData.remainingTime, durations)) {
+        const remainingTime = this.gameData.remainingTime;
+        if (this.isStartingTime(remainingTime, durations)) {
             this.resetForNewRound();
             this.bot && (await this.bot.reset());
             this.appConfigs.enabledBoostedOdds && (await this.updatePromotionOddsAndNotify());
         }
 
-        console.log("count: ", this.gameData.remainingTime, durations.placingBets, this.resultsRepository);
-        if (this.gameData.remainingTime === durations.placingBets && this.resultsRepository) {
+        console.log("count: ", remainingTime, durations.placingBets, this.resultsRepository);
+        if (remainingTime === durations.placingBets && this.resultsRepository) {
             await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
             this.gameData.settlementResultFromAdmin = {};
         }
 
-        if (this.gameData.remainingTime === durations.placingBets) {
+        if (remainingTime === durations.placingBets) {
             this.gameStatusPublisher.publishStartPlacingBetStatus();
         }
 
-        if (this.gameData.remainingTime === durations.lockingBet - 1) {
+        if (remainingTime === durations.lockingBet - 1) {
             this.gameStatusPublisher.publishEndPlacingBetStatus();
         }
 
-        if (this.gameData.remainingTime < 0) {
-            this.gameData.remainingTime = durations.wholeRound;
+        if (remainingTime < 0) {
+            remainingTime = durations.wholeRound;
 
             await this.settleGameRoundConsumer.settleRound(this.gameData);
-        } else if (this.gameData.remainingTime < durations.placingBets) {
+        } else if (remainingTime < durations.placingBets) {
             this.bot && (await this.bot.run());
             this.runningRoundInfoPublisher.publish();
         }
