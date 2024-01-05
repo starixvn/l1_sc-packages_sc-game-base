@@ -132,7 +132,7 @@ export default class BaseGameCron {
         }
 
         if (remainingTime < 0) {
-            remainingTime = durations.wholeRound;
+            this.gameData.remainingTime = durations.wholeRound;
 
             await this.settleGameRoundConsumer.settleRound(this.gameData);
         } else if (remainingTime < durations.placingBets) {
