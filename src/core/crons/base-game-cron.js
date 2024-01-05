@@ -117,7 +117,6 @@ export default class BaseGameCron {
             this.appConfigs.enabledBoostedOdds && (await this.updatePromotionOddsAndNotify());
         }
 
-        console.log("count: ", remainingTime, durations.placingBets, this.resultsRepository);
         if (remainingTime === durations.placingBets && this.resultsRepository) {
             await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
             this.gameData.settlementResultFromAdmin = {};
