@@ -40,7 +40,7 @@
         "openid-client": "^5.0.0",
         "sc-base-apis": "1.18.2-beta.3",
         "sc-base-database": "1.11.1",
-        "sc-common": "1.8.1",
+        "sc-common": "1.8.2-beta.0",
         "sc-game-management-client": "^0.0.2-beta.22",
         "sc-instrument": "1.1.1-beta.2",
         "sc-instrument-helper": "1.0.0",
