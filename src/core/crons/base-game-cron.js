@@ -113,7 +113,7 @@ export default class BaseGameCron {
         const remainingTime = this.gameData.remainingTime;
         if (this.isStartingTime(remainingTime, durations)) {
             this.resetForNewRound();
-            this.bot && (await this.bot.reset());
+            this.bot && this.bot.reset();
             this.appConfigs.enabledBoostedOdds && (await this.updatePromotionOddsAndNotify());
         }
 
