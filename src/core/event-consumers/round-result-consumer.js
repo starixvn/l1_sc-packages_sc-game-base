@@ -10,7 +10,6 @@ export default class RoundResultConsumer {
     }
 
     async generateResultAndPublishHash(lastResultRecord) {
-        console.log("generateResultAndPublishHash");
         if (lastResultRecord && lastResultRecord.roundId === this.gameData.roundId) {
             this.gameData.result = JSON.parse(decrypt(lastResultRecord.encryptedResult));
             this.gameData.resultHash = JSON.parse(decrypt(lastResultRecord.encryptedResultHash));
@@ -21,14 +20,12 @@ export default class RoundResultConsumer {
         }
 
         this.roundResultPublisher.publishResultHash();
-        console.log("finished generateResultAndPublishHash", JSON.stringify(this.gameData.result));
     }
 
     generateResult() {
         const resultFromAdmin = this.gameData.settlementResultFromAdmin;
         const { randomMode } = this.gameData.gameConfigs;
 
-        console.log("generateResult in round-result-consumer", JSON.stringify(resultFromAdmin), this.gameData.roundId);
         return this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult(randomMode);
     }
 
