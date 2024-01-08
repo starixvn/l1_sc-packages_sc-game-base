@@ -8739,10 +8739,10 @@ sc-common@1.8.1:
     mongoose-long "^0.3.0"
     numeral "^2.0.6"
 
-sc-common@1.8.2-beta.0:
-  version "1.8.2-beta.0"
-  resolved "http://npm.lumigame.com/sc-common/-/sc-common-1.8.2-beta.0.tgz#c1bc785e7140d7b009a172b41cd354b9d7e6df96"
-  integrity sha512-SZ+cxIakdyBqSgvAJOIzSIlVE1lC9AGgnSKwDO0GYsR9NEVpfipIG1588OszQc5MyVbi6wf34FsahA/0uJsgMw==
+sc-common@1.8.2-beta.1:
+  version "1.8.2-beta.1"
+  resolved "http://npm.lumigame.com/sc-common/-/sc-common-1.8.2-beta.1.tgz#48df8003298515acdb92a845e3cf66a06f9257b0"
+  integrity sha512-fiE4gPjSJ4jDPURoMqEZ40ZgTtDsRgyjp7L14JDh4JKOqL/UZMyt8k0oQ42yI1Z3hns8vcbslEMHHx+bFtqx5g==
   dependencies:
     "@sentry/node" "7.92.0"
     jsonwebtoken "^8.5.1"
