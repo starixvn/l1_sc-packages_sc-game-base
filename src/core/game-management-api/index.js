@@ -12,7 +12,7 @@ export const getOrDefault = async (requestPromise, defaultValue) => {
         }
     } catch (e) {
         console.log("getOrDefault error", new Date(), e.message);
-        logger.log(e);
+        logger.logError(e);
     }
 
     return defaultValue;
