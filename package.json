@@ -38,7 +38,7 @@
         "mongoose": "^5.9.25",
         "morgan": "^1.10.0",
         "openid-client": "^5.0.0",
-        "sc-base-apis": "1.18.2-beta.4",
+        "sc-base-apis": "2.0.0",
         "sc-base-database": "1.11.1",
         "sc-common": "1.8.1",
         "sc-game-management-client": "^0.0.2-beta.22",
