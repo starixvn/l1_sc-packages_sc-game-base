@@ -3,6 +3,8 @@ import GameManagementApiClientFactory from "../../game-management-api";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
 
+jest.mock("sc-common");
+
 import { when } from "jest-when";
 
 describe("RoundIdConsumer", () => {

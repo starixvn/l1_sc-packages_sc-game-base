@@ -8,6 +8,7 @@ import GameManagementApiClientFactory from "../../game-management-api";
 jest.mock("sc-game-management-client");
 jest.mock("../../query-apis/round-query");
 jest.mock("../../event-publishers/base-event-publisher");
+jest.mock("sc-common");
 
 describe("in-game-consumer tests", () => {
     const definition = new GameDefinition({ id: 1, name: "game name" });
