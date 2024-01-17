@@ -1,3 +1,46 @@
+# [5.0.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v4.1.0...v5.0.0) (2024-01-17)
+
+
+### Bug Fixes
+
+* add log for generate result ([ad030d3](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/ad030d334651c2e1a96ef81a2b07b05381a6b1be))
+* add log for generateResultAndPublishHash ([6d8a0af](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/6d8a0afcd55102396eed45e588bbfcd422de8d9c))
+* check bots length before place bets ([e8e70e5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e8e70e545bdcb80c73f95571646be7a4b5c05018))
+* check playerId > 0 when call endGame ([53c7dfb](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/53c7dfbc0834eecf4c96e7bac637019ec3365689))
+* do not await bot.reset ([eaa2c38](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/eaa2c386e78de6fe2e01b71e575c619d96af33c8))
+* fix sonar ([7652193](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/765219321101de8c844cc50ab2aeaffd6702597a))
+* fix sonar ([ec7dcad](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/ec7dcadaff55d9da49a29533f041fe1d836c6aec))
+* log bot ([d36535b](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/d36535b01f113b326030de7ab0186e0a95d2ba6e))
+* remove log ([d7a45af](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/d7a45aff4126f48d01034007a0d01f49cde45bde))
+* reset result for the new round ([55fe49f](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/55fe49f8c5e035b3e9266178f03720de488e327f))
+* update base-admin-socket-router log ([e369cad](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e369cadb1afbcff2e077794f81b31f615a237cca))
+* update log getOrDefault ([8bd65da](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/8bd65dad6d073ec1a628bdf8321e4bb34872694d))
+* update placeBets ([e3b1deb](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e3b1debde370b062f15b00f510bd9b437bb7e0b5))
+* update remainingTime ([350c978](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/350c9783128e59c864738416c86b52945bece8a8))
+* update remainingTime ([86c8559](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/86c8559aee837e42f804f3b772ade49e8a51c691))
+* update sc-game-management-client ([8eb0101](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/8eb010107bad1cc45aae9d7823afd014310c1e13))
+* update table-game-bot ([f4b5bb2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f4b5bb2dca86b2eb51ab6745e33db83ea95bb8f3))
+* update unit test ([f2f11ab](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f2f11abe186c9961dbf2731d42539b9176d7b6e7))
+* update unit-tests ([d07c9e7](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/d07c9e79703f3081b658de25fb635db7aad1423e))
+
+
+### Features
+
+* game management api integration ([e741006](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e741006384a67f6c488b9da3b422789c53ece00d))
+* game-management-api-integration ([3b23e59](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/3b23e59b983e3b198bbc7127f27acb376f3864cd))
+
+
+### BREAKING CHANGES
+
+* update all access to shared data such as
+- game configs
+- users
+- currency group
+- operator config
+- exchange rates
+- notification
+...
+
 # [4.1.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v4.0.1...v4.1.0) (2023-09-28)
 
 
