@@ -9,7 +9,6 @@ import BaseSocketRouter from "../routers/base-socket-router";
 import HttpRouter from "../routers/http-router";
 
 jest.mock("sc-common");
-jest.mock("sc-base-database");
 jest.mock("../helpers");
 
 describe("base game startup test", () => {

@@ -1,4 +1,4 @@
-import { mongoose } from "sc-instrument-helper";
+import mongoose from "mongoose";
 
 import * as awilix from "awilix";
 import cors from "cors";
@@ -7,7 +7,6 @@ import helmet from "helmet";
 import http from "http";
 import morgan from "morgan";
 import { init as initApis } from "sc-base-apis";
-import { init as initBaseDatabase } from "sc-base-database";
 import { logger, middlewares } from "sc-common";
 import { Server } from "socket.io";
 import MsgpackParser from "socket.io-msgpack-parser";
@@ -107,7 +106,7 @@ export default class BaseGameApp {
             logger.start(this.appConfigs.sentry);
         }
 
-        await initBaseDatabase(this.appConfigs.database);
+        await middlewares.database.configureDatabase(mongoose, this.appConfigs.database);
         await initApis(this.appConfigs.apiSettings);
         await authenticationHelpers.init(this.appConfigs.authenticateSettings);
         chatBotHelper.init(this.appConfigs.chatBotSettings);

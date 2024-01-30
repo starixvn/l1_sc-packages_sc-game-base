@@ -5,7 +5,6 @@ import { Server } from "socket.io";
 import BaseGameApp from "../base-game-app";
 
 jest.mock("sc-common");
-jest.mock("sc-base-database");
 jest.mock("../helpers");
 
 const appConfigs = {
