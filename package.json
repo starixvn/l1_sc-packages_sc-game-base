@@ -1,6 +1,6 @@
 {
     "name": "sc-game-base",
-    "version": "4.1.0",
+    "version": "4.1.2",
     "description": "SC Game base for game services",
     "main": "./src/index.js",
     "scripts": {
@@ -39,7 +39,7 @@
         "morgan": "^1.10.0",
         "openid-client": "^5.0.0",
         "sc-base-apis": "1.18.1",
-        "sc-base-database": "1.11.1",
+        "sc-base-database": "1.11.2",
         "sc-common": "1.8.1",
         "socket.io": "^4.5.4",
         "socket.io-msgpack-parser": "^3.0.1",
