@@ -2,8 +2,12 @@ import mongoose from "mongoose";
 
 const resultSchema = new mongoose.Schema({
     roundId: { type: Number, required: true },
-    encryptedResultHash: { iv: { type: String }, content: { type: String } },
-    encryptedResult: { iv: { type: String }, content: { type: String } },
+    serverSeed: { type: String },
+    serverSeedHash: { type: String },
+    clientSeeds: { type: Array, default: [] },
+    mergeClientSeed: { type: String },
+    mergeSeed: { type: String },
+    finalHash: { type: String },
     time: { type: Date, default: new Date() },
 });
 

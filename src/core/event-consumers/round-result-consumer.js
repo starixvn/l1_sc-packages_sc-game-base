@@ -1,5 +1,4 @@
-import { generateMD5Result } from "../helpers/md5-helper";
-import { encrypt, decrypt } from "../helpers/crypto-helper";
+import { SeedHelper, ServerSeedHelper } from "../helpers";
 
 export default class RoundResultConsumer {
     constructor(gameData, definition, roundResultPublisher, resultsRepository) {
@@ -9,42 +8,56 @@ export default class RoundResultConsumer {
         this.resultsRepository = resultsRepository;
     }
 
-    async generateResultAndPublishHash(lastResultRecord) {
-        if (lastResultRecord && lastResultRecord.roundId === this.gameData.roundId) {
-            this.gameData.result = JSON.parse(decrypt(lastResultRecord.encryptedResult));
-            this.gameData.resultHash = JSON.parse(decrypt(lastResultRecord.encryptedResultHash));
-        } else {
-            this.gameData.result = this.generateResult();
-            this.gameData.resultHash = this.buildResultHash();
-            await this.createResultRecord();
+    async generateResult() {
+        const { roundId, pf, settlementResultFromAdmin: resultFromAdmin } = this.gameData;
+
+        if (roundId === resultFromAdmin.roundId) {
+            this.gameData.result = resultFromAdmin.result;
+            return;
         }
 
-        this.roundResultPublisher.publishResultHash();
+        const { serverSeed, serverSeedHash } = pf;
+        const finalSeeds = this.generateFinalSeeds(pf);
+
+        await this.resultsRepository.findOneAndUpdate(
+            { roundId },
+            {
+                ...finalSeeds,
+            }
+        );
+
+        this.gameData.pf = Object.assign({}, serverSeed, serverSeedHash, finalSeeds);
+
+        this.gameData.result = this.definition.generateResult(finalSeeds.finalHash);
     }
 
-    generateResult() {
-        const resultFromAdmin = this.gameData.settlementResultFromAdmin;
+    generateFinalSeeds(pf) {
+        const { serverSeed, clientSeeds } = pf;
+        const mergeClientSeed = SeedHelper.getMergeClientSeed(clientSeeds);
+        const mergeSeed = serverSeed + mergeClientSeed;
+        const finalHash = SeedHelper.getSHA512Hash(mergeSeed);
+
+        return { clientSeeds, mergeClientSeed, mergeSeed, finalHash };
+    }
+
+    async generateServerSeedAndPublishHash() {
         const { randomMode } = this.gameData.gameConfigs;
+        const serverSeed = ServerSeedHelper.generateServerSeed(randomMode);
+        const serverSeedHash = SeedHelper.getSHA256Hash(serverSeed);
 
-        return this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult(randomMode);
+        this.gameData.pf = { ...this.gameData.pf, serverSeed, serverSeedHash };
+
+        await this.createResultRecord(serverSeed, serverSeedHash);
+
+        this.roundResultPublisher.publishServerSeedHash();
     }
 
-    buildResultHash() {
-        const formattedResult = this.definition.generateRawResultForHash(this.gameData.result);
-
-        return { ...generateMD5Result(formattedResult, this.gameData.roundId), roundId: this.gameData.roundId };
-    }
-
-    async createResultRecord() {
+    async createResultRecord(serverSeed, serverSeedHash) {
         await this.resultsRepository.create({
             roundId: this.gameData.roundId,
-            encryptedResultHash: encrypt(JSON.stringify(this.gameData.resultHash)),
-            encryptedResult: encrypt(JSON.stringify(this.gameData.result)),
-            time: this.getNewDate(),
+            serverSeedHash: serverSeedHash,
+            serverSeed: serverSeed,
+            time: new Date(),
         });
-    }
-
-    getNewDate() {
-        return new Date();
     }
 }
