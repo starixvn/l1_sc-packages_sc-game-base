@@ -1,283 +1,213 @@
+import { stub, stubMongoose } from "jest-micro-auto-stub";
+import mongoose from "mongoose";
+import Chance from "chance";
 import RoundResultConsumer from "../round-result-consumer";
-jest.mock("../../helpers/crypto-helper", () => {
+import GameData from "../../game-data";
+import { RoundResultPublisher } from "../../event-publishers";
+import Helper from "../../helpers";
+
+jest.mock("../../helpers", () => {
     return {
-        encrypt: jest.fn((input) => {
-            return input;
-        }),
-        decrypt: jest.fn((hash) => {
-            return hash;
-        }),
+        SeedHelper: {
+            getMergeClientSeed: jest.fn(),
+            getSHA256Hash: jest.fn(),
+            getSHA512Hash: jest.fn(),
+        },
+        ServerSeedHelper: {
+            generateServerSeed: jest.fn(),
+        },
     };
 });
 
-describe("generateResultAndPublishHash", () => {
-    describe("when resultsRepository not null", () => {
-        it("should publish result hash", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
-            consumer.resultsRepository = { create: jest.fn() };
-            consumer.gameData = {
-                settlementResultFromAdmin: {},
-            };
-            consumer.definition = {
-                generateResult: jest.fn(),
-                generateRawResultForHash: jest.fn(),
-            };
-            consumer.gameData.gameConfigs = {};
+const roundResultPublisher = stub(RoundResultPublisher);
 
-            // Act
-            await consumer.generateResultAndPublishHash();
+const resultsRepository = stubMongoose(mongoose.Model);
 
-            // Assert
-            expect(consumer.roundResultPublisher.publishResultHash).toHaveBeenCalled();
-        });
+const definition = {
+    generateResult: jest.fn(),
+};
+
+describe("roundResultConsumer", () => {
+    const chance = new Chance();
+    const roundId = chance.natural();
+    const pf = {
+        serverSeed: chance.guid(),
+        serverSeedHash: chance.guid(),
+        clientSeeds: [
+            chance.integer({ min: 0, max: 9999 }),
+            chance.integer({ min: 0, max: 9999 }),
+            chance.integer({ min: 0, max: 9999 }),
+            chance.integer({ min: 0, max: 9999 }),
+        ],
+        finalHash: chance.guid(),
+    };
+    let consumer, gameData;
+
+    beforeEach(() => {
+        gameData = new GameData();
+        gameData.roundId = roundId;
+        gameData.pf = pf;
+        consumer = new RoundResultConsumer(gameData, definition, roundResultPublisher, resultsRepository);
     });
 
-    describe("when lastResultRecord exists and matches with current roundId", () => {
-        it("should decrypt result from lastResultRecord", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            const lastResultRecord = {
-                encryptedResult: '{"iv": "477764b581bbaa674ca639ef1b7dee96","content": "efd5bb24b2511bdbdc0715ea6"}',
-                encryptedResultHash: '{"iv": "477764b581bbaa674ca639ef1b7dee96yy","content": "efd5bb24b2511bdbdc0715ea6xx"}',
-                roundId: 12,
-            };
-            consumer.gameData = { roundId: 12 };
-            consumer.resultsRepository = jest.fn();
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
 
-            // Act
-            await consumer.generateResultAndPublishHash(lastResultRecord);
-
-            // Assert
-            expect(consumer.gameData.result).toEqual({ iv: "477764b581bbaa674ca639ef1b7dee96", content: "efd5bb24b2511bdbdc0715ea6" });
+    describe("generateResult", () => {
+        beforeEach(() => {
+            consumer.generateFinalSeeds = jest.fn().mockReturnValueOnce(pf);
         });
 
-        it("should decrypt result hash from lastResultRecord", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            const lastResultRecord = {
-                encryptedResult: '{"iv": "477764b581bbaa674ca639ef1b7dee96","content": "efd5bb24b2511bdbdc0715ea6"}',
-                encryptedResultHash: '{"iv": "477764b581bbaa674ca639ef1b7dee96yy","content": "efd5bb24b2511bdbdc0715ea6xx"}',
-                roundId: 12,
-            };
-            consumer.gameData = { roundId: 12 };
-            consumer.resultsRepository = jest.fn();
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
+        describe("when control this round result from admin", () => {
+            it("should set gameData.result", () => {
+                // Arrange
+                const expectResult = chance.floating();
+                gameData.settlementResultFromAdmin = { roundId, result: expectResult };
 
-            // Act
-            await consumer.generateResultAndPublishHash(lastResultRecord);
+                // Act
+                consumer.generateResult();
 
-            // Assert
-            expect(consumer.gameData.resultHash).toEqual({
-                iv: "477764b581bbaa674ca639ef1b7dee96yy",
-                content: "efd5bb24b2511bdbdc0715ea6xx",
+                // Assert
+                expect(gameData.result).toBe(expectResult);
+            });
+        });
+
+        describe("when result is NOT controlled", () => {
+            const result = chance.floating();
+
+            beforeEach(() => {
+                definition.generateResult.mockReturnValueOnce(result);
+            });
+
+            it("should call generateFinalSeeds", async () => {
+                // Act
+                await consumer.generateResult();
+
+                // Assert
+                expect(consumer.generateFinalSeeds).toBeCalledWith(pf);
+            });
+
+            it("should update resultsRepository", async () => {
+                // Act
+                await consumer.generateResult();
+
+                // Assert
+                expect(resultsRepository.findOneAndUpdate).toBeCalledWith({ roundId }, pf);
+            });
+
+            it("should call definition.generateResult", async () => {
+                // Act
+                await consumer.generateResult();
+
+                // Assert
+                expect(definition.generateResult).toBeCalledWith(pf.finalHash);
+            });
+
+            it("should set gameData.result", async () => {
+                // Act
+                await consumer.generateResult();
+
+                // Assert
+                expect(gameData.result).toBe(result);
             });
         });
     });
 
-    describe("when lastResultRecord does not exist and settlementResultFromAdmin exist", () => {
-        it("should get result from admin result", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            consumer.gameData = {
-                settlementResultFromAdmin: {
-                    roundId: 11,
-                    result: { red1: true, red2: false, red3: true, red4: false },
-                },
-                roundId: 11,
-            };
-            consumer.definition = {
-                generateRawResultForHash: (result) => {
-                    return `${+result.red1}${+result.red2}${+result.red3}${+result.red4}`;
-                },
-            };
-            consumer.resultsRepository = {
-                create: jest.fn,
-            };
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
-            consumer.gameData.gameConfigs = {};
+    describe("generateFinalSeeds", () => {
+        const mergeClientSeed = chance.string();
+        const sha512Hash = chance.guid();
+        const mergeSeed = pf.serverSeed + mergeClientSeed;
 
-            // Act
-            await consumer.generateResultAndPublishHash();
-
-            // Assert
-            expect(consumer.gameData.result).toEqual({ red1: true, red2: false, red3: true, red4: false });
+        beforeEach(() => {
+            Helper.SeedHelper.getMergeClientSeed.mockReturnValueOnce(mergeClientSeed);
+            Helper.SeedHelper.getSHA512Hash.mockReturnValueOnce(sha512Hash);
         });
 
-        it("should build result hash from admin result", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            consumer.gameData = {
-                settlementResultFromAdmin: {
-                    roundId: 11,
-                    result: { red1: true, red2: false, red3: true, red4: false },
-                },
-                roundId: 11,
-            };
-            consumer.definition = {
-                generateRawResultForHash: (result) => {
-                    return `${+result.red1}${+result.red2}${+result.red3}${+result.red4}`;
-                },
-            };
-            consumer.resultsRepository = {
-                create: jest.fn,
-            };
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
-            consumer.gameData.gameConfigs = {};
-
+        it("should call getMergeClientSeed", () => {
             // Act
-            await consumer.generateResultAndPublishHash();
+            consumer.generateFinalSeeds(pf);
 
             // Assert
-            expect(consumer.gameData.resultHash.roundId).toBe(11);
-            expect(consumer.gameData.resultHash.rawValue).toContain("1010_{#11");
+            expect(Helper.SeedHelper.getMergeClientSeed).toBeCalledWith(pf.clientSeeds);
         });
 
-        it("should create result hash record from admin result", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            consumer.gameData = {
-                settlementResultFromAdmin: {
-                    roundId: 11,
-                    result: { red1: true, red2: false, red3: true, red4: false },
-                },
-                roundId: 11,
-            };
-            consumer.definition = {
-                generateRawResultForHash: (result) => {
-                    return `${+result.red1}${+result.red2}${+result.red3}${+result.red4}`;
-                },
-            };
-            consumer.resultsRepository = {
-                create: jest.fn(),
-            };
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
-            consumer.getNewDate = () => 123;
-            consumer.gameData.gameConfigs = {};
-
+        it("should call getMergeClientSeed", () => {
             // Act
-            await consumer.generateResultAndPublishHash();
+            consumer.generateFinalSeeds(pf);
 
             // Assert
-            expect(consumer.resultsRepository.create).toHaveBeenCalledWith({
-                roundId: consumer.gameData.roundId,
-                encryptedResultHash: JSON.stringify(consumer.gameData.resultHash),
-                encryptedResult: '{"red1":true,"red2":false,"red3":true,"red4":false}',
-                time: 123,
-            });
+            expect(Helper.SeedHelper.getSHA512Hash).toBeCalledWith(mergeSeed);
+        });
+
+        it("should return pf data", () => {
+            // Act
+            const result = consumer.generateFinalSeeds(pf);
+
+            // Assert
+            expect(result).toStrictEqual({ clientSeeds: pf.clientSeeds, mergeClientSeed, mergeSeed, finalHash: sha512Hash });
         });
     });
 
-    describe("when lastResultRecord does not exist and settlementResultFromAdmin does not exist", () => {
-        it("should generate result", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            consumer.gameData = {
-                settlementResultFromAdmin: {},
-                roundId: 11,
-            };
-            consumer.definition = {
-                generateRawResultForHash: (result) => {
-                    return `${+result.red1}${+result.red2}${+result.red3}${+result.red4}`;
-                },
-                generateResult: () => {
-                    return { red1: true, red2: true, red3: true, red4: false };
-                },
-            };
-            consumer.resultsRepository = {
-                create: jest.fn,
-            };
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
-            consumer.gameData.gameConfigs = {};
+    describe("generateServerSeedAndPublishHash", () => {
+        const randomMode = chance.natural();
+        const serverSeed = chance.guid();
+        const sha256Hash = chance.guid();
 
-            // Act
-            await consumer.generateResultAndPublishHash();
-
-            // Assert
-            expect(consumer.gameData.result).toEqual({ red1: true, red2: true, red3: true, red4: false });
+        beforeEach(() => {
+            gameData.gameConfigs = {
+                randomMode,
+            };
+            consumer.createResultRecord = jest.fn();
+            Helper.ServerSeedHelper.generateServerSeed.mockReturnValueOnce(serverSeed);
+            Helper.SeedHelper.getSHA256Hash.mockReturnValueOnce(sha256Hash);
         });
 
-        it("should build result hash from generated result", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            consumer.gameData = {
-                settlementResultFromAdmin: {},
-                roundId: 12,
-            };
-            consumer.definition = {
-                generateRawResultForHash: (result) => {
-                    return `${+result.red1}${+result.red2}${+result.red3}${+result.red4}`;
-                },
-                generateResult: () => {
-                    return { red1: true, red2: true, red3: true, red4: false };
-                },
-            };
-            consumer.resultsRepository = {
-                create: jest.fn,
-            };
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
-            consumer.gameData.gameConfigs = {};
-
+        it("should call generateServerSeed", () => {
             // Act
-            await consumer.generateResultAndPublishHash();
+            consumer.generateServerSeedAndPublishHash();
 
             // Assert
-            expect(consumer.gameData.resultHash.roundId).toBe(12);
-            expect(consumer.gameData.resultHash.rawValue).toContain("1110_{#12");
+            expect(Helper.ServerSeedHelper.generateServerSeed).toBeCalledWith(randomMode);
         });
 
-        it("should create result hash record from generated result", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            consumer.gameData = {
-                settlementResultFromAdmin: {},
-                roundId: 12,
-            };
-            consumer.definition = {
-                generateRawResultForHash: (result) => {
-                    return `${+result.red1}${+result.red2}${+result.red3}${+result.red4}`;
-                },
-                generateResult: () => {
-                    return { red1: true, red2: true, red3: true, red4: false };
-                },
-            };
-            consumer.resultsRepository = {
-                create: jest.fn(),
-            };
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
-            consumer.getNewDate = () => 123;
-            consumer.gameData.gameConfigs = {};
-
+        it("should call getSHA256Hash", () => {
             // Act
-            await consumer.generateResultAndPublishHash();
+            consumer.generateServerSeedAndPublishHash();
 
             // Assert
-            expect(consumer.resultsRepository.create).toHaveBeenCalledWith({
-                roundId: consumer.gameData.roundId,
-                encryptedResultHash: JSON.stringify(consumer.gameData.resultHash),
-                encryptedResult: '{"red1":true,"red2":true,"red3":true,"red4":false}',
-                time: 123,
-            });
+            expect(Helper.SeedHelper.getSHA256Hash).toBeCalledWith(serverSeed);
+        });
+
+        it("should call createResultRecord", async () => {
+            // Act
+            await consumer.generateServerSeedAndPublishHash();
+
+            // Assert
+            expect(consumer.createResultRecord).toBeCalledWith(serverSeed, sha256Hash);
+        });
+
+        it("should call roundResultPublisher.publishServerSeedHash", async () => {
+            // Act
+            await consumer.generateServerSeedAndPublishHash();
+
+            // Assert
+            expect(roundResultPublisher.publishServerSeedHash).toBeCalled();
+        });
+    });
+
+    describe("createResultRecord", () => {
+        it("should call resultsRepository.create", async () => {
+            // Arrange
+            const { serverSeed, serverSeedHash } = pf;
+            const mockDate = new Date();
+            jest.spyOn(global, "Date").mockImplementation(() => mockDate);
+
+            // Act
+            await consumer.createResultRecord(serverSeed, serverSeedHash);
+
+            // Assert
+            expect(resultsRepository.create).toBeCalledWith({ roundId, serverSeedHash, serverSeed, time: mockDate });
         });
     });
 });

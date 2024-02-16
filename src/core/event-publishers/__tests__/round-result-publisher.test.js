@@ -1,148 +1,122 @@
 import Chance from "chance";
 import RoundResultPublisher from "../round-result-publisher";
 
-describe("publishRoundResult", () => {
-    describe("when result hash value exists", () => {
-        it("should publish to all users with result hash value", () => {
-            // Arrange
-            const publisher = new RoundResultPublisher();
-            const roundResult = { red1: true, red2: false };
-            publisher.gameData = {
-                resultHash: {
-                    rawValue: "xx",
-                },
-                result: "yy",
-            };
-            publisher.publishToAllUsers = jest.fn();
-            publisher.publishToAllAdmins = jest.fn();
+describe("roundResultPublisher", () => {
+    const chance = new Chance();
+    const roundId = chance.natural();
+    const result = chance.natural();
+    const roundResult = {
+        roundId,
+        result,
+    };
+    const pf = {
+        serverSeed: chance.guid(),
+        serverSeedHash: chance.guid(),
+        clientSeeds: [
+            chance.integer({ min: 0, max: 9999 }),
+            chance.integer({ min: 0, max: 9999 }),
+            chance.integer({ min: 0, max: 9999 }),
+            chance.integer({ min: 0, max: 9999 }),
+        ],
+        finalHash: chance.guid(),
+    };
 
-            // Act
-            publisher.publishRoundResult(roundResult);
+    let publisher;
 
-            // Assert
-            expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
-                finish: roundResult,
-                resultHash: { rawValue: "xx", extraInfos: "yy" },
-            });
-        });
-
-        it("should publish to all admins", () => {
-            // Arrange
-            const publisher = new RoundResultPublisher();
-            const roundResult = { red1: true, red2: false };
-            publisher.gameData = {
-                resultHash: {
-                    rawValue: "xx",
-                },
-                result: "yy",
-            };
-            publisher.publishToAllUsers = jest.fn();
-            publisher.publishToAllAdmins = jest.fn();
-
-            // Act
-            publisher.publishRoundResult(roundResult);
-
-            // Assert
-            expect(publisher.publishToAllAdmins).toHaveBeenCalledWith({ finish: roundResult });
-        });
-    });
-
-    describe("when result hash value does not exist", () => {
-        it("should publish to all users without result hash value", () => {
-            // Arrange
-            const publisher = new RoundResultPublisher();
-            const roundResult = { red1: true, red2: false };
-            publisher.gameData = {
-                resultHash: {},
-            };
-            publisher.publishToAllUsers = jest.fn();
-            publisher.publishToAllAdmins = jest.fn();
-
-            // Act
-            publisher.publishRoundResult(roundResult);
-
-            // Assert
-            expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
-                finish: roundResult,
-            });
-        });
-
-        it("should publish to all admins", () => {
-            // Arrange
-            const publisher = new RoundResultPublisher();
-            const roundResult = { red1: true, red2: false };
-            publisher.gameData = {
-                resultHash: {},
-            };
-            publisher.publishToAllUsers = jest.fn();
-            publisher.publishToAllAdmins = jest.fn();
-
-            // Act
-            publisher.publishRoundResult(roundResult);
-
-            // Assert
-            expect(publisher.publishToAllAdmins).toHaveBeenCalledWith({ finish: roundResult });
-        });
-    });
-});
-
-describe("publishResultHash", () => {
-    describe("when result hash value exists", () => {
-        it("should publish result hash value to all users", () => {
-            // Arrange
-            const publisher = new RoundResultPublisher();
-            publisher.gameData = {
-                resultHash: {
-                    hashValue: "hash1",
-                },
-            };
-            publisher.publishToAllUsers = jest.fn();
-
-            // Act
-            publisher.publishResultHash();
-
-            // Assert
-            expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ resultHash: { hashValue: "hash1" } });
-        });
-    });
-
-    describe("when result hash value does not exist", () => {
-        it("should not publish result hash value", () => {
-            // Arrange
-            const publisher = new RoundResultPublisher();
-            publisher.gameData = {
-                resultHash: {},
-            };
-            publisher.publishToAllUsers = jest.fn();
-
-            // Act
-            publisher.publishResultHash();
-
-            // Assert
-            expect(publisher.publishToAllUsers).not.toHaveBeenCalled();
-        });
-    });
-});
-
-describe("publishWinners", () => {
-    it("should publish winners to all users", () => {
-        // Arrange
-        const chance = new Chance();
-        const roundId = chance.natural();
-        const winningPlayers = {};
-        const publisher = new RoundResultPublisher();
-
+    beforeEach(() => {
+        publisher = new RoundResultPublisher();
         publisher.publishToAllUsers = jest.fn();
+        publisher.publishToAllAdmins = jest.fn();
+        publisher.gameData = { result, roundId };
+    });
 
-        // Act
-        publisher.publishWinners(roundId, winningPlayers);
+    describe("publishRoundResult", () => {
+        describe("when exist gameData.pf", () => {
+            beforeEach(() => {
+                publisher.gameData.pf = pf;
+            });
 
-        // Assert
-        expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
-            winners: {
-                roundId,
-                winningPlayers,
-            },
+            it("should publish to all users with result and pf info", () => {
+                // Act
+                publisher.publishRoundResult(roundResult);
+
+                // Assert
+                expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
+                    finish: { ...roundResult, pf: { ...pf, ...roundResult } },
+                });
+            });
+
+            it("should publish to all admins", () => {
+                // Act
+                publisher.publishRoundResult(roundResult);
+
+                // Assert
+                expect(publisher.publishToAllAdmins).toHaveBeenCalledWith({ finish: roundResult });
+            });
+        });
+
+        describe("when pf value does not exist", () => {
+            it("should publish to all users without result hash value", () => {
+                // Act
+                publisher.publishRoundResult(roundResult);
+
+                // Assert
+                expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
+                    finish: roundResult,
+                });
+            });
+
+            it("should publish to all admins", () => {
+                // Act
+                publisher.publishRoundResult(roundResult);
+
+                // Assert
+                expect(publisher.publishToAllAdmins).toHaveBeenCalledWith({ finish: roundResult });
+            });
+        });
+    });
+
+    describe("publishServerSeedHash", () => {
+        describe("when server seed hash exists", () => {
+            beforeEach(() => {
+                publisher.gameData.pf = pf;
+            });
+
+            it("should publish server seed hash value to all users", () => {
+                // Act
+                publisher.publishServerSeedHash();
+
+                // Assert
+                expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ pf: { serverSeedHash: pf.serverSeedHash, roundId } });
+            });
+        });
+
+        describe("when server seed hash value does not exist", () => {
+            it("should not publish server seed hash value", () => {
+                // Act
+                publisher.publishServerSeedHash();
+
+                // Assert
+                expect(publisher.publishToAllUsers).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe("publishWinners", () => {
+        it("should publish winners to all users", () => {
+            // Arrange
+            const winningPlayers = {};
+
+            // Act
+            publisher.publishWinners(roundId, winningPlayers);
+
+            // Assert
+            expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
+                winners: {
+                    roundId,
+                    winningPlayers,
+                },
+            });
         });
     });
 });

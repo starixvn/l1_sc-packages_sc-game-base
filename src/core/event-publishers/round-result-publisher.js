@@ -4,10 +4,16 @@ export default class RoundResultPublisher extends BaseEventPublisher {
     publishRoundResult(roundResult) {
         const payload = { finish: roundResult };
 
-        if (this.gameData.resultHash.rawValue) {
+        if (this.gameData.pf) {
             this.publishToAllUsers({
-                ...payload,
-                resultHash: { rawValue: this.gameData.resultHash.rawValue, extraInfos: this.gameData.result },
+                finish: {
+                    ...roundResult,
+                    pf: {
+                        ...this.gameData.pf,
+                        roundId: this.gameData.roundId,
+                        result: this.gameData.result,
+                    },
+                },
             });
         } else {
             this.publishToAllUsers(payload);
@@ -16,9 +22,13 @@ export default class RoundResultPublisher extends BaseEventPublisher {
         this.publishToAllAdmins(payload);
     }
 
-    publishResultHash() {
-        if (this.gameData.resultHash.hashValue) {
-            this.publishToAllUsers({ resultHash: { hashValue: this.gameData.resultHash.hashValue } });
+    publishServerSeedHash() {
+        const serverSeedHash = this.gameData.pf?.serverSeedHash;
+
+        if (serverSeedHash) {
+            const pf = { serverSeedHash, roundId: this.gameData.roundId };
+
+            this.publishToAllUsers({ pf });
         }
     }
 
