@@ -16,6 +16,14 @@ export default class RoundResultConsumer {
             return;
         }
 
+        const finalSeeds = await this.getFinalSeeds(roundId, pf);
+
+        this.gameData.result = this.definition.generateResult(finalSeeds.finalHash);
+    }
+
+    async getFinalSeeds(roundId, pf) {
+        if (!this.resultsRepository) return {};
+
         const { serverSeed, serverSeedHash } = pf;
         const finalSeeds = this.generateFinalSeeds(pf);
 
@@ -28,7 +36,7 @@ export default class RoundResultConsumer {
 
         this.gameData.pf = Object.assign({}, serverSeed, serverSeedHash, finalSeeds);
 
-        this.gameData.result = this.definition.generateResult(finalSeeds.finalHash);
+        return finalSeeds;
     }
 
     generateFinalSeeds(pf) {
