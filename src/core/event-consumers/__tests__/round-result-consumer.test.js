@@ -115,6 +115,40 @@ describe("roundResultConsumer", () => {
     });
 
     describe("generateFinalSeeds", () => {
+        const result = chance.floating();
+        const finalSeeds = { clientSeeds: "clientSeeds", mergeClientSeed: "megedClient", mergeSeed: "merged", finalHash: "aaaa" };
+
+        beforeEach(() => {
+            definition.generateResult.mockReturnValueOnce(result);
+            consumer.generateFinalSeeds = jest.fn().mockReturnValueOnce(finalSeeds);
+        });
+
+        it("should call generateFinalSeeds", async () => {
+            // Act
+            await consumer.getFinalSeeds(roundId, pf);
+
+            // Assert
+            expect(consumer.generateFinalSeeds).toBeCalledWith(pf);
+        });
+
+        it("should update resultsRepository", async () => {
+            // Act
+            await consumer.getFinalSeeds(roundId, pf);
+
+            // Assert
+            expect(resultsRepository.findOneAndUpdate).toBeCalledWith({ roundId }, finalSeeds);
+        });
+
+        it("should update mergeSeed in game data", async () => {
+            // Act
+            await consumer.getFinalSeeds(roundId, pf);
+
+            // Assert
+            expect(gameData.pf.mergeSeed).toBe(finalSeeds.mergeSeed);
+        });
+    });
+
+    describe("generateFinalSeeds", () => {
         const mergeClientSeed = chance.string();
         const sha512Hash = chance.guid();
         const mergeSeed = pf.serverSeed + mergeClientSeed;
