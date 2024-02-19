@@ -25,7 +25,7 @@ export default class RoundResultConsumer {
         if (!this.resultsRepository) return {};
 
         const { serverSeed, serverSeedHash } = pf;
-        const finalSeeds = this.generateFinalSeeds(pf);
+        let finalSeeds = this.generateFinalSeeds(pf);
 
         await this.resultsRepository.findOneAndUpdate(
             { roundId },
@@ -34,7 +34,7 @@ export default class RoundResultConsumer {
             }
         );
 
-        this.gameData.pf = Object.assign({}, serverSeed, serverSeedHash, finalSeeds);
+        this.gameData.pf = { ...finalSeeds, serverSeed, serverSeedHash };
 
         return finalSeeds;
     }
