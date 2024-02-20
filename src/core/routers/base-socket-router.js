@@ -1,4 +1,3 @@
-import { logger } from "sc-common";
 import { Socket } from "socket.io";
 
 import { PlayGamePermissionValidator } from "../validators";
@@ -22,6 +21,7 @@ export default class BaseSocketRouter {
      * @param {HistoryQuery} dependencies.historyQuery
      * @param {logger} dependencies.logService
      * @param {PlayGamePermissionValidator} dependencies.playGamePermissionValidator
+     * @param {RoundQuery} dependencies.roundQuery
      */
     constructor({
         definition,
@@ -34,6 +34,7 @@ export default class BaseSocketRouter {
         historyQuery,
         logService,
         playGamePermissionValidator,
+        roundQuery,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -45,6 +46,7 @@ export default class BaseSocketRouter {
         this.historyQuery = historyQuery;
         this.logService = logService;
         this.playGamePermissionValidator = playGamePermissionValidator;
+        this.roundQuery = roundQuery;
     }
 
     /**
@@ -57,6 +59,21 @@ export default class BaseSocketRouter {
         this.socketClient.on("inGame", this.handleInGame.bind(this));
         this.socketClient.on("getHistory", this.handleGetHistory.bind(this));
         this.socketClient.on("disconnect", this.handleDisconnect.bind(this));
+        this.socketClient.on("getRoundPF", this.handleGetRoundPF.bind(this));
+    }
+
+    async handleGetRoundPF(payload) {
+        try {
+            if (!this.verify()) {
+                return;
+            }
+
+            const result = await this.roundQuery.getRoundPF(payload.roundId);
+
+            this.socketClient.emit(this.definition.name, result);
+        } catch (error) {
+            this.logService.logError(error);
+        }
     }
 
     handlePlaceBet(payload) {
