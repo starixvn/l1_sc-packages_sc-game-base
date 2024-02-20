@@ -64,7 +64,7 @@ describe("base socket router test", () => {
             router.init(socketClient);
 
             // assert
-            expect(socketClient.on).toHaveBeenCalledTimes(5);
+            expect(socketClient.on).toHaveBeenCalledTimes(6);
         });
     });
 
