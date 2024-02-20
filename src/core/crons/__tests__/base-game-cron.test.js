@@ -13,8 +13,10 @@ import GameManagementApiClientFactory from "../../game-management-api";
 import BaseBot from "../base-bot";
 import BaseGameCron from "../base-game-cron";
 import { GameConfig } from "jest-auto-fixture/src/models";
+import ProvablyFairConsumer from "../../event-consumers/provably-fair-consumer";
 
 jest.mock("../base-bot");
+jest.mock("../../event-consumers/provably-fair-consumer");
 jest.mock("../../event-consumers/settle-game-round-consumer");
 jest.mock("../../event-consumers/round-id-consumer");
 jest.mock("../../event-publishers/running-round-info-publisher");
@@ -41,6 +43,7 @@ const bot = new BaseBot(gameData, definition);
 const settleGameRoundConsumer = new SettleGameRoundConsumer();
 const runningRoundInfoPublisher = new RunningRoundInfoPublisher();
 const gameStatusPublisher = new GameStatusPublisher();
+const provablyFairConsumer = new ProvablyFairConsumer();
 
 /** @type {logger}*/
 const logService = stub(logger);
@@ -48,7 +51,7 @@ const logService = stub(logger);
 /** @type {mongoose.Model}*/
 const resultsRepository = stubMongoose(mongoose.Model);
 
-const roundResultConsumer = { generateResultAndPublishHash: jest.fn() };
+const roundResultConsumer = { generateServerSeedAndPublishHash: jest.fn() };
 
 const appConfigs = { game: "aaa" };
 
@@ -69,6 +72,7 @@ const createBaseGameCron = function (newGameData) {
         appConfigs,
         gameManagementApiClientFactory,
         roundIdConsumer,
+        provablyFairConsumer
     });
 };
 
@@ -327,7 +331,7 @@ describe("proceed", () => {
             when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
             gameCron.resetForNewRound = jest.fn();
             gameCron.roundResultConsumer = {
-                generateResultAndPublishHash: jest.fn(),
+                generateServerSeedAndPublishHash: jest.fn(),
             };
             gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
@@ -353,7 +357,7 @@ describe("proceed", () => {
             when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
             gameCron.resetForNewRound = jest.fn();
             gameCron.roundResultConsumer = {
-                generateResultAndPublishHash: jest.fn(),
+                generateServerSeedAndPublishHash: jest.fn(),
             };
             gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
@@ -372,7 +376,7 @@ describe("proceed", () => {
     });
 
     describe("when placingBets time", () => {
-        it("should generate result and publish hash", async () => {
+        it("should generate result and publish server seed hash", async () => {
             // Arrange
             const gameCron = createBaseGameCron();
             gameCron.gameData.remainingTime = 20;
@@ -381,7 +385,7 @@ describe("proceed", () => {
             when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
             gameCron.resetForNewRound = jest.fn();
             gameCron.roundResultConsumer = {
-                generateResultAndPublishHash: jest.fn(),
+                generateServerSeedAndPublishHash: jest.fn(),
             };
             gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
@@ -392,7 +396,7 @@ describe("proceed", () => {
             await gameCron.proceed();
 
             // Assert
-            expect(gameCron.roundResultConsumer.generateResultAndPublishHash).toHaveBeenCalledWith({ id: 122 });
+            expect(gameCron.roundResultConsumer.generateServerSeedAndPublishHash).toHaveBeenCalledWith({ id: 122 });
         });
 
         it("should reset settlementResultFromAdmin", async () => {
@@ -404,7 +408,7 @@ describe("proceed", () => {
             when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
             gameCron.resetForNewRound = jest.fn();
             gameCron.roundResultConsumer = {
-                generateResultAndPublishHash: jest.fn(),
+                generateServerSeedAndPublishHash: jest.fn(),
             };
             gameCron.gameData.lastResultRecord = { id: 122 };
             gameCron.bot = { reset: jest.fn() };
@@ -417,6 +421,60 @@ describe("proceed", () => {
 
             // Assert
             expect(gameCron.gameData.settlementResultFromAdmin).toEqual({});
+        });
+    });
+
+    describe("when remainingTime = 1", () => {
+        describe("when having resultsRepository value", () => {
+            it("should call roundResultConsumer.generateResult", async () => {
+                // Arrange
+                const gameCron = createBaseGameCron();
+                gameCron.gameData.remainingTime = 1;
+                gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
+                gameCron.isStartingTime = jest.fn();
+                when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
+                gameCron.resetForNewRound = jest.fn();
+                gameCron.roundResultConsumer = {
+                    generateServerSeedAndPublishHash: jest.fn(),
+                    generateResult: jest.fn(),
+                };
+                gameCron.gameData.lastResultRecord = { id: 122 };
+                gameCron.bot = { reset: jest.fn(), run: jest.fn() };
+                gameCron.gameData.disabled = true;
+                gameCron.resultsRepository = {};
+
+                // Act
+                await gameCron.proceed();
+
+                // Assert
+                expect(gameCron.roundResultConsumer.generateResult).toHaveBeenCalled();
+            });
+        });
+
+        describe("when NOT having resultsRepository value", () => {
+            it("should NOT call roundResultConsumer.generateResult", async () => {
+                // Arrange
+                const gameCron = createBaseGameCron();
+                gameCron.gameData.remainingTime = 1;
+                gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
+                gameCron.isStartingTime = jest.fn();
+                when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
+                gameCron.resetForNewRound = jest.fn();
+                gameCron.roundResultConsumer = {
+                    generateServerSeedAndPublishHash: jest.fn(),
+                    generateResult: jest.fn(),
+                };
+                gameCron.gameData.lastResultRecord = { id: 122 };
+                gameCron.bot = { reset: jest.fn(), run: jest.fn() };
+                gameCron.gameData.disabled = true;
+                gameCron.resultsRepository = undefined;
+
+                // Act
+                await gameCron.proceed();
+
+                // Assert
+                expect(gameCron.roundResultConsumer.generateResult).not.toHaveBeenCalled();
+            });
         });
     });
 

@@ -42,6 +42,7 @@ export default class BaseGameCron {
         appConfigs,
         gameManagementApiClientFactory,
         roundIdConsumer,
+        provablyFairConsumer,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -55,6 +56,7 @@ export default class BaseGameCron {
         this.appConfigs = appConfigs;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
         this.roundIdConsumer = roundIdConsumer;
+        this.provablyFairConsumer = provablyFairConsumer;
     }
 
     async start() {
@@ -104,8 +106,8 @@ export default class BaseGameCron {
             this.appConfigs.enabledBoostedOdds && (await this.updatePromotionOddsAndNotify());
         }
 
-        if (remainingTime === durations.placingBets && this.resultsRepository) {
-            await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
+        if (this.gameData.remainingTime === durations.placingBets && this.resultsRepository) {
+            await this.roundResultConsumer.generateServerSeedAndPublishHash(this.gameData.lastResultRecord);
             this.gameData.settlementResultFromAdmin = {};
         }
 
@@ -117,7 +119,11 @@ export default class BaseGameCron {
             this.gameStatusPublisher.publishEndPlacingBetStatus();
         }
 
-        if (remainingTime < 0) {
+        if (this.gameData.remainingTime === 1 && this.resultsRepository) {
+            await this.roundResultConsumer.generateResult();
+        }
+
+        if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
 
             await this.settleGameRoundConsumer.settleRound(this.gameData);
@@ -248,7 +254,7 @@ export default class BaseGameCron {
     resetForNewRound() {
         this.gameData.ingame = {};
         this.gameData.totalBets = {};
-        this.gameData.result = null;
+        this.provablyFairConsumer.reset();
     }
 
     async getSettingForNewRound() {

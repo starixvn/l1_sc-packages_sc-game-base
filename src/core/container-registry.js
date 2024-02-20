@@ -97,6 +97,7 @@ export default class ContainerRegistry {
             userSignInConsumer: asClass(EventConsumers.UserSignInConsumer).singleton(),
             roundResultConsumer: asClass(EventConsumers.RoundResultConsumer).singleton(),
             roundIdConsumer: asClass(EventConsumers.RoundIdConsumer).singleton(),
+            provablyFairConsumer: asClass(EventConsumers.ProvablyFairConsumer).singleton(),
         });
     }
 
