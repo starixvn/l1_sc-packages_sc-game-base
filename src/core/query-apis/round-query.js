@@ -3,9 +3,11 @@ import mongoose from "mongoose";
 export default class RoundQuery {
     /**
      * @param {mongoose.Model} roundsRepository
+     * @param {mongoose.Model} resultsRepository
      */
-    constructor(roundsRepository) {
+    constructor(roundsRepository, resultsRepository) {
         this.roundsRepository = roundsRepository;
+        this.resultsRepository = resultsRepository;
     }
 
     convertSettlementResult(roundResult) {}
@@ -37,5 +39,17 @@ export default class RoundQuery {
         round.settlementResult = round.settlementResult ?? this.convertSettlementResult(round.result);
 
         return round;
+    }
+
+    async getRoundPF(id) {
+        const round = await this.getOne(id);
+        const pfResult = await this.resultsRepository.findOne({ roundId: id }, { _id: false, time: false, _v: false }).lean().exec();
+
+        return {
+            roundPFResult: {
+                result: round.result,
+                ...pfResult,
+            },
+        };
     }
 }
