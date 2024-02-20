@@ -122,6 +122,7 @@ export default class ContainerRegistry {
             userDisconnectConsumer: asClass(EventConsumers.UserDisconnectConsumer).singleton(),
             userSignInConsumer: asClass(EventConsumers.UserSignInConsumer).singleton(),
             roundResultConsumer: asClass(EventConsumers.RoundResultConsumer).singleton(),
+            provablyFairConsumer: asClass(EventConsumers.ProvablyFairConsumer).singleton(),
         });
     }
 

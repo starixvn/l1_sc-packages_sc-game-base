@@ -52,6 +52,7 @@ export default class BaseGameCron {
         resultsRepository,
         promotionRepository,
         appConfigs,
+        provablyFairConsumer,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -73,6 +74,7 @@ export default class BaseGameCron {
         this.resultsRepository = resultsRepository;
         this.promotionRepository = promotionRepository;
         this.appConfigs = appConfigs;
+        this.provablyFairConsumer = provablyFairConsumer;
     }
 
     async start() {
@@ -142,7 +144,7 @@ export default class BaseGameCron {
         }
 
         if (this.gameData.remainingTime === durations.placingBets && this.resultsRepository) {
-            await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
+            await this.roundResultConsumer.generateServerSeedAndPublishHash(this.gameData.lastResultRecord);
             this.gameData.settlementResultFromAdmin = {};
         }
 
@@ -152,6 +154,10 @@ export default class BaseGameCron {
 
         if (this.gameData.remainingTime === durations.lockingBet - 1) {
             this.gameStatusPublisher.publishEndPlacingBetStatus();
+        }
+
+        if (this.gameData.remainingTime === 1 && this.resultsRepository) {
+            await this.roundResultConsumer.generateResult();
         }
 
         if (this.gameData.remainingTime < 0) {
@@ -263,6 +269,7 @@ export default class BaseGameCron {
     resetForNewRound() {
         this.gameData.ingame = {};
         this.gameData.totalBets = {};
+        this.provablyFairConsumer.reset();
     }
 
     async getSettingForNewRound() {
