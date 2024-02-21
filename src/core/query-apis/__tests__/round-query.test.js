@@ -6,8 +6,10 @@ import { RoundQuery } from "..";
 describe("round query test", () => {
     /** @type {mongoose.Model}*/
     const roundsRepository = stubMongoose(mongoose.Model);
+    /** @type {mongoose.Model}*/
+    const resultsRepository = stubMongoose(mongoose.Model);
 
-    const roundQuery = new RoundQuery(roundsRepository);
+    const roundQuery = new RoundQuery(roundsRepository, resultsRepository);
     beforeEach(() => {
         spyOn(roundQuery, "convertResult");
         spyOn(roundQuery, "convertSettlementResult");
@@ -145,6 +147,69 @@ describe("round query test", () => {
                 expect(roundQuery.convertSettlementResult).not.toHaveBeenCalled();
 
                 expect(actualResult).toEqual(round);
+            });
+        });
+    });
+
+    describe("getRoundPF", () => {
+        describe("when round doesnt exist", () => {
+            it("should only return roundId & serverSeedHash", async () => {
+                //Arrange
+                const pfResult = {
+                    clientSeeds: [],
+                    roundId: 1,
+                    serverSeedHash: "ff4403253b351eea6bb90bb103fedd8de55710fc8e0b932df1d6039b98e7abc5",
+                    serverSeed: "1MsJRn3EV4P6RkLKBU3s22Dlc3wEAd0TOl2CE0wb",
+                    finalHash:
+                        "14a4b12258dd153265951f00c7f4c781d5fd6174e3423be6e5bcea55d8eda9a4da1ea52ef90bef029ae185cb8cde9bd9dad59ed107e6e3257e5b2aee1df1eba1",
+                    mergeClientSeed: "",
+                    mergeSeed: "1MsJRn3EV4P6RkLKBU3s22Dlc3wEAd0TOl2CE0wb",
+                };
+
+                roundsRepository.findOne().lean().exec.mockReturnValueOnce(null);
+                resultsRepository.findOne().lean().exec.mockReturnValueOnce(pfResult);
+
+                //Act
+                const result = await roundQuery.getRoundPF(1);
+
+                //Assert
+                expect(result).toEqual({
+                    roundPFResult: {
+                        roundId: 1,
+                        serverSeedHash: pfResult.serverSeedHash,
+                    },
+                });
+            });
+        });
+
+        describe("when round exists", () => {
+            it("should return all pf data", async () => {
+                //Arrange
+                const round = { result: 22.2 };
+                const pfResult = {
+                    clientSeeds: [],
+                    roundId: 1,
+                    serverSeedHash: "ff4403253b351eea6bb90bb103fedd8de55710fc8e0b932df1d6039b98e7abc5",
+                    serverSeed: "1MsJRn3EV4P6RkLKBU3s22Dlc3wEAd0TOl2CE0wb",
+                    finalHash:
+                        "14a4b12258dd153265951f00c7f4c781d5fd6174e3423be6e5bcea55d8eda9a4da1ea52ef90bef029ae185cb8cde9bd9dad59ed107e6e3257e5b2aee1df1eba1",
+                    mergeClientSeed: "",
+                    mergeSeed: "1MsJRn3EV4P6RkLKBU3s22Dlc3wEAd0TOl2CE0wb",
+                };
+
+                roundsRepository.findOne().lean().exec.mockReturnValueOnce(round);
+                resultsRepository.findOne().lean().exec.mockReturnValueOnce(pfResult);
+
+                //Act
+                const result = await roundQuery.getRoundPF(1);
+
+                //Assert
+                expect(result).toEqual({
+                    roundPFResult: {
+                        result: round.result,
+                        ...pfResult,
+                    },
+                });
             });
         });
     });

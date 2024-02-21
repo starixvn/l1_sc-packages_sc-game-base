@@ -6,7 +6,7 @@ import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInCon
 import { UserSignInPublisher } from "../../event-publishers";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
-import { HistoryQuery } from "../../query-apis";
+import { HistoryQuery, RoundQuery } from "../../query-apis";
 import { PlayGamePermissionValidator } from "../../validators";
 import BaseSocketRouter from "../base-socket-router";
 
@@ -30,6 +30,8 @@ describe("base socket router test", () => {
     /** @type {logger} */
     const logService = stub(logger);
 
+    const roundQuery = stub(RoundQuery);
+
     /** @type {PlayGamePermissionValidator} */
     const playGamePermissionValidator = stub(PlayGamePermissionValidator);
 
@@ -51,6 +53,7 @@ describe("base socket router test", () => {
         historyQuery,
         logService,
         playGamePermissionValidator,
+        roundQuery,
     });
 
     beforeEach(() => {
@@ -334,6 +337,42 @@ describe("base socket router test", () => {
 
                 // Assert
                 expect(router.logService.logError).toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe("handleGetRoundPF", () => {
+        describe("when request roundId > gameData.roundId", () => {
+            it("should not call roundQuery.getRoundPF", async () => {
+                //Arrange
+                spyOn(router, "verify").and.returnValue(true);
+
+                //Act
+                await router.handleGetRoundPF({ roundId: 2 });
+
+                //Assert
+                expect(roundQuery.getRoundPF).not.toHaveBeenCalled();
+            });
+        });
+
+        describe("when request roundId <= gameData.roundId", () => {
+            it("should call emit", async () => {
+                //Arrange
+                spyOn(router, "verify").and.returnValue(true);
+                const pf = {
+                    pfRoundResult: {
+                        roundId: 1,
+                        serverSeedHash: "serverSeedHash",
+                    },
+                };
+                roundQuery.getRoundPF.mockReturnValueOnce(pf);
+                router.init(socketClient);
+
+                //Act
+                await router.handleGetRoundPF({ roundId: 1 });
+
+                //Assert
+                expect(socketClient.emit).toHaveBeenCalledWith(definition.name, pf);
             });
         });
     });
