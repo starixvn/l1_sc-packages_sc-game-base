@@ -34,11 +34,14 @@ export default class RoundQuery {
 
     async getOne(id, projections = { _id: false }) {
         const round = await this.roundsRepository.findOne({ id }, projections).lean().exec();
+        if (round) {
+            round.result = round.result ?? this.convertResult(round);
+            round.settlementResult = round.settlementResult ?? this.convertSettlementResult(round.result);
 
-        round.result = round.result ?? this.convertResult(round);
-        round.settlementResult = round.settlementResult ?? this.convertSettlementResult(round.result);
+            return round;
+        }
 
-        return round;
+        return null;
     }
 
     async getRoundPF(id) {
@@ -47,8 +50,9 @@ export default class RoundQuery {
 
         return {
             roundPFResult: {
-                result: round.result,
-                ...pfResult,
+                roundId: pfResult.roundId,
+                serverSeedHash: pfResult.serverSeedHash,
+                ...(round && { result: round.result, ...pfResult }),
             },
         };
     }
