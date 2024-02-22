@@ -72,7 +72,21 @@ export default class HistoryQuery {
         return this.betLogsRepository
             .find(
                 { roundId, uid: player.UID },
-                { _id: false, time: true, choice: true, amount: true, select: true, bet: true },
+                {
+                    _id: false,
+                    __v: false,
+                    __archive: false,
+                    uid: false,
+                    name: false,
+                    roundId: false,
+                    currency: false,
+                    siteId: false,
+                    playerId: false,
+                    operatorId: false,
+                    rate: false,
+                    clientSentTime: false,
+                    receivedTime: false,
+                },
                 { sort: { _id: -1 } }
             )
             .lean()
