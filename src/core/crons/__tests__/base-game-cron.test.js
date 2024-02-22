@@ -1,17 +1,18 @@
 import { stub, stubMongoose } from "jest-micro-auto-stub";
+import { when } from "jest-when";
 import mongoose from "mongoose";
 import { logger } from "sc-common";
-import { when } from "jest-when";
 
+import cron from "cron";
+import ProvablyFairConsumer from "../../event-consumers/provably-fair-consumer";
 import SettleGameRoundConsumer from "../../event-consumers/settle-game-round-consumer";
+import UnsettledRoundConsumer from "../../event-consumers/unsettled-round-consumer";
 import GameStatusPublisher from "../../event-publishers/game-status-publisher";
 import RunningRoundInfoPublisher from "../../event-publishers/running-round-info-publisher";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
 import BaseBot from "../base-bot";
 import BaseGameCron from "../base-game-cron";
-import cron from "cron";
-import ProvablyFairConsumer from "../../event-consumers/provably-fair-consumer";
 
 jest.mock("../base-bot");
 jest.mock("../../event-consumers/settle-game-round-consumer");
@@ -41,6 +42,7 @@ const settleGameRoundConsumer = new SettleGameRoundConsumer();
 const runningRoundInfoPublisher = new RunningRoundInfoPublisher();
 const gameStatusPublisher = new GameStatusPublisher();
 const provablyFairConsumer = new ProvablyFairConsumer();
+const unsettledRoundConsumer = stub(UnsettledRoundConsumer);
 
 /** @type {logger}*/
 const logService = stub(logger);
@@ -95,6 +97,7 @@ const createBaseGameCron = function () {
         currencyRepository,
         roundResultConsumer,
         provablyFairConsumer,
+        unsettledRoundConsumer
     });
 };
 

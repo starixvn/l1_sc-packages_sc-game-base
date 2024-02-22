@@ -1,14 +1,13 @@
 import cron from "cron";
 import mongoose from "mongoose";
-import { logger } from "sc-common";
 
+import { chatBotHelper } from "../helpers";
+import { getEffectivePromotion, getFinishPromotionMessage, getStartPromotionMessage } from "../helpers/promotion-helper";
 import SettleGameRoundConsumer from "./../event-consumers/settle-game-round-consumer";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
-import { getEffectivePromotion, getStartPromotionMessage, getFinishPromotionMessage } from "../helpers/promotion-helper";
-import { chatBotHelper } from "../helpers";
 
 export default class BaseGameCron {
     /**
@@ -53,6 +52,7 @@ export default class BaseGameCron {
         promotionRepository,
         appConfigs,
         provablyFairConsumer,
+        unsettledRoundConsumer,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -75,11 +75,13 @@ export default class BaseGameCron {
         this.promotionRepository = promotionRepository;
         this.appConfigs = appConfigs;
         this.provablyFairConsumer = provablyFairConsumer;
+        this.unsettledRoundConsumer = unsettledRoundConsumer;
     }
 
     async start() {
         await this.initRoundId();
         await this.queryLastResult();
+        await this.unsettledRoundConsumer.proceed();
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
         this.startCron();

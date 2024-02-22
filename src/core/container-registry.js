@@ -10,12 +10,12 @@ import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import {
     ArchiveStatuses,
+    Currencies,
     CurrencyGroupGames,
+    CurrencyGroups,
     ExchangeRates,
     Notifications,
     PartnerConfigs,
-    CurrencyGroups,
-    Currencies,
     Promotions,
 } from "./models";
 import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
@@ -123,6 +123,7 @@ export default class ContainerRegistry {
             userSignInConsumer: asClass(EventConsumers.UserSignInConsumer).singleton(),
             roundResultConsumer: asClass(EventConsumers.RoundResultConsumer).singleton(),
             provablyFairConsumer: asClass(EventConsumers.ProvablyFairConsumer).singleton(),
+            unsettledRoundConsumer: asClass(EventConsumers.UnsettledRoundConsumer).singleton().proxy()
         });
     }
 
