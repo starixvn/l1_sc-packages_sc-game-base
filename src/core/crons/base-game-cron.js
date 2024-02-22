@@ -3,15 +3,12 @@ import mongoose from "mongoose";
 
 import GameManagementApiClientFactory, { getOrDefault, post } from "../game-management-api";
 import { chatBotHelper } from "../helpers";
-import { decrypt } from "../helpers/crypto-helper";
 import { getEffectivePromotion, getFinishPromotionMessage, getStartPromotionMessage } from "../helpers/promotion-helper";
 import { RoundResultConsumer, SettleGameRoundConsumer, RoundIdConsumer } from "./../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
-import { getEffectivePromotion, getStartPromotionMessage, getFinishPromotionMessage } from "../helpers/promotion-helper";
-import { chatBotHelper } from "../helpers";
 
 export default class BaseGameCron {
     /**
@@ -43,6 +40,7 @@ export default class BaseGameCron {
         gameManagementApiClientFactory,
         roundIdConsumer,
         provablyFairConsumer,
+        unsettledRoundConsumer,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -57,11 +55,13 @@ export default class BaseGameCron {
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
         this.roundIdConsumer = roundIdConsumer;
         this.provablyFairConsumer = provablyFairConsumer;
+        this.unsettledRoundConsumer = unsettledRoundConsumer;
     }
 
     async start() {
         await this.roundIdConsumer.initRoundId();
         await this.queryLastResult();
+        await this.unsettledRoundConsumer.proceed();
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
         this.startCron();

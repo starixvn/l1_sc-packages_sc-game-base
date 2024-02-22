@@ -5,6 +5,9 @@ import { logger } from "sc-common";
 
 import cron from "cron";
 import { RoundIdConsumer, SettleGameRoundConsumer } from "../../event-consumers";
+import ProvablyFairConsumer from "../../event-consumers/provably-fair-consumer";
+import SettleGameRoundConsumer from "../../event-consumers/settle-game-round-consumer";
+import UnsettledRoundConsumer from "../../event-consumers/unsettled-round-consumer";
 import GameStatusPublisher from "../../event-publishers/game-status-publisher";
 import RunningRoundInfoPublisher from "../../event-publishers/running-round-info-publisher";
 import GameData from "../../game-data";
@@ -44,6 +47,7 @@ const settleGameRoundConsumer = new SettleGameRoundConsumer();
 const runningRoundInfoPublisher = new RunningRoundInfoPublisher();
 const gameStatusPublisher = new GameStatusPublisher();
 const provablyFairConsumer = new ProvablyFairConsumer();
+const unsettledRoundConsumer = stub(UnsettledRoundConsumer);
 
 /** @type {logger}*/
 const logService = stub(logger);
@@ -72,7 +76,8 @@ const createBaseGameCron = function (newGameData) {
         appConfigs,
         gameManagementApiClientFactory,
         roundIdConsumer,
-        provablyFairConsumer
+        provablyFairConsumer,
+        unsettledRoundConsumer
     });
 };
 
