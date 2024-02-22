@@ -4,6 +4,7 @@ import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import { verifySeed } from "sc-pf-client-seed";
+import { request } from "http";
 
 export default class PlaceBetConsumer {
     DisplayMode = {
@@ -22,19 +23,13 @@ export default class PlaceBetConsumer {
         this.publisher = publisher;
     }
 
-    composeValidationCriteria(player, betChoice, amount, freeBet, roundId, clientSeed) {
+    composeValidationCriteria(player, betChoice, amount, freeBet, roundId) {
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(roundId) ?? [];
         const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) || [];
         const betChoiceValidationCriteria = this.composeBetChoiceValidationCriteria(betChoice) || [];
         const hedgeBetValidationCriteria = this.composeHedgeBetValidationCriteria(betChoice, player) || [];
-        const clientSeedValidationCriteria = this.composeClientSeedValidationCriteria(clientSeed);
 
-        return bettingTimeValidationCriteria.concat(
-            betChoiceValidationCriteria,
-            betAmountValidationCriteria,
-            hedgeBetValidationCriteria,
-            clientSeedValidationCriteria
-        );
+        return bettingTimeValidationCriteria.concat(betChoiceValidationCriteria, betAmountValidationCriteria, hedgeBetValidationCriteria);
     }
 
     composeBettingTimeValidationCriteria(roundId) {
@@ -123,30 +118,41 @@ export default class PlaceBetConsumer {
         ];
     }
 
-    composeClientSeedValidationCriteria(clientSeed) {
+    composeRequestParamsValidationCriteria(request) {
+        const { clientSeed, betChoice, amount } = request;
+
         return [
             {
-                failure: this.definition.durations.mergeClientSeeds !== undefined && !verifySeed(clientSeed),
+                failure: !amount || !betChoice,
+                notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
+            },
+            {
+                failure: this.definition.mergeClientSeeds !== undefined && !verifySeed(clientSeed),
                 notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
             },
         ];
     }
 
-    validateBetRequest(player, betChoice, amount, freeBet, roundId, clientSeed) {
-        if (!amount || !betChoice) {
-            return false;
-        }
+    validateRequestParams(request, player) {
+        const criteria = this.composeRequestParamsValidationCriteria(request);
 
-        const criteria = this.composeValidationCriteria(player, betChoice, amount, freeBet, roundId, clientSeed);
+        return this.verifyCriteria(criteria, player, request.betChoice);
+    }
+
+    validateBetRequest(player, betChoice, amount, freeBet, roundId) {
+        const criteria = this.composeValidationCriteria(player, betChoice, amount, freeBet, roundId);
+
+        return this.verifyCriteria(criteria, player, betChoice);
+    }
+
+    verifyCriteria(criteria, player, betChoice) {
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
             this.publisher.publishToUser(player.UID, { endBet: -1, betChoice, notice: failedCriterion.notice });
-
-            return false;
         }
 
-        return true;
+        return failedCriterion === undefined;
     }
 
     consume(player, payload) {
@@ -158,10 +164,10 @@ export default class PlaceBetConsumer {
             receivedTime: new Date(),
         });
 
-        const { amount, betChoice, freeBet, roundId, clientSeed } = payload;
+        const { amount, betChoice, freeBet, roundId } = payload;
         const name = player.profile.name;
 
-        if (!this.validateBetRequest(player, betChoice, amount, freeBet, roundId, clientSeed)) {
+        if (!this.validateRequestParams(payload, player) || !this.validateBetRequest(player, betChoice, amount, freeBet, roundId)) {
             return;
         }
 
