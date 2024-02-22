@@ -156,7 +156,7 @@ export default class BaseGameCron {
             this.gameStatusPublisher.publishEndPlacingBetStatus();
         }
 
-        if (this.gameData.remainingTime === 1 && this.resultsRepository) {
+        if (this.gameData.remainingTime === durations.mergeClientSeeds && this.resultsRepository) {
             await this.roundResultConsumer.generateResult();
         }
 

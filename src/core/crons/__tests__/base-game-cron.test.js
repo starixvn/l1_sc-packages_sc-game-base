@@ -537,13 +537,13 @@ describe("gameCron", () => {
             });
         });
 
-        describe("when remainingTime = 1", () => {
+        describe("when remainingTime = durations.mergeClientSeeds", () => {
             describe("when having resultsRepository value", () => {
                 it("should call roundResultConsumer.generateResult", async () => {
                     // Arrange
                     const gameCron = createBaseGameCron();
                     gameCron.gameData.remainingTime = 1;
-                    gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
+                    gameCron.definition.durations = { wholeRound: 22, placingBets: 20, mergeClientSeeds: 1 };
                     gameCron.isStartingTime = jest.fn();
                     when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
                     gameCron.resetForNewRound = jest.fn();
@@ -569,7 +569,7 @@ describe("gameCron", () => {
                     // Arrange
                     const gameCron = createBaseGameCron();
                     gameCron.gameData.remainingTime = 1;
-                    gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
+                    gameCron.definition.durations = { wholeRound: 22, placingBets: 20, mergeClientSeeds: 1 };
                     gameCron.isStartingTime = jest.fn();
                     when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
                     gameCron.resetForNewRound = jest.fn();
