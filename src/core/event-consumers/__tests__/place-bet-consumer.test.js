@@ -14,6 +14,7 @@ describe("PlaceBetConsumer", () => {
         wholeRound: 61,
         placingBets: 50,
         lockingBet: 5,
+        mergeClientSeed: 1,
     };
     let consumer, definition, gameData, player, payload;
 
@@ -30,6 +31,7 @@ describe("PlaceBetConsumer", () => {
             amount: chance.natural(),
             freeBet: chance.bool(),
             roundId: chance.natural(),
+            clientSeed: chance.natural(),
         };
 
         consumer = new PlaceBetConsumer(definition, gameData, baseEventPublisher);
@@ -46,7 +48,14 @@ describe("PlaceBetConsumer", () => {
             consumer.consume(player, payload);
 
             // Assert
-            expect(consumer.validateBetRequest).toBeCalledWith(player, payload.betChoice, payload.amount, payload.freeBet, payload.roundId);
+            expect(consumer.validateBetRequest).toBeCalledWith(
+                player,
+                payload.betChoice,
+                payload.amount,
+                payload.freeBet,
+                payload.roundId,
+                payload.clientSeed
+            );
         });
 
         describe("when bet request is invalid", () => {
@@ -114,16 +123,19 @@ describe("PlaceBetConsumer", () => {
             const betAmountValidationResult = [{ failure: chance.bool(), notice: chance.string() }];
             const betChoiceValidationResult = [{ failure: chance.bool(), notice: chance.string() }];
             const hedgeBetValidationResult = [{ failure: chance.bool(), notice: chance.string() }];
+            const clientSeedValidationResult = [{ failure: chance.bool(), notice: chance.string() }];
             const expectedResult = bettingTimeValidationResult.concat(
                 betChoiceValidationResult,
                 betAmountValidationResult,
-                hedgeBetValidationResult
+                hedgeBetValidationResult,
+                clientSeedValidationResult
             );
 
             consumer.composeBettingTimeValidationCriteria = jest.fn().mockReturnValueOnce(bettingTimeValidationResult);
             consumer.composeBetAmountValidationCriteria = jest.fn().mockReturnValueOnce(betAmountValidationResult);
             consumer.composeBetChoiceValidationCriteria = jest.fn().mockReturnValueOnce(betChoiceValidationResult);
             consumer.composeHedgeBetValidationCriteria = jest.fn().mockReturnValueOnce(hedgeBetValidationResult);
+            consumer.composeClientSeedValidationCriteria = jest.fn().mockReturnValueOnce(clientSeedValidationResult);
 
             // Act
             const actualResult = consumer.composeValidationCriteria(
@@ -464,6 +476,50 @@ describe("PlaceBetConsumer", () => {
 
                 // Assert
                 expect(!!actualResult[0].failure).toBe(false);
+            });
+        });
+    });
+
+    describe("composeClientSeedValidationCriteria", () => {
+        const clientSeed = chance.natural({ min: 0, max: 9999 });
+        describe("when durations.mergeClientSeeds is undefined", () => {
+            it("should return NO failure", () => {
+                // Arrange
+                consumer.definition.durations.mergeClientSeeds = undefined;
+
+                // Act
+                const result = consumer.composeClientSeedValidationCriteria(clientSeed);
+
+                // Assert
+                expect(result[0].failure).toBe(false);
+            });
+        });
+
+        describe("when durations.mergeClientSeeds is defined", () => {
+            describe("when client is valid", () => {
+                it("should return NO failure", () => {
+                    // Arrange
+                    consumer.definition.durations.mergeClientSeeds = chance.natural();
+
+                    // Act
+                    const result = consumer.composeClientSeedValidationCriteria(clientSeed);
+
+                    // Assert
+                    expect(result[0].failure).toBe(false);
+                });
+            });
+
+            describe("when client is NOT valid", () => {
+                it("should return failure", () => {
+                    // Arrange
+                    consumer.definition.durations.mergeClientSeeds = chance.natural();
+
+                    // Act
+                    const result = consumer.composeClientSeedValidationCriteria("");
+
+                    // Assert
+                    expect(result[0].failure).toBe(true);
+                });
             });
         });
     });
