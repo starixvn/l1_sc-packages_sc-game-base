@@ -37,13 +37,16 @@ describe("roundResultPublisher", () => {
             });
 
             it("should publish to all users with result and pf info", () => {
+                // Arrange
+                const expected = {
+                    finish: { ...roundResult, pf: { ...pf, ...roundResult } },
+                };
+
                 // Act
                 publisher.publishRoundResult(roundResult);
 
                 // Assert
-                expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
-                    finish: { ...roundResult, pf: { ...pf, ...roundResult } },
-                });
+                expect(publisher.publishToAllUsers).toHaveBeenCalledWith(expected);
             });
 
             it("should publish to all admins", () => {
