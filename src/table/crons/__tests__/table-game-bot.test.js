@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 
 import { Systems } from "../../../constants/systems";
 import BaseBot from "../../../core/crons/base-bot";
+import { ProvablyFairConsumer } from "../../../core/event-consumers";
 import BaseEventPublisher from "../../../core/event-publishers/base-event-publisher";
 import TableGameData from "../../table-game-data";
 import TableGameDefinition from "../../table-game-definition";
@@ -21,7 +22,9 @@ describe("table game bot test", () => {
     /** @type {mongoose.Model}*/
     const tempBetsRepository = stubMongoose(mongoose.Model);
 
-    const tableBot = new TableGameBot(definition, gameData, publisher, userInfosRepository, tempBetsRepository);
+    const provablyFairConsumer = stub(ProvablyFairConsumer);
+
+    const tableBot = new TableGameBot(definition, gameData, publisher, userInfosRepository, tempBetsRepository, provablyFairConsumer);
 
     it("inherit base bot", () => {
         expect(tableBot instanceof BaseBot);

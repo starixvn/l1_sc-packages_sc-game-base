@@ -1,6 +1,7 @@
 import Chance from "chance";
 import mongoose from "mongoose";
 import { helpers } from "sc-common";
+import { generateSeed } from "sc-pf-client-seed";
 
 import { Systems } from "../../constants/systems";
 import BaseBot from "./../../core/crons/base-bot";
@@ -16,11 +17,12 @@ export default class TableGameBot extends BaseBot {
      * @param {mongoose.Model} userInfosRepository
      * @param {mongoose.Model} tempBetsRepository
      */
-    constructor(definition, gameData, publisher, userInfosRepository, tempBetsRepository) {
+    constructor(definition, gameData, publisher, userInfosRepository, tempBetsRepository, provablyFairConsumer) {
         super(definition, gameData, userInfosRepository);
-
         this.publisher = publisher;
         this.tempBetsRepository = tempBetsRepository;
+        this.provablyFairConsumer = provablyFairConsumer;
+
         this.inOutValues = {
             in: 3,
             out: 4,
@@ -128,6 +130,11 @@ export default class TableGameBot extends BaseBot {
         bot.choices = [];
         bot.betOnChoices = {};
         bot.remainTickets = this.getTicketsPerRound();
+        bot.clientSeed = null;
+    }
+
+    generateClientSeed() {
+        return generateSeed();
     }
 
     getTicketsPerRound() {
@@ -221,6 +228,7 @@ export default class TableGameBot extends BaseBot {
         if (this.gameData.remainingTime > this.definition.durations.lockingBet) {
             const currentBet = await this.tempBetsRepository.findOne({ uid: bot.id, roundId: this.gameData.roundId }).lean().exec();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
+            bot.clientSeed = this.generateClientSeed();
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
                 const user = await this.userInfosRepository.findOneAndUpdate(
@@ -230,7 +238,8 @@ export default class TableGameBot extends BaseBot {
                 );
 
                 if (user) {
-                    await this.insertOrUpdateBet(bot, choice, amount, currentBet);
+                    const time = await this.insertOrUpdateBet(bot, choice, amount, currentBet);
+                    this.provablyFairConsumer.addBets({ time, name: bot.name, clientSeed: bot.clientSeed });
 
                     this.totalTickets += 1;
 
@@ -283,6 +292,7 @@ export default class TableGameBot extends BaseBot {
             time: new Date(),
             currency: " ",
             operatorId: " ",
+            clientSeed: bot.clientSeed,
         };
 
         await this.tempBetsRepository.updateOne(
@@ -290,6 +300,8 @@ export default class TableGameBot extends BaseBot {
             { $set: update, $setOnInsert: create },
             { upsert: true, setDefaultsOnInsert: true }
         );
+
+        return create.time;
     }
 
     generatePlaceBetPayload(playerId, choice, amount, balance) {

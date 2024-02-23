@@ -1,6 +1,7 @@
 export default class ProvablyFairConsumer {
     MaxCombinedClientSeeds = 5;
     ClientSeedRange = { min: 0, max: 9999 };
+    bets = [];
 
     constructor(gameData, maxCombinedClientSeeds) {
         this.gameData = gameData;
@@ -27,11 +28,20 @@ export default class ProvablyFairConsumer {
 
     reset() {
         this.gameData.pf = { clientSeeds: [], serverSeed: "" };
+        this.bets = [];
     }
 
-    updateClientSeedFromBets(bets) {
-        const sortedBets = [...bets].sort((b1, b2) => b1.time - b2.time);
-        sortedBets.slice(0, this.MaxCombinedClientSeeds).forEach(({ name, clientSeed }) => this.addClientSeed({ name, clientSeed }));
+    addBets(...bets) {
+        this.bets.push(...bets);
+    }
+
+    updateClientSeedFromBets() {
+        const sortedBets = [...this.bets].sort((b1, b2) => b1.time - b2.time);
+        const chosenBets = sortedBets.slice(0, this.MaxCombinedClientSeeds);
+
+        for (const bet of chosenBets) {
+            this.addClientSeed({ name: bet.name, clientSeed: bet.clientSeed });
+        }
     }
 
     updateClientSeeds(clientSeeds) {

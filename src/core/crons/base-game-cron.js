@@ -159,6 +159,7 @@ export default class BaseGameCron {
         }
 
         if (this.gameData.remainingTime === durations.mergeClientSeeds && this.resultsRepository) {
+            this.provablyFairConsumer.updateClientSeedFromBets();
             await this.roundResultConsumer.generateResult();
         }
 
