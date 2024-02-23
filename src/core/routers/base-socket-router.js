@@ -64,7 +64,7 @@ export default class BaseSocketRouter {
 
     async handleGetRoundPF(payload) {
         try {
-            if (!this.verify() || payload.roundId > this.gameData.roundId) {
+            if (!this.definition.provablyFair || !this.verify() || payload.roundId > this.gameData.roundId) {
                 return;
             }
 

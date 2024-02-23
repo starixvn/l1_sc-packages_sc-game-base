@@ -9,6 +9,7 @@ export default class GameDefinition {
             hedgeBetGroups = [],
             numberOfRoundHistory = 100,
             historyPageSize = 8,
+            provablyFair = false,
         },
         generateResult,
         settle,
@@ -26,5 +27,6 @@ export default class GameDefinition {
         this.settle = settle;
         this.generateRawResultForHash = generateRawResultForHash;
         this.hedgeBetGroups = hedgeBetGroups;
+        this.provablyFair = provablyFair;
     }
 }
