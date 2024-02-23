@@ -5,21 +5,15 @@ export default class RoundResultPublisher extends BaseEventPublisher {
         const payload = { finish: roundResult };
 
         if (this.gameData.pf) {
-            this.publishToAllUsers({
-                finish: {
-                    ...roundResult,
-                    pf: {
-                        ...this.gameData.pf,
-                        roundId: this.gameData.roundId,
-                        result: this.gameData.result,
-                    },
-                },
-            });
-        } else {
-            this.publishToAllUsers(payload);
+            payload.finish.pf = this.getHashedResult();
         }
 
+        this.publishToAllUsers(payload);
         this.publishToAllAdmins(payload);
+    }
+
+    getHashedResult() {
+        return { ...this.gameData.pf, roundId: this.gameData.roundId, result: this.gameData.result };
     }
 
     publishServerSeedHash() {
