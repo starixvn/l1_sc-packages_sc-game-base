@@ -17,5 +17,6 @@ export default class GameData {
         this.currencyGroups = [];
         this.partnerGameSiteExclusions = [];
         this.resultHash = {};
+        this.pf = {};
     }
 }

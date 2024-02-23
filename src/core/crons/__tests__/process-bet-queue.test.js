@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import logger from "sc-common/logger";
 
 import BaseMetrics from "../../base-metrics";
+import { ProvablyFairConsumer } from "../../event-consumers";
 import PlaceBetPublisher from "../../event-publishers/place-bet-publisher";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
@@ -65,6 +66,8 @@ describe("ProcessBetQueue", () => {
     const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
     const baseMetrics = stub(BaseMetrics);
+    const provablyFairConsumer = stub(ProvablyFairConsumer);
+    
     let player = null,
         proceedBetQueue = null,
         payload = null,
@@ -1001,6 +1004,7 @@ describe("ProcessBetQueue", () => {
             betLogsRepository,
             gameManagementApiClientFactory,
             baseMetrics,
+            provablyFairConsumer
         });
     };
 

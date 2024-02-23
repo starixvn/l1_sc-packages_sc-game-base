@@ -1,6 +1,7 @@
 import Chance from "chance";
 import mongoose from "mongoose";
 import { helpers } from "sc-common";
+import { generateSeed } from "sc-pf-client-seed";
 
 import { Systems } from "../../constants/systems";
 import { getOrDefault, post } from "../../core/game-management-api";
@@ -16,11 +17,13 @@ export default class TableGameBot extends BaseBot {
      * @param {BaseEventPublisher} publisher
      * @param {mongoose.Model} tempBetsRepository
      */
-    constructor(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository) {
+    constructor(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository,provablyFairConsumer) {
         super(definition, gameData, gameManagementApiClientFactory);
 
         this.publisher = publisher;
         this.tempBetsRepository = tempBetsRepository;
+        this.provablyFairConsumer = provablyFairConsumer;
+
         this.inOutValues = {
             in: 3,
             out: 4,
@@ -121,6 +124,11 @@ export default class TableGameBot extends BaseBot {
         bot.choices = [];
         bot.betOnChoices = {};
         bot.remainTickets = this.getTicketsPerRound();
+        bot.clientSeed = null;
+    }
+
+    generateClientSeed() {
+        return generateSeed();
     }
 
     getTicketsPerRound() {
@@ -206,8 +214,10 @@ export default class TableGameBot extends BaseBot {
         validBots.forEach(async (validBot) => {
             const bet = botBets.find((bet) => bet.id === validBot.id);
             const { bot, choice, amount, currentBet } = bet;
-
-            await this.insertOrUpdateBet(bot, choice, amount, currentBet);
+            bot.clientSeed = this.generateClientSeed();
+            const time = await this.insertOrUpdateBet(bot, choice, amount, currentBet);
+            this.provablyFairConsumer.addBets({ time, name: bot.name, clientSeed: bot.clientSeed });
+            
             this.totalTickets += 1;
             this.updateTotalBetsAndChips(choice, amount);
             this.updateBotInRoomData(bot, choice, amount, validBot.red);
@@ -272,6 +282,7 @@ export default class TableGameBot extends BaseBot {
             time: new Date(),
             currency: " ",
             operatorId: " ",
+            clientSeed: bot.clientSeed,
         };
 
         await this.tempBetsRepository.updateOne(
@@ -279,6 +290,8 @@ export default class TableGameBot extends BaseBot {
             { $set: update, $setOnInsert: create },
             { upsert: true, setDefaultsOnInsert: true }
         );
+
+        return create.time;
     }
 
     generatePlaceBetPayload(playerId, choice, amount, balance) {

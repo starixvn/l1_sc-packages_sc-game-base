@@ -33,6 +33,7 @@ export default class ProcessBetQueue {
         betLogsRepository,
         gameManagementApiClientFactory,
         baseMetrics,
+        provablyFairConsumer,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -43,6 +44,7 @@ export default class ProcessBetQueue {
         this.betLogsRepository = betLogsRepository;
         this.baseMetrics = baseMetrics;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
+        this.provablyFairConsumer = provablyFairConsumer;
     }
 
     start() {
@@ -193,7 +195,8 @@ export default class ProcessBetQueue {
             await this.insertBetLog(player, roundId, bet, rate);
         }
 
-        await this.upsertBet(player, roundId, bet, rate);
+        const time = await this.upsertBet(player, roundId, bet, rate);
+        this.provablyFairConsumer.addBets({time, name: player.profile.name, clientSeed: bet.clientSeed});
 
         if (this.isCountOnTotalBets(player)) {
             this.adjustTotalBets(player, bet, rate);
@@ -249,6 +252,7 @@ export default class ProcessBetQueue {
             odds: configs.odds,
             freeBet: bet.freeBet,
             roundId,
+            clientSeed: bet.clientSeed,
         };
         const existingBetFilter = { uid: player.UID, roundId, freeBet: bet.freeBet };
         const existingBetIncrement = {
@@ -270,6 +274,8 @@ export default class ProcessBetQueue {
             { $inc: existingBetIncrement, $setOnInsert: newBet },
             { upsert: true, setDefaultsOnInsert: true }
         );
+
+        return newBet.time;
     }
 
     async insertBetLog(player, roundId, bet, rate) {

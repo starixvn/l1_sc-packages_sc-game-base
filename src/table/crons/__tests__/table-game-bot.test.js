@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 
 import { Systems } from "../../../constants/systems";
 import BaseBot from "../../../core/crons/base-bot";
+import { ProvablyFairConsumer } from "../../../core/event-consumers";
 import BaseEventPublisher from "../../../core/event-publishers/base-event-publisher";
 import GameManagementApiClientFactory from "../../../core/game-management-api";
 import TableGameData from "../../table-game-data";
@@ -23,8 +24,9 @@ describe("table game bot test", () => {
     const tempBetsRepository = stubMongoose(mongoose.Model);
 
     const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
+    const provablyFairConsumer = stub(ProvablyFairConsumer);
 
-    const tableBot = new TableGameBot(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository);
+    const tableBot = new TableGameBot(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository,provablyFairConsumer);
 
     afterEach(() => {
         jest.clearAllMocks();

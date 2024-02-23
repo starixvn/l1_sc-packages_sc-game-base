@@ -37,7 +37,8 @@ export default class UnsettledRoundConsumer {
         if (finalHash) {
             this.gameData.result = this.definition.generateResult(finalHash);
         } else {
-            this.provablyFairConsumer.updateClientSeedFromBets(unsettledBets);
+            this.provablyFairConsumer.addBets(...unsettledBets);
+            this.provablyFairConsumer.updateClientSeedFromBets();
             this.provablyFairConsumer.setServerSeed(serverSeed);
             this.provablyFairConsumer.setServerSeedHash(serverSeedHash);
             await this.roundResultConsumer.generateResult();
