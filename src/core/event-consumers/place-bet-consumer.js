@@ -116,31 +116,45 @@ export default class PlaceBetConsumer {
         ];
     }
 
-    composeRequestParamsValidationCriteria(request) {
-        const { clientSeed, betChoice, amount } = request;
+    validateBetRequest(player, betChoice, amount, freeBet, roundId) {
+        const criteria = this.composeValidationCriteria(player, betChoice, amount, freeBet, roundId);
+
+        return this.verifyCriteria(criteria, player, betChoice);
+    }
+
+    validateBetRequestParams(request) {
+        const { betChoice, amount } = request;
 
         return [
             {
                 failure: !amount || !betChoice,
                 notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
             },
+        ];
+    }
+
+    validateClientSeed(request) {
+        const { clientSeed } = request;
+
+        return [
             {
-                failure: this.definition.mergeClientSeeds !== undefined && !verifySeed(clientSeed),
+                failure: this.definition.provablyFair && !verifySeed(clientSeed),
                 notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
             },
         ];
+    }
+
+    composeRequestParamsValidationCriteria(request) {
+        const betAmountValidationCriteria = this.validateBetRequestParams(request) || [];
+        const clientSeedCriteria = this.validateClientSeed(request) || [];
+
+        return betAmountValidationCriteria.concat(clientSeedCriteria);
     }
 
     validateRequestParams(request, player) {
         const criteria = this.composeRequestParamsValidationCriteria(request);
 
         return this.verifyCriteria(criteria, player, request.betChoice);
-    }
-
-    validateBetRequest(player, betChoice, amount, freeBet, roundId) {
-        const criteria = this.composeValidationCriteria(player, betChoice, amount, freeBet, roundId);
-
-        return this.verifyCriteria(criteria, player, betChoice);
     }
 
     verifyCriteria(criteria, player, betChoice) {
