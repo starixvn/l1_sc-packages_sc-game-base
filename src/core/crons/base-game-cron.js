@@ -68,7 +68,7 @@ export default class BaseGameCron {
     }
 
     async queryLastResult() {
-        if (this.resultsRepository) {
+        if (this.isHashedResult()) {
             this.gameData.lastResultRecord = await this.resultsRepository.findOne({ roundId: this.gameData.roundId }).lean().exec();
         }
     }
@@ -106,7 +106,7 @@ export default class BaseGameCron {
             this.appConfigs.enabledBoostedOdds && (await this.updatePromotionOddsAndNotify());
         }
 
-        if (this.gameData.remainingTime === durations.placingBets && this.resultsRepository) {
+        if (this.gameData.remainingTime === durations.placingBets && this.isHashedResult()) {
             await this.roundResultConsumer.generateServerSeedAndPublishHash(this.gameData.lastResultRecord);
             this.gameData.settlementResultFromAdmin = {};
         }
@@ -119,7 +119,7 @@ export default class BaseGameCron {
             this.gameStatusPublisher.publishEndPlacingBetStatus();
         }
 
-        if (this.gameData.remainingTime === durations.mergeClientSeeds && this.resultsRepository) {
+        if (this.gameData.remainingTime === durations.mergeClientSeeds && this.isHashedResult()) {
             this.provablyFairConsumer.updateClientSeedFromBets();
             await this.roundResultConsumer.generateResult();
         }
@@ -136,6 +136,10 @@ export default class BaseGameCron {
 
     isStartingTime(remainingTime, durations) {
         return remainingTime === durations.placingBets;
+    }
+
+    isHashedResult() {
+        return this.definition.provablyFair || this.resultsRepository;
     }
 
     async checkGameStatus() {

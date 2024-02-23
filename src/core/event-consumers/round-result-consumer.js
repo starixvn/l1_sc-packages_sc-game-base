@@ -1,6 +1,15 @@
+import GameData from "./../game-data";
+import GameDefinition from "./../game-definition";
 import { SeedHelper, ServerSeedHelper } from "../helpers";
 
 export default class RoundResultConsumer {
+    /**
+     * @param {GameDefinition} dependencies.definition
+     * @param {GameData} dependencies.gameData
+     * @param {mongoose.Model} roundsRepository
+     * @param {mongoose.Model} resultsRepository
+     */
+
     constructor(gameData, definition, roundResultPublisher, resultsRepository) {
         this.gameData = gameData;
         this.definition = definition;
@@ -22,9 +31,7 @@ export default class RoundResultConsumer {
     }
 
     async getFinalSeeds(roundId, pf) {
-        if (!this.resultsRepository) {
-            return {};
-        };
+        if (!this.definition.provablyFair) return {};
 
         const { serverSeed, serverSeedHash } = pf;
         const finalSeeds = this.generateFinalSeeds(pf);
