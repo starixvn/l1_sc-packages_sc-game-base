@@ -1,10 +1,8 @@
 import { helpers } from "sc-common";
-
 import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import { verifySeed } from "sc-pf-client-seed";
-import { request } from "http";
 
 export default class PlaceBetConsumer {
     DisplayMode = {
