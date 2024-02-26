@@ -21,8 +21,6 @@ export {
     RoundResultConsumer,
     RoundIdConsumer,
     ProvablyFairConsumer,
-    RoundResultConsumer,
-    SettleGameRoundConsumer,
     UnsettledRoundConsumer,
     UserDisconnectConsumer,
     UserSignInConsumer

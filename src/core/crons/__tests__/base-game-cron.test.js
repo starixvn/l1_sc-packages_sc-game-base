@@ -6,7 +6,6 @@ import { logger } from "sc-common";
 import cron from "cron";
 import { RoundIdConsumer, SettleGameRoundConsumer } from "../../event-consumers";
 import ProvablyFairConsumer from "../../event-consumers/provably-fair-consumer";
-import SettleGameRoundConsumer from "../../event-consumers/settle-game-round-consumer";
 import UnsettledRoundConsumer from "../../event-consumers/unsettled-round-consumer";
 import GameStatusPublisher from "../../event-publishers/game-status-publisher";
 import RunningRoundInfoPublisher from "../../event-publishers/running-round-info-publisher";
@@ -16,7 +15,6 @@ import GameManagementApiClientFactory from "../../game-management-api";
 import BaseBot from "../base-bot";
 import BaseGameCron from "../base-game-cron";
 import { GameConfig } from "jest-auto-fixture/src/models";
-import ProvablyFairConsumer from "../../event-consumers/provably-fair-consumer";
 
 jest.mock("../base-bot");
 jest.mock("../../event-consumers/provably-fair-consumer");
@@ -429,13 +427,13 @@ describe("proceed", () => {
         });
     });
 
-    describe("when remainingTime = 1", () => {
+    describe("when remainingTime = durations.mergeClientSeeds", () => {
         describe("when having resultsRepository value", () => {
             it("should call roundResultConsumer.generateResult", async () => {
                 // Arrange
                 const gameCron = createBaseGameCron();
                 gameCron.gameData.remainingTime = 1;
-                gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
+                gameCron.definition.durations = { wholeRound: 22, placingBets: 20, mergeClientSeeds: 1 };
                 gameCron.isStartingTime = jest.fn();
                 when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
                 gameCron.resetForNewRound = jest.fn();
@@ -461,7 +459,7 @@ describe("proceed", () => {
                 // Arrange
                 const gameCron = createBaseGameCron();
                 gameCron.gameData.remainingTime = 1;
-                gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
+                gameCron.definition.durations = { wholeRound: 22, placingBets: 20, mergeClientSeeds: 1 };
                 gameCron.isStartingTime = jest.fn();
                 when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
                 gameCron.resetForNewRound = jest.fn();
@@ -482,6 +480,7 @@ describe("proceed", () => {
             });
         });
     });
+
 
     describe("when remainingTime < 0", () => {
         it("should update remainingTime = wholeRound", async () => {
