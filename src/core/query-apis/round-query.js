@@ -50,7 +50,7 @@ export default class RoundQuery {
 
         return {
             roundPFResult: {
-                ...(pfResult && { roundId: pfResult.roundId, serverSeedHash: pfResult.serverSeedHas }),
+                ...(pfResult && { roundId: pfResult.roundId, serverSeedHash: pfResult.serverSeedHash }),
                 ...(round && { result: round.result, ...pfResult }),
             },
         };
