@@ -21,7 +21,7 @@ export default class UnsettledRoundConsumer {
 
     async proceed() {
         if (this.gameData.lastResultRecord) {
-            const unsettledBets = await this.getUnsettledBets();
+            const unsettledBets = await this.getUnsettledBets(this.gameData.roundId);
             await this.generateResult(unsettledBets);
             await this.proceedUnsettledBets(unsettledBets);
 
@@ -45,11 +45,9 @@ export default class UnsettledRoundConsumer {
         }
     }
 
-    async getUnsettledBets() {
-        const playerBets = await this.betsRepository.find({ paid: false, roundId: this.gameData.roundId }).lean().exec();
-        const botBets = this.tempBetsRepository
-            ? await this.tempBetsRepository.find({ paid: false, roundId: this.gameData.roundId }).lean().exec()
-            : [];
+    async getUnsettledBets(roundId) {
+        const playerBets = await this.betsRepository.find({ paid: false, roundId }).lean().exec();
+        const botBets = this.tempBetsRepository ? await this.tempBetsRepository.find({ paid: false, roundId }).lean().exec() : [];
 
         return playerBets.concat(botBets);
     }
