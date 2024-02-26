@@ -252,7 +252,7 @@ export default class BaseGameCron {
         }
     }
 
-    resetForNewRound() {``
+    resetForNewRound() {
         this.gameData.ingame = {};
         this.gameData.totalBets = {};
         this.provablyFairConsumer.reset();
