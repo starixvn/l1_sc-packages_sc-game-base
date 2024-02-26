@@ -345,6 +345,20 @@ describe("base socket router test", () => {
         describe("when request roundId > gameData.roundId", () => {
             it("should not call roundQuery.getRoundPF", async () => {
                 //Arrange
+                definition.provablyFair = true;
+                spyOn(router, "verify").and.returnValue(true);
+
+                //Act
+                await router.handleGetRoundPF({ roundId: 2 });
+
+                //Assert
+                expect(roundQuery.getRoundPF).not.toHaveBeenCalled();
+            });
+        });
+
+        describe("when provablyFair is False", () => {
+            it("should not call roundQuery.getRoundPF", async () => {
+                //Arrange
                 spyOn(router, "verify").and.returnValue(true);
 
                 //Act
@@ -356,6 +370,10 @@ describe("base socket router test", () => {
         });
 
         describe("when request roundId <= gameData.roundId", () => {
+            beforeEach(() => {
+                definition.provablyFair = true;
+            });
+
             it("should call emit", async () => {
                 //Arrange
                 spyOn(router, "verify").and.returnValue(true);
