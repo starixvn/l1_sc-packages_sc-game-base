@@ -17,6 +17,6 @@ export default class GameData {
         this.currencyGroups = [];
         this.partnerGameSiteExclusions = [];
         this.resultHash = {};
-        this.pf = {};
+        this.pf = { clientSeeds: [], serverSeed: "" };
     }
 }
