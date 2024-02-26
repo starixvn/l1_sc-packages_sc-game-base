@@ -61,9 +61,9 @@ export default class BaseGameCron {
     async start() {
         await this.roundIdConsumer.initRoundId();
         await this.queryLastResult();
-        await this.unsettledRoundConsumer.proceed();
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
+        await this.unsettledRoundConsumer.proceed();
         this.startCron();
     }
 
@@ -252,7 +252,7 @@ export default class BaseGameCron {
         }
     }
 
-    resetForNewRound() {
+    resetForNewRound() {``
         this.gameData.ingame = {};
         this.gameData.totalBets = {};
         this.provablyFairConsumer.reset();
