@@ -22,10 +22,12 @@ export default class RoundResultConsumer {
     }
 
     async getFinalSeeds(roundId, pf) {
-        if (!this.resultsRepository) return {};
+        if (!this.resultsRepository) {
+            return {};
+        };
 
         const { serverSeed, serverSeedHash } = pf;
-        let finalSeeds = this.generateFinalSeeds(pf);
+        const finalSeeds = this.generateFinalSeeds(pf);
 
         await this.resultsRepository.findOneAndUpdate(
             { roundId },
