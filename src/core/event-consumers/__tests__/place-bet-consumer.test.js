@@ -544,10 +544,10 @@ describe("PlaceBetConsumer", () => {
             });
         });
 
-        describe("when definition.mergeClientSeeds is NOT defined", () => {
+        describe("when definition.provablyFair is NOT defined", () => {
             it("should return NO failure", () => {
                 // Arrange
-                consumer.definition.mergeClientSeeds = undefined;
+                consumer.definition.provablyFair = undefined;
 
                 // Act
                 const actualResult = consumer.composeRequestParamsValidationCriteria({ ...payload, betChoice: undefined });
@@ -557,9 +557,9 @@ describe("PlaceBetConsumer", () => {
             });
         });
 
-        describe("when definition.mergeClientSeeds is defined", () => {
+        describe("when definition.provablyFair is defined", () => {
             beforeEach(() => {
-                consumer.definition.mergeClientSeeds = true;
+                consumer.definition.provablyFair = true;
             });
 
             describe("when clientSeed is valid", () => {
