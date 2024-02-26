@@ -66,9 +66,30 @@ export default class ProvablyFairConsumer {
     }
 
     async getFirstBets(roundId) {
-        const firstPlayerBets = await this.betsRepository.find({ roundId }).sort({ time: 1 }).limit(this.MaxCombinedClientSeeds).exec();
+        const betFilter = { roundId };
+        const betProjection = {
+            time: true,
+            clientSeed: true,
+            name: true,
+        };
+        const sortConditions = { time: 1 };
+
+        const firstPlayerBets = await this.betsRepository
+            .find(betFilter)
+            .projection(betProjection)
+            .sort(sortConditions)
+            .limit(this.MaxCombinedClientSeeds)
+            .lean()
+            .exec();
+
         const firstBotBets = this.tempBetsRepository
-            ? await this.tempBetsRepository.find({ roundId }).sort({ time: 1 }).limit(this.MaxCombinedClientSeeds).exec()
+            ? await this.tempBetsRepository
+                  .find(betFilter)
+                  .projection(betProjection)
+                  .sort(sortConditions)
+                  .limit(this.MaxCombinedClientSeeds)
+                  .lean()
+                  .exec()
             : [];
 
         return firstPlayerBets.concat(firstBotBets);
