@@ -75,21 +75,13 @@ export default class ProvablyFairConsumer {
         const sortConditions = { time: 1 };
 
         const firstPlayerBets = await this.betsRepository
-            .find(betFilter)
-            .projection(betProjection)
-            .sort(sortConditions)
+            .find(betFilter, betProjection, sortConditions)
             .limit(this.MaxCombinedClientSeeds)
             .lean()
             .exec();
 
         const firstBotBets = this.tempBetsRepository
-            ? await this.tempBetsRepository
-                  .find(betFilter)
-                  .projection(betProjection)
-                  .sort(sortConditions)
-                  .limit(this.MaxCombinedClientSeeds)
-                  .lean()
-                  .exec()
+            ? await this.tempBetsRepository.find(betFilter, betProjection, sortConditions).limit(this.MaxCombinedClientSeeds).lean().exec()
             : [];
 
         return firstPlayerBets.concat(firstBotBets);
