@@ -120,7 +120,7 @@ export default class BaseGameCron {
         }
 
         if (this.gameData.remainingTime === durations.mergeClientSeeds && this.isHashedResult()) {
-            this.provablyFairConsumer.updateClientSeedFromBets();
+            await this.provablyFairConsumer.updateClientSeedFromBets();
             await this.roundResultConsumer.generateResult();
         }
 

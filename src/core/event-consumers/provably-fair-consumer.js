@@ -1,10 +1,22 @@
+import GameData from "./../game-data";
+
 export default class ProvablyFairConsumer {
     MaxCombinedClientSeeds = 5;
     ClientSeedRange = { min: 0, max: 9999 };
     bets = [];
 
-    constructor(gameData, maxCombinedClientSeeds) {
+    /**
+     * @param {GameDefinition} definition
+     * @param {GameData} gameData
+     * @param {mongoose.Model} betsRepository
+     * @param {mongoose.Model} tempBetsRepository
+     */
+
+    constructor(gameData, maxCombinedClientSeeds, betsRepository, tempBetsRepository) {
         this.gameData = gameData;
+        this.betsRepository = betsRepository;
+        this.tempBetsRepository = tempBetsRepository;
+
         if (maxCombinedClientSeeds) {
             this.MaxCombinedClientSeeds = maxCombinedClientSeeds;
         }
@@ -35,8 +47,9 @@ export default class ProvablyFairConsumer {
         this.bets.push(...bets);
     }
 
-    updateClientSeedFromBets() {
-        const sortedBets = [...this.bets].sort((b1, b2) => b1.time - b2.time);
+    async updateClientSeedFromBets() {
+        const firstBets = await this.getFirstBets(this.gameData.roundId);
+        const sortedBets = this.sortByTime(firstBets);
         const chosenBets = sortedBets.slice(0, this.MaxCombinedClientSeeds);
 
         for (const bet of chosenBets) {
@@ -44,7 +57,20 @@ export default class ProvablyFairConsumer {
         }
     }
 
+    sortByTime(bets) {
+        return [...bets].sort((b1, b2) => b1.time - b2.time);
+    }
+
     updateClientSeeds(clientSeeds) {
         this.gameData.pf.clientSeeds = clientSeeds;
+    }
+
+    async getFirstBets(roundId) {
+        const firstPlayerBets = await this.betsRepository.find({ roundId }).sort({ time: 1 }).limit(this.MaxCombinedClientSeeds).exec();
+        const firstBotBets = this.tempBetsRepository
+            ? await this.tempBetsRepository.find({ roundId }).sort({ time: 1 }).limit(this.MaxCombinedClientSeeds).exec()
+            : [];
+
+        return firstPlayerBets.concat(firstBotBets);
     }
 }
