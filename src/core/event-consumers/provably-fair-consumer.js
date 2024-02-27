@@ -12,7 +12,7 @@ export default class ProvablyFairConsumer {
      * @param {mongoose.Model} tempBetsRepository
      */
 
-    constructor(gameData, maxCombinedClientSeeds, betsRepository, tempBetsRepository) {
+    constructor(gameData, betsRepository, tempBetsRepository, maxCombinedClientSeeds) {
         this.gameData = gameData;
         this.betsRepository = betsRepository;
         this.tempBetsRepository = tempBetsRepository;
