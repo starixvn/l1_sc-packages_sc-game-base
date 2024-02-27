@@ -49,10 +49,13 @@ export default class RoundQuery {
         const pfResult = await this.resultsRepository.findOne({ roundId: id }, { _id: false, time: false, _v: false }).lean().exec();
 
         return {
-            roundPFResult: {
-                ...(pfResult && { roundId: pfResult.roundId, serverSeedHash: pfResult.serverSeedHash }),
-                ...(round && { result: round.result, ...pfResult }),
-            },
+            roundPFResult: pfResult
+                ? {
+                      roundId: pfResult.roundId,
+                      serverSeedHash: pfResult.serverSeedHash,
+                      ...(round && { result: round.result, ...pfResult }),
+                  }
+                : null,
         };
     }
 }
