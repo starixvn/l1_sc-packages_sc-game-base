@@ -3,7 +3,6 @@ import GameData from "./../game-data";
 export default class ProvablyFairConsumer {
     MaxCombinedClientSeeds = 5;
     ClientSeedRange = { min: 0, max: 9999 };
-    bets = [];
 
     /**
      * @param {GameDefinition} definition
@@ -40,11 +39,6 @@ export default class ProvablyFairConsumer {
 
     reset() {
         this.gameData.pf = { clientSeeds: [], serverSeed: "" };
-        this.bets = [];
-    }
-
-    addBets(...bets) {
-        this.bets.push(...bets);
     }
 
     async updateClientSeedFromBets() {

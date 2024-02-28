@@ -215,8 +215,7 @@ export default class TableGameBot extends BaseBot {
             const bet = botBets.find((bet) => bet.id === validBot.id);
             const { bot, choice, amount, currentBet } = bet;
             bot.clientSeed = this.generateClientSeed();
-            const time = await this.insertOrUpdateBet(bot, choice, amount, currentBet);
-            this.provablyFairConsumer.addBets({ time, name: bot.name, clientSeed: bot.clientSeed });
+            await this.insertOrUpdateBet(bot, choice, amount, currentBet);
             
             this.totalTickets += 1;
             this.updateTotalBetsAndChips(choice, amount);
