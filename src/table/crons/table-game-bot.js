@@ -228,6 +228,7 @@ export default class TableGameBot extends BaseBot {
         if (this.gameData.remainingTime > this.definition.durations.lockingBet) {
             const currentBet = await this.tempBetsRepository.findOne({ uid: bot.id, roundId: this.gameData.roundId }).lean().exec();
             const totalBetAmount = this.getTotalBetAmount(currentBet);
+
             bot.clientSeed = this.generateClientSeed();
 
             if (totalBetAmount + amount <= this.gameData.gameConfigs.bot_maxbet) {
@@ -238,8 +239,7 @@ export default class TableGameBot extends BaseBot {
                 );
 
                 if (user) {
-                    const time = await this.insertOrUpdateBet(bot, choice, amount, currentBet);
-                    this.provablyFairConsumer.addBets({ time, name: bot.name, clientSeed: bot.clientSeed });
+                    await this.insertOrUpdateBet(bot, choice, amount, currentBet);
 
                     this.totalTickets += 1;
 

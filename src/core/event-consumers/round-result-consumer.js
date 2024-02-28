@@ -4,8 +4,8 @@ import { SeedHelper, ServerSeedHelper } from "../helpers";
 
 export default class RoundResultConsumer {
     /**
-     * @param {GameDefinition} dependencies.definition
-     * @param {GameData} dependencies.gameData
+     * @param {GameDefinition} definition
+     * @param {GameData} gameData
      * @param {mongoose.Model} roundsRepository
      * @param {mongoose.Model} resultsRepository
      */
@@ -62,6 +62,7 @@ export default class RoundResultConsumer {
         const serverSeed = ServerSeedHelper.generateServerSeed(randomMode);
         const serverSeedHash = SeedHelper.getSHA256Hash(serverSeed);
 
+        //TODO should call provably consumer
         this.gameData.pf = { ...this.gameData.pf, serverSeed, serverSeedHash };
 
         await this.createResultRecord(serverSeed, serverSeedHash);

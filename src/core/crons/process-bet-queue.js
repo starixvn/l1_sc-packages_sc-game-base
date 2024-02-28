@@ -189,8 +189,7 @@ export default class ProcessBetQueue {
             await this.insertBetLog(player, roundId, bet, rate);
         }
 
-        const time = await this.upsertBet(player, roundId, bet, rate);
-        this.provablyFairConsumer.addBets({time, name: player.profile.name, clientSeed: bet.clientSeed});
+        await this.upsertBet(player, roundId, bet, rate);
 
         if (this.isCountOnTotalBets(player)) {
             this.adjustTotalBets(player, bet, rate);
