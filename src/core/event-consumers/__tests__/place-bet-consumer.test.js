@@ -550,10 +550,10 @@ describe("PlaceBetConsumer", () => {
                 consumer.definition.provablyFair = undefined;
 
                 // Act
-                const actualResult = consumer.composeRequestParamsValidationCriteria({ ...payload, betChoice: undefined });
+                const actualResult = consumer.composeRequestParamsValidationCriteria({ ...payload, betChoice: "odd", amount: 1 });
 
                 // Assert
-                expect(actualResult[1].failure).toBeFalsy();
+                expect(actualResult.every((x) => x.failure === false)).toBeTruthy();
             });
         });
 
@@ -583,6 +583,46 @@ describe("PlaceBetConsumer", () => {
                     // Assert
                     expect(actualResult[1].failure).toBeTruthy();
                 });
+            });
+        });
+    });
+
+    describe("validateClientSeed", () => {
+        beforeEach(() => {
+            consumer.definition.provablyFair = true;
+        });
+
+        describe("when clientSeed is invalid", () => {
+            it("should return failure", () => {
+                //Arrange
+                const clientSeed = "99999";
+
+                // Act
+                const actualResult = consumer.validateClientSeed({ clientSeed });
+
+                // Assert
+                expect(actualResult[0].failure).toBeTruthy();
+            });
+
+            it("should return failure", () => {
+                //Arrange
+                const clientSeed = "1aa";
+
+                // Act
+                const actualResult = consumer.validateClientSeed(clientSeed);
+
+                // Assert
+                expect(actualResult[0].failure).toBeTruthy();
+            });
+
+            it("should return failure", () => {
+                //Arrange
+                const clientSeed = "aaa1";
+                // Act
+                const actualResult = consumer.validateClientSeed(clientSeed);
+
+                // Assert
+                expect(actualResult[0].failure).toBeTruthy();
             });
         });
     });
