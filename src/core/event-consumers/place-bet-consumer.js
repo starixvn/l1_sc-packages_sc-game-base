@@ -138,7 +138,7 @@ export default class PlaceBetConsumer {
 
         return [
             {
-                failure: this.definition.provablyFair && !verifySeed(clientSeed),
+                failure: !verifySeed(clientSeed),
                 notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
             },
         ];
@@ -146,7 +146,7 @@ export default class PlaceBetConsumer {
 
     composeRequestParamsValidationCriteria(request) {
         const betAmountValidationCriteria = this.validateBetRequestParams(request) || [];
-        const clientSeedCriteria = this.validateClientSeed(request) || [];
+        const clientSeedCriteria = this.definition.provablyFair ? this.validateClientSeed(request) : [];
 
         return betAmountValidationCriteria.concat(clientSeedCriteria);
     }
