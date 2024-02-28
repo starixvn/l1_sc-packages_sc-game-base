@@ -30,17 +30,8 @@ export default class HistoryQuery {
         const filter = { uid: player.UID, paid: true };
         const numberOfSkippedBets = (page - 1) * pageSize;
         const total = await this.betsRepository.countDocuments(filter).exec();
-        const betProjection = {
-            _id: false,
-            uid: false,
-            siteId: false,
-            playerId: false,
-            __v: false,
-            __archive: false,
-            currency: false,
-            operatorId: false,
-            paid: false,
-        };
+
+        const betProjection = this.getBetProjection();
 
         const bets = await this.betsRepository
             .find(filter, betProjection, { sort: { _id: -1 }, skip: numberOfSkippedBets, limit: pageSize })
@@ -70,26 +61,33 @@ export default class HistoryQuery {
 
     getBetLogDetails(player, roundId) {
         return this.betLogsRepository
-            .find(
-                { roundId, uid: player.UID },
-                {
-                    _id: false,
-                    __v: false,
-                    __archive: false,
-                    uid: false,
-                    name: false,
-                    roundId: false,
-                    currency: false,
-                    siteId: false,
-                    playerId: false,
-                    operatorId: false,
-                    rate: false,
-                    clientSentTime: false,
-                    receivedTime: false,
-                },
-                { sort: { _id: -1 } }
-            )
+            .find({ roundId, uid: player.UID }, this.getBetDetailsProjection(), { sort: { _id: -1 } })
             .lean()
             .exec();
+    }
+
+    getBetDetailsProjection() {
+        return {
+            ...this.getBetProjection(),
+            name: false,
+            roundId: false,
+            rate: false,
+            clientSentTime: false,
+            receivedTime: false,
+        };
+    }
+
+    getBetProjection() {
+        return {
+            _id: false,
+            uid: false,
+            siteId: false,
+            playerId: false,
+            __v: false,
+            __archive: false,
+            currency: false,
+            operatorId: false,
+            paid: false,
+        };
     }
 }
