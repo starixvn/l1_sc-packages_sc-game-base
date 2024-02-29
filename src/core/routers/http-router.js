@@ -35,14 +35,18 @@ export default class HttpRouter {
     }
 
     async verifySession(req, res, callback) {
-        const { session, username } = req.body;
-        const params = { session, username, browserUserAgent: req.headers["user-agent"] };
-        const signInGameResult = await userServiceSignInGame(this.appConfigs.userServiceSettings.url, params);
+        try {
+            const { session, username } = req.body;
+            const params = { session, username, browserUserAgent: req.headers["user-agent"] };
+            const signInGameResult = await userServiceSignInGame(this.appConfigs.userServiceSettings.url, params);
 
-        if (signInGameResult.statusCode) {
-            res.sendStatus(401);
-        } else {
-            callback && callback(req, res, signInGameResult);
+            if (signInGameResult.statusCode) {
+                res.sendStatus(401);
+            } else {
+                callback && callback(req, res, signInGameResult);
+            }
+        } catch (err) {
+            res.sendStatus(500);
         }
     }
 
