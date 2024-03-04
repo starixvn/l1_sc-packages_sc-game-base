@@ -31,7 +31,9 @@ export default class RoundResultConsumer {
     }
 
     async getFinalSeeds(roundId, pf) {
-        if (!this.definition.provablyFair) return {};
+        if (!this.definition.provablyFair) {
+            return {};
+        }
 
         const { serverSeed, serverSeedHash } = pf;
         const finalSeeds = this.generateFinalSeeds(pf);
