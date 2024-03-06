@@ -48,7 +48,7 @@
         "sc-common": "1.8.1",
         "sc-instrument": "1.0.0",
         "sc-instrument-helper": "1.0.0",
-        "sc-pf-client-seed": "^1.0.1-beta.0",
+        "sc-pf-client-seed": "^1.0.0",
         "socket.io": "^4.5.4",
         "socket.io-msgpack-parser": "^3.0.1",
         "socket.io-prom-metrics": "^1.0.3"

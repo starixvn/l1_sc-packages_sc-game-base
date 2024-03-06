@@ -2649,14 +2649,6 @@
     expect "^29.0.0"
     pretty-format "^29.0.0"
 
-"@types/jest@^29.5.11":
-  version "29.5.12"
-  resolved "http://npm.lumigame.com/@types/jest/-/jest-29.5.12.tgz#7f7dc6eb4cf246d2474ed78744b05d06ce025544"
-  integrity sha512-eDC8bTvT/QhYdxJAulQikueigY5AsdBRH2yDKW3yveW7svY3+DzN84/2NUgkw10RTiJbWqZrTtoGVdYlvFJdLw==
-  dependencies:
-    expect "^29.0.0"
-    pretty-format "^29.0.0"
-
 "@types/keyv@^3.1.4":
   version "3.1.4"
   resolved "http://npm.lumigame.com/@types/keyv/-/keyv-3.1.4.tgz#3ccdb1c6751b0c7e52300bcdacd5bcbf8faa75b6"
@@ -8921,12 +8913,11 @@ sc-instrument@1.0.0:
     opentelemetry-instrumentation-socket.io "0.34.0"
     socket.io "4.6.1"
 
-sc-pf-client-seed@^1.0.1-beta.0:
-  version "1.0.1-beta.0"
-  resolved "http://npm.lumigame.com/sc-pf-client-seed/-/sc-pf-client-seed-1.0.1-beta.0.tgz#31fbba5f6f3742cf04e26f73621fb3758f951e88"
-  integrity sha512-LzkOATrCNX6l9KJKRcDRynDdoHP8McppYS7TR10RHn6ewUhM8iwIYxEQwpeYsQQw7l19R1l93uqq1Zez5V/nFg==
+sc-pf-client-seed@^1.0.0:
+  version "1.0.0"
+  resolved "http://npm.lumigame.com/sc-pf-client-seed/-/sc-pf-client-seed-1.0.0.tgz#4f30e0b4068c8c6db2d668d6ae3980a486926f4a"
+  integrity sha512-/ocWCV1ts+nu5NiwkgazJqiLZbEM5H9twqzYeUS1YQPeuyx1zAlFo1Yk4SRityvqIo5rtidOgMkcqf4a1cMU6A==
   dependencies:
-    "@types/jest" "^29.5.11"
     chance "^1.1.11"
 
 sc-semantic-release@^1.2.0:
