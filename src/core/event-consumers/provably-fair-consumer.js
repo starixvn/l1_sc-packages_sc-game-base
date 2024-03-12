@@ -1,9 +1,6 @@
 import GameData from "./../game-data";
 
 export default class ProvablyFairConsumer {
-    MaxCombinedClientSeeds = 5;
-    ClientSeedRange = { min: 0, max: 9999 };
-
     /**
      * @param {GameDefinition} definition
      * @param {GameData} gameData
@@ -11,22 +8,10 @@ export default class ProvablyFairConsumer {
      * @param {mongoose.Model} tempBetsRepository
      */
 
-    constructor(gameData, maxCombinedClientSeeds, betsRepository, tempBetsRepository) {
+    constructor(gameData, betsRepository, tempBetsRepository) {
         this.gameData = gameData;
         this.betsRepository = betsRepository;
         this.tempBetsRepository = tempBetsRepository;
-
-        if (maxCombinedClientSeeds) {
-            this.MaxCombinedClientSeeds = maxCombinedClientSeeds;
-        }
-    }
-
-    addClientSeed({ name, clientSeed }) {
-        const { clientSeeds } = this.gameData.pf;
-
-        if (clientSeeds.length < this.MaxCombinedClientSeeds) {
-            clientSeeds.push({ name, clientSeed });
-        }
     }
 
     setServerSeed(serverSeed) {
@@ -37,43 +22,55 @@ export default class ProvablyFairConsumer {
         this.gameData.pf.serverSeedHash = serverSeedHash;
     }
 
+    setClientSeeds(clientSeeds) {
+        this.gameData.pf.clientSeeds = clientSeeds;
+    }
+
+    setClientSeedsFromBets(bets) {
+        const clientSeeds = bets.map((bet) => {
+            return { name: bet.name, clientSeed: bet.clientSeed };
+        });
+
+        this.setClientSeeds(clientSeeds);
+    }
+
     reset() {
         this.gameData.pf = { clientSeeds: [], serverSeed: "" };
     }
 
-    async updateClientSeedFromBets() {
-        const firstBets = await this.getFirstBets(this.gameData.roundId);
-        const sortedBets = this.sortByTime(firstBets);
-        const chosenBets = sortedBets.slice(0, this.MaxCombinedClientSeeds);
+    async updateClientSeedsFromBets() {
+        const allBets = await this.getBetsFromDatabase();
+        const sortedBets = this.sortByTime(allBets);
+        const chosenBets = this.gameData.pfConfig.limitClientSeeds
+            ? sortedBets.slice(0, this.gameData.pfConfig.maxCombinedClientSeeds)
+            : sortedBets;
 
-        for (const bet of chosenBets) {
-            this.addClientSeed({ name: bet.name, clientSeed: bet.clientSeed });
-        }
+        this.setClientSeedsFromBets(chosenBets);
     }
 
     sortByTime(bets) {
         return [...bets].sort((b1, b2) => b1.time - b2.time);
     }
 
-    updateClientSeeds(clientSeeds) {
-        this.gameData.pf.clientSeeds = clientSeeds;
+    getBetFilter() {
+        return { roundId: this.gameData.roundId };
     }
 
-    async getFirstBets(roundId) {
-        const betFilter = { roundId };
+    async getBetsFromDatabase() {
+        const betFilter = this.getBetFilter();
         const betProjection = {
             time: true,
             clientSeed: true,
             name: true,
         };
-        const options = { sort: { time: 1 }, limit: this.MaxCombinedClientSeeds };
+        const options = this.gameData.pfConfig.limitClientSeeds
+            ? { sort: { time: 1 }, limit: this.gameData.pfConfig.maxCombinedClientSeeds }
+            : { sort: { time: 1 } };
 
-        const firstPlayerBets = await this.betsRepository.find(betFilter, betProjection, options).lean().exec();
+        const playerBets = await this.betsRepository.find(betFilter, betProjection, options).lean().exec();
 
-        const firstBotBets = this.tempBetsRepository
-            ? await this.tempBetsRepository.find(betFilter, betProjection, options).lean().exec()
-            : [];
+        const botBets = this.tempBetsRepository ? await this.tempBetsRepository.find(betFilter, betProjection, options).lean().exec() : [];
 
-        return firstPlayerBets.concat(firstBotBets);
+        return playerBets.concat(botBets);
     }
 }

@@ -196,7 +196,7 @@ export default class ProcessBetQueue {
         }
 
         await this.upsertBet(player, roundId, bet, rate);
-
+                
         if (this.isCountOnTotalBets(player)) {
             this.adjustTotalBets(player, bet, rate);
         }

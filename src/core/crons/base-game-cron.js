@@ -25,6 +25,8 @@ export default class BaseGameCron {
      * @param {mongoose.Model} dependencies.resultsRepository
      * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
      * @param {RoundIdConsumer} dependencies.roundIdConsumer
+     * @param {ProvablyFairConsumer} dependencies.provablyFairConsumer
+     * @param {UnsettledRoundConsumer} dependencies.unsettledRoundConsumer
      */
     constructor({
         definition,
@@ -120,7 +122,7 @@ export default class BaseGameCron {
         }
 
         if (this.gameData.remainingTime === durations.mergeClientSeeds && this.isHashedResult()) {
-            await this.provablyFairConsumer.updateClientSeedFromBets();
+            await this.provablyFairConsumer.updateClientSeedsFromBets();
             await this.roundResultConsumer.generateResult();
         }
 

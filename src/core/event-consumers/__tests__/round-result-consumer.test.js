@@ -2,6 +2,7 @@ import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import Chance from "chance";
 import RoundResultConsumer from "../round-result-consumer";
+import ProvablyFairConsumer from "../provably-fair-consumer";
 import GameData from "../../game-data";
 import { RoundResultPublisher } from "../../event-publishers";
 import Helper from "../../helpers";
@@ -20,6 +21,8 @@ jest.mock("../../helpers", () => {
 });
 
 const roundResultPublisher = stub(RoundResultPublisher);
+
+const provablyFairConsumer = stub(ProvablyFairConsumer);
 
 const resultsRepository = stubMongoose(mongoose.Model);
 
@@ -47,7 +50,7 @@ describe("roundResultConsumer", () => {
         gameData = new GameData();
         gameData.roundId = roundId;
         gameData.pf = pf;
-        consumer = new RoundResultConsumer(gameData, definition, roundResultPublisher, resultsRepository);
+        consumer = new RoundResultConsumer(gameData, definition, roundResultPublisher, resultsRepository, provablyFairConsumer);
     });
 
     afterEach(() => {
@@ -56,7 +59,7 @@ describe("roundResultConsumer", () => {
 
     describe("generateResult", () => {
         beforeEach(() => {
-            consumer.getFinalSeeds = jest.fn().mockReturnValueOnce(pf);
+            consumer.generateAndUpdatePfWithFinalSeeds = jest.fn();
         });
 
         describe("when control this round result from admin", () => {
@@ -80,12 +83,12 @@ describe("roundResultConsumer", () => {
                 definition.generateResult.mockReturnValueOnce(result);
             });
 
-            it("should call getFinalSeeds", async () => {
+            it("should call generateAndUpdatePfWithFinalSeeds", async () => {
                 // Act
                 await consumer.generateResult();
 
                 // Assert
-                expect(consumer.getFinalSeeds).toBeCalledWith(roundId, pf);
+                expect(consumer.generateAndUpdatePfWithFinalSeeds).toHaveBeenCalled();
             });
 
             it("should call definition.generateResult", async () => {
@@ -98,7 +101,7 @@ describe("roundResultConsumer", () => {
         });
     });
 
-    describe("generateFinalSeeds", () => {
+    describe("generateAndUpdatePfWithFinalSeeds", () => {
         const result = chance.floating();
         const finalSeeds = { clientSeeds: "clientSeeds", mergeClientSeed: "megedClient", mergeSeed: "merged", finalHash: "aaaa" };
 
@@ -111,20 +114,11 @@ describe("roundResultConsumer", () => {
             beforeEach(() => {
                 definition.provablyFair = false;
             });
-
-            it("always return NOT NULL", async () => {
-                // Act
-                const result = await consumer.getFinalSeeds(roundId, pf);
-
-                // Assert
-                expect(result).not.toBeNull();
-            });
-
             it("should NOT call generateFinalSeeds", async () => {
                 // Arrange
 
                 // Act
-                await consumer.getFinalSeeds(roundId, pf);
+                await consumer.generateAndUpdatePfWithFinalSeeds();
 
                 // Assert
                 expect(consumer.generateFinalSeeds).not.toBeCalled();
@@ -138,15 +132,15 @@ describe("roundResultConsumer", () => {
 
             it("should call generateFinalSeeds", async () => {
                 // Act
-                await consumer.getFinalSeeds(roundId, pf);
+                await consumer.generateAndUpdatePfWithFinalSeeds();
 
                 // Assert
-                expect(consumer.generateFinalSeeds).toBeCalledWith(pf);
+                expect(consumer.generateFinalSeeds).toHaveBeenCalled();
             });
 
             it("should update resultsRepository", async () => {
                 // Act
-                await consumer.getFinalSeeds(roundId, pf);
+                await consumer.generateAndUpdatePfWithFinalSeeds();
 
                 // Assert
                 expect(resultsRepository.findOneAndUpdate).toBeCalledWith({ roundId }, finalSeeds);
@@ -154,18 +148,10 @@ describe("roundResultConsumer", () => {
 
             it("should update mergeSeed in game data", async () => {
                 // Act
-                await consumer.getFinalSeeds(roundId, pf);
+                await consumer.generateAndUpdatePfWithFinalSeeds();
 
                 // Assert
                 expect(gameData.pf.mergeSeed).toBe(finalSeeds.mergeSeed);
-            });
-
-            it("should return correct finalSeeds ", async () => {
-                // Act
-                const result = await consumer.getFinalSeeds(roundId, pf);
-
-                // Assert
-                expect(result).toBe(finalSeeds);
             });
         });
     });

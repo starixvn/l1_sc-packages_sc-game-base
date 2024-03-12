@@ -8,50 +8,64 @@ export default class RoundResultConsumer {
      * @param {GameData} gameData
      * @param {mongoose.Model} roundsRepository
      * @param {mongoose.Model} resultsRepository
+     * @param {ProvablyFairConsumer} dependencies.provablyFairConsumer
      */
 
-    constructor(gameData, definition, roundResultPublisher, resultsRepository) {
+    constructor(gameData, definition, roundResultPublisher, resultsRepository, provablyFairConsumer) {
         this.gameData = gameData;
         this.definition = definition;
         this.roundResultPublisher = roundResultPublisher;
         this.resultsRepository = resultsRepository;
+        this.provablyFairConsumer = provablyFairConsumer;
     }
 
     async generateResult() {
-        const { roundId, pf, settlementResultFromAdmin: resultFromAdmin } = this.gameData;
+        if (!this.generateResultFromAdmin()) {
+            await this.generateAndUpdatePfWithFinalSeeds();
+
+            const data = this.getDataForGenerateResult();
+
+            this.gameData.result = this.definition.generateResult(data);
+        }
+    }
+
+    generateResultFromAdmin() {
+        const { roundId, settlementResultFromAdmin: resultFromAdmin } = this.gameData;
 
         if (roundId === resultFromAdmin.roundId) {
             this.gameData.result = resultFromAdmin.result;
+            return true;
+        }
+
+        return false;
+    }
+
+    getDataForGenerateResult() {
+        return this.gameData.pf.finalHash;
+    }
+
+    getResultFilter() {
+        return { roundId: this.gameData.roundId };
+    }
+
+    async generateAndUpdatePfWithFinalSeeds() {
+        if (!this.definition.provablyFair) {
             return;
         }
 
-        const finalSeeds = await this.getFinalSeeds(roundId, pf);
+        const resultFilter = this.getResultFilter();
+        const { serverSeed, serverSeedHash } = this.gameData.pf;
+        const finalSeeds = this.generateFinalSeeds();
 
-        this.gameData.result = this.definition.generateResult(finalSeeds.finalHash);
-    }
-
-    async getFinalSeeds(roundId, pf) {
-        if (!this.definition.provablyFair) {
-            return {};
-        }
-
-        const { serverSeed, serverSeedHash } = pf;
-        const finalSeeds = this.generateFinalSeeds(pf);
-
-        await this.resultsRepository.findOneAndUpdate(
-            { roundId },
-            {
-                ...finalSeeds,
-            }
-        );
+        await this.resultsRepository.findOneAndUpdate(resultFilter, {
+            ...finalSeeds,
+        });
 
         this.gameData.pf = { ...finalSeeds, serverSeed, serverSeedHash };
-
-        return finalSeeds;
     }
 
-    generateFinalSeeds(pf) {
-        const { serverSeed, clientSeeds } = pf;
+    generateFinalSeeds() {
+        const { serverSeed, clientSeeds } = this.gameData.pf;
         const mergeClientSeed = SeedHelper.getMergeClientSeed(clientSeeds);
         const mergeSeed = serverSeed + mergeClientSeed;
         const finalHash = SeedHelper.getSHA512Hash(mergeSeed);
@@ -64,8 +78,8 @@ export default class RoundResultConsumer {
         const serverSeed = ServerSeedHelper.generateServerSeed(randomMode);
         const serverSeedHash = SeedHelper.getSHA256Hash(serverSeed);
 
-        //TODO should call provably consumer
-        this.gameData.pf = { ...this.gameData.pf, serverSeed, serverSeedHash };
+        this.provablyFairConsumer.setServerSeed(serverSeed);
+        this.provablyFairConsumer.setServerSeedHash(serverSeedHash);
 
         await this.createResultRecord(serverSeed, serverSeedHash);
 
