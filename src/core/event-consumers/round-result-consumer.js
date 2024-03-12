@@ -74,8 +74,7 @@ export default class RoundResultConsumer {
     }
 
     async generateServerSeedAndPublishHash() {
-        const { randomMode } = this.gameData.gameConfigs;
-        const serverSeed = ServerSeedHelper.generateServerSeed(randomMode);
+        const serverSeed = this.generateServerSeed();
         const serverSeedHash = SeedHelper.getSHA256Hash(serverSeed);
 
         this.provablyFairConsumer.setServerSeed(serverSeed);
@@ -84,6 +83,12 @@ export default class RoundResultConsumer {
         await this.createResultRecord(serverSeed, serverSeedHash);
 
         this.roundResultPublisher.publishServerSeedHash();
+    }
+
+    generateServerSeed() {
+        const { randomMode } = this.gameData.gameConfigs;
+
+        return ServerSeedHelper.generateServerSeed(randomMode);
     }
 
     async createResultRecord(serverSeed, serverSeedHash) {
