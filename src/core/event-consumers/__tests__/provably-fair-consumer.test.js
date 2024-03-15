@@ -33,10 +33,8 @@ describe("ProvablyFairConsumer", () => {
         });
         describe("when not limit client seeds", () => {
             beforeEach(() => {
-                gameData.pfConfig = {
-                    limitClientSeeds: false,
-                    maxCombinedClientSeeds: 0,
-                };
+                consumer.limitClientSeeds = false;
+                consumer.maxCombinedClientSeeds = 0;
             });
             it("should set correct clientSeeds", async () => {
                 // Arrange
@@ -56,10 +54,9 @@ describe("ProvablyFairConsumer", () => {
 
         describe("when limit client seeds", () => {
             beforeEach(() => {
-                gameData.pfConfig = {
-                    limitClientSeeds: true,
-                    maxCombinedClientSeeds: 1,
-                };
+                consumer.limitClientSeeds = true;
+                consumer.maxCombinedClientSeeds = 1;
+
             });
             it("should set correct clientSeeds", async () => {
                 // Arrange

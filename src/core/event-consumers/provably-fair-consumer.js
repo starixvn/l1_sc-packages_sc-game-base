@@ -12,6 +12,8 @@ export default class ProvablyFairConsumer {
         this.gameData = gameData;
         this.betsRepository = betsRepository;
         this.tempBetsRepository = tempBetsRepository;
+        this.maxCombinedClientSeeds = 0;
+        this.limitClientSeeds = false;
     }
 
     setServerSeed(serverSeed) {
@@ -41,8 +43,8 @@ export default class ProvablyFairConsumer {
     async updateClientSeedsFromBets() {
         const allBets = await this.getBetsFromDatabase();
         const sortedBets = this.sortByTime(allBets);
-        const chosenBets = this.gameData.pfConfig.limitClientSeeds
-            ? sortedBets.slice(0, this.gameData.pfConfig.maxCombinedClientSeeds)
+        const chosenBets = this.limitClientSeeds
+            ? sortedBets.slice(0, this.maxCombinedClientSeeds)
             : sortedBets;
 
         this.setClientSeedsFromBets(chosenBets);
@@ -63,8 +65,8 @@ export default class ProvablyFairConsumer {
             clientSeed: true,
             name: true,
         };
-        const options = this.gameData.pfConfig.limitClientSeeds
-            ? { sort: { time: 1 }, limit: this.gameData.pfConfig.maxCombinedClientSeeds }
+        const options = this.limitClientSeeds
+            ? { sort: { time: 1 }, limit: this.maxCombinedClientSeeds }
             : { sort: { time: 1 } };
 
         const playerBets = await this.betsRepository.find(betFilter, betProjection, options).lean().exec();
