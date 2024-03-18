@@ -29,6 +29,7 @@ describe("ProvablyFairConsumer", () => {
                 { name: "Player1", clientSeed: "123", time: new Date("2024-03-12T17:14:00") },
                 { name: "Player2", clientSeed: "456", time: new Date("2024-03-12T17:15:00") },
                 { name: "Player3", clientSeed: "789", time: new Date("2024-03-12T17:13:00") },
+                { name: "Player4", clientSeed: "789", time: new Date("2024-03-12T17:14:00") },
             ]);
         });
         describe("when not limit client seeds", () => {
@@ -41,6 +42,7 @@ describe("ProvablyFairConsumer", () => {
                 const expectedResult = [
                     { name: "Player3", clientSeed: "789" },
                     { name: "Player1", clientSeed: "123" },
+                    { name: "Player4", clientSeed: "789" },
                     { name: "Player2", clientSeed: "456" },
                 ];
 
