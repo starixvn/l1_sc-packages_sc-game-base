@@ -108,7 +108,7 @@ export default class BaseGameCron {
             this.appConfigs.enabledBoostedOdds && (await this.updatePromotionOddsAndNotify());
         }
 
-        if (this.gameData.remainingTime === durations.placingBets && this.isHashedResult()) {
+        if (remainingTime === durations.placingBets && this.isHashedResult()) {
             await this.roundResultConsumer.generateServerSeedAndPublishHash(this.gameData.lastResultRecord);
             this.gameData.settlementResultFromAdmin = {};
         }
@@ -121,12 +121,12 @@ export default class BaseGameCron {
             this.gameStatusPublisher.publishEndPlacingBetStatus();
         }
 
-        if (this.gameData.remainingTime === durations.mergeClientSeeds && this.isHashedResult()) {
+        if (remainingTime === durations.mergeClientSeeds && this.isHashedResult()) {
             await this.provablyFairConsumer.updateClientSeedsFromBets();
             await this.roundResultConsumer.generateResult();
         }
 
-        if (this.gameData.remainingTime < 0) {
+        if (remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
 
             await this.settleGameRoundConsumer.settleRound(this.gameData);
