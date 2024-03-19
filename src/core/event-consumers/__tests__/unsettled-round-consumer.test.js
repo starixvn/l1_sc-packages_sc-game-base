@@ -2,6 +2,7 @@ import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
+import GameManagementApiClientFactory from "../../game-management-api";
 import ProvablyFairConsumer from "../provably-fair-consumer";
 import RoundResultConsumer from "../round-result-consumer";
 import SettleGameRoundConsumer from "../settle-game-round-consumer";
@@ -18,9 +19,10 @@ const tempBetsRepository = stubMongoose(mongoose.Model);
 
 /** @type {mongoose.Model}*/
 const betLogsRepository = stubMongoose(mongoose.Model);
-const settleGameRoundConsumer = stub(SettleGameRoundConsumer);
+const settleGameRoundConsumer = stub(SettleGameRoundConsumer); 
 const roundResultConsumer = stub(RoundResultConsumer);
 const provablyFairConsumer = stub(ProvablyFairConsumer);
+const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
 beforeEach(() => {
     gameData = new GameData(3);
@@ -40,6 +42,7 @@ function initConsumer() {
         settleGameRoundConsumer,
         roundResultConsumer,
         provablyFairConsumer,
+        gameManagementApiClientFactory,
     });
 }
 
@@ -142,13 +145,14 @@ describe("unsettledRoundConsumer", () => {
                 gameData.lastResultRecord = { serverSeed: "seed", finalHash: "hash" };
 
                 const unsettledRoundConsumer = initConsumer();
-                
+                unsettledRoundConsumer.gameManagementApiClient.gameConfigs.getGameConfigs.mockReturnValueOnce({});
+
                 // Act
                 await unsettledRoundConsumer.proceed();
 
                 // Assert
                 expect(settleGameRoundConsumer.settleRound).toHaveBeenCalled();
-            })
+            });
         });
     });
 });

@@ -1,3 +1,5 @@
+import { getOrDefault } from "../game-management-api";
+
 export default class UnsettledRoundConsumer {
     constructor({
         gameData,
@@ -8,6 +10,7 @@ export default class UnsettledRoundConsumer {
         settleGameRoundConsumer,
         roundResultConsumer,
         provablyFairConsumer,
+        gameManagementApiClientFactory,
     }) {
         this.gameData = gameData;
         this.definition = definition;
@@ -17,10 +20,16 @@ export default class UnsettledRoundConsumer {
         this.settleGameRoundConsumer = settleGameRoundConsumer;
         this.roundResultConsumer = roundResultConsumer;
         this.provablyFairConsumer = provablyFairConsumer;
+        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
     }
 
     async proceed() {
         if (this.gameData.lastResultRecord) {
+            this.gameData.gameConfigs = await getOrDefault(
+                this.gameManagementApiClient.gameConfigs.getGameConfigs(this.definition.configName),
+                this.gameData.gameConfigs
+            );
+
             const unsettledBets = await this.getUnsettledBets();
             await this.generateResult(unsettledBets);
             await this.proceedUnsettledBets(unsettledBets);
