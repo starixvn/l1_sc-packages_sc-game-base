@@ -26,7 +26,14 @@ describe("table game bot test", () => {
     const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
     const provablyFairConsumer = stub(ProvablyFairConsumer);
 
-    const tableBot = new TableGameBot(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository,provablyFairConsumer);
+    const tableBot = new TableGameBot(
+        definition,
+        gameData,
+        publisher,
+        gameManagementApiClientFactory,
+        tempBetsRepository,
+        provablyFairConsumer
+    );
 
     afterEach(() => {
         jest.clearAllMocks();
@@ -66,19 +73,38 @@ describe("table game bot test", () => {
 
     describe("processDisabledBots", () => {
         describe("when exist disabled bot", () => {
-            it("should remove bot", async () => {
-                // arrange
-                const disabledBots = [{ id: 1, name: "bot1", type: true }];
-                tableBot.gameManagementApiClient.users.getDisableBots.mockReturnValueOnce({ isSuccessful: true, data: disabledBots });
+            describe("when disabled bot is in room", () => {
+                it("should remove bot", async () => {
+                    // Arrange
+                    const disabledBots = [{ id: 1, name: "bot1", type: true }];
+                    tableBot.gameManagementApiClient.users.getDisableBots.mockReturnValueOnce({ isSuccessful: true, data: disabledBots });
 
-                spyOn(tableBot, "removeBot");
-                tableBot.botsInRoom[1] = { id: 1, name: "bot1", type: true };
+                    spyOn(tableBot, "removeBot");
+                    tableBot.botsInRoom[1] = { id: 1, name: "bot1", type: true };
 
-                // act
-                await tableBot.processDisabledBots();
+                    // Act
+                    await tableBot.processDisabledBots();
 
-                // assert
-                expect(tableBot.removeBot).toHaveBeenCalledWith(1);
+                    // Assert
+                    expect(tableBot.removeBot).toHaveBeenCalledWith(1);
+                });
+            });
+
+            describe("when disabled bot is NOT in room", () => {
+                it("should NOT remove bot", async () => {
+                    // arrange
+                    const disabledBots = [{ id: 2, name: "bot1", type: true }];
+                    tableBot.gameManagementApiClient.users.getDisableBots.mockReturnValueOnce({ isSuccessful: true, data: disabledBots });
+
+                    spyOn(tableBot, "removeBot");
+                    tableBot.botsInRoom[1] = { id: 1, name: "bot1", type: true };
+
+                    // act
+                    await tableBot.processDisabledBots();
+
+                    // assert
+                    expect(tableBot.removeBot).not.toHaveBeenCalledWith(2);
+                });
             });
         });
     });

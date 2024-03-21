@@ -17,7 +17,7 @@ export default class TableGameBot extends BaseBot {
      * @param {BaseEventPublisher} publisher
      * @param {mongoose.Model} tempBetsRepository
      */
-    constructor(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository,provablyFairConsumer) {
+    constructor(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository, provablyFairConsumer) {
         super(definition, gameData, gameManagementApiClientFactory);
 
         this.publisher = publisher;
@@ -38,9 +38,10 @@ export default class TableGameBot extends BaseBot {
 
     async processDisabledBots() {
         const disabledBots = await getOrDefault(this.gameManagementApiClient.users.getDisableBots(), []);
+        const inRoomDisabledBots = disabledBots.filter((bot) => this.botsInRoom[bot.id]);
 
-        if (disabledBots.length > 0) {
-            await this.removeBots(disabledBots.map((bot) => bot.id));
+        if (inRoomDisabledBots.length > 0) {
+            await this.removeBots(inRoomDisabledBots.map((bot) => bot.id));
         }
     }
 
@@ -216,7 +217,7 @@ export default class TableGameBot extends BaseBot {
             const { bot, choice, amount, currentBet } = bet;
             bot.clientSeed = this.generateClientSeed();
             await this.insertOrUpdateBet(bot, choice, amount, currentBet);
-            
+
             this.totalTickets += 1;
             this.updateTotalBetsAndChips(choice, amount);
             this.updateBotInRoomData(bot, choice, amount, validBot.red);
