@@ -127,25 +127,4 @@ describe("table settle game round consumer test", () => {
             });
         });
     });
-
-    describe("collectRoundResult", () => {
-        it("should calls super", () => {
-            // arrange
-            const result = { red1: true, red2: false, red3: true, red4: false };
-            const settlementResult = { odd: false, even: true };
-            const roundId = 1;
-            const roundResult = {
-                result,
-                settlementResult,
-                roundId,
-            };
-            spyOn(SettleGameRoundConsumer.prototype, "collectRoundResult").and.returnValue(roundResult);
-
-            // act
-            consumer.collectRoundResult(result, settlementResult, roundId);
-
-            // assert
-            expect(SettleGameRoundConsumer.prototype.collectRoundResult).toHaveBeenCalledWith(result, settlementResult, roundId);
-        });
-    });
 });

@@ -74,12 +74,4 @@ export default class TableSettleGameRoundConsumer extends SettleGameRoundConsume
 
         super.captureBetResult(uid, betResult);
     }
-
-    collectRoundResult(result, settlementResult, roundId) {
-        const roundResult = super.collectRoundResult(result, settlementResult, roundId);
-
-        roundResult.winningPlayers = this.gameData.winningPlayers;
-
-        return roundResult;
-    }
 }
