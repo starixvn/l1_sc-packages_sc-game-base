@@ -1,8 +1,8 @@
 import { helpers } from "sc-common";
+import { verifySeed } from "sc-pf-client-seed";
 import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import { verifySeed } from "sc-pf-client-seed";
 
 export default class PlaceBetConsumer {
     DisplayMode = {
@@ -190,7 +190,7 @@ export default class PlaceBetConsumer {
                 system: player.session.system,
                 betTracks: {},
                 betQueue: [],
-
+                clientSeed: payload.clientSeed,
                 operatorId: player.session.operatorId,
             };
 

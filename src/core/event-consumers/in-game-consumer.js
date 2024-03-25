@@ -1,8 +1,8 @@
+import GameManagementApiClientFactory, { getOrDefault } from "../game-management-api";
 import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import { RoundQuery } from "./../query-apis";
-import GameManagementApiClientFactory, { getOrDefault } from "../game-management-api";
 
 export default class InGameConsumer {
     /**
@@ -42,7 +42,7 @@ export default class InGameConsumer {
         const rate = exchangeRates.code[session.currencyCode] * session.multiplier;
         const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === session.currencyGroupId);
         const gameConfigs = { ...settings, odds, originalOdds, enableFreeBet, boostedChoices };
-        const { ownBets: ownBets } = this.gameData.ingame[realPlayer.profile.name] || { ownBets: {} };
+        const { ownBets, clientSeed } = this.gameData.ingame[realPlayer.profile.name] || { ownBets: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
 
         return {
@@ -53,6 +53,7 @@ export default class InGameConsumer {
             totalBets,
             user: { ...user, rate },
             resultHash: this.getResultHash(),
+            clientSeed,
         };
     }
 
