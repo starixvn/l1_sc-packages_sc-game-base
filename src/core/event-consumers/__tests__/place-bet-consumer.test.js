@@ -609,7 +609,7 @@ describe("PlaceBetConsumer", () => {
                 const clientSeed = "1aa";
 
                 // Act
-                const actualResult = consumer.validateClientSeed(clientSeed);
+                const actualResult = consumer.validateClientSeed({ clientSeed });
 
                 // Assert
                 expect(actualResult[0].failure).toBeTruthy();
@@ -619,10 +619,74 @@ describe("PlaceBetConsumer", () => {
                 //Arrange
                 const clientSeed = "aaa1";
                 // Act
-                const actualResult = consumer.validateClientSeed(clientSeed);
+                const actualResult = consumer.validateClientSeed({ clientSeed });
 
                 // Assert
                 expect(actualResult[0].failure).toBeTruthy();
+            });
+
+            it("should return failure", () => {
+                //Arrange
+                const clientSeed = "0a";
+                // Act
+                const actualResult = consumer.validateClientSeed({ clientSeed });
+
+                // Assert
+                expect(actualResult[0].failure).toBeTruthy();
+            });
+
+            it("should return failure", () => {
+                //Arrange
+                const clientSeed = "-1";
+                // Act
+                const actualResult = consumer.validateClientSeed({ clientSeed });
+
+                // Assert
+                expect(actualResult[0].failure).toBeTruthy();
+            });
+        });
+
+        describe("when clientSeed is valid", () => {
+            it("should NOT return failure", () => {
+                //Arrange
+                const clientSeed = "9999";
+
+                // Act
+                const actualResult = consumer.validateClientSeed({ clientSeed });
+
+                // Assert
+                expect(actualResult[0].failure).toBe(false);
+            });
+
+            it("should NOT return failure", () => {
+                //Arrange
+                const clientSeed = "11";
+
+                // Act
+                const actualResult = consumer.validateClientSeed({ clientSeed });
+
+                // Assert
+                expect(actualResult[0].failure).toBe(false);
+            });
+
+            it("should NOT return failure", () => {
+                //Arrange
+                const clientSeed = "000";
+                // Act
+                const actualResult = consumer.validateClientSeed({ clientSeed });
+
+                // Assert
+                expect(actualResult[0].failure).toBe(false);
+            });
+
+            it("should NOT return failure", () => {
+                //Arrange
+                const clientSeed = "0011";
+                // Act
+                const actualResult = consumer.validateClientSeed({ clientSeed });
+
+                // Assert
+                expect(actualResult[0].failure).toBe(false);
             });
         });
     });
