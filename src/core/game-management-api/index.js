@@ -46,7 +46,7 @@ export default class GameManagementApiClientFactory {
         this.apiClient = new gameManagementClient(
             {
                 ...this.gameManagementApiSettings,
-                TOKEN: authenticationHelpers.getBearerToken,
+                TOKEN: appConfigs.apiSettings.useAuthenticate ? authenticationHelpers.getBearerToken : undefined,
             },
             CustomAxiosRequest
         );
