@@ -123,13 +123,13 @@ export default class BaseGameCron {
         if (remainingTime === durations.mergeClientSeeds && this.isHashedResult()) {
             await this.provablyFairConsumer.updateClientSeedsFromBets();
             await this.roundResultConsumer.generateResult();
-            this.gameData.settlementResultFromAdmin = {};
         }
 
         if (remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
 
             await this.settleGameRoundConsumer.settleRound(this.gameData);
+            this.gameData.settlementResultFromAdmin = {};
         } else if (remainingTime < durations.placingBets) {
             this.bot && (await this.bot.run());
             this.runningRoundInfoPublisher.publish();

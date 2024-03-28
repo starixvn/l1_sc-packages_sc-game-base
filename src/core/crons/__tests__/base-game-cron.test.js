@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { logger } from "sc-common";
 
 import cron from "cron";
+import { GameConfig } from "jest-auto-fixture/src/models";
 import { RoundIdConsumer, SettleGameRoundConsumer } from "../../event-consumers";
 import ProvablyFairConsumer from "../../event-consumers/provably-fair-consumer";
 import UnsettledRoundConsumer from "../../event-consumers/unsettled-round-consumer";
@@ -14,7 +15,6 @@ import GameDefinition from "../../game-definition";
 import GameManagementApiClientFactory from "../../game-management-api";
 import BaseBot from "../base-bot";
 import BaseGameCron from "../base-game-cron";
-import { GameConfig } from "jest-auto-fixture/src/models";
 
 jest.mock("../base-bot");
 jest.mock("../../event-consumers/provably-fair-consumer");
@@ -75,7 +75,7 @@ const createBaseGameCron = function (newGameData) {
         gameManagementApiClientFactory,
         roundIdConsumer,
         provablyFairConsumer,
-        unsettledRoundConsumer
+        unsettledRoundConsumer,
     });
 };
 
@@ -401,30 +401,6 @@ describe("proceed", () => {
             // Assert
             expect(gameCron.roundResultConsumer.generateServerSeedAndPublishHash).toHaveBeenCalledWith({ id: 122 });
         });
-
-        it("should reset settlementResultFromAdmin", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData.remainingTime = 20;
-            gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
-            gameCron.isStartingTime = jest.fn();
-            when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
-            gameCron.resetForNewRound = jest.fn();
-            gameCron.roundResultConsumer = {
-                generateServerSeedAndPublishHash: jest.fn(),
-            };
-            gameCron.gameData.lastResultRecord = { id: 122 };
-            gameCron.bot = { reset: jest.fn() };
-            gameCron.gameData.disabled = true;
-            gameCron.gameData.settlementResultFromAdmin = { x: 123 };
-            gameCron.resultsRepository = {};
-
-            // Act
-            await gameCron.proceed();
-
-            // Assert
-            expect(gameCron.gameData.settlementResultFromAdmin).toEqual({});
-        });
     });
 
     describe("when remainingTime = durations.mergeClientSeeds", () => {
@@ -481,7 +457,6 @@ describe("proceed", () => {
         });
     });
 
-
     describe("when remainingTime < 0", () => {
         it("should update remainingTime = wholeRound", async () => {
             // Arrange
@@ -514,6 +489,22 @@ describe("proceed", () => {
 
             // Assert
             expect(gameCron.settleGameRoundConsumer.settleRound).toHaveBeenCalledWith(gameCron.gameData);
+        });
+
+        it("should reset settlementResultFromAdmin", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.remainingTime = -1;
+            gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
+            gameCron.settleGameRoundConsumer = {
+                settleRound: jest.fn(),
+            };
+            gameCron.gameData.settlementResultFromAdmin = { result: {} };
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.gameData.settlementResultFromAdmin).toEqual({});
         });
     });
 
