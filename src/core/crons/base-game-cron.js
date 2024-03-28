@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import GameManagementApiClientFactory, { getOrDefault, post } from "../game-management-api";
 import { chatBotHelper } from "../helpers";
 import { getEffectivePromotion, getFinishPromotionMessage, getStartPromotionMessage } from "../helpers/promotion-helper";
-import { RoundResultConsumer, SettleGameRoundConsumer, RoundIdConsumer } from "./../event-consumers";
+import { RoundIdConsumer, RoundResultConsumer, SettleGameRoundConsumer } from "./../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
@@ -110,7 +110,6 @@ export default class BaseGameCron {
 
         if (remainingTime === durations.placingBets && this.isHashedResult()) {
             await this.roundResultConsumer.generateServerSeedAndPublishHash(this.gameData.lastResultRecord);
-            this.gameData.settlementResultFromAdmin = {};
         }
 
         if (remainingTime === durations.placingBets) {
@@ -124,6 +123,7 @@ export default class BaseGameCron {
         if (remainingTime === durations.mergeClientSeeds && this.isHashedResult()) {
             await this.provablyFairConsumer.updateClientSeedsFromBets();
             await this.roundResultConsumer.generateResult();
+            this.gameData.settlementResultFromAdmin = {};
         }
 
         if (remainingTime < 0) {
