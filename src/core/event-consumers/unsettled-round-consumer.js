@@ -25,17 +25,20 @@ export default class UnsettledRoundConsumer {
 
     async proceed() {
         if (this.gameData.lastResultRecord) {
-            this.gameData.gameConfigs = await getOrDefault(
-                this.gameManagementApiClient.gameConfigs.getGameConfigs(this.definition.configName),
-                this.gameData.gameConfigs
-            );
-
+            await this.loadGameConfigs();
             const unsettledBets = await this.getUnsettledBets();
             await this.generateResult(unsettledBets);
             await this.proceedUnsettledBets(unsettledBets);
 
             await this.settleGameRoundConsumer.settleRound();
         }
+    }
+
+    async loadGameConfigs() {
+        this.gameData.gameConfigs = await getOrDefault(
+            this.gameManagementApiClient.gameConfigs.getGameConfigs(this.definition.configName),
+            this.gameData.gameConfigs
+        );
     }
 
     async proceedUnsettledBets(unsettledBets) {}
