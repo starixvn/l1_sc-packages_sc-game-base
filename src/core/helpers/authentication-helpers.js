@@ -39,6 +39,6 @@ const post = async (endpoint, params, options) => {
     return (await Axios.post(endpoint, params, requestConfigs)).data;
 };
 
-const getBearerToken = () => bearerAuthenticator.token.access_token;
+const getBearerToken = () => bearerAuthenticator.token?.access_token;
 
 export default { init, post, getBearerToken };
