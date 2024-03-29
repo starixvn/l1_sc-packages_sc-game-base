@@ -66,7 +66,7 @@ export default class BaseAdminSocketRouter {
                     result: set_result.result,
                 };
 
-                this.logService.logError("set result from admin", JSON.stringify(this.gameData.settlementResultFromAdmin));
+                this.logService.logError("set result from admin" + JSON.stringify(this.gameData.settlementResultFromAdmin));
             }
         } catch (err) {
             this.logService.logError(err);
