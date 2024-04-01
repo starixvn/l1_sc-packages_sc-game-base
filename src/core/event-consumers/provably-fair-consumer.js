@@ -8,12 +8,11 @@ export default class ProvablyFairConsumer {
      * @param {mongoose.Model} tempBetsRepository
      */
 
-    constructor(gameData, betsRepository, tempBetsRepository) {
+    constructor(gameData, betsRepository, tempBetsRepository, maxCombinedClientSeeds) {
         this.gameData = gameData;
         this.betsRepository = betsRepository;
         this.tempBetsRepository = tempBetsRepository;
-        this.maxCombinedClientSeeds = 0;
-        this.limitClientSeeds = false;
+        this.maxCombinedClientSeeds = maxCombinedClientSeeds;
     }
 
     setServerSeed(serverSeed) {
@@ -43,7 +42,7 @@ export default class ProvablyFairConsumer {
     async updateClientSeedsFromBets() {
         const allBets = await this.getBetsFromDatabase();
         const sortedBets = this.sortByTime(allBets);
-        const chosenBets = this.limitClientSeeds ? sortedBets.slice(0, this.maxCombinedClientSeeds) : sortedBets;
+        const chosenBets = this.maxCombinedClientSeeds ? sortedBets.slice(0, this.maxCombinedClientSeeds) : sortedBets;
 
         this.setClientSeedsFromBets(chosenBets);
     }
@@ -63,7 +62,7 @@ export default class ProvablyFairConsumer {
             clientSeed: true,
             name: true,
         };
-        const options = this.limitClientSeeds
+        const options = this.maxCombinedClientSeeds
             ? { sort: { time: 1, name: 1 }, limit: this.maxCombinedClientSeeds }
             : { sort: { time: 1, name: 1 } };
 
