@@ -63,8 +63,8 @@ export default class ProvablyFairConsumer {
             name: true,
         };
         const options = this.maxCombinedClientSeeds
-            ? { sort: { time: 1, name: 1 }, limit: this.maxCombinedClientSeeds }
-            : { sort: { time: 1, name: 1 } };
+            ? { sort: { time: 1, _id: 1, name: 1 }, limit: this.maxCombinedClientSeeds }
+            : { sort: { time: 1, _id: 1, name: 1 } };
 
         const playerBets = await this.betsRepository.find(betFilter, betProjection, options).lean().exec();
 
