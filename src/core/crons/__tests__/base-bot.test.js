@@ -44,6 +44,7 @@ describe("reset tests", () => {
             gameData.gameConfigs = { botenabled: true, maxbot: 0.5 };
             const baseBot = initBot();
             baseBot.gameManagementApiClient.users.getTotalBots.mockReturnValueOnce({ isSuccessful: true, data: 100 });
+            baseBot.gameManagementApiClient.users.getAllBots.mockReturnValueOnce({ isSuccessful: true, data: [] });
             jest.spyOn(baseBot, "processDisabledBots");
 
             // Act
@@ -59,6 +60,7 @@ describe("reset tests", () => {
 
             const baseBot = initBot();
             baseBot.gameManagementApiClient.users.getTotalBots.mockReturnValueOnce({ isSuccessful: true, data: 100 });
+            baseBot.gameManagementApiClient.users.getAllBots.mockReturnValueOnce({ isSuccessful: true, data: [] });
             jest.spyOn(baseBot, "processDisabledBots");
 
             // Acct
