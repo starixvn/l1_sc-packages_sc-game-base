@@ -36,6 +36,8 @@ export default class TableGameBot extends BaseBot {
         this.botsInRoom = {};
     }
 
+    async updateBotList() {}
+
     async processDisabledBots() {
         const disabledBots = await getOrDefault(this.gameManagementApiClient.users.getDisableBots(), []);
         const inRoomDisabledBots = disabledBots.filter((bot) => this.botsInRoom[bot.id]);

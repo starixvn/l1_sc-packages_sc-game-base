@@ -41,6 +41,7 @@ export default class BaseBot {
                 this.totalBots = await getOrDefault(this.gameManagementApiClient.users.getTotalBots(), this.totalBots);
 
                 this.maxNumberOfBots = Math.floor(this.totalBots * this.currentBotRatio);
+                await this.updateBotList();
             }
 
             await this.processDisabledBots();
@@ -49,6 +50,11 @@ export default class BaseBot {
         }
 
         this.resetAllBotData();
+    }
+
+    async updateBotList() {
+        const bots = await getOrDefault(this.gameManagementApiClient.users.getAllBots(this.maxNumberOfBots, true), this.bots);
+        this.bots = this.chance.shuffle(bots);
     }
 
     async run() {
