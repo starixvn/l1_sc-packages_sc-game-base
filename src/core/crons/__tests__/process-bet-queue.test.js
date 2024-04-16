@@ -35,9 +35,10 @@ describe("ProcessBetQueue", () => {
     };
 
     gameData.currencies = [
-        { code: "USD", name: "USD", isTest: false, isUncountOnTotal: false },
-        { code: "IND", name: "IND", isTest: true, isUncountOnTotal: false },
-        { code: "VND", name: "UUS", isTest: true, isUncountOnTotal: true },
+        { code: "USD", name: "USD", isTest: false, isUncountOnTotal: false, partnerId: "VG" },
+        { code: "IND", name: "IND", isTest: true, isUncountOnTotal: false, partnerId: "VG" },
+        { code: "VND", name: "UUS", isTest: true, isUncountOnTotal: true, partnerId: "VG" },
+        { code: "VND", name: "UUS", isTest: true, isUncountOnTotal: false, partnerId: "VGCash" },
     ];
 
     const chance = new Chance();
@@ -67,7 +68,7 @@ describe("ProcessBetQueue", () => {
 
     const baseMetrics = stub(BaseMetrics);
     const provablyFairConsumer = stub(ProvablyFairConsumer);
-    
+
     let player = null,
         proceedBetQueue = null,
         payload = null,
@@ -934,6 +935,7 @@ describe("ProcessBetQueue", () => {
             it("should return true", () => {
                 // Arrange
                 player.session.currencyName = "USD";
+                player.session.operatorId = "VG";
 
                 // Act
                 const actualResult = proceedBetQueue.isCountOnTotalBets(player);
@@ -947,6 +949,7 @@ describe("ProcessBetQueue", () => {
             it("should return true", () => {
                 // Arrange
                 player.session.currencyName = "IND";
+                player.session.operatorId = "VG";
 
                 // Act
                 const actualResult = proceedBetQueue.isCountOnTotalBets(player);
@@ -960,12 +963,27 @@ describe("ProcessBetQueue", () => {
             it("should return false", () => {
                 // Arrange
                 player.session.currencyName = "UUS";
+                player.session.operatorId = "VG";
 
                 // Act
                 const actualResult = proceedBetQueue.isCountOnTotalBets(player);
 
                 // Assert
                 expect(actualResult).toBe(false);
+            });
+        });
+
+        describe("when player currency is test currency and isUncountOnTotal config is false", () => {
+            it("should return true", () => {
+                // Arrange
+                player.session.currencyName = "UUS";
+                player.session.operatorId = "VGCash";
+
+                // Act
+                const actualResult = proceedBetQueue.isCountOnTotalBets(player);
+
+                // Assert
+                expect(actualResult).toBe(true);
             });
         });
     });
@@ -1004,7 +1022,7 @@ describe("ProcessBetQueue", () => {
             betLogsRepository,
             gameManagementApiClientFactory,
             baseMetrics,
-            provablyFairConsumer
+            provablyFairConsumer,
         });
     };
 

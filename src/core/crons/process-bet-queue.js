@@ -196,7 +196,7 @@ export default class ProcessBetQueue {
         }
 
         await this.upsertBet(player, roundId, bet, rate);
-                
+
         if (this.isCountOnTotalBets(player)) {
             this.adjustTotalBets(player, bet, rate);
         }
@@ -356,7 +356,10 @@ export default class ProcessBetQueue {
 
     isCountOnTotalBets(player) {
         return this.gameData.currencies.some(
-            (currency) => currency.name === player.session.currencyName && !(currency.isTest && currency.isUncountOnTotal)
+            (currency) =>
+                currency.partnerId === player.session.operatorId &&
+                currency.name === player.session.currencyName &&
+                !(currency.isTest && currency.isUncountOnTotal)
         );
     }
 }
