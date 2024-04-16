@@ -44,8 +44,15 @@ export default class ContainerRegistry {
         this.registerCrons();
         this.registerRouters();
         this.registerGameManagementService();
+        this.registerPFSettings();
 
         return this.container;
+    }
+
+    registerPFSettings() {
+        this.container.register({
+            maxCombinedClientSeeds: asValue(0),
+        });
     }
 
     registerModels() {
@@ -98,7 +105,7 @@ export default class ContainerRegistry {
             roundResultConsumer: asClass(EventConsumers.RoundResultConsumer).singleton(),
             roundIdConsumer: asClass(EventConsumers.RoundIdConsumer).singleton(),
             provablyFairConsumer: asClass(EventConsumers.ProvablyFairConsumer).singleton(),
-            unsettledRoundConsumer: asClass(EventConsumers.UnsettledRoundConsumer).singleton().proxy()
+            unsettledRoundConsumer: asClass(EventConsumers.UnsettledRoundConsumer).singleton().proxy(),
         });
     }
 
