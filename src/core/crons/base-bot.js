@@ -41,9 +41,9 @@ export default class BaseBot {
                 this.totalBots = await getOrDefault(this.gameManagementApiClient.users.getTotalBots(), this.totalBots);
 
                 this.maxNumberOfBots = Math.floor(this.totalBots * this.currentBotRatio);
-                await this.updateBotList();
             }
 
+            await this.updateBotList();
             await this.processDisabledBots();
         } else {
             await this.removeAllBots();
