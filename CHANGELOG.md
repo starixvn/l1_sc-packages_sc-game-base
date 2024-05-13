@@ -1,3 +1,61 @@
+# [5.1.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.0.0...v5.1.0) (2024-05-13)
+
+
+### Bug Fixes
+
+* allow to set maxCombinedClientSeeds value through constructor injection ([ff25913](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/ff25913a8da8e45d721d7de528d04f4e230fc3a6))
+* authentication-helpers getBearerToken ([4bc9ac2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/4bc9ac20348f6a0d701ad1672d32719029f90b67))
+* break down validate bet request params ([685ea68](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/685ea68b6fbad4351efa48a2d853d34ae52e132b))
+* check exist before updating PF to result collection ([8910d9b](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/8910d9bd6f393825aaeed5215bbf82b2d8e075cc))
+* code smell ([528d799](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/528d79958270afddb65ed21ed6cb631779ccb218))
+* count on total bet - add filter 'operator' ([be857af](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/be857af2aa9a97f04a8cf7d66accae640d6c38ea))
+* fix failed unit tests ([69aec54](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/69aec54b04781336da903523b0ec6a1b7831d097))
+* game cron start ([3f92c9a](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/3f92c9ae80f067ac97a91e5c1be66c21ba51c5e7))
+* gameData pf initial value ([3af90dd](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/3af90ddce262e43b9ecd8f64e36477848a7506e2))
+* gameManagementClient initialization - check appConfigs.apiSettings.useAuthenticate option ([33da73e](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/33da73e390f222bb9c001e33a46ea8366a5ba1fd))
+* get bet for client seeds merge - add sort by _id ([ce415b7](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/ce415b7b024e90d8d1d1f7b82db1f489b87bc216))
+* get sorted bets with time & name ([59d04e8](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/59d04e809c938e546c019613b844b4193f64bcdc))
+* getRoundPF - checking round exists ([2934ab8](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/2934ab8ae6be8db9a0dd6b6f27ea8263ff499971))
+* history query - update get betlogs ([50a1de8](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/50a1de8aa89602a6153f0d8417d932a28bfb04e6))
+* implement pf place bet & pf game cron ([1fcb207](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/1fcb2075e71e7b81bc4b8a4bb7aba7d05f589e42))
+* init winningPlayers in game data ([db99ea7](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/db99ea7d51c6c4e509b9d1e9fc88b9d234199bb4))
+* loading game configs before processing unsettled round ([b2e4404](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/b2e4404128f88d660dca7fca097c7cb3597ed251))
+* log set result from admin ([20c5f2c](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/20c5f2c0841f927455ae887d1d3ef08e50c489b2))
+* move pfConfig to provably-fair-consumer ([969a1cc](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/969a1cc7e6bf2c7fc6a652c113ad98bf6fd77150))
+* process disabled bots ([8cbf0ed](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/8cbf0ed832746eef27794936b0dc95c5cdf2543f))
+* register maxCombinedClientSeeds = 0 by default ([865fdee](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/865fdee20cad4decee44b216089ef545cbdb10bd))
+* remaining time in game-crons ([42f9d61](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/42f9d618ff6ec5eee1c0e26c5e8face8a5bb337b))
+* remove models ([245ca30](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/245ca30e4efa84f3efe824088fe7fdf88197407a))
+* remove unused bets in provably-fair-consumer ([a7232be](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/a7232bec715bcfd3f7d43beaf0c5af7ef3fd2f1d))
+* remove winningPlayers on finish data ([814d2d9](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/814d2d90bb415073f67f65351e6d8962f98e3883))
+* reset settlementResultFromAdmin after generate result ([cdc42fd](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/cdc42fdd6d6ef782ca65f9817563b0bf9f8a07b7))
+* round-query - getRoundPF ([1046cf2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/1046cf2a33f8fc0ecb6736ce623f0cfc2d3030c7))
+* try catch verify session ([290eeb6](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/290eeb6338e045ed6bb4586d0f8d0b949a25a89d))
+* update game cron ([5b2a180](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/5b2a180828c17284a39174e91828af45653b5b7d))
+* update PF in gameData ([3249fe3](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/3249fe3fac3faa7204a13ae2cad250d1c2b23ea4))
+* update placebetConsumer ([86ed086](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/86ed0869f15370f35bf159467912a9673b889376))
+* update projection for querying first bets ([70c87fc](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/70c87fc4056c79e01827d1c5722c7d424ddc35af))
+* update publish pf in round publisher ([1e4c72a](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/1e4c72a8ba08fa028526526f1054d4e7019f823e))
+* update query options ([7aac877](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/7aac87767231c7234fc9c88df1970429f096738a))
+* verify client seed in place bet ([a558b92](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/a558b9288e1d6bff27e734bcb89baa042de64722))
+
+
+### Features
+
+* add crypto-helper ([5586e25](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/5586e256faa89363ab695e6d3503ec23088217cd))
+* add provablyFair to game definition ([92df139](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/92df139ae5110674c75649ab3c8d88a66d33f0cb))
+* add UnsettledRoundConsumer ([1539e64](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/1539e6417fda5a9f9e78610a32989a2215b4bcb5))
+* decouple sc-base-database ([ab5d7e1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/ab5d7e1aa145163d7b2c9ca68ac79472e1576962))
+* expose bet projection for extension ([240f823](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/240f82323c563b0f6106b14d42f2536d010445e5))
+* get all client seeds ([26f17ec](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/26f17ec66be3437354b0be0731aa92f9b42cadf1))
+* get client seeds at durations.mergeClientSeeds ([a2d57ab](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/a2d57ab99a74ba50d3ab2a41c539ec489356b513))
+* init pf game base ([64453e1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/64453e15386d051f04f1d23db04fc525bd49fb46))
+* query first bets to generate client seeds ([4b9a665](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/4b9a665ab64952d702c77c6489f3acc3dfc1fb50))
+* query first bets to generate client seeds with lean ([39e0455](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/39e0455b1e6a045ebfacd43a211948f09ac2e42c))
+* return clientSeed ingame ([2f674d9](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/2f674d9ce02083b1db747a2809282570cf27f991))
+* round PF query ([5fd3850](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/5fd38505f985fc8f0a1914a294f4c0b17d0aea29))
+* update round result consumer ([f5f8556](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f5f855665a48a8e38efa11e8afdbfb3afafd6a1d))
+
 # [5.0.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v4.1.0...v5.0.0) (2024-01-17)
 
 
