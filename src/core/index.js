@@ -7,6 +7,7 @@ import * as BaseEventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import * as Helpers from "./helpers";
+import * as Models from "./models";
 import * as QueryApis from "./query-apis";
 import * as Routers from "./routers";
 
@@ -20,6 +21,7 @@ export {
     GameData,
     GameDefinition,
     Helpers,
+    Models,
     QueryApis,
     Routers,
 };
