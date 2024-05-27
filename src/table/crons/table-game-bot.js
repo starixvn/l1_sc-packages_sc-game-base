@@ -15,6 +15,7 @@ export default class TableGameBot extends BaseBot {
      * @param {TableGameDefinition} definition
      * @param {TableGameData} gameData
      * @param {BaseEventPublisher} publisher
+     * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
      * @param {mongoose.Model} tempBetsRepository
      */
     constructor(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository) {
@@ -64,7 +65,7 @@ export default class TableGameBot extends BaseBot {
     }
 
     async run() {
-        if (this.gameData.gameConfigs?.botenabled && this.gameData.remainingTime > this.definition.durations.lockingBet) {
+        if (this.gameData.gameConfigs?.botenabled && this.isDuringBetTime()) {
             const random = this.chance.integer({ min: 0, max: 5 });
 
             if (this.shouldAddBot(random)) {

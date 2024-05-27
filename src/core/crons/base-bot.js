@@ -58,11 +58,7 @@ export default class BaseBot {
     }
 
     async run() {
-        if (
-            this.bots.length &&
-            this.gameData.gameConfigs?.botenabled &&
-            this.gameData.remainingTime > this.definition.durations.lockingBet
-        ) {
+        if (this.bots.length && this.gameData.gameConfigs?.botenabled && this.isDuringBetTime()) {
             const maxBotRandom = this.bots.length / this.gameData.remainingTime;
             const botsToBet = this.chance.integer({ min: (maxBotRandom * 2) / 3, max: maxBotRandom });
             const indicesOfBotsToBeRemoved = [];
@@ -81,6 +77,8 @@ export default class BaseBot {
             });
         }
     }
+
+    isDuringBetTime = () => this.gameData.remainingTime > this.definition.durations.lockingBet;
 
     async removeAllBots() {
         this.bots = [];
