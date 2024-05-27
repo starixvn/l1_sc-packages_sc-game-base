@@ -17,12 +17,11 @@ export default class TableGameBot extends BaseBot {
      * @param {BaseEventPublisher} publisher
      * @param {mongoose.Model} tempBetsRepository
      */
-    constructor(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository, provablyFairConsumer) {
+    constructor(definition, gameData, publisher, gameManagementApiClientFactory, tempBetsRepository) {
         super(definition, gameData, gameManagementApiClientFactory);
 
         this.publisher = publisher;
         this.tempBetsRepository = tempBetsRepository;
-        this.provablyFairConsumer = provablyFairConsumer;
 
         this.inOutValues = {
             in: 3,
