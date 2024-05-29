@@ -1,10 +1,11 @@
 {
     "name": "sc-game-base",
-    "version": "5.2.1-beta.2",
+    "version": "5.2.1-beta.3",
     "description": "SC Game base for game services",
     "main": "./src/index.js",
     "scripts": {
         "test": "jest",
+        "testSingleFile": "jest table-game-config-bot.test.js",
         "test-coverage": "jest --collect-coverage",
         "reg": "npm set registry http://npm.lumigame.com",
         "verpatch": "npm version patch",
