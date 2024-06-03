@@ -1,8 +1,8 @@
 import Chance from "chance";
 import cryptoRandomString from "crypto-random-string";
-import { Random, MersenneTwister19937 } from "random-js";
-import Randomstring from "randomstring";
 import { customAlphabet } from "nanoid";
+import { MersenneTwister19937, Random } from "random-js";
+import Randomstring from "randomstring";
 
 const Characters = [...Array(26)].reduce(
     (res, _, i) => res.concat([String.fromCharCode(65 + i), String.fromCharCode(97 + i)]),
@@ -41,8 +41,8 @@ function random6(length) {
 
 const randomModes = {
     1: [random1, random2, random3, random4, random5],
-    2: [random2, random3, random6],
-    3: [random6, random5],
+    2: [random2, random3, random6, random1, random4],
+    3: [random6, random5, random1, random2, random3],
 };
 
 const generateServerSeed = (randomMode, length = 40) => {
@@ -54,3 +54,4 @@ const generateServerSeed = (randomMode, length = 40) => {
 };
 
 export { generateServerSeed };
+
