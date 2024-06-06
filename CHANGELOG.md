@@ -1,3 +1,19 @@
+# [5.2.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.1.0...v5.2.0) (2024-06-06)
+
+
+### Bug Fixes
+
+* remove un-use consumer ([6d13caf](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/6d13cafe0e685ca50255e256ba51e907bd2d9fbb))
+
+
+### Features
+
+* add table game config bot unit tests ([340eec3](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/340eec3d3d9039287d50e290cdbef31190b350fb))
+* update bot in room data ([4cbd5a6](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/4cbd5a6edc5d21832190a75fad8aa54940765e9c))
+* update bot with config ([bc64e29](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/bc64e29556e09937a2a74d73a1d3002ea7b02076))
+* update random mode ([7877f5d](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/7877f5dd82419ae961db4db216bcfc1e26e501a9))
+* update schema ([447b193](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/447b19303a604e686878d0e90cb6e2907b7df09c))
+
 # [5.1.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.0.0...v5.1.0) (2024-05-13)
 
 
