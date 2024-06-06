@@ -120,14 +120,12 @@ export default class BaseGameCron {
             this.gameStatusPublisher.publishEndPlacingBetStatus();
         }
 
-        if (remainingTime === durations.mergeClientSeeds && this.isHashedResult()) {
-            await this.provablyFairConsumer.updateClientSeedsFromBets();
-            await this.roundResultConsumer.generateResult();
-        }
-
         if (remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
-
+            if (this.isHashedResult()) {
+                await this.provablyFairConsumer.updateClientSeedsFromBets();
+                await this.roundResultConsumer.generateResult();
+            }
             await this.settleGameRoundConsumer.settleRound(this.gameData);
             this.gameData.settlementResultFromAdmin = {};
         } else if (remainingTime < durations.placingBets) {

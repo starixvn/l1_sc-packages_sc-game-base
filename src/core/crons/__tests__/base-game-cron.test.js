@@ -403,12 +403,74 @@ describe("proceed", () => {
         });
     });
 
-    describe("when remainingTime = durations.mergeClientSeeds", () => {
+    describe("when remainingTime < 0", () => {
+        it("should update remainingTime = wholeRound", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData = {
+                remainingTime: -1,
+            };
+            gameCron.definition.durations = { wholeRound: 10 };
+            gameCron.roundResultConsumer = {
+                generateServerSeedAndPublishHash: jest.fn(),
+                generateResult: jest.fn(),
+            };
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.gameData.remainingTime).toBe(10);
+        });
+
+        it("should call settleRound", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData = {
+                remainingTime: -1,
+            };
+            gameCron.definition.durations = { wholeRound: 10 };
+            gameCron.settleGameRoundConsumer = {
+                settleRound: jest.fn(),
+            };
+            gameCron.roundResultConsumer = {
+                generateServerSeedAndPublishHash: jest.fn(),
+                generateResult: jest.fn(),
+            };
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.settleGameRoundConsumer.settleRound).toHaveBeenCalledWith(gameCron.gameData);
+        });
+
+        it("should reset settlementResultFromAdmin", async () => {
+            // Arrange
+            const gameCron = createBaseGameCron();
+            gameCron.gameData.remainingTime = -1;
+            gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
+            gameCron.settleGameRoundConsumer = {
+                settleRound: jest.fn(),
+            };
+            gameCron.gameData.settlementResultFromAdmin = { result: {} };
+            gameCron.roundResultConsumer = {
+                generateServerSeedAndPublishHash: jest.fn(),
+                generateResult: jest.fn(),
+            };
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(gameCron.gameData.settlementResultFromAdmin).toEqual({});
+        });
+
         describe("when having resultsRepository value", () => {
             it("should call roundResultConsumer.generateResult", async () => {
                 // Arrange
                 const gameCron = createBaseGameCron();
-                gameCron.gameData.remainingTime = 1;
+                gameCron.gameData.remainingTime = -1;
                 gameCron.definition.durations = { wholeRound: 22, placingBets: 20, mergeClientSeeds: 1 };
                 gameCron.isStartingTime = jest.fn();
                 when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
@@ -434,7 +496,7 @@ describe("proceed", () => {
             it("should NOT call roundResultConsumer.generateResult", async () => {
                 // Arrange
                 const gameCron = createBaseGameCron();
-                gameCron.gameData.remainingTime = 1;
+                gameCron.gameData.remainingTime = -1;
                 gameCron.definition.durations = { wholeRound: 22, placingBets: 20, mergeClientSeeds: 1 };
                 gameCron.isStartingTime = jest.fn();
                 when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
@@ -454,57 +516,6 @@ describe("proceed", () => {
                 // Assert
                 expect(gameCron.roundResultConsumer.generateResult).not.toHaveBeenCalled();
             });
-        });
-    });
-
-    describe("when remainingTime < 0", () => {
-        it("should update remainingTime = wholeRound", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData = {
-                remainingTime: -1,
-            };
-            gameCron.definition.durations = { wholeRound: 10 };
-
-            // Act
-            await gameCron.proceed();
-
-            // Assert
-            expect(gameCron.gameData.remainingTime).toBe(10);
-        });
-
-        it("should call settleRound", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData = {
-                remainingTime: -1,
-            };
-            gameCron.definition.durations = { wholeRound: 10 };
-            gameCron.settleGameRoundConsumer = {
-                settleRound: jest.fn(),
-            };
-
-            // Act
-            await gameCron.proceed();
-
-            // Assert
-            expect(gameCron.settleGameRoundConsumer.settleRound).toHaveBeenCalledWith(gameCron.gameData);
-        });
-
-        it("should reset settlementResultFromAdmin", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData.remainingTime = -1;
-            gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
-            gameCron.settleGameRoundConsumer = {
-                settleRound: jest.fn(),
-            };
-            gameCron.gameData.settlementResultFromAdmin = { result: {} };
-            // Act
-            await gameCron.proceed();
-
-            // Assert
-            expect(gameCron.gameData.settlementResultFromAdmin).toEqual({});
         });
     });
 
