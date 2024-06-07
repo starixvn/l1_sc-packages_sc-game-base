@@ -106,6 +106,7 @@ export default class ContainerRegistry {
             roundIdConsumer: asClass(EventConsumers.RoundIdConsumer).singleton(),
             provablyFairConsumer: asClass(EventConsumers.ProvablyFairConsumer).singleton(),
             unsettledRoundConsumer: asClass(EventConsumers.UnsettledRoundConsumer).singleton().proxy(),
+            gameResultServiceConsumer: asClass(EventConsumers.GameResultServiceConsumer).proxy(),
         });
     }
 

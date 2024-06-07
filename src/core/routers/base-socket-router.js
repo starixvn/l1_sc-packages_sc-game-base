@@ -35,6 +35,7 @@ export default class BaseSocketRouter {
         logService,
         playGamePermissionValidator,
         roundQuery,
+        gameResultServiceConsumer,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -47,6 +48,7 @@ export default class BaseSocketRouter {
         this.logService = logService;
         this.playGamePermissionValidator = playGamePermissionValidator;
         this.roundQuery = roundQuery;
+        this.gameResultServiceConsumer = gameResultServiceConsumer;
     }
 
     /**
@@ -60,6 +62,26 @@ export default class BaseSocketRouter {
         this.socketClient.on("getHistory", this.handleGetHistory.bind(this));
         this.socketClient.on("disconnect", this.handleDisconnect.bind(this));
         this.socketClient.on("getRoundPF", this.handleGetRoundPF.bind(this));
+        this.socketClient.on("betDetails", this.handleBetDetails.bind(this));
+    }
+
+    async handleBetDetails(payload) {
+        try {
+            if (!this.verify()) {
+                return;
+            }
+
+            const { playerId, operatorId, siteId } = this.gameData.realPlayers[this.socketClient.id].session;
+            const { mode, timeZoneOffset, roundId, language } = payload;
+
+            const result = await this.gameResultServiceConsumer.getUrl({ playerId, operatorId, siteId, roundId, mode, timeZoneOffset, language });
+
+            if (result.isAuthenticated) {
+                this.socketClient.emit(this.definition.name, { betDetailsUrl: result.redirectUrl });
+            }
+        } catch (error) {
+            this.logService.logError(error);
+        }
     }
 
     async handleGetRoundPF(payload) {
