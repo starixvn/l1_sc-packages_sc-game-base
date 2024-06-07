@@ -1,11 +1,10 @@
 {
     "name": "sc-game-base",
-    "version": "5.2.2",
+    "version": "5.2.0-beta.1",
     "description": "SC Game base for game services",
     "main": "./src/index.js",
     "scripts": {
         "test": "jest",
-        "testSingleFile": "jest table-game-config-bot.test.js",
         "test-coverage": "jest --collect-coverage",
         "reg": "npm set registry http://npm.lumigame.com",
         "verpatch": "npm version patch",
@@ -50,7 +49,7 @@
         "sc-game-management-client": "^0.1.0",
         "sc-instrument": "1.1.1-beta.2",
         "sc-instrument-helper": "1.0.0",
-        "sc-pf-client-seed": "^1.0.5",
+        "sc-pf-client-seed": "^1.0.1-beta.0",
         "socket.io": "^4.5.4",
         "socket.io-msgpack-parser": "^3.0.1",
         "socket.io-prom-metrics": "^1.0.3"
