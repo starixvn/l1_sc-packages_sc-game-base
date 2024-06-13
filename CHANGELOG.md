@@ -1,3 +1,10 @@
+## [5.2.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.2.0...v5.2.1) (2024-06-13)
+
+
+### Bug Fixes
+
+* update generateResult when settle ([916261c](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/916261ca7fa4fab35fba9ba78716229dd6b7b751))
+
 # [5.2.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.1.0...v5.2.0) (2024-06-06)
 
 
