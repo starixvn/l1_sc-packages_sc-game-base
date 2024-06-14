@@ -10,7 +10,7 @@ function getSHA256Hash(seed) {
 
 function getSHA512Hash(seed) {
     return crypto.createHash("sha512").update(seed).digest("hex");
-}``
+}
 
 export { getMergeClientSeed, getSHA256Hash, getSHA512Hash };
 
