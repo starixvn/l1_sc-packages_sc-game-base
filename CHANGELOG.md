@@ -1,3 +1,11 @@
+## [5.2.2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.2.1...v5.2.2) (2024-07-02)
+
+
+### Bug Fixes
+
+* update bot client seed ([6812aac](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/6812aacd3aa82c64cf0200e3a9536f3f2587c25b))
+* update sc-pf-client-seed 1.0.5 ([feadcbe](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/feadcbe4b4e0b57c6420063a6fd22f6d827dcfe5))
+
 ## [5.2.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.2.0...v5.2.1) (2024-06-13)
 
 
