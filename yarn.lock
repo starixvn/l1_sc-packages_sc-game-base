@@ -2705,7 +2705,7 @@
   dependencies:
     "@types/istanbul-lib-report" "*"
 
-"@types/jest@^29.0.0", "@types/jest@^29.5.11":
+"@types/jest@^29.0.0":
   version "29.5.12"
   resolved "http://npm.lumigame.com/@types/jest/-/jest-29.5.12.tgz#7f7dc6eb4cf246d2474ed78744b05d06ce025544"
   integrity sha512-eDC8bTvT/QhYdxJAulQikueigY5AsdBRH2yDKW3yveW7svY3+DzN84/2NUgkw10RTiJbWqZrTtoGVdYlvFJdLw==
@@ -8917,12 +8917,11 @@ sc-instrument@1.1.1-beta.2:
     opentelemetry-instrumentation-socket.io "0.34.0"
     socket.io "4.6.1"
 
-sc-pf-client-seed@^1.0.1-beta.0:
-  version "1.0.1-beta.0"
-  resolved "http://npm.lumigame.com/sc-pf-client-seed/-/sc-pf-client-seed-1.0.1-beta.0.tgz#31fbba5f6f3742cf04e26f73621fb3758f951e88"
-  integrity sha512-LzkOATrCNX6l9KJKRcDRynDdoHP8McppYS7TR10RHn6ewUhM8iwIYxEQwpeYsQQw7l19R1l93uqq1Zez5V/nFg==
+sc-pf-client-seed@^1.0.4:
+  version "1.0.4"
+  resolved "http://npm.lumigame.com/sc-pf-client-seed/-/sc-pf-client-seed-1.0.4.tgz#1682c1a4147f5581baa8ef8148934a22915843a5"
+  integrity sha512-TTHDbigq4nopdLzfqqR/aU/lvyBewRJypxSjReGas9uPkeu9uA+S5ecKFh2YNbpLlYiCY0OdcoQwOuoaymzgzg==
   dependencies:
-    "@types/jest" "^29.5.11"
     chance "^1.1.11"
 
 sc-semantic-release@^1.2.0:

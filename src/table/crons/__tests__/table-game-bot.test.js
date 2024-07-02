@@ -245,4 +245,18 @@ describe("table game bot test", () => {
             expect(tableBot.gameManagementApiClient.users.resetBotsInRoom).toHaveBeenCalled();
         });
     });
+
+    describe("generateClientSeed", () => {
+        it("generateSeed", () => {
+            // act
+            const statistic = {};
+            for (let i = 0; i < 1000; i++) {
+                const result = tableBot.generateClientSeed();
+                statistic[result.length] = statistic[result.length] ? statistic[result.length] + 1 : 1;
+            }
+
+            // assert
+            expect(statistic[4]).toBeGreaterThanOrEqual(550);
+        });
+    });
 });

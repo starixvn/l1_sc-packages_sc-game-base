@@ -34,6 +34,12 @@ export default class TableGameBot extends BaseBot {
         this.chance = new Chance();
         this.minBotsAtTheTable = 8;
         this.botsInRoom = {};
+        this.clientSeedLengthConfig = {
+            4: 0.6,
+            3: 0.1,
+            2: 0.2,
+            1: 0.1,
+        };
     }
 
     async updateBotList() {}
@@ -131,7 +137,16 @@ export default class TableGameBot extends BaseBot {
     }
 
     generateClientSeed() {
-        return generateSeed();
+        const random = this.chance.integer({ min: 1, max: 10 });
+        if (random <= this.clientSeedLengthConfig[1] * 10) {
+            return generateSeed(1);
+        } else if (random <= (this.clientSeedLengthConfig[1] + this.clientSeedLengthConfig[2]) * 10) {
+            return generateSeed(2);
+        } else if (random <= (this.clientSeedLengthConfig[1] + this.clientSeedLengthConfig[2] + this.clientSeedLengthConfig[3]) * 10) {
+            return generateSeed(3);
+        } else {
+            return generateSeed(4);
+        }
     }
 
     getTicketsPerRound() {
