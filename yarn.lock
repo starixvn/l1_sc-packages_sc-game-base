@@ -8917,10 +8917,10 @@ sc-instrument@1.1.1-beta.2:
     opentelemetry-instrumentation-socket.io "0.34.0"
     socket.io "4.6.1"
 
-sc-pf-client-seed@^1.0.4:
-  version "1.0.4"
-  resolved "http://npm.lumigame.com/sc-pf-client-seed/-/sc-pf-client-seed-1.0.4.tgz#1682c1a4147f5581baa8ef8148934a22915843a5"
-  integrity sha512-TTHDbigq4nopdLzfqqR/aU/lvyBewRJypxSjReGas9uPkeu9uA+S5ecKFh2YNbpLlYiCY0OdcoQwOuoaymzgzg==
+sc-pf-client-seed@^1.0.5:
+  version "1.0.5"
+  resolved "http://npm.lumigame.com/sc-pf-client-seed/-/sc-pf-client-seed-1.0.5.tgz#8ce5fd5a5482d1cd9f803560bc3acc4e89e83d70"
+  integrity sha512-KRkuLgqs508IvsSCR381esnKgEK2vid0JwE4Vom9XpJBlNBSjov+6bITO8FlX8W5Hss2Xe1pX6wCvFJVrhZvvg==
   dependencies:
     chance "^1.1.11"
 
