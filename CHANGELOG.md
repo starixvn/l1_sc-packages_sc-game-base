@@ -1,3 +1,10 @@
+# [5.3.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.2.2...v5.3.0) (2024-08-08)
+
+
+### Features
+
+* add bet details from game result service ([16cf7d6](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/16cf7d65ff2b5244d95f911104e51d6dd54eb0a9))
+
 ## [5.2.2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.2.1...v5.2.2) (2024-07-02)
 
 
