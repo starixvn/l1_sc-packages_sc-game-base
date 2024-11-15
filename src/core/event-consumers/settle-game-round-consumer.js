@@ -85,10 +85,10 @@ export default class SettleGameRoundConsumer {
         const bets = await this.queryBets(roundId);
 
         if (bets && bets.length) {
-            const { odds } = this.gameData.gameConfigs;
-
             await Promise.all(
                 bets.map(async (bet) => {
+                    const odds = bet.odds ?? this.gameData.gameConfigs.odds;
+
                     const betResult = this.calculateBetResult(settlementResult, bet, odds);
 
                     bet.betwin = betResult.totalWin;

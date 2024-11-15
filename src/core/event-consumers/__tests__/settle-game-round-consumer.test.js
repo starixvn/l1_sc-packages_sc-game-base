@@ -216,6 +216,27 @@ describe("SettleGameRoundConsumer", () => {
                 save: jest.fn(),
             },
         ];
+
+        const queryBetsHavingOdds = [
+            {
+                uid: chance.guid(),
+                even: chance.natural(),
+                playerId: chance.natural(),
+                siteId: chance.natural(),
+                odds: { odd: 1.9, even: 1.9, red3: 3.7, red4: 14, white3: 3.7, white4: 14 },
+                freeBet: true,
+                save: jest.fn(),
+            },
+            {
+                uid: chance.guid(),
+                even: chance.natural(),
+                playerId: chance.natural(),
+                siteId: chance.natural(),
+                odds: { odd: 1.7, even: 1.7, red3: 3, red4: 12, white3: 3.5, white4: 12 },
+                freeBet: true,
+                save: jest.fn(),
+            },
+        ];
         const betResult = {
             totalBetAmount: chance.natural(),
             totalWin: chance.natural(),
@@ -231,9 +252,13 @@ describe("SettleGameRoundConsumer", () => {
             definition.settle.mockReturnValueOnce(settlementResult);
             roundsRepository.create.mockReturnValueOnce({ id: 1, result, settlementResult });
             consumer.callEndGame = jest.fn();
-            consumer.queryBets = jest.fn(() => queryBets);
             consumer.calculateBetResult = jest.fn(() => betResult);
             consumer.captureBetResult = jest.fn();
+            consumer.queryBets = jest.fn();
+        });
+
+        afterEach(() => {
+            jest.clearAllMocks();
         });
 
         it("should call queryBets", async () => {
@@ -244,59 +269,94 @@ describe("SettleGameRoundConsumer", () => {
             expect(consumer.queryBets).toBeCalledWith(settleBetParams.roundId);
         });
 
-        Object.keys(queryBets)
-            .map((index) => +index)
-            .forEach((betIndex) => {
-                describe(`with bet ${betIndex + 1}`, () => {
-                    it("should call calculateBetResult", async () => {
-                        // Act
-                        await consumer.settleBets(settleBetParams);
+        describe("when bets not having odds", () => {
+            beforeEach(() => {
+                consumer.queryBets = jest.fn(() => queryBets);
+            });
 
-                        // Assert
-                        expect(consumer.calculateBetResult).toHaveBeenNthCalledWith(
-                            betIndex + 1,
-                            settlementResult,
-                            queryBets[betIndex],
-                            defaultGameData.gameConfigs.odds
-                        );
-                    });
+            Object.keys(queryBets)
+                .map((index) => +index)
+                .forEach((betIndex) => {
+                    describe(`with bet ${betIndex + 1}`, () => {
+                        it("should call calculateBetResult with odds from gameConfigs", async () => {
+                            // Act
+                            await consumer.settleBets(settleBetParams);
 
-                    it("should call endGame", async () => {
-                        // Act
-                        await consumer.settleBets(settleBetParams);
+                            // Assert
+                            expect(consumer.calculateBetResult).toHaveBeenNthCalledWith(
+                                betIndex + 1,
+                                settlementResult,
+                                queryBets[betIndex],
+                                defaultGameData.gameConfigs.odds
+                            );
+                        });
 
-                        // Assert
-                        expect(consumer.callEndGame).toHaveBeenNthCalledWith(
-                            betIndex + 1,
-                            queryBets[betIndex],
-                            settleBetParams.roundId,
-                            settleBetParams.time,
-                            betResult
-                        );
-                    });
+                        it("should call endGame", async () => {
+                            // Act
+                            await consumer.settleBets(settleBetParams);
 
-                    it("should call captureBetResult", async () => {
-                        // Act
-                        await consumer.settleBets(settleBetParams);
+                            // Assert
+                            expect(consumer.callEndGame).toHaveBeenNthCalledWith(
+                                betIndex + 1,
+                                queryBets[betIndex],
+                                settleBetParams.roundId,
+                                settleBetParams.time,
+                                betResult
+                            );
+                        });
 
-                        // Assert
-                        expect(consumer.captureBetResult).toHaveBeenNthCalledWith(
-                            betIndex + 1,
-                            queryBets[betIndex].uid,
-                            betResult,
-                            queryBets[betIndex].rate
-                        );
-                    });
+                        it("should call captureBetResult", async () => {
+                            // Act
+                            await consumer.settleBets(settleBetParams);
 
-                    it("should publish bet result to user", async () => {
-                        // Act
-                        await consumer.settleBets(settleBetParams);
+                            // Assert
+                            expect(consumer.captureBetResult).toHaveBeenNthCalledWith(
+                                betIndex + 1,
+                                queryBets[betIndex].uid,
+                                betResult,
+                                queryBets[betIndex].rate
+                            );
+                        });
 
-                        // Assert
-                        expect(userBetResultPublisher.publish).toHaveBeenNthCalledWith(betIndex + 1, queryBets[betIndex].uid, betResult);
+                        it("should publish bet result to user", async () => {
+                            // Act
+                            await consumer.settleBets(settleBetParams);
+
+                            // Assert
+                            expect(userBetResultPublisher.publish).toHaveBeenNthCalledWith(
+                                betIndex + 1,
+                                queryBets[betIndex].uid,
+                                betResult
+                            );
+                        });
                     });
                 });
+        });
+
+        describe("when bets having odds", () => {
+            beforeEach(() => {
+                consumer.queryBets = jest.fn(() => queryBetsHavingOdds);
             });
+
+            Object.keys(queryBetsHavingOdds)
+                .map((index) => +index)
+                .forEach((betIndex) => {
+                    describe(`with bet ${betIndex + 1}`, () => {
+                        it("should call calculateBetResult with bet odds", async () => {
+                            // Act
+                            await consumer.settleBets(settleBetParams);
+
+                            // Assert
+                            expect(consumer.calculateBetResult).toHaveBeenNthCalledWith(
+                                betIndex + 1,
+                                settlementResult,
+                                queryBetsHavingOdds[betIndex],
+                                queryBetsHavingOdds[betIndex].odds
+                            );
+                        });
+                    });
+                });
+        });
     });
 
     describe("callEndGame", () => {
