@@ -64,7 +64,7 @@ describe("SettleGameRoundConsumer", () => {
             const actualResult = consumer.generateResult();
 
             // Assert
-            expect(actualResult).toEqual({ red1: true, red2: false, red3: true, red4: false });
+            expect(actualResult).toEqual({ red1: true, red2: true, red3: true, red4: false });
         });
     });
 

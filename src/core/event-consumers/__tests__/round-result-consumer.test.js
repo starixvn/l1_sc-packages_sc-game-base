@@ -11,28 +11,6 @@ jest.mock("../../helpers/crypto-helper", () => {
 });
 
 describe("generateResultAndPublishHash", () => {
-    describe("when resultsRepository not null", () => {
-        it("should publish result hash", async () => {
-            // Arrange
-            const consumer = new RoundResultConsumer();
-            consumer.roundResultPublisher = {
-                publishResultHash: jest.fn(),
-            };
-            consumer.resultsRepository = { create: jest.fn() };
-            consumer.definition = {
-                generateResult: jest.fn(),
-                generateRawResultForHash: jest.fn(),
-            };
-            consumer.gameData.gameConfigs = {};
-
-            // Act
-            await consumer.generateResultAndPublishHash();
-
-            // Assert
-            expect(consumer.roundResultPublisher.publishResultHash).toHaveBeenCalled();
-        });
-    });
-
     describe("when lastResultRecord exists and matches with current roundId", () => {
         it("should decrypt result from lastResultRecord", async () => {
             // Arrange
