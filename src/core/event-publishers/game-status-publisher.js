@@ -6,7 +6,6 @@ export default class GameStatusPublisher extends BaseEventPublisher {
         const payload = { um: true, um_message: disabledMessage };
 
         this.publishToAllUsers(payload);
-        this.publishToAllAdmins(payload);
     }
 
     publishEnablingGameStatus() {
@@ -23,23 +22,12 @@ export default class GameStatusPublisher extends BaseEventPublisher {
             const payload = { gameConfigs: { ...configs, ...settings }, remainingTime, snr: true };
             realPlayer.socketClient && realPlayer.socketClient.emit(this.gameName, payload);
         });
-
-        this.publishToAllAdmins({
-            remainingTime,
-            roundId,
-            currencies: this.gameData.currencies,
-            exchangeRates: this.gameData.exchangeRates,
-        });
     }
 
     publishStartGame() {
         this.publishToAllUsers({
             remainingTime: this.gameData.remainingTime,
             snr: true,
-        });
-        this.publishToAllAdmins({
-            currencies: this.gameData.currencies,
-            exchangeRates: this.gameData.exchangeRates,
         });
     }
 

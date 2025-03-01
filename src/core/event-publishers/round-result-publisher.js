@@ -12,8 +12,6 @@ export default class RoundResultPublisher extends BaseEventPublisher {
         } else {
             this.publishToAllUsers(payload);
         }
-
-        this.publishToAllAdmins(payload);
     }
 
     publishResultHash() {

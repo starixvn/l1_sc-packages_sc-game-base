@@ -11,7 +11,5 @@ export default class RunningRoundInfoPublisher extends BaseEventPublisher {
 
             inGame[user.name] = { name, currency, betTracks: ownBets, system, partnerId: operatorId, operatorId };
         });
-
-        this.publishToAllAdmins({ inGame });
     }
 }

@@ -4,7 +4,6 @@ import { logger } from "sc-common";
 
 import BaseGameStartup from "../base-game-startup";
 import { authenticationHelpers } from "../helpers";
-import BaseAdminSocketRouter from "../routers/base-admin-socket-router";
 import BaseSocketRouter from "../routers/base-socket-router";
 import HttpRouter from "../routers/http-router";
 
@@ -30,21 +29,6 @@ describe("base game startup test", () => {
 
             // act
             baseGameStartup.initSocketRouter(socketClient);
-
-            // assert
-            expect(router.init).toHaveBeenCalled();
-        });
-    });
-
-    describe("initAdminSocketRouter", () => {
-        it("should always init router", () => {
-            /** @type {BaseAdminSocketRouter} */
-            const router = stub(BaseAdminSocketRouter);
-            spyOn(container, "resolve").and.returnValue(router);
-            const baseGameStartup = new BaseGameStartup(container);
-
-            //act
-            baseGameStartup.initAdminSocketRouter(socketClient);
 
             // assert
             expect(router.init).toHaveBeenCalled();

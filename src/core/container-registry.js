@@ -38,7 +38,6 @@ export default class ContainerRegistry {
     register(appConfigs, definition, gameData) {
         this.container.register({
             appConfigs: asValue(appConfigs),
-            adminSecretKey: asValue(appConfigs.adminSecretKey),
             gameId: asValue(definition.id),
             gameName: asValue(definition.name),
             definition: asValue(definition),
@@ -97,7 +96,6 @@ export default class ContainerRegistry {
 
     registerPublishers() {
         this.container.register({
-            adminPublisher: asClass(EventPublishers.AdminPublisher).singleton(),
             publisher: asClass(EventPublishers.BaseEventPublisher).singleton(),
             gameStatusPublisher: asClass(EventPublishers.GameStatusPublisher).singleton(),
             placeBetPublisher: asClass(EventPublishers.PlaceBetPublisher).singleton(),
@@ -109,12 +107,6 @@ export default class ContainerRegistry {
     }
 
     registerConsumers() {
-        this.container.register({
-            adminAuthenticationConsumer: asClass(EventConsumers.AdminAuthenticationConsumer).singleton(),
-            adminDisconnectConsumer: asClass(EventConsumers.AdminDisconnectConsumer).singleton(),
-            adminMonitorConsumer: asClass(EventConsumers.AdminMonitorConsumer).singleton(),
-        });
-
         this.container.register({
             inGameConsumer: asClass(EventConsumers.InGameConsumer).singleton(),
             placeBetConsumer: asClass(EventConsumers.PlaceBetConsumer).singleton(),
@@ -135,7 +127,6 @@ export default class ContainerRegistry {
 
     registerRouters() {
         this.container.register({
-            adminSocketRouter: asClass(Routers.BaseAdminSocketRouter).proxy(),
             socketRouter: asClass(Routers.BaseSocketRouter).proxy(),
             httpRouter: asClass(Routers.HttpRouter),
         });

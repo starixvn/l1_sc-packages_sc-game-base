@@ -54,35 +54,17 @@ describe("SettleGameRoundConsumer", () => {
         const generateResult = { red1: true, red2: true, red3: true, red4: false };
 
         beforeEach(() => {
-            gameData.settlementResultFromAdmin = {
-                roundId: 1,
-                result: { red1: true, red2: false, red3: true, red4: false },
-            };
-            gameData.result = { red1: true, red2: false, red3: true, red4: false };
             definition.generateResult.mockReturnValueOnce(generateResult);
         });
 
-        describe("when roundId from admin equal to game data roundId", () => {
-            it("should return result from admin", () => {
-                // Arrange
-                gameData.roundId = 1;
+        it("should return result from generation", () => {
+            // Arrange
+            gameData.roundId = 2;
+            // Act
+            const actualResult = consumer.generateResult();
 
-                // Act
-                const actualResult = consumer.generateResult();
-                // Assert
-                expect(actualResult).toEqual(gameData.settlementResultFromAdmin.result);
-            });
-        });
-        describe("when roundId from admin is different from game data roundId", () => {
-            it("should return result from generation", () => {
-                // Arrange
-                gameData.roundId = 2;
-                // Act
-                const actualResult = consumer.generateResult();
-
-                // Assert
-                expect(actualResult).toEqual({ red1: true, red2: false, red3: true, red4: false });
-            });
+            // Assert
+            expect(actualResult).toEqual({ red1: true, red2: false, red3: true, red4: false });
         });
     });
 

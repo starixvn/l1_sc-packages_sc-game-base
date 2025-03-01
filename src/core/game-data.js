@@ -8,8 +8,6 @@ export default class GameData {
         this.gameConfigs = {};
         this.realPlayers = {};
         this.ingame = {};
-        this.admins = {};
-        this.settlementResultFromAdmin = {};
         this.umMessages = {};
         this.exchangeRates = {};
         this.currencyGroupGames = [];

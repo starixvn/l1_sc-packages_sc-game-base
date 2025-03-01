@@ -14,7 +14,6 @@ describe("publishRoundResult", () => {
                 result: "yy",
             };
             publisher.publishToAllUsers = jest.fn();
-            publisher.publishToAllAdmins = jest.fn();
 
             // Act
             publisher.publishRoundResult(roundResult);
@@ -24,26 +23,6 @@ describe("publishRoundResult", () => {
                 finish: roundResult,
                 resultHash: { rawValue: "xx", extraInfos: "yy" },
             });
-        });
-
-        it("should publish to all admins", () => {
-            // Arrange
-            const publisher = new RoundResultPublisher();
-            const roundResult = { red1: true, red2: false };
-            publisher.gameData = {
-                resultHash: {
-                    rawValue: "xx",
-                },
-                result: "yy",
-            };
-            publisher.publishToAllUsers = jest.fn();
-            publisher.publishToAllAdmins = jest.fn();
-
-            // Act
-            publisher.publishRoundResult(roundResult);
-
-            // Assert
-            expect(publisher.publishToAllAdmins).toHaveBeenCalledWith({ finish: roundResult });
         });
     });
 
@@ -56,7 +35,6 @@ describe("publishRoundResult", () => {
                 resultHash: {},
             };
             publisher.publishToAllUsers = jest.fn();
-            publisher.publishToAllAdmins = jest.fn();
 
             // Act
             publisher.publishRoundResult(roundResult);
@@ -65,23 +43,6 @@ describe("publishRoundResult", () => {
             expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
                 finish: roundResult,
             });
-        });
-
-        it("should publish to all admins", () => {
-            // Arrange
-            const publisher = new RoundResultPublisher();
-            const roundResult = { red1: true, red2: false };
-            publisher.gameData = {
-                resultHash: {},
-            };
-            publisher.publishToAllUsers = jest.fn();
-            publisher.publishToAllAdmins = jest.fn();
-
-            // Act
-            publisher.publishRoundResult(roundResult);
-
-            // Assert
-            expect(publisher.publishToAllAdmins).toHaveBeenCalledWith({ finish: roundResult });
         });
     });
 });

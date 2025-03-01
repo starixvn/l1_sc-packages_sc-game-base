@@ -159,7 +159,6 @@ export default class BaseGameCron {
 
         if (this.gameData.remainingTime === durations.placingBets && this.resultsRepository) {
             await this.roundResultConsumer.generateResultAndPublishHash(this.gameData.lastResultRecord);
-            this.gameData.settlementResultFromAdmin = {};
         }
 
         if (this.gameData.remainingTime === durations.placingBets) {

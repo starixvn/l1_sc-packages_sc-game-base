@@ -10,7 +10,6 @@ export default class BaseGameStartup {
         gameCron: "gameCron",
         processBetQueue: "processBetQueue",
         socketRouter: "socketRouter",
-        adminSocketRouter: "adminSocketRouter",
         httpRouter: "httpRouter",
         gameConfigsRepository: "gameConfigsRepository",
     };
@@ -38,15 +37,6 @@ export default class BaseGameStartup {
     }
 
     /**
-     * @param {Socket} socketClient
-     */
-    initAdminSocketRouter(socketClient) {
-        const router = this.container.resolve(this.dependencies.adminSocketRouter);
-
-        router.init(socketClient);
-    }
-
-    /**
      * @param {express.Express} app
      */
     initHttpRouter(app) {
@@ -66,10 +56,6 @@ export default class BaseGameStartup {
 
         socketServer.of(`/user/${gameNameInSocketNamespace}`).on("connection", (socketClient) => {
             this.initSocketRouter(socketClient);
-        });
-
-        socketServer.of(`/admin/${gameNameInSocketNamespace}`).on("connection", (socketClient) => {
-            this.initAdminSocketRouter(socketClient);
         });
 
         try {
