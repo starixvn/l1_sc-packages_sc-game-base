@@ -1,3 +1,10 @@
+# [5.4.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.3.0...v5.4.0) (2025-03-26)
+
+
+### Features
+
+* settle with bet odds ([650f6b6](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/650f6b6925d885d435849219449155bf3c019499))
+
 # [5.3.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.2.2...v5.3.0) (2024-08-08)
 
 
