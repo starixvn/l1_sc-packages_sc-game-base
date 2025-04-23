@@ -225,7 +225,7 @@ describe("SettleGameRoundConsumer", () => {
             definition.generateResult.mockReturnValueOnce(result);
             definition.settle.mockReturnValueOnce(settlementResult);
             roundsRepository.create.mockReturnValueOnce({ id: 1, result, settlementResult });
-            consumer.callEndGame = jest.fn();
+            consumer.callEndGame = jest.fn().mockResolvedValue({ isOk: true });
             consumer.queryBets = jest.fn(() => queryBets);
             consumer.calculateBetResult = jest.fn(() => betResult);
             consumer.captureBetResult = jest.fn();
