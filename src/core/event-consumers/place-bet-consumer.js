@@ -135,7 +135,7 @@ export default class PlaceBetConsumer {
 
     consume(player, payload) {
         Object.assign(payload, {
-            amount: payload.amount,
+            amount: +payload.amount,
             freeBet: payload.freeBet ?? false,
             roundId: payload.roundId ?? this.gameData.roundId,
             mode: payload.m ?? this.DisplayMode.Landscape,
