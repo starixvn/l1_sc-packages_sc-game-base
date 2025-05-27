@@ -44,10 +44,9 @@ flowchart TD
     PromotionResult -->|No| CreatePlayerData[Create PlayerInGame without Promotions]
     PromotionResult -->|Yes| StorePromotionData[Store Promotion Data in PlayerInGame]
 
-    StorePromotionData --> SetFreeSpins[Set freeSpinsRemaining]
-    SetFreeSpins --> SetPromotionId[Set activePromotionId]
-    SetPromotionId --> SetPromotionArray[Set availablePromotions Array]
-    SetPromotionArray --> CompleteSignIn[Complete Sign-In Process]
+    StorePromotionData --> SetPromotionData[Set promotionData Object]
+    SetPromotionData --> SetPromotionFields[promotionId, code, bonusItemCount]
+    SetPromotionFields --> CompleteSignIn[Complete Sign-In Process]
 
     CreatePlayerData --> CompleteSignIn
     CompleteSignIn --> NotifyClient[Notify Client of Sign-In Success]
@@ -59,7 +58,7 @@ flowchart TD
 
     class UserSignInConsumer,ValidateUser,CompleteSignIn signInStyle
     class ClaimPromotionAPI apiStyle
-    class StorePromotionData,SetFreeSpins,SetPromotionId,SetPromotionArray,CreatePlayerData dataStyle
+    class StorePromotionData,SetPromotionData,SetPromotionFields,CreatePlayerData dataStyle
     class RejectSignIn errorStyle
 ```
 
@@ -75,12 +74,12 @@ flowchart TD
     Consumer --> Normalize[Normalize Payload]
     Normalize --> CheckFreeSpin{Free Spin Bet?}
 
-    CheckFreeSpin -->|Yes| DetectEligibility[Detect Free Spin from PlayerInGame]
+    CheckFreeSpin -->|Yes| GetPromotionData[Get Promotion Data from PlayerInGame]
     CheckFreeSpin -->|No| ParamCheck[Parameter Validation]
 
-    DetectEligibility --> HasFreeSpins{Has Available Free Spins?}
-    HasFreeSpins -->|No| ParamCheck
-    HasFreeSpins -->|Yes| DeductBonus[Call player-promotion/deduct-bonus-item]
+    GetPromotionData --> CheckBonusCount{bonusItemCount > 0?}
+    CheckBonusCount -->|No| ParamCheck
+    CheckBonusCount -->|Yes| DeductBonus[Call player-promotion/deduct-bonus-item]
     DeductBonus --> BonusSuccess{API Success?}
     BonusSuccess -->|No| BonusError[Send API Error]
     BonusSuccess -->|Yes| SetFreeSpinParams[Set Free Spin Parameters with promotionId]
@@ -95,54 +94,40 @@ flowchart TD
 
     class Reject,ErrorResponse,BonusError errorStyle
     class Consumer,Normalize,BetValidation successStyle
-    class DetectEligibility,DeductBonus,SetFreeSpinParams apiStyle
+    class GetPromotionData,DeductBonus,SetFreeSpinParams apiStyle
 ```
 
 ## 4. Free Spin Detection & Validation Layer
 
 ```mermaid
 flowchart TD
-    FreeSpinValidation[Free Spin Validation] --> CheckPlayerData[Check PlayerInGame Data]
-    CheckPlayerData --> HasPromotions{Has Available Promotions?}
+    FreeSpinDetection[Free Spin Detection] --> CheckPlayerData[Check PlayerInGame Data]
+    CheckPlayerData --> GetPromotionData[Get Promotion Data from PlayerInGame]
 
-    HasPromotions -->|No| ValidationFail[Free Spin Validation Failed]
-    HasPromotions -->|Yes| CheckEligibility[Check Promotion Eligibility]
+        GetPromotionData --> PromotionData[Return Promotion Data]
+    PromotionData --> ShowData[promotionId, code, bonusItemCount]
+    ShowData --> HasBonusItems{bonusItemCount > 0?}
+    HasBonusItems -->|No| NoFreeSpins[No Free Spins Available]
+    HasBonusItems -->|Yes| DeductAPI[Call player-promotion/deduct-bonus-item API]
 
-    CheckEligibility --> BonusCheck[Bonus Items Available?]
-    CheckEligibility --> PromotionCheck[Promotion Active?]
-    CheckEligibility --> GameEligible[Game Eligible for Free Spin?]
-
-    BonusCheck --> BonusResult{Available?}
-    PromotionCheck --> PromotionResult{Active?}
-    GameEligible --> EligibleResult{Eligible?}
-
-    BonusResult -->|No| ValidationFail
-    PromotionResult -->|No| ValidationFail
-    EligibleResult -->|No| ValidationFail
-
-    BonusResult -->|Yes| ValidationPass[Free Spin Validation Pass]
-    PromotionResult -->|Yes| ValidationPass
-    EligibleResult -->|Yes| ValidationPass
-
-    ValidationFail --> NotifyError[Notify Error to Client]
-    ValidationPass --> DeductAPI[Call player-promotion/deduct-bonus-item API]
+    NoFreeSpins --> RegularBetFlow[Continue as Regular Bet]
 
     DeductAPI --> DeductResult{API Success?}
     DeductResult -->|No| APIError[API Error Response]
-    DeductResult -->|Yes| UpdatePlayerData[Update PlayerInGame Free Spins Count]
+    DeductResult -->|Yes| UpdatePlayerData[Update PlayerInGame bonusItemCount]
     UpdatePlayerData --> RegularValidation[Continue to Regular Validation]
 
     classDef dataStyle fill:#e8f5e8,stroke:#1b5e20
     classDef apiStyle fill:#e1f5fe,stroke:#0277bd
-    classDef validationStyle fill:#fff3e0,stroke:#e65100
+    classDef promotionStyle fill:#fff3e0,stroke:#e65100
     classDef errorStyle fill:#ffebee,stroke:#c62828
     classDef successStyle fill:#e8f5e8,stroke:#2e7d32
 
-    class CheckPlayerData,UpdatePlayerData dataStyle
+    class CheckPlayerData,GetPromotionData,UpdatePlayerData dataStyle
     class DeductAPI apiStyle
-    class BonusCheck,PromotionCheck,GameEligible,CheckEligibility validationStyle
-    class ValidationFail,NotifyError,APIError errorStyle
-    class ValidationPass,RegularValidation successStyle
+    class PromotionData,ShowData promotionStyle
+    class APIError,NoFreeSpins errorStyle
+    class RegularValidation,RegularBetFlow successStyle
 ```
 
 ## 5. Regular Validation Layer Details

@@ -67,8 +67,8 @@ The place bet system is designed with enhanced API-based free spin capabilities:
 - **PromotionApiClient**: Handles all promotion-related API communications
 - **ProcessBetQueue**: Asynchronous bet processing for both regular and free spin bets
 - **PlaceBetPublisher**: Real-time client communication with free spin notifications
-- **GameData**: Central state management for game-specific data
-- **PlayerInGame**: Enhanced with promotion data (availablePromotions, freeSpinsRemaining, activePromotionId)
+- **GameData**: Central state management for game-level data (time, rounds, players, configs)
+- **PlayerInGame**: Enhanced with promotion data (promotionData object containing promotionId, code, bonusItemCount)
 - **PlayerPromotion**: Data model for promotion information (from API)
 - **PromotionTicket**: Complete audit trail and status tracking for free spins (created via API)
 
@@ -84,7 +84,7 @@ The place bet system is designed with enhanced API-based free spin capabilities:
 ### Free Spin Features (Sign-In Based)
 
 - **Sign-in promotion claiming**: Call `player-promotion/claim-promotion` during user sign-in
-- **Local free spin detection**: Automatically detect available free spins from `PlayerInGame` data
+- **Local free spin detection**: Always return promotion data from `PlayerInGame` (promotionId, code, bonusItemCount)
 - **API-based deduction**: Call `player-promotion/deduct-bonus-item` before bet placement
 - **API-based rollback**: Call `player-promotion/rollback-bonus-item` if bet fails
 - **API-based tracking**: Call `promotion-ticket` API to create comprehensive audit records with status tracking

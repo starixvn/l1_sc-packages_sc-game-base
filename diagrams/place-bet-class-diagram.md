@@ -81,8 +81,6 @@ classDiagram
         +realPlayers Object
         +ingame Object
         +gameConfigs Object
-        +freeSpinConfigs Object
-        +promotions Object
     }
 
     class GameDefinition {
@@ -100,9 +98,13 @@ classDiagram
         +betTracks Object
         +betQueue Array
         +betProcessing boolean
-        +availablePromotions Array
-        +freeSpinsRemaining number
-        +activePromotionId string
+        +promotionData Object
+    }
+
+    class PromotionData {
+        +promotionId string
+        +code string
+        +bonusItemCount number
     }
 
 
@@ -121,6 +123,7 @@ classDiagram
     ProcessBetQueue --> PromotionApiClient
 
     GameData --> PlayerInGame
+    PlayerInGame --> PromotionData
 
     %% API relationships
     PromotionApiClient ..> PlayerPromotion : retrieves
@@ -145,8 +148,8 @@ classDiagram
 
 ### 3. **Data Management**
 
-- `GameData` includes free spin configurations
-- `PlayerInGame` tracks player state including available promotions and free spins
+- `GameData` contains only game-level data (time, rounds, players, configs)
+- `PlayerInGame` tracks player-specific state including promotion data
 - `PromotionTicket` (via API) tracks all free spin metadata and status
 
 ### 4. **Validation & Processing**
@@ -164,7 +167,7 @@ classDiagram
 ### 6. **Game Configuration**
 
 - `GameDefinition` includes free spin enablement and eligible choices
-- `GameData` maintains free spin specific configurations
+- `GameData` maintains only game-level configurations (not promotion-specific)
 
 ## Free Spin Flow Integration:
 
