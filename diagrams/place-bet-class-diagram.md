@@ -98,7 +98,7 @@ classDiagram
         +betTracks Object
         +betQueue Array
         +betProcessing boolean
-        +promotionData Object
+        +promotion Object
     }
 
     class PromotionData {
@@ -149,7 +149,7 @@ classDiagram
 ### 3. **Data Management**
 
 - `GameData` contains only game-level data (time, rounds, players, configs)
-- `PlayerInGame` tracks player-specific state including promotion data
+- `PlayerInGame` tracks player-specific state including promotion
 - `PromotionTicket` (via API) tracks all free spin metadata and status
 
 ### 4. **Validation & Processing**
@@ -174,7 +174,7 @@ classDiagram
 ### **Sign-In Processing:**
 
 1. `UserSignInConsumer` calls `player-promotion/claim-promotion` API during sign-in
-2. Store promotion data in `PlayerInGame` for quick access
+2. Store promotion in `PlayerInGame` for quick access
 
 ### **Bet Processing:**
 

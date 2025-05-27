@@ -44,8 +44,8 @@ flowchart TD
     PromotionResult -->|No| CreatePlayerData[Create PlayerInGame without Promotions]
     PromotionResult -->|Yes| StorePromotionData[Store Promotion Data in PlayerInGame]
 
-    StorePromotionData --> SetPromotionData[Set promotionData Object]
-    SetPromotionData --> SetPromotionFields[promotionId, code, bonusItemCount]
+    StorePromotionData --> SetPromotion[Set promotion Object]
+    SetPromotion --> SetPromotionFields[promotionId, code, bonusItemCount]
     SetPromotionFields --> CompleteSignIn[Complete Sign-In Process]
 
     CreatePlayerData --> CompleteSignIn
@@ -58,7 +58,7 @@ flowchart TD
 
     class UserSignInConsumer,ValidateUser,CompleteSignIn signInStyle
     class ClaimPromotionAPI apiStyle
-    class StorePromotionData,SetPromotionData,SetPromotionFields,CreatePlayerData dataStyle
+    class StorePromotionData,SetPromotion,SetPromotionFields,CreatePlayerData dataStyle
     class RejectSignIn errorStyle
 ```
 
@@ -74,10 +74,10 @@ flowchart TD
     Consumer --> Normalize[Normalize Payload]
     Normalize --> CheckFreeSpin{Free Spin Bet?}
 
-    CheckFreeSpin -->|Yes| GetPromotionData[Get Promotion Data from PlayerInGame]
+    CheckFreeSpin -->|Yes| GetPromotion[Get Promotion from PlayerInGame]
     CheckFreeSpin -->|No| ParamCheck[Parameter Validation]
 
-    GetPromotionData --> CheckBonusCount{bonusItemCount > 0?}
+    GetPromotion --> CheckBonusCount{bonusItemCount > 0?}
     CheckBonusCount -->|No| ParamCheck
     CheckBonusCount -->|Yes| DeductBonus[Call player-promotion/deduct-bonus-item]
     DeductBonus --> BonusSuccess{API Success?}
@@ -94,7 +94,7 @@ flowchart TD
 
     class Reject,ErrorResponse,BonusError errorStyle
     class Consumer,Normalize,BetValidation successStyle
-    class GetPromotionData,DeductBonus,SetFreeSpinParams apiStyle
+    class GetPromotion,DeductBonus,SetFreeSpinParams apiStyle
 ```
 
 ## 4. Free Spin Detection & Validation Layer
@@ -102,9 +102,9 @@ flowchart TD
 ```mermaid
 flowchart TD
     FreeSpinDetection[Free Spin Detection] --> CheckPlayerData[Check PlayerInGame Data]
-    CheckPlayerData --> GetPromotionData[Get Promotion Data from PlayerInGame]
+    CheckPlayerData --> GetPromotion[Get Promotion from PlayerInGame]
 
-        GetPromotionData --> PromotionData[Return Promotion Data]
+        GetPromotion --> PromotionData[Return Promotion Data]
     PromotionData --> ShowData[promotionId, code, bonusItemCount]
     ShowData --> HasBonusItems{bonusItemCount > 0?}
     HasBonusItems -->|No| NoFreeSpins[No Free Spins Available]
@@ -123,7 +123,7 @@ flowchart TD
     classDef errorStyle fill:#ffebee,stroke:#c62828
     classDef successStyle fill:#e8f5e8,stroke:#2e7d32
 
-    class CheckPlayerData,GetPromotionData,UpdatePlayerData dataStyle
+    class CheckPlayerData,GetPromotion,UpdatePlayerData dataStyle
     class DeductAPI apiStyle
     class PromotionData,ShowData promotionStyle
     class APIError,NoFreeSpins errorStyle
