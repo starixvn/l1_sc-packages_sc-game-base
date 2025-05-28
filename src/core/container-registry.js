@@ -1,6 +1,7 @@
 import { asClass, asValue, createContainer, InjectionMode } from "awilix";
 import { endGame, getBalance, placeBet } from "sc-base-apis";
 import { logger } from "sc-common";
+import { GamePromotionApiClient } from "@sc/game-promotion-api-client";
 
 import * as Crons from "./crons";
 import * as EventConsumers from "./event-consumers";
@@ -8,6 +9,7 @@ import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import GameManagementApiClientFactory from "./game-management-api";
+import GamePromotionApiClientFactory from "./game-promotion-api-client-factory/game-promotion-api-client-factory";
 
 import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
@@ -45,6 +47,7 @@ export default class ContainerRegistry {
         this.registerRouters();
         this.registerGameManagementService();
         this.registerPFSettings();
+        this.registerPromotionApiClient(appConfigs);
 
         return this.container;
     }
@@ -135,6 +138,12 @@ export default class ContainerRegistry {
     registerGameManagementService() {
         this.container.register({
             gameManagementApiClientFactory: asClass(GameManagementApiClientFactory).singleton(),
+        });
+    }
+
+    registerPromotionApiClient() {
+        this.container.register({
+            gamePromotionApiClientFactory: asClass(GamePromotionApiClientFactory).singleton(),
         });
     }
 }

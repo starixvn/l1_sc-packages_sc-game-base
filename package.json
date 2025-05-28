@@ -6,7 +6,7 @@
     "scripts": {
         "test": "jest",
         "test-coverage": "jest --collect-coverage",
-        "reg": "npm set registry http://npm.lumigame.com",
+        "reg": "npm set registry https://npm.lumigame.com",
         "verpatch": "npm version patch",
         "verminor": "npm version minor",
         "betaver": "npm version prerelease --preid beta",
@@ -27,6 +27,7 @@
     "type": "module",
     "license": "ISC",
     "dependencies": {
+        "@sc/game-promotion-api-client": "^1.0.1-beta.0",
         "awilix": "^8.0.0",
         "axios": "^1.0.0",
         "chance": "^1.1.7",
