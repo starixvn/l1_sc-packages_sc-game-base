@@ -2,6 +2,7 @@ import { getBetLimit } from "sc-base-apis";
 import { Socket } from "socket.io";
 
 import GameManagementApiClientFactory, { getOrDefault, callAndForget, post } from "../game-management-api";
+import GamePromotionApiClientFactory from "../game-promotion-api-client-factory/game-promotion-api-client-factory";
 import { signInGame as userServiceSignInGame } from "../helpers/user-service-helpers";
 import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
@@ -14,13 +15,26 @@ export default class UserSignInConsumer {
      * @param {PlayGamePermissionValidator} playGamePermissionValidator
      * @param {Object} appConfigs
      * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
+     * @param {Object} logService
+     * @param {GamePromotionApiClientFactory} gamePromotionApiClientFactory - Optional: GamePromotionApiClientFactory
      */
-    constructor(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, gameManagementApiClientFactory) {
+    constructor(
+        gameData,
+        userSignInPublisher,
+        playGamePermissionValidator,
+        appConfigs,
+        gameManagementApiClientFactory,
+        logService,
+        gamePromotionApiClientFactory = null
+    ) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
         this.playGamePermissionValidator = playGamePermissionValidator;
         this.appConfigs = appConfigs;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
+        this.logService = logService;
+        this.gamePromotionApiClientFactory = gamePromotionApiClientFactory;
+        this.gamePromotionApiClient = gamePromotionApiClientFactory?.instance();
     }
 
     /**
@@ -29,7 +43,6 @@ export default class UserSignInConsumer {
     async consume(socketClient, payload) {
         if (!payload) {
             this.handleUnauthorizedSignIn(socketClient);
-
             return;
         }
 
@@ -51,7 +64,6 @@ export default class UserSignInConsumer {
 
         if (!userInfo) {
             this.handleUnauthorizedSignIn(socketClient);
-
             return;
         }
 
@@ -65,7 +77,10 @@ export default class UserSignInConsumer {
                 }
             });
 
-            this.handleSignInSuccess(socketClient, userInfo, userSession);
+            // Claim promotions during sign-in if promotion is available
+            const promotionData = await this.claimPlayerPromotions(userSession);
+
+            this.handleSignInSuccess(socketClient, userInfo, userSession, promotionData);
         }
     }
 
@@ -91,7 +106,61 @@ export default class UserSignInConsumer {
         }
     }
 
-    handleSignInSuccess(socketClient, userInfo, userSession) {
+    /**
+     * Claim promotions for the player during sign-in
+     * @param {Object} userSession - User session data
+     * @returns {Promise<Object|null>} Promotion data or null
+     */
+    async claimPlayerPromotions(userSession) {
+        // Check if game offers promotion (factory and client must be available)
+        if (!this.gamePromotionApiClientFactory || !this.gamePromotionApiClient || !this.appConfigs.promotionApiSettings) {
+            return null;
+        }
+
+        // Get player-specific data (these should come from user session or player data)
+        const { operatorId, siteName, currencyGroup, playerId } = userSession;
+
+        // Validate required player data
+        if (!operatorId || !siteName || !currencyGroup || !playerId) {
+            return null;
+        }
+
+        try {
+            const playerDto = {
+                operatorId,
+                siteName,
+                playerId,
+                currencyGroup,
+            };
+
+            const result = await this.gamePromotionApiClient.claimPromotion(playerDto);
+
+            if (!result || !result.promotion) {
+                return null;
+            }
+
+            const promotion = result.promotion;
+            const now = new Date();
+            const expiryDate = promotion.expiryDate ? new Date(promotion.expiryDate) : null;
+
+            const promotionData = {
+                promotionId: promotion.promotionId,
+                code: promotion.code,
+                bonusItemCount: promotion.remainingBonusItems,
+                isActive: expiryDate ? now < expiryDate : true,
+                promotionType: promotion.promotionType,
+                expiryDate: promotion.expiryDate,
+                lastUsedDate: promotion.lastUsedDate,
+            };
+
+            return promotionData;
+        } catch (error) {
+            this.logService.logError(`Failed to claim promotion for player ${playerId}: ${error.message}`);
+            return null;
+        }
+    }
+
+    handleSignInSuccess(socketClient, userInfo, userSession, promotionData = null) {
         const userData = {
             UID: userSession.userId,
             profile: { name: userInfo.name, minBet: userInfo.minBet, maxBet: userInfo.maxBet },
@@ -99,9 +168,14 @@ export default class UserSignInConsumer {
             socketClient,
         };
 
+        if (promotionData) {
+            userData.promotion = promotionData;
+        }
+
         userSession.characterName = userInfo.name;
         this.gameData.realPlayers[socketClient.id] = userData;
 
+        // Simple sign-in response without promotion data
         socketClient.emit("signedIn");
     }
 
