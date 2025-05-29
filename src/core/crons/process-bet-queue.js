@@ -22,6 +22,7 @@ export default class ProcessBetQueue {
      * @param {mongoose.Model} dependencies.betLogsRepository
      * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
      * @param {BaseMetrics} dependencies.baseMetrics
+     * @param {Object} dependencies.gamePromotionApiClientFactory - Optional: GamePromotionApiClientFactory
      */
     constructor({
         definition,
@@ -34,6 +35,7 @@ export default class ProcessBetQueue {
         gameManagementApiClientFactory,
         baseMetrics,
         provablyFairConsumer,
+        gamePromotionApiClientFactory = null,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -45,6 +47,8 @@ export default class ProcessBetQueue {
         this.baseMetrics = baseMetrics;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
         this.provablyFairConsumer = provablyFairConsumer;
+        this.gamePromotionApiClientFactory = gamePromotionApiClientFactory;
+        this.gamePromotionApiClient = gamePromotionApiClientFactory?.instance();
     }
 
     start() {
@@ -83,6 +87,14 @@ export default class ProcessBetQueue {
             return;
         }
 
+        // Handle promotion deduction before placing bet
+        if (payload.usePromotion && this.gamePromotionApiClient) {
+            const deductionResult = await this.processPromotionDeduction(player, payload);
+            if (!deductionResult.success) {
+                return; // Error already handled in processPromotionDeduction
+            }
+        }
+
         const apiResult = await this.placeBet({ id: player.UID, session: player.session }, betInfo);
         const { response } = apiResult;
 
@@ -118,10 +130,9 @@ export default class ProcessBetQueue {
     }
 
     async composeValidationCriteria(player, payload) {
-        const betAmountValidationCriteria = (await this.composeBalanceValidationCriteria(player, payload)) || [];
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
 
-        return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
+        return bettingTimeValidationCriteria;
     }
 
     composeBettingTimeValidationCriteria(roundId) {
@@ -137,25 +148,6 @@ export default class ProcessBetQueue {
                 notice: { errorCode: helpers.noticeHelper.placeBetNextRound },
             },
         ];
-    }
-
-    async composeBalanceValidationCriteria(player, payload) {
-        if (payload.freeBet) {
-            const coins = await this.getCoinBalance(player);
-
-            return [
-                {
-                    failure: coins < payload.amount,
-                    notice: { errorCode: helpers.noticeHelper.notEnoughScoin },
-                },
-            ];
-        }
-
-        return [];
-    }
-
-    async getCoinBalance(player) {
-        return getOrDefault(this.gameManagementApiClient.users.getUserScoins(player.UID), 0);
     }
 
     updateUserStakeLevel(player, minBet, maxBet) {
@@ -175,17 +167,24 @@ export default class ProcessBetQueue {
     }
 
     formatApiBetInfo(payload) {
-        return {
+        const betInfo = {
             amount: payload.amount,
             gameId: this.definition.id,
             gameRoundId: payload.roundId,
             choiceId: this.definition.choicesMapper[payload.betChoice],
-            freeBet: payload.freeBet,
             clientSentTime: payload.time ?? new Date(),
             metadata: {
                 mode: `${payload.mode}`,
             },
         };
+
+        // Add promotion metadata if applicable
+        if (payload.usePromotion && payload.promotionId) {
+            betInfo.metadata.usePromotion = true;
+            betInfo.metadata.promotionId = payload.promotionId;
+        }
+
+        return betInfo;
     }
 
     async handleSuccessBet(player, balance, roundId, bet) {
@@ -195,7 +194,7 @@ export default class ProcessBetQueue {
             await this.insertBetLog(player, roundId, bet, rate);
         }
 
-        await this.upsertBet(player, roundId, bet, rate);
+        const betTime = await this.upsertBet(player, roundId, bet, rate);
 
         if (this.isCountOnTotalBets(player)) {
             this.adjustTotalBets(player, bet, rate);
@@ -203,35 +202,74 @@ export default class ProcessBetQueue {
 
         this.adjustOwnBets(player.profile.name, bet);
 
-        if (bet.freeBet) {
-            const user = await getOrDefault(
-                this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({
-                    id: player.UID,
-                    balance: balance.red,
-                    deductionscoins: bet.amount,
-                }),
-                { red: balance.red, scoins: 0 }
-            );
-            this.notifyPlacingBetResult(player, { ...balance, scoins: user.scoins }, bet, rate);
-        } else {
-            callAndForget(
-                this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({
-                    id: player.UID,
-                    balance: balance.red,
-                    deductionscoins: 0,
-                })
-            );
-            this.notifyPlacingBetResult(player, balance, bet, rate);
+        // Handle promotion ticket creation
+        if (bet.usePromotion && bet.promotionId) {
+            await this.createPromotionTicket(player, bet, betTime);
         }
 
-        if (!bet.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
+        callAndForget(
+            this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({
+                id: player.UID,
+                balance: balance.red,
+                deductionscoins: 0,
+            })
+        );
+        this.notifyPlacingBetResult(player, balance, bet, rate);
+
+        if (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet) {
             this.updateUserStakeLevel(player, balance.minBet, balance.maxBet);
+        }
+    }
+
+    /**
+     * Create promotion ticket for promotion bets
+     * @param {Object} player - Player object
+     * @param {Object} bet - Bet object
+     * @param {Date} betTime - Bet timestamp
+     */
+    async createPromotionTicket(player, bet, betTime) {
+        if (!this.gamePromotionApiClient) {
+            this.logService?.logInfo(`Promotion API client not available for ticket creation - player: ${player.profile.name}`);
+            return;
+        }
+
+        try {
+            const ticketDto = {
+                playerId: player.session.playerId,
+                operatorId: player.session.operatorId,
+                gameId: this.definition.id,
+                gameRoundId: bet.roundId,
+                appType: 1, // Default app type - can be configured if needed
+                betAmount: bet.amount,
+                winAmount: 0, // Will be updated when game settles
+            };
+
+            const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
+
+            if (!ticketResult || !ticketResult.success) {
+                this.logService?.logError(`Failed to create promotion ticket for player ${player.profile.name}:`, {
+                    error: ticketResult?.error || "Unknown error",
+                    promotionId: bet.promotionId,
+                    betId: ticketDto.betId,
+                });
+            }
+        } catch (error) {
+            this.logService?.logError(`Error creating promotion ticket for player ${player.profile.name}:`, {
+                error: error.message,
+                promotionId: bet.promotionId,
+                stack: error.stack,
+            });
         }
     }
 
     handleFailedBet(player, notice, bet) {
         const { betChoice } = bet;
         this.decreaseBetTracks(player.profile.name, bet);
+
+        // Handle promotion rollback if bet failed after deduction
+        if (bet.usePromotion && bet.promotionId) {
+            this.rollbackPromotionOnFailure(player, bet);
+        }
 
         if (notice.apiError) {
             this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, betChoice, apiError: notice.apiError });
@@ -242,6 +280,51 @@ export default class ProcessBetQueue {
         }
     }
 
+    /**
+     * Rollback promotion bonus item when bet fails at API level
+     * @param {Object} player - Player object
+     * @param {Object} bet - Bet object
+     */
+    async rollbackPromotionOnFailure(player, bet) {
+        if (!this.gamePromotionApiClient) {
+            return;
+        }
+
+        try {
+            const rollbackDto = {
+                operatorId: player.session.operatorId,
+                siteName: player.session.siteName,
+                playerId: player.session.playerId,
+                promotionId: bet.promotionId,
+                quantity: 1,
+            };
+
+            const rollbackResult = await this.gamePromotionApiClient.rollbackBonusItem(rollbackDto);
+
+            if (rollbackResult && rollbackResult.success) {
+                if (player.promotion && player.promotion.promotionId === bet.promotionId) {
+                    player.promotion.bonusItemCount = rollbackResult.remainingBonusItems || player.promotion.bonusItemCount + 1;
+                }
+
+                this.logService?.logInfo(`Successfully rolled back promotion after API failure for player ${player.profile.name}`, {
+                    promotionId: bet.promotionId,
+                    remainingBonusItems: rollbackResult.remainingBonusItems,
+                });
+            } else {
+                this.logService?.logError(`Failed to rollback promotion after API failure for player ${player.profile.name}:`, {
+                    error: rollbackResult?.error || "Unknown error",
+                    promotionId: bet.promotionId,
+                });
+            }
+        } catch (error) {
+            this.logService?.logError(`Error rolling back promotion after API failure for player ${player.profile.name}:`, {
+                error: error.message,
+                promotionId: bet.promotionId,
+                stack: error.stack,
+            });
+        }
+    }
+
     async upsertBet(player, roundId, bet, rate) {
         const configs = this.gameData.gameConfigs;
         const newBet = {
@@ -249,11 +332,17 @@ export default class ProcessBetQueue {
             name: player.profile.name,
             time: new Date(),
             odds: configs.odds,
-            freeBet: bet.freeBet,
             roundId,
             clientSeed: bet.clientSeed,
         };
-        const existingBetFilter = { uid: player.UID, roundId, freeBet: bet.freeBet };
+
+        // Add promotion metadata to bet record
+        if (bet.usePromotion && bet.promotionId) {
+            newBet.usePromotion = true;
+            newBet.promotionId = bet.promotionId;
+        }
+
+        const existingBetFilter = { uid: player.UID, roundId };
         const existingBetIncrement = {
             [bet.betChoice]: bet.amount,
             totalAmount: bet.amount,
@@ -263,7 +352,6 @@ export default class ProcessBetQueue {
             newBet.siteId = player.session.siteId;
             newBet.currency = player.session.currencyName;
             newBet.rate = rate;
-
             newBet.operatorId = player.session.operatorId;
             newBet.playerId = player.session.playerId;
             newBet.appType = player.session.system;
@@ -285,17 +373,21 @@ export default class ProcessBetQueue {
             time: new Date(),
             choice: bet.betChoice,
             amount: bet.amount,
-            freeBet: bet.freeBet,
             clientSentTime: bet.clientSentTime,
             receivedTime: bet.receivedTime,
             roundId,
         };
 
+        // Add promotion metadata to bet log
+        if (bet.usePromotion && bet.promotionId) {
+            newBetLog.usePromotion = true;
+            newBetLog.promotionId = bet.promotionId;
+        }
+
         if (player.session) {
             newBetLog.siteId = player.session.siteId;
             newBetLog.currency = player.session.currencyName;
             newBetLog.rate = rate;
-
             newBetLog.operatorId = player.session.operatorId;
             newBetLog.playerId = player.session.playerId;
             newBetLog.appType = player.session.system;
@@ -341,13 +433,12 @@ export default class ProcessBetQueue {
     }
 
     generatePlacingBetResult(player, balance, bet, rate) {
-        const { amount, freeBet, betChoice } = bet;
+        const { amount, betChoice } = bet;
         const { ownBets } = this.gameData.ingame[player.profile.name] || { ownBets: {} };
         return {
             ownBets: ownBets,
             endBet: amount,
             betChoice,
-            freeBet,
             user: { ...balance },
         };
     }
@@ -363,5 +454,49 @@ export default class ProcessBetQueue {
                 currency.name === player.session.currencyName &&
                 !(currency.isTest && currency.isUncountOnTotal)
         );
+    }
+
+    /**
+     * Process promotion deduction via API
+     * @param {Object} player - Player object
+     * @param {Object} payload - Bet payload
+     * @returns {Promise<Object>} Result with success status
+     */
+    async processPromotionDeduction(player, payload) {
+        try {
+            const promotionData = player.promotion;
+
+            const deductDto = {
+                operatorId: player.session.operatorId,
+                siteName: player.session.siteName,
+                playerId: player.session.playerId,
+                promotionId: promotionData.promotionId,
+                quantity: 1,
+            };
+
+            const deductResult = await this.gamePromotionApiClient.deductBonusItem(deductDto);
+
+            if (!deductResult || !deductResult.success) {
+                this.logService?.logError(`Failed to deduct bonus item for player ${player.profile.name}:`, deductResult);
+                this.placeBetPublisher.publishGameFailedBet(player.UID, {
+                    endBet: -1,
+                    betChoice: payload.betChoice,
+                    notice: { errorCode: helpers.noticeHelper.invalidBet, msg: "Promotion deduction failed" },
+                });
+                return { success: false };
+            }
+
+            player.promotion.bonusItemCount = deductResult.remainingBonusItems || promotionData.bonusItemCount - 1;
+
+            return { success: true };
+        } catch (error) {
+            this.logService?.logError(`Error processing promotion deduction for player ${player.profile.name}:`, error);
+            this.placeBetPublisher.publishGameFailedBet(player.UID, {
+                endBet: -1,
+                betChoice: payload.betChoice,
+                notice: { errorCode: helpers.noticeHelper.invalidBet, msg: "Promotion processing error" },
+            });
+            return { success: false };
+        }
     }
 }
