@@ -4,7 +4,6 @@ import AdminMonitorConsumer from "./admin-monitor-consumer";
 import GameResultServiceConsumer from "./game-result-service-consumer";
 import InGameConsumer from "./in-game-consumer";
 import PlaceBetConsumer from "./place-bet-consumer";
-import PromotionConsumer from "./promotion-consumer";
 import ProvablyFairConsumer from "./provably-fair-consumer";
 import RoundIdConsumer from "./round-id-consumer";
 import RoundResultConsumer from "./round-result-consumer";
@@ -20,7 +19,6 @@ export {
     GameResultServiceConsumer,
     InGameConsumer,
     PlaceBetConsumer,
-    PromotionConsumer,
     ProvablyFairConsumer,
     RoundIdConsumer,
     RoundResultConsumer,

@@ -290,7 +290,7 @@ describe("ProcessBetQueue", () => {
                     await proceedBetQueue.proceedBet(player, payload);
 
                     // Assert
-                    expect(proceedBetQueue.handleSuccessBet).toBeCalledWith(player, {}, apiBetInfo.gameRoundId, payload);
+                    expect(proceedBetQueue.handleSuccessBet).toBeCalledWith(player, {}, apiBetInfo.gameRoundId, payload, []);
                 });
             });
 
@@ -425,7 +425,7 @@ describe("ProcessBetQueue", () => {
                 await proceedBetQueue.validateBetRequest(player, payload);
 
                 // Assert
-                expect(proceedBetQueue.handleFailedBet).toBeCalledWith(player, failedCriterion.notice, payload);
+                expect(proceedBetQueue.handleFailedBet).toBeCalledWith(player, failedCriterion.notice, payload, []);
             });
 
             it("should return false", async () => {
@@ -656,7 +656,7 @@ describe("ProcessBetQueue", () => {
             jest.spyOn(proceedBetQueue, "calculateCurrencyRate");
 
             // Act
-            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
             // Assert
             expect(proceedBetQueue.calculateCurrencyRate).toBeCalledWith(player.session);
@@ -669,10 +669,10 @@ describe("ProcessBetQueue", () => {
             proceedBetQueue.calculateCurrencyRate = jest.fn().mockReturnValueOnce(userCurrencyRate);
 
             // Act
-            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
             // Assert
-            expect(proceedBetQueue.upsertBet).toBeCalledWith(player, roundId, payload, userCurrencyRate);
+            expect(proceedBetQueue.upsertBet).toBeCalledWith(player, roundId, payload, userCurrencyRate, []);
         });
 
         it("should call isCountOnTotalBets", async () => {
@@ -680,7 +680,7 @@ describe("ProcessBetQueue", () => {
             jest.spyOn(proceedBetQueue, "isCountOnTotalBets");
 
             // Act
-            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
             // Assert
             expect(proceedBetQueue.isCountOnTotalBets).toBeCalledWith(player);
@@ -693,7 +693,7 @@ describe("ProcessBetQueue", () => {
             proceedBetQueue.calculateCurrencyRate = jest.fn().mockReturnValueOnce(userCurrencyRate);
 
             // Act
-            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
             // Assert
             expect(proceedBetQueue.notifyPlacingBetResult).toBeCalledWith(player, response, payload, userCurrencyRate);
@@ -706,7 +706,7 @@ describe("ProcessBetQueue", () => {
             proceedBetQueue.calculateCurrencyRate = jest.fn().mockReturnValueOnce(userCurrencyRate);
 
             // Act
-            await proceedBetQueue.handleSuccessBet(player, { ...response, red: 2000 }, roundId, { ...payload, freeBet: false });
+            await proceedBetQueue.handleSuccessBet(player, { ...response, red: 2000 }, roundId, { ...payload, freeBet: false }, []);
 
             // Assert
             expect(proceedBetQueue.gameManagementApiClient.users.setBalanceAndDecreaseScoins).toBeCalledWith({
@@ -724,10 +724,10 @@ describe("ProcessBetQueue", () => {
                 proceedBetQueue.calculateCurrencyRate = jest.fn().mockReturnValueOnce(userCurrencyRate);
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
-                expect(proceedBetQueue.insertBetLog).toBeCalledWith(player, roundId, payload, userCurrencyRate);
+                expect(proceedBetQueue.insertBetLog).toBeCalledWith(player, roundId, payload, userCurrencyRate, []);
             });
         });
 
@@ -738,7 +738,7 @@ describe("ProcessBetQueue", () => {
                 jest.spyOn(proceedBetQueue, "insertBetLog");
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
                 expect(proceedBetQueue.insertBetLog).not.toBeCalled();
@@ -754,7 +754,7 @@ describe("ProcessBetQueue", () => {
                 jest.spyOn(proceedBetQueue, "adjustTotalBets");
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
                 expect(proceedBetQueue.adjustTotalBets).toBeCalledWith(player, payload, userCurrencyRate);
@@ -768,7 +768,7 @@ describe("ProcessBetQueue", () => {
                 jest.spyOn(proceedBetQueue, "adjustTotalBets");
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
                 expect(proceedBetQueue.adjustTotalBets).not.toBeCalled();
@@ -783,7 +783,7 @@ describe("ProcessBetQueue", () => {
                 jest.spyOn(proceedBetQueue, "updateUserStakeLevel");
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
                 expect(proceedBetQueue.updateUserStakeLevel).not.toBeCalled();
@@ -798,7 +798,7 @@ describe("ProcessBetQueue", () => {
                 proceedBetQueue.updateUserStakeLevel = jest.fn();
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
                 expect(proceedBetQueue.updateUserStakeLevel).toBeCalledWith(player, response.minBet, response.maxBet);

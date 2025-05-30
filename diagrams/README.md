@@ -1,103 +1,115 @@
-# Place Bet System Diagrams (Updated with Free Spin)
+# Place Bet System Diagrams
 
-This folder contains comprehensive diagrams documenting the place bet system architecture and flow, including free spin functionality.
+This directory contains comprehensive diagrams documenting the place bet system architecture, including free spin functionality and integration with Pentagon's official promotion APIs.
 
-## Files
+## Diagrams Overview
 
-### 📊 [place-bet-class-diagram.md](./place-bet-class-diagram.md)
+### 1. [Class Diagram](place-bet-class-diagram.md)
 
-**Class Diagram** showing the static structure of the place bet system with free spin integration:
+- **Purpose**: Shows the relationships between all system components
+- **Key Focus**: Component interactions and data flow
+- **Includes**: Free spin integration points and official API usage
 
-- Core classes and their relationships
-- Free spin specific components (FreeSpinHandler, PlayerPromotion, PromotionTicket)
-- Key methods and properties
-- Inheritance hierarchy
-- Dependencies between components
+### 2. [Flow Diagrams](place-bet-flow-diagram.md)
 
-### 🔄 [place-bet-flow-diagram.md](./place-bet-flow-diagram.md)
+- **Purpose**: Detailed step-by-step process flows
+- **Structure**: 8 focused diagrams covering different aspects
+- **Coverage**: Complete bet lifecycle including free spins
 
-**Flow Diagrams** broken down into 9 focused sections (Updated with Sign-In Based Free Spin):
+## System Architecture Overview
 
-1. **High-Level Overview** - Complete system flow with sign-in promotion claiming
-2. **User Sign-In & Promotion Claiming** - Promotion claiming during sign-in process
-3. **Request Reception & Initial Processing** - WebSocket handling with free spin detection
-4. **Free Spin Detection & Validation Layer** - Local data-driven validation and bonus management
-5. **Regular Validation Layer Details** - Multi-layer validation system with API-based rollback
-6. **Player Data Management** - Player state, bet tracking, and promotion data
-7. **Queue Processing** - Asynchronous processing for both regular and free spin bets
-8. **API Processing & Response Handling** - External API integration with promotion tickets
-9. **Free Spin Sequence Flow (API-Based)** - Complete API-driven free spin interaction sequence
+### Core Components
 
-## How to Use
+#### **WebSocket Layer**
 
-### Viewing Diagrams
+- **BaseSocketRouter**: Handles incoming WebSocket events and routes to appropriate consumers
 
-These diagrams use **Mermaid** syntax and can be viewed in:
+#### **Business Logic Layer**
 
-- GitHub (native Mermaid support)
-- VS Code with Mermaid extension
-- Online Mermaid editors
-- Documentation platforms that support Mermaid
+- **PlaceBetConsumer**: Processes bet requests, validates parameters, and manages free spin detection
+- **UserSignInConsumer**: Handles user authentication and promotion claiming
+- **ProcessBetQueue**: Asynchronously processes bet queues with external API integration
 
-### Understanding the System
+#### **Data Management**
 
-1. Start with the **High-Level Overview** in the flow diagram
-2. Review the **Class Diagram** to understand component relationships
-3. Deep dive into specific flow sections as needed
+- **GameData**: Manages in-memory game state and player data
+- **PlayerInGame**: Represents individual player state including promotion data
 
-## System Overview
+#### **External Integration**
 
-The place bet system is designed with enhanced API-based free spin capabilities:
+- **GamePromotionApiClient**: Official Pentagon package for all promotion operations
+- **External Bet API**: Handles actual bet placement and settlement
 
-- **Simplified Architecture**: Removed base classes for cleaner, more focused design
-- **Separation of Concerns**: Clear boundaries between validation, processing, and communication
-- **Asynchronous Processing**: Queue-based system for scalability
-- **Multiple Validation Layers**: Ensuring data integrity at every step
-- **Real-time Communication**: Direct WebSocket-based immediate feedback
-- **Error Resilience**: Comprehensive error handling and rollback mechanisms
-- **API-Based Free Spin Integration**: Seamless handling of promotional free spin bets via Promotion APIs
-- **External Bonus Management**: API-driven pre-deduction and rollback mechanisms for bonus items
+#### **Communication Layer**
 
-## Architecture Highlights
+- **PlaceBetPublisher**: Manages real-time client notifications via WebSocket
 
-### Key Components
+### Free Spin Integration
 
-- **UserSignInConsumer**: Handles user sign-in and claims promotions during sign-in
-- **PlaceBetConsumer**: Initial validation, queuing, and free spin detection from local data
-- **PromotionApiClient**: Handles all promotion-related API communications
-- **ProcessBetQueue**: Asynchronous bet processing for both regular and free spin bets
-- **PlaceBetPublisher**: Real-time client communication with free spin notifications
-- **GameData**: Central state management for game-level data (time, rounds, players, configs)
-- **PlayerInGame**: Enhanced with promotion (promotion object containing promotionId, code, bonusItemCount)
-- **PlayerPromotion**: Data model for promotion information (from API)
-- **PromotionTicket**: Complete audit trail and status tracking for free spins (created via API)
+The system integrates free spin functionality through Pentagon's official promotion APIs:
 
-### Flow Characteristics
+1. **Sign-In Phase**: Claims available promotions and stores in player data
+2. **Bet Detection**: Automatically detects free spin eligibility from player promotion data
+3. **Deduction Phase**: Deducts bonus items before bet placement
+4. **Processing Phase**: Processes free spin bets through regular bet queue
+5. **Audit Phase**: Creates promotion tickets for complete audit trail
+6. **Error Handling**: Rollback mechanisms for failed free spin attempts
 
-- **Non-blocking**: Immediate response to clients
-- **Reliable**: Multiple validation and error handling layers
-- **Scalable**: Queue-based processing with concurrency control
-- **Auditable**: Comprehensive logging and API-based tracking
-- **API-Driven**: Full free spin lifecycle management via external APIs
-- **Rollback-capable**: API-based bonus item restoration on failures
+### API Integration
 
-### Free Spin Features (Sign-In Based)
+The system now uses the official `@sc/game-promotion-api-client` package:
 
-- **Sign-in promotion claiming**: Call `player-promotion/claim-promotion` during user sign-in
-- **Local free spin detection**: Always return promotion from `PlayerInGame` (promotionId, code, bonusItemCount)
-- **API-based deduction**: Call `player-promotion/deduct-bonus-item` before bet placement
-- **API-based rollback**: Call `player-promotion/rollback-bonus-item` if bet fails
-- **API-based tracking**: Call `promotion-ticket` API to create comprehensive audit records with status tracking
-- **Zero-amount processing**: Handle bets with 0.00 amount
-- **Hybrid state management**: Local promotion data for quick access, API for state changes
+- **Standardized**: Uses Pentagon's official API client
+- **Maintained**: Officially supported and maintained by Pentagon
+- **Consistent**: Follows Pentagon's standard patterns and conventions
+- **Reliable**: Production-tested and validated by Pentagon team
 
-### Promotion APIs Integration
+### Key Benefits
 
-The system integrates with four key Promotion APIs:
+1. **Separation of Concerns**: Clear boundaries between game logic and promotion logic
+2. **Scalability**: Asynchronous processing with queue management
+3. **Reliability**: Comprehensive error handling and rollback mechanisms
+4. **Auditability**: Complete audit trail through promotion tickets
+5. **Official Support**: Uses Pentagon's official promotion infrastructure
 
-1. **`player-promotion/claim-promotion`**: Get existing or claim new promotion for a player
-2. **`player-promotion/deduct-bonus-item`**: Deduct bonus items from player promotion
-3. **`player-promotion/rollback-bonus-item`**: Rollback bonus items if bet fails
-4. **`promotion-ticket`**: Create audit tickets for tracking free spin activities
+## Diagram Navigation
 
-These diagrams serve as the definitive reference for understanding how the enhanced place bet system works with API-based promotion management, including both regular betting and free spin promotional features, from initial client request to final response.
+### For Developers
+
+- Start with **Class Diagram** to understand component relationships
+- Review **Flow Diagrams** for detailed process understanding
+- Focus on specific flows based on your development needs
+
+### For Architects
+
+- **Class Diagram** shows overall system structure
+- **High-Level Overview** in flow diagrams shows system boundaries
+- **API Integration** sections show external dependencies
+
+### For QA/Testing
+
+- **Flow Diagrams** provide complete test scenarios
+- **Error Handling** flows show failure cases to test
+- **Free Spin Sequence** shows specific promotion test cases
+
+## Implementation Notes
+
+### Configuration Requirements
+
+- Pentagon promotion API credentials and endpoints
+- Game-specific promotion eligibility rules
+- Free spin configuration per game type
+
+### Dependencies
+
+- `@sc/game-promotion-api-client` - Official Pentagon promotion package
+- WebSocket infrastructure for real-time communication
+- External bet processing APIs
+
+### Monitoring Points
+
+- Promotion API response times and error rates
+- Free spin usage patterns and success rates
+- Queue processing performance and backlog monitoring
+
+This documentation provides a complete reference for understanding, implementing, and maintaining the place bet system with integrated free spin functionality.

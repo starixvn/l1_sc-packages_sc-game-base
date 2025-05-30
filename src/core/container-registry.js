@@ -1,4 +1,4 @@
-import { asClass, asValue, createContainer, InjectionMode } from "awilix";
+import { asClass, asFunction, asValue, createContainer, InjectionMode } from "awilix";
 import { endGame, getBalance, placeBet } from "sc-base-apis";
 import { logger } from "sc-common";
 import { GamePromotionApiClient } from "@sc/game-promotion-api-client";
@@ -6,12 +6,12 @@ import { GamePromotionApiClient } from "@sc/game-promotion-api-client";
 import * as Crons from "./crons";
 import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
+import * as EventInterceptors from "./event-interceptors";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import GameManagementApiClientFactory from "./game-management-api";
 import GamePromotionApiClientFactory from "./game-promotion-api-client-factory/game-promotion-api-client-factory";
 
-import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
 import { PlayGamePermissionValidator } from "./validators";
 
@@ -47,7 +47,11 @@ export default class ContainerRegistry {
         this.registerRouters();
         this.registerGameManagementService();
         this.registerPFSettings();
-        this.registerPromotionApiClient(appConfigs);
+        this.registerPromotionApiClient();
+        this.registerInterceptors();
+
+        // Register interceptor arrays after all interceptors are registered
+        this.registerInterceptorArrays();
 
         return this.container;
     }
@@ -115,8 +119,8 @@ export default class ContainerRegistry {
 
     registerCrons() {
         this.container.register({
-            bot: asClass(Crons.BaseBot).singleton(),
-            gameCron: asClass(Crons.BaseGameCron).singleton().proxy(),
+            baseBot: asClass(Crons.BaseBot).singleton(),
+            baseGameCron: asClass(Crons.BaseGameCron).singleton().proxy(),
             processBetQueue: asClass(Crons.ProcessBetQueue).singleton().proxy(),
         });
     }
@@ -144,6 +148,18 @@ export default class ContainerRegistry {
     registerPromotionApiClient() {
         this.container.register({
             gamePromotionApiClientFactory: asClass(GamePromotionApiClientFactory).singleton(),
+        });
+    }
+
+    registerInterceptors() {
+        this.container.register({
+            promotionBetInterceptor: asClass(EventInterceptors.PromotionBetInterceptor).singleton(),
+        });
+    }
+
+    registerInterceptorArrays() {
+        this.container.register({
+            betEventInterceptors: asFunction((container) => [container.promotionBetInterceptor]).singleton(),
         });
     }
 }

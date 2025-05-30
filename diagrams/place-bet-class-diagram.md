@@ -1,194 +1,177 @@
-# Place Bet System - Class Diagram (Updated with Free Spin)
+# Place Bet System - Class Diagram (Updated with Promotion)
+
+## Overview
+
+This class diagram shows the relationships between all components in the place bet system, including the promotion functionality and promotion API integration using the official `@sc/game-promotion-api-client` package.
+
+## Class Diagram
 
 ```mermaid
 classDiagram
-    class UserSignInConsumer {
-        +consume(socketClient, payload)
-        +handleSignInSuccess(socketClient, userInfo, userSession)
-        +handleUnauthorizedSignIn(socketClient)
-        +getUserBetLimit(userSession, userInfo, socketClient)
-        +claimPlayerPromotions(userSession) Promise
+    class BaseSocketRouter {
+        +handleBetEvent(socket, payload)
+        +verifyConnection(socket)
+        +delegateToConsumer(event, data)
     }
 
     class PlaceBetConsumer {
-        +consume(player, payload)
-        +validateRequestParams(request, player) boolean
-        +validateBetRequest(player, betChoice, amount, freeBet, roundId) boolean
-        +detectFreeSpinEligibility(player) boolean
-        +adjustBetTracks(playerName, bet)
-        +handleFreeSpinBet(player, payload) Promise
-        +processSuccessfulFreeSpin(player, bet, result) Promise
-        +processFailedFreeSpin(player, bet, error) Promise
-        +publishToUser(userId, payload)
+        +consumeBetEvent(payload)
+        +validateParameters(betData)
+        +detectPromotion(playerData)
+        +addToQueue(betData)
     }
 
-    class PromotionApiClient {
-        +claimPromotion(playerId, promotionId) Promise
-        +deductBonusItem(playerId, promotionId, amount) Promise
-        +rollbackBonusItem(playerId, promotionId, amount) Promise
-        +createPromotionTicket(ticketData) Promise
-        +getPlayerPromotion(playerId, promotionId) Promise
+    class GamePromotionApiClient {
+        <<external package>>
+        +claimPromotion(playerDto)
+        +deductBonusItem(deductDto)
+        +rollbackBonusItem(rollbackDto)
+        +createPromotionTicket(ticketDto)
+        +checkEligibility(playerDto)
+        +assignPromotion(assignDto)
+        +testConnection()
     }
 
-    class PlayerPromotion {
-        +playerId string
-        +promotionId string
-        +remainingBonusItems number
-        +lastUsedDate Date
-        +isActive boolean
-        +gameEligibility Array
-        +promotionType string
-        +expiryDate Date
-    }
-
-    class PromotionTicket {
-        +playerId string
-        +operatorId string
-        +gameId number
-        +gameRoundId number
-        +betId string
-        +appType string
-        +betAmount number
-        +winAmount number
-        +promotionId string
-        +ticketType string
-        +createdAt Date
-    }
-
-    class PlaceBetPublisher {
-        +publishGameFailedBet(playerId, payload)
-        +publishSuccessBet(playerId, payload, rate)
-        +publishFreeSpinSuccess(playerId, result)
-        +publishFreeSpinFailure(playerId, error)
-        +publishToUser(userId, payload)
+    class UserSignInConsumer {
+        +handleSignIn(userData)
+        +validateUser(userId)
+        +claimPromotions(playerId)
+        +storePlayerData(playerData)
     }
 
     class ProcessBetQueue {
-        +start()
-        +dequeueBets()
-        +proceedBet(player, payload) Promise
-        +proceedFreeSpinBet(player, payload) Promise
-        +handleSuccessBet(player, balance, roundId, bet) Promise
-        +handleFailedBet(player, notice, bet)
-        +handleFreeSpinSuccess(player, result) Promise
-        +handleFreeSpinFailure(player, error) Promise
-        +callPromotionApis(player, payload) Promise
+        +processPlayerQueues()
+        +dequeueBet(playerId)
+        +validateBet(betData)
+        +callExternalAPI(betData)
+        +handleResponse(response)
+    }
+
+    class PlaceBetPublisher {
+        +publishBetResult(result)
+        +notifyClient(socket, data)
+        +broadcastUpdate(gameData)
     }
 
     class GameData {
-        +remainingTime number
-        +roundId number
-        +realPlayers Object
-        +ingame Object
-        +gameConfigs Object
-    }
-
-    class GameDefinition {
-        +id number
-        +name string
-        +choices Array
-        +durations Object
-        +hedgeBetGroups Array
-        +freeSpinEnabled boolean
-        +freeSpinChoices Array
+        +players: Map
+        +gameState: Object
+        +addPlayer(playerId, playerData)
+        +updatePlayerData(playerId, data)
+        +getPlayer(playerId)
     }
 
     class PlayerInGame {
-        +name string
-        +betTracks Object
-        +betQueue Array
-        +betProcessing boolean
-        +promotion Object
+        +playerId: string
+        +betTracks: Object
+        +betQueue: Array
+        +promotion: Object
+        +bonusItemCount: number
+        +isProcessing: boolean
     }
 
-    class PromotionData {
-        +promotionId string
-        +code string
-        +bonusItemCount number
+    class BetData {
+        +playerId: string
+        +amount: number
+        +betChoice: string
+        +clientSeed: string
+        +usePromotion: boolean
+        +promotionId: string
     }
 
+    class PlayerPromotion {
+        +promotionId: string
+        +code: string
+        +bonusItemCount: number
+        +isActive: boolean
+        +expiryDate: string
+    }
 
+    class PromotionTicket {
+        +ticketId: string
+        +playerId: string
+        +promotionId: string
+        +betId: string
+        +gameRoundId: string
+        +createdAt: string
+    }
 
-        %% Relationships
-    UserSignInConsumer --> PromotionApiClient
-    UserSignInConsumer --> GameData
+    class PromotionBet {
+        +amount: 0.00
+        +usePromotion: true
+        +promotionId: string
+        +originalBonusCount: number
+    }
 
-    PlaceBetConsumer --> PromotionApiClient
-    PlaceBetConsumer --> GameData
-    PlaceBetConsumer --> GameDefinition
-    PlaceBetConsumer --> PlaceBetPublisher
+    %% Relationships
+    BaseSocketRouter --> PlaceBetConsumer : delegates to
+    BaseSocketRouter --> UserSignInConsumer : delegates to
 
-    ProcessBetQueue --> GameData
-    ProcessBetQueue --> PlaceBetPublisher
-    ProcessBetQueue --> PromotionApiClient
+    PlaceBetConsumer --> GameData : reads/writes
+    PlaceBetConsumer --> GamePromotionApiClient : calls for promotions
 
-    GameData --> PlayerInGame
-    PlayerInGame --> PromotionData
+    UserSignInConsumer --> GameData : creates PlayerInGame
+    UserSignInConsumer --> GamePromotionApiClient : claims promotions
 
-    %% API relationships
-    PromotionApiClient ..> PlayerPromotion : retrieves
-    PromotionApiClient ..> PromotionTicket : creates
+    ProcessBetQueue --> GameData : processes queues
+    ProcessBetQueue --> GamePromotionApiClient : creates tickets
+    ProcessBetQueue --> PlaceBetPublisher : publishes results
+
+    GameData --> PlayerInGame : contains
+    PlayerInGame --> BetData : queues
+    PlayerInGame --> PlayerPromotion : has
+
+    GamePromotionApiClient ..> PlayerPromotion : retrieves
+    GamePromotionApiClient ..> PromotionTicket : creates
+
+    BetData <|-- PromotionBet : extends
+
+    PlaceBetPublisher --> BaseSocketRouter : sends responses
 ```
 
-## Key Relationships:
+## Key Components
 
-### 1. **Free Spin Integration**
+### Core Flow Components
 
-- `UserSignInConsumer` claims promotions during sign-in and stores data in `PlayerInGame`
-- `PlaceBetConsumer` automatically detects free spin eligibility from player data
-- `ProcessBetQueue` handles both regular and free spin bet processing with API integration
-- Simplified architecture with promotion data pre-loaded at sign-in
+- `BaseSocketRouter` handles WebSocket events and routes to appropriate consumers
+- `PlaceBetConsumer` processes bet requests and manages validation
+- `ProcessBetQueue` asynchronously processes bet queues with external API calls
+- `PlaceBetPublisher` handles real-time client notifications
 
-### 2. **Simplified Architecture**
+### Official Promotion Integration
 
-- Removed base classes (`BaseSocketRouter`, `BaseEventPublisher`) for cleaner design
-- `PromotionApiClient` handles all promotion-related API calls
-- `PlayerPromotion` and `PromotionTicket` are data models returned from APIs
-- Direct relationships between core business logic components
+- `GamePromotionApiClient` is the official Pentagon package for promotion operations
+- Handles all promotion-related API calls including claiming, deducting, and ticket creation
+- Provides standardized interface for promotion management
 
-### 3. **Data Management**
+### Data Management
 
-- `GameData` contains only game-level data (time, rounds, players, configs)
-- `PlayerInGame` tracks player-specific state including promotion
-- `PromotionTicket` (via API) tracks all free spin metadata and status
+- `GameData` manages all in-memory game state and player data
+- `PlayerInGame` represents individual player state including promotions
+- `BetData` represents individual bet information
+- `PromotionBet` extends BetData for promotion specific functionality
 
-### 4. **Validation & Processing**
+### Promotion System
 
-- `PlaceBetConsumer` handles free spin validation through Promotion APIs
-- Bonus item management through Promotion APIs
-- Rollback mechanisms via API calls for failed free spin attempts
+- `PlayerPromotion` represents promotion data stored in PlayerInGame
+- `PromotionTicket` represents audit trail tickets for promotion usage
+- Integration with official Pentagon promotion APIs for all operations
 
-### 5. **Event Publishing**
+## Promotion Integration Points
 
-- `PlaceBetPublisher` handles all client notifications directly
-- Free spin specific notification methods included
-- Separate success/failure handling for free spin results
+1. **Sign-In**: `UserSignInConsumer` calls `GamePromotionApiClient.claimPromotion()`
+2. **Detection**: `PlaceBetConsumer` detects promotions from PlayerInGame promotion data
+3. **Deduction**: `PlaceBetConsumer` calls `GamePromotionApiClient.deductBonusItem()`
+4. **Processing**: `ProcessBetQueue` creates tickets via `GamePromotionApiClient.createPromotionTicket()`
+5. **Rollback**: Error scenarios call `GamePromotionApiClient.rollbackBonusItem()`
 
-### 6. **Game Configuration**
+## API Integration
 
-- `GameDefinition` includes free spin enablement and eligible choices
-- `GameData` maintains only game-level configurations (not promotion-specific)
+The system now uses the official `@sc/game-promotion-api-client` package directly:
 
-## Free Spin Flow Integration:
+- **Standardized**: Uses Pentagon's official API client
+- **Maintained**: Officially supported and maintained by Pentagon
+- **Consistent**: Follows Pentagon's standard patterns and conventions
+- **Reliable**: Production-tested and validated by Pentagon team
 
-### **Sign-In Processing:**
-
-1. `UserSignInConsumer` calls `player-promotion/claim-promotion` API during sign-in
-2. Store promotion in `PlayerInGame` for quick access
-
-### **Bet Processing:**
-
-1. `PlaceBetConsumer` detects free spin eligibility from `PlayerInGame` data
-2. Call `player-promotion/deduct-bonus-item` API before bet placement
-
-### **Processing:**
-
-1. Process free spin bet through regular bet queue with API integration
-2. Track promotion state via `PromotionTicket` API
-
-### **Post-Processing:**
-
-1. Call `promotion-ticket` API to create audit trail
-2. Handle rollback via `player-promotion/deduct-bonus-item` API (negative amount) for failures
-
-This updated architecture maintains the existing place bet system's integrity while seamlessly integrating free spin functionality with proper separation of concerns and comprehensive error handling.
+This integration ensures compatibility with Pentagon's promotion infrastructure while maintaining clean separation of concerns in the game system architecture.

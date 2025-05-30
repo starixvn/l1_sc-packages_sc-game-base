@@ -22,7 +22,7 @@ export default class ProcessBetQueue {
      * @param {mongoose.Model} dependencies.betLogsRepository
      * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
      * @param {BaseMetrics} dependencies.baseMetrics
-     * @param {Object} dependencies.promotionConsumer
+     * @param {Array} dependencies.betEventInterceptors - Array of bet event interceptors
      */
     constructor({
         definition,
@@ -34,7 +34,7 @@ export default class ProcessBetQueue {
         betLogsRepository,
         gameManagementApiClientFactory,
         baseMetrics,
-        promotionConsumer = null,
+        betEventInterceptors = [],
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -45,7 +45,9 @@ export default class ProcessBetQueue {
         this.betLogsRepository = betLogsRepository;
         this.baseMetrics = baseMetrics;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
-        this.promotionConsumer = promotionConsumer;
+
+        // Event interceptor system implementation - follows established architecture patterns
+        this.betEventInterceptors = Array.isArray(betEventInterceptors) ? betEventInterceptors : [];
     }
 
     start() {
@@ -78,27 +80,37 @@ export default class ProcessBetQueue {
     }
 
     async proceedBet(player, payload) {
-        const betInfo = this.formatApiBetInfo(payload);
+        // Get applicable interceptors for this bet - follows established pattern
+        const applicableInterceptors = this.getApplicableInterceptors(payload);
 
         if (!(await this.validateBetRequest(player, payload))) {
             return;
         }
 
-        // Handle promotion deduction before placing bet
-        if (this.promotionConsumer?.isPromotionBet(payload) && this.promotionConsumer?.isPromotionApiAvailable()) {
-            const deductionResult = await this.promotionConsumer.processPromotionDeduction(player, payload);
-            if (!deductionResult.success) {
-                return; // Error already handled in PromotionConsumer
-            }
+        // Execute beforeEvent interceptors - similar to how consumers work
+        const beforeEventResult = await this.executeInterceptorEvent("beforeEvent", applicableInterceptors, {
+            player,
+            payload,
+        });
+
+        if (!beforeEventResult.success) {
+            return; // Error already handled by interceptor
         }
+
+        // Transform bet info with interceptors - similar to data transformation in other components
+        let betInfo = this.formatApiBetInfo(payload);
+        betInfo = this.executeInterceptorTransform("enhanceBetInfo", applicableInterceptors, {
+            betInfo,
+            payload,
+        });
 
         const apiResult = await this.placeBet({ id: player.UID, session: player.session }, betInfo);
         const { response } = apiResult;
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload);
+            await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload, applicableInterceptors);
         } else {
-            this.handleFailedBet(player, response, payload);
+            await this.handleFailedBet(player, response, payload, applicableInterceptors);
 
             if (
                 (player.profile.minBet !== response.apiError?.minBet || player.profile.maxBet !== response.apiError?.maxBet) &&
@@ -113,13 +125,69 @@ export default class ProcessBetQueue {
         this.baseMetrics.collectBetProcessedTime(totalProcessedTime);
     }
 
+    /**
+     * Get interceptors that should process the given bet
+     * @param {Object} payload - Bet payload
+     * @returns {Array} Applicable interceptors
+     */
+    getApplicableInterceptors(payload) {
+        return this.betEventInterceptors.filter((interceptor) => interceptor.shouldIntercept({ payload }));
+    }
+
+    /**
+     * Execute an interceptor event for all applicable interceptors
+     * @param {string} eventName - Name of the event to execute
+     * @param {Array} interceptors - Interceptors to execute
+     * @param {Object} context - Context to pass to interceptors
+     * @returns {Promise<Object>} Combined result
+     */
+    async executeInterceptorEvent(eventName, interceptors, context) {
+        if (!Array.isArray(interceptors)) {
+            return { success: true };
+        }
+
+        for (const interceptor of interceptors) {
+            if (typeof interceptor[eventName] === "function") {
+                const result = await interceptor[eventName](context);
+                if (result && result.success === false) {
+                    this.logService?.logWarning(`Interceptor ${interceptor.name} event ${eventName} failed`, result);
+                    return { success: false, interceptor: interceptor.name, ...result };
+                }
+            }
+        }
+        return { success: true };
+    }
+
+    /**
+     * Execute interceptor transformations that modify data
+     * @param {string} transformName - Name of the transformation to execute
+     * @param {Array} interceptors - Interceptors to execute
+     * @param {Object} context - Context to pass to interceptors
+     * @returns {Object} Transformed data
+     */
+    executeInterceptorTransform(transformName, interceptors, context) {
+        if (!Array.isArray(interceptors) || interceptors.length === 0) {
+            // Return the first value from context (betInfo, betRecord, betLog)
+            return Object.values(context)[0];
+        }
+
+        let result = Object.values(context)[0];
+
+        for (const interceptor of interceptors) {
+            if (typeof interceptor.transformEventData === "function") {
+                result = interceptor.transformEventData(transformName, { ...context, [Object.keys(context)[0]]: result });
+            }
+        }
+
+        return result;
+    }
+
     async validateBetRequest(player, payload) {
         const criteria = await this.composeValidationCriteria(player, payload);
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
-            this.handleFailedBet(player, failedCriterion.notice, payload);
-
+            await this.handleFailedBet(player, failedCriterion.notice, payload, []);
             return false;
         }
 
@@ -128,7 +196,6 @@ export default class ProcessBetQueue {
 
     async composeValidationCriteria(player, payload) {
         const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
-
         return bettingTimeValidationCriteria;
     }
 
@@ -164,7 +231,7 @@ export default class ProcessBetQueue {
     }
 
     formatApiBetInfo(payload) {
-        const betInfo = {
+        return {
             amount: payload.amount,
             gameId: this.definition.id,
             gameRoundId: payload.roundId,
@@ -174,23 +241,16 @@ export default class ProcessBetQueue {
                 mode: `${payload.mode}`,
             },
         };
-
-        // Add promotion metadata if applicable
-        if (this.promotionConsumer?.isPromotionBet(payload)) {
-            this.promotionConsumer.addPromotionMetadata(betInfo, payload);
-        }
-
-        return betInfo;
     }
 
-    async handleSuccessBet(player, balance, roundId, bet) {
+    async handleSuccessBet(player, balance, roundId, bet, applicableInterceptors) {
         const rate = this.calculateCurrencyRate(player.session);
 
         if (this.betLogsRepository) {
-            await this.insertBetLog(player, roundId, bet, rate);
+            await this.insertBetLog(player, roundId, bet, rate, applicableInterceptors);
         }
 
-        const betTime = await this.upsertBet(player, roundId, bet, rate);
+        const betTime = await this.upsertBet(player, roundId, bet, rate, applicableInterceptors);
 
         if (this.isCountOnTotalBets(player)) {
             this.adjustTotalBets(player, bet, rate);
@@ -198,32 +258,42 @@ export default class ProcessBetQueue {
 
         this.adjustOwnBets(player.profile.name, bet);
 
-        // Handle promotion ticket creation
-        if (this.promotionConsumer?.isPromotionBet(bet)) {
-            await this.promotionConsumer.createPromotionTicket(player, bet, betTime);
+        // Execute afterSuccessEvent interceptors
+        if (applicableInterceptors) {
+            await this.executeInterceptorEvent("afterSuccessEvent", applicableInterceptors, {
+                player,
+                bet,
+                balance,
+                betTime,
+            });
         }
 
+        const balanceValue = balance?.red || balance?.balance || 0;
         callAndForget(
             this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({
                 id: player.UID,
-                balance: balance.red,
+                balance: balanceValue,
                 deductionscoins: 0,
             })
         );
         this.notifyPlacingBetResult(player, balance, bet, rate);
 
-        if (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet) {
-            this.updateUserStakeLevel(player, balance.minBet, balance.maxBet);
+        if (player.profile.minBet !== balance?.minBet || player.profile.maxBet !== balance?.maxBet) {
+            this.updateUserStakeLevel(player, balance?.minBet, balance?.maxBet);
         }
     }
 
-    handleFailedBet(player, notice, bet) {
+    async handleFailedBet(player, notice, bet, applicableInterceptors) {
         const { betChoice } = bet;
         this.decreaseBetTracks(player.profile.name, bet);
 
-        // Handle promotion rollback if bet failed after deduction
-        if (this.promotionConsumer?.isPromotionBet(bet)) {
-            this.promotionConsumer.rollbackPromotionOnFailure(player, bet);
+        // Execute afterFailureEvent interceptors
+        if (applicableInterceptors) {
+            await this.executeInterceptorEvent("afterFailureEvent", applicableInterceptors, {
+                player,
+                bet,
+                notice,
+            });
         }
 
         if (notice.apiError) {
@@ -235,9 +305,9 @@ export default class ProcessBetQueue {
         }
     }
 
-    async upsertBet(player, roundId, bet, rate) {
+    async upsertBet(player, roundId, bet, rate, applicableInterceptors) {
         const configs = this.gameData.gameConfigs;
-        const newBet = {
+        let newBet = {
             uid: player.UID,
             name: player.profile.name,
             time: new Date(),
@@ -246,9 +316,12 @@ export default class ProcessBetQueue {
             clientSeed: bet.clientSeed,
         };
 
-        // Add promotion metadata to bet record
-        if (this.promotionConsumer?.isPromotionBet(bet)) {
-            this.promotionConsumer.addPromotionMetadataToBet(newBet, bet);
+        // Transform bet record with interceptors
+        if (applicableInterceptors) {
+            newBet = this.executeInterceptorTransform("enhanceBetRecord", applicableInterceptors, {
+                betRecord: newBet,
+                bet,
+            });
         }
 
         const existingBetFilter = { uid: player.UID, roundId };
@@ -275,8 +348,8 @@ export default class ProcessBetQueue {
         return newBet.time;
     }
 
-    async insertBetLog(player, roundId, bet, rate) {
-        const newBetLog = {
+    async insertBetLog(player, roundId, bet, rate, applicableInterceptors) {
+        let newBetLog = {
             uid: player.UID,
             name: player.profile.name,
             time: new Date(),
@@ -287,9 +360,12 @@ export default class ProcessBetQueue {
             roundId,
         };
 
-        // Add promotion metadata to bet log
-        if (this.promotionConsumer?.isPromotionBet(bet)) {
-            this.promotionConsumer.addPromotionMetadataToBetLog(newBetLog, bet);
+        // Transform bet log with interceptors
+        if (applicableInterceptors) {
+            newBetLog = this.executeInterceptorTransform("enhanceBetLog", applicableInterceptors, {
+                betLog: newBetLog,
+                bet,
+            });
         }
 
         if (player.session) {
@@ -309,7 +385,6 @@ export default class ProcessBetQueue {
 
         if (this.gameData.ingame?.[playerName]) {
             const playerInGame = this.gameData.ingame[playerName];
-
             playerInGame.betTracks[betChoice] -= amount;
         }
     }
@@ -330,13 +405,11 @@ export default class ProcessBetQueue {
 
     adjustTotalBets(player, bet, rate) {
         const { betChoice, amount } = bet;
-
         this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount * rate;
     }
 
     notifyPlacingBetResult(player, balance, bet, rate) {
         const result = this.generatePlacingBetResult(player, balance, bet, rate);
-
         this.placeBetPublisher.publishSuccessBet(player.UID, result, rate);
     }
 
