@@ -158,8 +158,19 @@ export default class ContainerRegistry {
     }
 
     registerInterceptorArrays() {
+        // Register interceptor arrays using asFunction for factory pattern
         this.container.register({
-            betEventInterceptors: asFunction((container) => [container.promotionBetInterceptor]).singleton(),
+            // Bet event interceptors
+            betEventInterceptors: asFunction((container) => {
+                const interceptors = [];
+
+                // Add bet-specific interceptors
+                if (container.hasRegistration("promotionBetInterceptor")) {
+                    interceptors.push(container.resolve("promotionBetInterceptor"));
+                }
+
+                return interceptors;
+            }).singleton(),
         });
     }
 }

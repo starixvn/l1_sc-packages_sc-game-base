@@ -129,8 +129,9 @@ describe("Event Interceptor Integration", () => {
     describe("Event Interceptor System Initialization", () => {
         it("should initialize ProcessBetQueue with event interceptors", () => {
             // Assert
-            expect(processBetQueue.betEventInterceptors).toHaveLength(1);
-            expect(processBetQueue.betEventInterceptors[0]).toBe(promotionInterceptor);
+            expect(processBetQueue.eventInterceptors).toHaveLength(1);
+            expect(processBetQueue.eventInterceptors[0]).toBe(promotionInterceptor);
+            expect(processBetQueue.eventType).toBe("bet");
         });
 
         it("should handle empty interceptors array gracefully", () => {
@@ -141,7 +142,8 @@ describe("Event Interceptor Integration", () => {
             });
 
             // Assert
-            expect(queueWithoutInterceptors.betEventInterceptors).toHaveLength(0);
+            expect(queueWithoutInterceptors.eventInterceptors).toHaveLength(0);
+            expect(queueWithoutInterceptors.eventType).toBe("bet");
         });
 
         it("should handle undefined interceptors gracefully", () => {
@@ -152,14 +154,15 @@ describe("Event Interceptor Integration", () => {
             });
 
             // Assert
-            expect(queueWithUndefinedInterceptors.betEventInterceptors).toHaveLength(0);
+            expect(queueWithUndefinedInterceptors.eventInterceptors).toHaveLength(0);
+            expect(queueWithUndefinedInterceptors.eventType).toBe("bet");
         });
     });
 
     describe("Event Interceptor Filtering", () => {
         it("should correctly identify applicable interceptors for promotion bets", () => {
             // Act
-            const applicableInterceptors = processBetQueue.getApplicableInterceptors(promotionPayload);
+            const applicableInterceptors = processBetQueue.getApplicableInterceptors({ payload: promotionPayload });
 
             // Assert
             expect(applicableInterceptors).toHaveLength(1);
@@ -175,7 +178,7 @@ describe("Event Interceptor Integration", () => {
             };
 
             // Act
-            const applicableInterceptors = processBetQueue.getApplicableInterceptors(regularPayload);
+            const applicableInterceptors = processBetQueue.getApplicableInterceptors({ payload: regularPayload });
 
             // Assert
             expect(applicableInterceptors).toHaveLength(0);
@@ -196,7 +199,7 @@ describe("Event Interceptor Integration", () => {
             });
 
             // Act
-            const applicableInterceptors = queueWithoutAPI.getApplicableInterceptors(promotionPayload);
+            const applicableInterceptors = queueWithoutAPI.getApplicableInterceptors({ payload: promotionPayload });
 
             // Assert
             expect(applicableInterceptors).toHaveLength(0);

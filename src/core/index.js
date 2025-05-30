@@ -18,6 +18,7 @@ import * as queryApis from "./query-apis/index.js";
 import * as routers from "./routers/index.js";
 import * as validators from "./validators/index.js";
 import * as EventInterceptors from "./event-interceptors/index.js";
+import * as Mixins from "./mixins/index.js";
 import BaseMetrics from "./base-metrics.js";
 
 export {
@@ -41,5 +42,6 @@ export {
     routers,
     validators,
     EventInterceptors,
+    Mixins,
     BaseMetrics,
 };

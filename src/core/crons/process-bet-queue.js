@@ -7,8 +7,19 @@ import GameManagementApiClientFactory, { getOrDefault, callAndForget } from "../
 import { PlaceBetPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
+import EventInterceptorMixin from "../mixins/event-interceptor-mixin.js";
 
-export default class ProcessBetQueue {
+// Create the base class with interceptor functionality
+class BaseBetProcessor {
+    constructor() {
+        // Base class for ProcessBetQueue
+    }
+}
+
+// Apply the mixin to create the enhanced class
+const BetProcessorWithInterceptors = EventInterceptorMixin(BaseBetProcessor);
+
+export default class ProcessBetQueue extends BetProcessorWithInterceptors {
     processTimeOut = 50;
 
     /**
@@ -36,6 +47,8 @@ export default class ProcessBetQueue {
         baseMetrics,
         betEventInterceptors = [],
     }) {
+        super();
+
         this.definition = definition;
         this.gameData = gameData;
         this.placeBetPublisher = placeBetPublisher;
@@ -46,8 +59,8 @@ export default class ProcessBetQueue {
         this.baseMetrics = baseMetrics;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
 
-        // Event interceptor system implementation - follows established architecture patterns
-        this.betEventInterceptors = Array.isArray(betEventInterceptors) ? betEventInterceptors : [];
+        // Initialize interceptor system from mixin
+        this.initializeInterceptors(betEventInterceptors, "bet");
     }
 
     start() {
@@ -81,7 +94,7 @@ export default class ProcessBetQueue {
 
     async proceedBet(player, payload) {
         // Get applicable interceptors for this bet - follows established pattern
-        const applicableInterceptors = this.getApplicableInterceptors(payload);
+        const applicableInterceptors = this.getApplicableInterceptors({ payload });
 
         if (!(await this.validateBetRequest(player, payload))) {
             return;
@@ -123,63 +136,6 @@ export default class ProcessBetQueue {
 
         const totalProcessedTime = (new Date() - payload.receivedTime) / 1000;
         this.baseMetrics.collectBetProcessedTime(totalProcessedTime);
-    }
-
-    /**
-     * Get interceptors that should process the given bet
-     * @param {Object} payload - Bet payload
-     * @returns {Array} Applicable interceptors
-     */
-    getApplicableInterceptors(payload) {
-        return this.betEventInterceptors.filter((interceptor) => interceptor.shouldIntercept({ payload }));
-    }
-
-    /**
-     * Execute an interceptor event for all applicable interceptors
-     * @param {string} eventName - Name of the event to execute
-     * @param {Array} interceptors - Interceptors to execute
-     * @param {Object} context - Context to pass to interceptors
-     * @returns {Promise<Object>} Combined result
-     */
-    async executeInterceptorEvent(eventName, interceptors, context) {
-        if (!Array.isArray(interceptors)) {
-            return { success: true };
-        }
-
-        for (const interceptor of interceptors) {
-            if (typeof interceptor[eventName] === "function") {
-                const result = await interceptor[eventName](context);
-                if (result && result.success === false) {
-                    this.logService?.logWarning(`Interceptor ${interceptor.name} event ${eventName} failed`, result);
-                    return { success: false, interceptor: interceptor.name, ...result };
-                }
-            }
-        }
-        return { success: true };
-    }
-
-    /**
-     * Execute interceptor transformations that modify data
-     * @param {string} transformName - Name of the transformation to execute
-     * @param {Array} interceptors - Interceptors to execute
-     * @param {Object} context - Context to pass to interceptors
-     * @returns {Object} Transformed data
-     */
-    executeInterceptorTransform(transformName, interceptors, context) {
-        if (!Array.isArray(interceptors) || interceptors.length === 0) {
-            // Return the first value from context (betInfo, betRecord, betLog)
-            return Object.values(context)[0];
-        }
-
-        let result = Object.values(context)[0];
-
-        for (const interceptor of interceptors) {
-            if (typeof interceptor.transformEventData === "function") {
-                result = interceptor.transformEventData(transformName, { ...context, [Object.keys(context)[0]]: result });
-            }
-        }
-
-        return result;
     }
 
     async validateBetRequest(player, payload) {
