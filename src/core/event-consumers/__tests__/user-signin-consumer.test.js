@@ -8,7 +8,7 @@ import UserSignInConsumer from "../user-signin-consumer";
 import { Payloads } from "jest-auto-fixture";
 import * as baseApis from "sc-base-apis";
 import GameManagementApiClientFactory from "../../game-management-api";
-import GamePromotionApiClientFactory from "../../game-promotion-api-client-factory/game-promotion-api-client-factory";
+import { PromotionClient } from "../../promotion-client";
 import { signInGame as userServiceSignInGame } from "../../helpers/user-service-helpers";
 import { getOrDefault } from "../../game-management-api";
 
@@ -16,7 +16,7 @@ jest.mock("sc-base-apis");
 jest.mock("sc-game-management-client");
 jest.mock("../../helpers/user-service-helpers");
 jest.mock("../../game-management-api");
-jest.mock("../../game-promotion-api-client-factory/game-promotion-api-client-factory");
+jest.mock("../../promotion-client");
 
 const userServiceMock = {
     signInGameResult: {

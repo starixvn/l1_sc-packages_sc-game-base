@@ -10,7 +10,7 @@ import * as EventInterceptors from "./event-interceptors";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import GameManagementApiClientFactory from "./game-management-api";
-import GamePromotionApiClientFactory from "./game-promotion-api-client-factory/game-promotion-api-client-factory";
+import { PromotionClient } from "./promotion-client";
 
 import * as Routers from "./routers";
 import { PlayGamePermissionValidator } from "./validators";
@@ -147,7 +147,7 @@ export default class ContainerRegistry {
 
     registerPromotionApiClient() {
         this.container.register({
-            gamePromotionApiClientFactory: asClass(GamePromotionApiClientFactory).singleton(),
+            gamePromotionApiClientFactory: asClass(PromotionClient).singleton(),
         });
     }
 

@@ -1,4 +1,4 @@
-import GamePromotionApiClientFactory from "../game-promotion-api-client-factory";
+import PromotionClient from "../promotion-client";
 import { GamePromotionApiClient } from "@sc/game-promotion-api-client";
 
 // Mock the logger
@@ -35,7 +35,7 @@ describe("GamePromotionApiClientFactory", () => {
                     useAuthentication: true,
                 },
             };
-            factory = new GamePromotionApiClientFactory(mockAppConfigs);
+            factory = new PromotionClient(mockAppConfigs);
         });
 
         it("should create GamePromotionApiClient with correct configuration", () => {
@@ -64,7 +64,7 @@ describe("GamePromotionApiClientFactory", () => {
     describe("when promotion settings are not configured", () => {
         beforeEach(() => {
             mockAppConfigs = {};
-            factory = new GamePromotionApiClientFactory(mockAppConfigs);
+            factory = new PromotionClient(mockAppConfigs);
         });
 
         it("should not create GamePromotionApiClient", () => {
@@ -93,7 +93,7 @@ describe("GamePromotionApiClientFactory", () => {
 
         it("should throw an error", () => {
             expect(() => {
-                new GamePromotionApiClientFactory(mockAppConfigs);
+                new PromotionClient(mockAppConfigs);
             }).toThrow("baseUrl is required in promotionApiSettings");
         });
     });
@@ -106,7 +106,7 @@ describe("GamePromotionApiClientFactory", () => {
                     useAuthentication: false,
                 },
             };
-            factory = new GamePromotionApiClientFactory(mockAppConfigs);
+            factory = new PromotionClient(mockAppConfigs);
         });
 
         it("should use default timeout of 5000ms", () => {
@@ -129,7 +129,7 @@ describe("GamePromotionApiClientFactory", () => {
                     useAuthentication: false,
                 },
             };
-            factory = new GamePromotionApiClientFactory(mockAppConfigs);
+            factory = new PromotionClient(mockAppConfigs);
         });
 
         it("should create client with basic headers only", () => {
@@ -152,7 +152,7 @@ describe("GamePromotionApiClientFactory", () => {
                     useAuthentication: true,
                 },
             };
-            factory = new GamePromotionApiClientFactory(mockAppConfigs);
+            factory = new PromotionClient(mockAppConfigs);
         });
 
         it("should use the custom timeout", () => {

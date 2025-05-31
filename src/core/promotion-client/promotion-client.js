@@ -1,7 +1,7 @@
 import { logger } from "sc-common";
 import { GamePromotionApiClient } from "@sc/game-promotion-api-client";
 
-export default class GamePromotionApiClientFactory {
+export default class PromotionClient {
     constructor(appConfigs) {
         this.promotionApiSettings = appConfigs.promotionApiSettings;
 

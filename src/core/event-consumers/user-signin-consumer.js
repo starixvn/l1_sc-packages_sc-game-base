@@ -1,8 +1,8 @@
 import { getBetLimit } from "sc-base-apis";
 import { Socket } from "socket.io";
 
-import GameManagementApiClientFactory, { getOrDefault, callAndForget, post } from "../game-management-api";
-import GamePromotionApiClientFactory from "../game-promotion-api-client-factory/game-promotion-api-client-factory";
+import GameManagementApiClientFactory, { getOrDefault, callAndForget } from "../game-management-api";
+import { PromotionClient } from "../promotion-client";
 import { signInGame as userServiceSignInGame } from "../helpers/user-service-helpers";
 import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
@@ -16,7 +16,7 @@ export default class UserSignInConsumer {
      * @param {Object} appConfigs
      * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
      * @param {Object} logService
-     * @param {GamePromotionApiClientFactory} gamePromotionApiClientFactory - Optional: GamePromotionApiClientFactory
+     * @param {PromotionClient} gamePromotionApiClientFactory - Optional: GamePromotionApiClientFactory
      */
     constructor(
         gameData,
