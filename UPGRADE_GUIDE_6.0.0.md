@@ -4,6 +4,41 @@
 
 SC-Game-Base 6.x.x introduces comprehensive promotion support through Pentagon's official `@sc/game-promotion-api-client` package. This major version includes breaking changes and new architectural patterns that require careful migration.
 
+## ⚡ Backwards Compatibility
+
+**Important**: Existing services without promotion API configuration will continue to work normally. The promotion features are **completely optional** and do not affect core betting functionality.
+
+### What Still Works Without Promotion Setup:
+
+- ✅ Regular bet processing
+- ✅ User sign-in flows
+- ✅ All existing game mechanics
+- ✅ Payment processing
+- ✅ Event publishing/consuming
+- ✅ Current interceptor patterns
+
+### What Requires Migration:
+
+- 🔧 Only services that want to **add** promotion features
+- 🔧 Custom interceptors that need promotion integration
+- 🔧 Games requiring promotion-specific bet amounts
+
+### No-Op Behavior:
+
+When promotion API is not configured:
+
+- Promotion-related methods return `null` or skip silently
+- No API calls are made to promotion services
+- Bet processing continues with standard flow
+- No errors or warnings are generated
+
+```javascript
+// Example: This will work fine without promotion API setup
+const consumer = new PlaceBetConsumer(/* standard dependencies */);
+// All existing functionality works normally
+// Promotion methods simply return null/false
+```
+
 ## 🚨 Breaking Changes
 
 ### 1. **New Required Dependencies**
@@ -34,14 +69,33 @@ SC-Game-Base 6.x.x introduces comprehensive promotion support through Pentagon's
 
 ## 📋 Pre-Migration Checklist
 
-- [ ] Review current promotion requirements
+- [ ] **Decide if you need promotion features** (optional - most services can skip)
+- [ ] Review current promotion requirements (if applicable)
 - [ ] Backup existing codebase
-- [ ] Ensure Pentagon API client access
+- [ ] Ensure Pentagon API client access (only if adding promotions)
 - [ ] Plan testing strategy
 - [ ] Review architectural patterns
-- [ ] Update CI/CD pipelines for new dependencies
+- [ ] Update CI/CD pipelines for new dependencies (if adding promotions)
 
 ## 🔧 Migration Steps
+
+### Minimal Migration (No Promotion Features)
+
+If you only want to upgrade to 6.x.x without adding promotion features, follow these minimal steps:
+
+```bash
+# 1. Update dependency
+npm install sc-game-base@^6.0.0
+
+# 2. No other changes required!
+# Your existing code will work as-is
+```
+
+**That's it!** Your service will work exactly the same as before. All promotion-related functionality will be automatically disabled.
+
+### Full Migration (With Promotion Features)
+
+Follow all steps below only if you want to add promotion functionality to your service.
 
 ### Step 1: Update Dependencies
 
@@ -80,6 +134,8 @@ export default class YourGameContainerRegistry extends ContainerRegistry {
 
 ### Step 3: Add Promotion API Configuration
 
+**Note: This step is OPTIONAL.** Skip if you don't need promotion features.
+
 Add promotion API settings to your application configuration:
 
 ```javascript
@@ -87,7 +143,7 @@ Add promotion API settings to your application configuration:
 export const appConfigs = {
   // ... existing configs
 
-  // Promotion API settings
+  // Promotion API settings (OPTIONAL - only add if you need promotion features)
   promotionApiSettings: {
     baseUrl: process.env.PROMOTION_API_BASE_URL || "https://promotion-api.example.com",
     timeout: parseInt(process.env.PROMOTION_API_TIMEOUT) || 5000,
