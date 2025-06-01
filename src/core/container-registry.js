@@ -14,7 +14,7 @@ import { PromotionClient } from "./promotion-client";
 
 import * as Routers from "./routers";
 import { PlayGamePermissionValidator } from "./validators";
-import { RoundQuery, HistoryQuery, MetricQuery } from "./queries";
+import { RoundQuery, HistoryQuery, MetricQuery } from "./query-apis";
 
 export default class ContainerRegistry {
     /**
