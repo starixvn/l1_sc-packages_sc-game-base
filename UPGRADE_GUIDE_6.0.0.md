@@ -49,17 +49,17 @@ const consumer = new PlaceBetConsumer(/* standard dependencies */);
 }
 ```
 
-### 2. **Event Interceptor System**
+### 2. **Event Interceptor System with Process-Bet-Queue Integration**
 
-- New interceptor pattern for cross-cutting concerns
-- Mixin-based architecture for interceptor functionality
-- Required container registry updates
+- Event interceptors integrate directly with `ProcessBetQueue` through the `betEventInterceptors` parameter
+- Mixin-based architecture for interceptor functionality in `ProcessBetQueue`
+- Required container registry updates for interceptor arrays
 
 ### 3. **API Changes**
 
-- `PlaceBetConsumer` constructor signature unchanged but new methods added
-- `ProcessBetQueue` constructor requires new `betEventInterceptors` parameter
-- New validation methods in consumers
+- `PlaceBetConsumer` includes new promotion methods: `getPromotionBetAmount()` and `handlePromotionLogic()`
+- `ProcessBetQueue` constructor requires new `betEventInterceptors` parameter for interceptor integration
+- New validation methods in consumers for promotion eligibility
 
 ### 4. **Container Registry Changes**
 
@@ -154,7 +154,7 @@ export const appConfigs = {
 
 ### Step 4: Create Event Interceptors (If Needed)
 
-If your game requires custom promotion logic, create game-specific interceptors:
+If your game requires custom promotion logic, create game-specific interceptors that integrate with `ProcessBetQueue`:
 
 ```javascript
 // src/event-interceptors/your-game-promotion-interceptor.js
@@ -167,9 +167,10 @@ export default class YourGamePromotionInterceptor extends BaseEventInterceptor {
     this.logService = logService;
   }
 
-  isApplicable(context) {
+  shouldIntercept(context) {
     // Your game-specific logic to determine if this interceptor applies
-    return context.payload?.usePromotion === true;
+    const { payload } = context;
+    return payload?.usePromotion === true && this.promotionApiClient !== null;
   }
 
   async beforeEvent(context) {
@@ -177,7 +178,7 @@ export default class YourGamePromotionInterceptor extends BaseEventInterceptor {
     const { player, payload } = context;
 
     try {
-      // Example: Custom promotion validation
+      // Game-specific promotion validation
       if (payload.gameSpecificPromotionCheck) {
         // Your validation logic
       }
@@ -192,40 +193,37 @@ export default class YourGamePromotionInterceptor extends BaseEventInterceptor {
     }
   }
 
-  enhanceBetInfo(context) {
-    const { betInfo, payload } = context;
+  transformEventData(transformName, context) {
+    const { payload, betInfo, betRecord, betLog, bet } = context;
 
-    // Add game-specific metadata to bet info
-    if (payload.gameSpecificData) {
-      betInfo.metadata = {
-        ...betInfo.metadata,
-        gameSpecificData: payload.gameSpecificData,
-      };
+    switch (transformName) {
+      case "enhanceBetInfo":
+        // Add game-specific metadata to bet info
+        if (payload?.gameSpecificData) {
+          betInfo.metadata = {
+            ...betInfo.metadata,
+            gameSpecificData: payload.gameSpecificData,
+          };
+        }
+        return betInfo;
+
+      case "enhanceBetRecord":
+        // Add game-specific fields to bet record
+        if (bet?.gameSpecificField) {
+          betRecord.gameSpecificField = bet.gameSpecificField;
+        }
+        return betRecord;
+
+      case "enhanceBetLog":
+        // Add game-specific fields to bet log
+        if (bet?.gameSpecificLog) {
+          betLog.gameSpecificLog = bet.gameSpecificLog;
+        }
+        return betLog;
+
+      default:
+        return super.transformEventData(transformName, context);
     }
-
-    return betInfo;
-  }
-
-  enhanceBetRecord(context) {
-    const { betRecord, bet } = context;
-
-    // Add game-specific fields to bet record
-    if (bet.gameSpecificField) {
-      betRecord.gameSpecificField = bet.gameSpecificField;
-    }
-
-    return betRecord;
-  }
-
-  enhanceBetLog(context) {
-    const { betLog, bet } = context;
-
-    // Add game-specific fields to bet log
-    if (bet.gameSpecificLog) {
-      betLog.gameSpecificLog = bet.gameSpecificLog;
-    }
-
-    return betLog;
   }
 
   async afterSuccessEvent(context) {
@@ -233,7 +231,7 @@ export default class YourGamePromotionInterceptor extends BaseEventInterceptor {
     const { player, bet, balance } = context;
 
     try {
-      // Example: Game-specific success handling
+      // Game-specific success handling
       if (bet.triggerSpecialEvent) {
         // Your post-success logic
       }
@@ -247,7 +245,7 @@ export default class YourGamePromotionInterceptor extends BaseEventInterceptor {
     const { player, bet, notice } = context;
 
     try {
-      // Example: Game-specific failure handling
+      // Game-specific failure handling
       if (bet.requiresSpecialCleanup) {
         // Your cleanup logic
       }
@@ -258,7 +256,7 @@ export default class YourGamePromotionInterceptor extends BaseEventInterceptor {
 }
 ```
 
-### Step 5: Register Custom Interceptors
+### Step 5: Register Custom Interceptors and ProcessBetQueue Integration
 
 ```javascript
 // src/container-registry.js
@@ -276,7 +274,7 @@ export default class YourGameContainerRegistry extends ContainerRegistry {
   }
 
   registerInterceptorArrays() {
-    // Override to include your interceptors
+    // Register interceptor arrays for ProcessBetQueue integration
     this.container.register({
       betEventInterceptors: asFunction((container) => {
         const interceptors = [];
@@ -295,12 +293,15 @@ export default class YourGameContainerRegistry extends ContainerRegistry {
       }).singleton(),
     });
   }
+
+  registerProcessors() {
+    // ProcessBetQueue automatically integrates with betEventInterceptors
+    super.registerProcessors();
+  }
 }
 ```
 
-### Step 6: Extend PlaceBetConsumer (If Needed)
-
-If your game requires custom promotion bet amount logic:
+### Step 6: Extend PlaceBetConsumer for Promotion Support
 
 ```javascript
 // src/event-consumers/your-game-place-bet-consumer.js
@@ -314,12 +315,12 @@ export default class YourGamePlaceBetConsumer extends PlaceBetConsumer {
    * @returns {number} Promotional bet amount
    */
   getPromotionBetAmount(player, payload) {
-    // Example for slot games: different amounts based on lines
+    // Slot games: different amounts based on lines
     if (payload.betChoice === "spin" && payload.lines) {
       return payload.lines * 10; // 10 coins per line
     }
 
-    // Example for table games: fixed amount based on table
+    // Table games: fixed amount based on table
     if (payload.tableId) {
       const tablePromoAmounts = {
         "vip-table": 100,
@@ -339,7 +340,7 @@ export default class YourGamePlaceBetConsumer extends PlaceBetConsumer {
    * @returns {Array} Additional validation criteria
    */
   composePromotionValidationCriteria(player) {
-    const baseCriteria = super.composePromotionValidationCriteria(player);
+    const baseCriteria = super.composePromotionValidationCriteria?.(player) || [];
 
     // Add game-specific validation
     if (player.promotion) {
@@ -349,7 +350,7 @@ export default class YourGamePlaceBetConsumer extends PlaceBetConsumer {
           notice: this.getNoticeObj("Game not eligible for this promotion"),
         },
         {
-          failure: player.profile.level < 10, // Example: level requirement
+          failure: player.profile.level < 10, // Level requirement
           notice: this.getNoticeObj("Minimum level 10 required for promotions"),
         },
       ];
@@ -459,8 +460,8 @@ describe("YourGamePlaceBetConsumer with Promotions", () => {
 ```javascript
 // __tests__/integration/promotion-flow.test.js
 describe("Promotion Integration Flow", () => {
-  it("should handle complete promotion bet flow", async () => {
-    // Test the complete flow from consumer to publisher
+  it("should handle complete promotion bet flow through ProcessBetQueue", async () => {
+    // Test the complete flow from consumer to ProcessBetQueue with interceptors
     const mockPromotionClient = {
       instance: () => ({
         deductBonusItem: jest.fn().mockResolvedValue({ success: true }),
@@ -468,6 +469,12 @@ describe("Promotion Integration Flow", () => {
         rollbackBonusItem: jest.fn().mockResolvedValue({ success: true }),
       }),
     };
+
+    // Setup ProcessBetQueue with interceptors
+    const processBetQueue = new ProcessBetQueue({
+      // ... dependencies
+      betEventInterceptors: [promotionInterceptor],
+    });
 
     // Setup test scenario
     // Execute bet
@@ -497,12 +504,17 @@ describe("Promotion Integration Flow", () => {
 ### Issue 4: Interceptor Not Triggered
 
 **Problem**: Custom interceptor never executes
-**Solution**: Verify `isApplicable()` method returns `true` for your scenarios
+**Solution**: Verify `shouldIntercept()` method returns `true` for your scenarios and that interceptors are properly registered in `betEventInterceptors`
 
 ### Issue 5: Promotion API Configuration Missing
 
 **Problem**: PromotionClient not initialized
 **Solution**: Ensure `promotionApiSettings` is properly configured in your app config
+
+### Issue 6: ProcessBetQueue Integration Issues
+
+**Problem**: Interceptors not executing in ProcessBetQueue
+**Solution**: Verify `betEventInterceptors` array is properly passed to ProcessBetQueue constructor and contains your interceptors
 
 ## 📊 Performance Considerations
 
@@ -576,5 +588,5 @@ If you encounter issues during migration:
 ---
 
 **Version**: 6.0.0  
-**Last Updated**: 2024  
+**Last Updated**: 2025  
 **Compatibility**: Node.js 16+, Pentagon API Client 1.0+
