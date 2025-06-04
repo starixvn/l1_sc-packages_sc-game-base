@@ -274,18 +274,18 @@ describe("UserSignInConsumer", () => {
     // Promotion Integration Tests
     describe("Promotion Integration", () => {
         let mockGamePromotionApiClient;
-        let mockGamePromotionApiClientFactory;
+        let mockPromotionApiInstance;
         let consumerWithPromotion;
 
         beforeEach(() => {
-            // Mock GamePromotionApiClient
-            mockGamePromotionApiClient = {
+            // Mock the actual promotion API instance methods
+            mockPromotionApiInstance = {
                 claimPromotion: jest.fn(),
             };
 
-            // Mock GamePromotionApiClientFactory
-            mockGamePromotionApiClientFactory = {
-                instance: jest.fn().mockReturnValue(mockGamePromotionApiClient),
+            // Mock GamePromotionApiClient (the factory)
+            mockGamePromotionApiClient = {
+                instance: jest.fn().mockReturnValue(mockPromotionApiInstance),
                 isAvailable: jest.fn().mockReturnValue(true),
             };
 
@@ -298,7 +298,7 @@ describe("UserSignInConsumer", () => {
             };
             gameManagementApiClientFactory.instance.mockReturnValue(mockApiClient);
 
-            // Create consumer with promotion factory
+            // Create consumer with promotion client
             consumerWithPromotion = new UserSignInConsumer(
                 gameData,
                 userSignInPublisher,
@@ -313,7 +313,7 @@ describe("UserSignInConsumer", () => {
                 },
                 gameManagementApiClientFactory,
                 mockLogService,
-                mockGamePromotionApiClientFactory
+                mockGamePromotionApiClient
             );
 
             // Mock external functions with player-specific data
@@ -354,7 +354,7 @@ describe("UserSignInConsumer", () => {
                     },
                 };
 
-                mockGamePromotionApiClient.claimPromotion.mockResolvedValue(mockPromotionResult);
+                mockPromotionApiInstance.claimPromotion.mockResolvedValue(mockPromotionResult);
 
                 const userSession = {
                     userId: "user123",
@@ -366,7 +366,7 @@ describe("UserSignInConsumer", () => {
 
                 const result = await consumerWithPromotion.claimPlayerPromotions(userSession);
 
-                expect(mockGamePromotionApiClient.claimPromotion).toHaveBeenCalledWith({
+                expect(mockPromotionApiInstance.claimPromotion).toHaveBeenCalledWith({
                     operatorId: "OP001",
                     siteName: "test-site",
                     playerId: "player456",
@@ -385,7 +385,7 @@ describe("UserSignInConsumer", () => {
             });
 
             it("should return null when no promotion is available", async () => {
-                mockGamePromotionApiClient.claimPromotion.mockResolvedValue(null);
+                mockPromotionApiInstance.claimPromotion.mockResolvedValue(null);
 
                 const userSession = {
                     userId: "user123",
@@ -410,7 +410,7 @@ describe("UserSignInConsumer", () => {
                     currencyGroup: "USD",
                 };
 
-                // Use consumer without promotion factory (null)
+                // Use consumer without promotion client (null)
                 const result = await consumer.claimPlayerPromotions(userSession);
 
                 expect(result).toBeNull();
@@ -425,7 +425,7 @@ describe("UserSignInConsumer", () => {
                     appConfigs, // No promotionApiSettings
                     gameManagementApiClientFactory,
                     mockLogService,
-                    mockGamePromotionApiClientFactory // Factory is available but settings are not
+                    mockGamePromotionApiClient // Client is available but settings are not
                 );
 
                 const userSession = {
@@ -444,7 +444,7 @@ describe("UserSignInConsumer", () => {
 
             it("should handle API errors gracefully", async () => {
                 const apiError = new Error("API connection failed");
-                mockGamePromotionApiClient.claimPromotion.mockRejectedValue(apiError);
+                mockPromotionApiInstance.claimPromotion.mockRejectedValue(apiError);
 
                 const userSession = {
                     userId: "user123",
@@ -473,7 +473,7 @@ describe("UserSignInConsumer", () => {
                 const result = await consumerWithPromotion.claimPlayerPromotions(userSessionMissingData);
 
                 expect(result).toBeNull();
-                expect(mockGamePromotionApiClient.claimPromotion).not.toHaveBeenCalled();
+                expect(mockPromotionApiInstance.claimPromotion).not.toHaveBeenCalled();
             });
 
             it("should calculate isActive based on expiry date", async () => {
@@ -488,7 +488,7 @@ describe("UserSignInConsumer", () => {
                     },
                 };
 
-                mockGamePromotionApiClient.claimPromotion.mockResolvedValue(expiredPromotionResult);
+                mockPromotionApiInstance.claimPromotion.mockResolvedValue(expiredPromotionResult);
 
                 const userSession = {
                     userId: "user123",
@@ -537,7 +537,7 @@ describe("UserSignInConsumer", () => {
                     },
                 };
 
-                mockGamePromotionApiClient.claimPromotion.mockResolvedValue(mockPromotionResult);
+                mockPromotionApiInstance.claimPromotion.mockResolvedValue(mockPromotionResult);
 
                 const payload = {
                     ss: "session123",
@@ -546,7 +546,7 @@ describe("UserSignInConsumer", () => {
 
                 await consumerWithPromotion.consume(mockSocketClient, payload);
 
-                expect(mockGamePromotionApiClient.claimPromotion).toHaveBeenCalled();
+                expect(mockPromotionApiInstance.claimPromotion).toHaveBeenCalled();
 
                 expect(gameData.realPlayers[mockSocketClient.id]).toEqual({
                     UID: "user123",
@@ -578,7 +578,7 @@ describe("UserSignInConsumer", () => {
             });
 
             it("should complete sign-in without promotion data when no promotion available", async () => {
-                mockGamePromotionApiClient.claimPromotion.mockResolvedValue(null);
+                mockPromotionApiInstance.claimPromotion.mockResolvedValue(null);
 
                 const payload = {
                     ss: "session123",

@@ -1,6 +1,15 @@
-import Chance from "chance";
+import "jest-extended";
+import { Chance } from "chance";
 import ProcessBetQueue from "../../crons/process-bet-queue.js";
 import PromotionBetInterceptor from "../promotion-bet-interceptor.js";
+
+// Mock game management API
+jest.mock("../../game-management-api", () => ({
+    __esModule: true,
+    default: jest.fn(),
+    callAndForget: jest.fn(),
+    getOrDefault: jest.fn(),
+}));
 
 describe("Event Interceptor Integration", () => {
     const chance = new Chance();
@@ -9,30 +18,35 @@ describe("Event Interceptor Integration", () => {
     let promotionInterceptor;
     let player;
     let promotionPayload;
+    let mockApiInstance;
 
     beforeEach(() => {
-        // Arrange - Create mock dependencies following game base patterns
+        // Mock the API instance methods
+        mockApiInstance = {
+            deductBonusItem: jest.fn(),
+            createPromotionTicket: jest.fn(),
+            rollbackBonusItem: jest.fn(),
+        };
+
+        // Mock dependencies
         mockDependencies = {
             definition: {
-                id: chance.natural(),
+                id: 1,
+                name: "test-game",
+                choicesMapper: { red: 1, black: 2 },
                 durations: {
-                    lockingBet: 5,
-                    placingBets: 50,
-                },
-                choicesMapper: {
-                    red: 1,
-                    black: 2,
+                    placingBets: 30000,
+                    lockingBet: 5000,
                 },
             },
             gameData: {
-                roundId: chance.natural(),
-                remainingTime: 30,
-                ingame: {},
-                exchangeRates: {
-                    code: { USD: 1 },
-                },
+                roundId: chance.string(),
+                remainingTime: 25000,
+                gameConfigs: { odds: { red: 2.0, black: 2.0 } },
+                totalBets: {},
                 currencies: [],
-                gameConfigs: { odds: 2 },
+                exchangeRates: { code: { USD: 1 } },
+                ingame: {},
             },
             placeBetPublisher: {
                 publishGameFailedBet: jest.fn(),
@@ -41,21 +55,20 @@ describe("Event Interceptor Integration", () => {
             },
             placeBet: jest.fn(),
             logService: {
-                logInfo: jest.fn(),
                 logError: jest.fn(),
                 logWarning: jest.fn(),
             },
             betsRepository: {
-                updateOne: jest.fn(),
+                updateOne: jest.fn().mockResolvedValue({}),
             },
             betLogsRepository: {
-                create: jest.fn(),
+                create: jest.fn().mockResolvedValue({}),
             },
             gameManagementApiClientFactory: {
-                instance: () => ({
+                instance: jest.fn().mockReturnValue({
                     users: {
-                        setBalanceAndDecreaseScoins: jest.fn().mockResolvedValue({}),
-                        updateUserStakeLevel: jest.fn().mockResolvedValue({}),
+                        setBalanceAndDecreaseScoins: jest.fn(),
+                        updateUserStakeLevel: jest.fn(),
                     },
                 }),
             },
@@ -63,9 +76,8 @@ describe("Event Interceptor Integration", () => {
                 collectBetProcessedTime: jest.fn(),
             },
             gamePromotionApiClient: {
-                deductBonusItem: jest.fn(),
-                createPromotionTicket: jest.fn(),
-                rollbackBonusItem: jest.fn(),
+                instance: jest.fn().mockReturnValue(mockApiInstance),
+                isAvailable: jest.fn().mockReturnValue(true),
             },
         };
 
@@ -186,11 +198,16 @@ describe("Event Interceptor Integration", () => {
 
         it("should return no interceptors when promotion API is not available", () => {
             // Arrange
+            const nullApiClientFactory = {
+                instance: () => null,
+                isAvailable: () => false,
+            };
+
             const interceptorWithoutAPI = new PromotionBetInterceptor({
                 logService: mockDependencies.logService,
                 definition: mockDependencies.definition,
                 placeBetPublisher: mockDependencies.placeBetPublisher,
-                gamePromotionApiClient: null, // No API available
+                gamePromotionApiClient: nullApiClientFactory,
             });
 
             const queueWithoutAPI = new ProcessBetQueue({
@@ -210,7 +227,7 @@ describe("Event Interceptor Integration", () => {
         it("should execute beforeEvent for promotion bets", async () => {
             // Arrange
             const context = { player, payload: promotionPayload };
-            mockDependencies.gamePromotionApiClient.deductBonusItem.mockResolvedValue({
+            mockApiInstance.deductBonusItem.mockResolvedValue({
                 success: true,
                 remainingBonusItems: 4,
             });
@@ -220,13 +237,13 @@ describe("Event Interceptor Integration", () => {
 
             // Assert
             expect(result.success).toBe(true);
-            expect(mockDependencies.gamePromotionApiClient.deductBonusItem).toHaveBeenCalled();
+            expect(mockApiInstance.deductBonusItem).toHaveBeenCalled();
         });
 
         it("should handle interceptor event failures gracefully", async () => {
             // Arrange
             const context = { player, payload: promotionPayload };
-            mockDependencies.gamePromotionApiClient.deductBonusItem.mockResolvedValue({
+            mockApiInstance.deductBonusItem.mockResolvedValue({
                 success: false,
                 error: "API Error",
             });
@@ -314,11 +331,11 @@ describe("Event Interceptor Integration", () => {
     describe("End-to-End Event Interceptor Integration", () => {
         it("should process promotion bet through complete interceptor flow", async () => {
             // Arrange
-            mockDependencies.gamePromotionApiClient.deductBonusItem.mockResolvedValue({
+            mockApiInstance.deductBonusItem.mockResolvedValue({
                 success: true,
                 remainingBonusItems: 4,
             });
-            mockDependencies.gamePromotionApiClient.createPromotionTicket.mockResolvedValue({
+            mockApiInstance.createPromotionTicket.mockResolvedValue({
                 success: true,
                 ticketId: "ticket123",
             });
@@ -335,9 +352,9 @@ describe("Event Interceptor Integration", () => {
             await processBetQueue.proceedBet(player, promotionPayload);
 
             // Assert
-            expect(mockDependencies.gamePromotionApiClient.deductBonusItem).toHaveBeenCalled();
+            expect(mockApiInstance.deductBonusItem).toHaveBeenCalled();
             expect(mockDependencies.placeBet).toHaveBeenCalled();
-            expect(mockDependencies.gamePromotionApiClient.createPromotionTicket).toHaveBeenCalled();
+            expect(mockApiInstance.createPromotionTicket).toHaveBeenCalled();
         });
     });
 });

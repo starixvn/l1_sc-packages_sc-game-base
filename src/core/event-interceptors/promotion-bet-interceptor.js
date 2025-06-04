@@ -17,7 +17,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
     constructor({ logService, definition, placeBetPublisher, gamePromotionApiClient }) {
         super({ logService, definition });
         this.placeBetPublisher = placeBetPublisher;
-        this.gamePromotionApiClient = gamePromotionApiClient;
+        this.gamePromotionApiClient = gamePromotionApiClient.instance();
     }
 
     /**

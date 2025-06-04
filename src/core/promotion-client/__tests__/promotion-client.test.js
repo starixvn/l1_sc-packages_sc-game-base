@@ -18,7 +18,7 @@ jest.mock("@sc/game-promotion-api-client", () => ({
     })),
 }));
 
-describe("GamePromotionApiClientFactory", () => {
+describe("PromotionClient", () => {
     let factory;
     let mockAppConfigs;
 

@@ -148,7 +148,7 @@ export default class ContainerRegistry {
 
     registerPromotionApiClient() {
         this.container.register({
-            gamePromotionApiClientFactory: asClass(PromotionClient).singleton(),
+            gamePromotionApiClient: asClass(PromotionClient).singleton(),
         });
     }
 
@@ -162,12 +162,12 @@ export default class ContainerRegistry {
         // Register interceptor arrays using asFunction for factory pattern
         this.container.register({
             // Bet event interceptors
-            betEventInterceptors: asFunction((container) => {
+            betEventInterceptors: asFunction(({ promotionBetInterceptor }) => {
                 const interceptors = [];
 
-                // Add bet-specific interceptors
-                if (container.hasRegistration("promotionBetInterceptor")) {
-                    interceptors.push(container.resolve("promotionBetInterceptor"));
+                // Add bet-specific interceptors if they exist
+                if (promotionBetInterceptor) {
+                    interceptors.push(promotionBetInterceptor);
                 }
 
                 return interceptors;

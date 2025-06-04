@@ -53,19 +53,19 @@ const consumer = new PlaceBetConsumer(/* standard dependencies */);
 
 - Event interceptors integrate directly with `ProcessBetQueue` through the `betEventInterceptors` parameter
 - Mixin-based architecture for interceptor functionality in `ProcessBetQueue`
-- Required container registry updates for interceptor arrays
+- **Automatic container registry setup** for interceptor arrays
 
 ### 3. **API Changes**
 
 - `PlaceBetConsumer` includes new promotion methods: `getPromotionBetAmount()` and `handlePromotionLogic()`
-- `ProcessBetQueue` constructor requires new `betEventInterceptors` parameter for interceptor integration
+- `ProcessBetQueue` constructor automatically receives `betEventInterceptors` parameter
 - New validation methods in consumers for promotion eligibility
 
 ### 4. **Container Registry Changes**
 
-- New interceptor registrations required
-- Promotion client registration (simplified from GamePromotionApiClientFactory)
-- Interceptor array factory patterns
+- **Automatic interceptor registrations** - no manual setup required
+- **Automatic promotion client registration** - handled by base ContainerRegistry
+- Interceptor array factory patterns handled automatically
 
 ## 📋 Pre-Migration Checklist
 
@@ -104,29 +104,58 @@ npm install @sc/game-promotion-api-client@^1.0.0
 npm install sc-game-base@^6.0.0
 ```
 
-### Step 2: Update Container Registry
+### Step 2: Container Registry Setup
+
+**Good News**: Container registration is handled automatically! The base `ContainerRegistry` class automatically:
+
+- Registers the promotion client (`gamePromotionApiClient`)
+- Registers the `PromotionBetInterceptor`
+- Sets up interceptor arrays (`betEventInterceptors`)
+- Configures `ProcessBetQueue` integration
+
+**No manual container registration needed** unless you want to add custom interceptors.
 
 ```javascript
-// src/container-registry.js (or your container file)
-import { GamePromotionApiClient } from "@sc/game-promotion-api-client";
-import * as EventInterceptors from "sc-game-base/core/event-interceptors";
-import { PromotionClient } from "sc-game-base/core/game-promotion-api-client-factory";
+// src/container-registry.js - ONLY if extending with custom interceptors
+import { ContainerRegistry } from "sc-game-base/core";
+import YourCustomInterceptor from "./event-interceptors/your-custom-interceptor.js";
 
 export default class YourGameContainerRegistry extends ContainerRegistry {
+  // Base registration handles everything automatically
   register(appConfigs, definition, gameData) {
-    // Call parent registration first
     const container = super.register(appConfigs, definition, gameData);
 
-    // Add your game-specific registrations
-    this.registerGameSpecificServices();
+    // Only add this if you have custom interceptors
+    this.registerCustomInterceptors();
 
     return container;
   }
 
-  registerGameSpecificServices() {
-    // Your existing game-specific registrations
+  // OPTIONAL: Only needed for custom interceptors
+  registerCustomInterceptors() {
     this.container.register({
-      // ... your existing services
+      yourCustomInterceptor: asClass(YourCustomInterceptor).singleton(),
+    });
+  }
+
+  // OPTIONAL: Override interceptor arrays to add custom interceptors
+  registerInterceptorArrays() {
+    this.container.register({
+      betEventInterceptors: asFunction(({ promotionBetInterceptor, yourCustomInterceptor }) => {
+        const interceptors = [];
+
+        // Base promotion interceptor (automatically available)
+        if (promotionBetInterceptor) {
+          interceptors.push(promotionBetInterceptor);
+        }
+
+        // Add your custom interceptors
+        if (yourCustomInterceptor) {
+          interceptors.push(yourCustomInterceptor);
+        }
+
+        return interceptors;
+      }).singleton(),
     });
   }
 }
@@ -134,16 +163,14 @@ export default class YourGameContainerRegistry extends ContainerRegistry {
 
 ### Step 3: Add Promotion API Configuration
 
-**Note: This step is OPTIONAL.** Skip if you don't need promotion features.
-
-Add promotion API settings to your application configuration:
+**This is the main step you need**: Add promotion API settings to enable promotion features:
 
 ```javascript
 // src/configs/app-config.js
 export const appConfigs = {
   // ... existing configs
 
-  // Promotion API settings (OPTIONAL - only add if you need promotion features)
+  // Add this to enable promotion features
   promotionApiSettings: {
     baseUrl: process.env.PROMOTION_API_BASE_URL || "https://promotion-api.example.com",
     timeout: parseInt(process.env.PROMOTION_API_TIMEOUT) || 5000,
@@ -152,29 +179,110 @@ export const appConfigs = {
 };
 ```
 
-### Step 4: Create Event Interceptors (If Needed)
+**Without this configuration**, the promotion client returns `null` and all promotion features are disabled.
 
-If your game requires custom promotion logic, create game-specific interceptors that integrate with `ProcessBetQueue`:
+### Step 4: Using the Built-in PromotionBetInterceptor
+
+The `PromotionBetInterceptor` is automatically registered and handles all standard promotion workflows:
+
+- ✅ **Automatic promotion detection** via `payload.usePromotion` and `payload.promotionId`
+- ✅ **Bonus item deduction** before bet placement
+- ✅ **Promotion ticket creation** after successful bets
+- ✅ **Rollback handling** for failed bets
+- ✅ **Data enhancement** for bet records, logs, and API calls
+
+**No additional code needed** - it works automatically when:
+
+1. `promotionApiSettings` is configured
+2. Client sends promotion data in bet payload
+
+#### Built-in PromotionBetInterceptor Features:
+
+```javascript
+// The interceptor automatically handles these bet payload patterns:
+
+// Standard promotion bet
+{
+  "amount": 100,
+  "betChoice": "red",
+  "usePromotion": true,           // Triggers promotion processing
+  "promotionId": "winter2024",    // Identifies the promotion
+  // ... other bet fields
+}
+
+// The interceptor automatically:
+// 1. Validates promotion data
+// 2. Calls gamePromotionApiClient.deductBonusItem()
+// 3. Enhances bet info with promotion metadata
+// 4. Creates promotion ticket on success
+// 5. Rolls back on failure
+```
+
+#### Accessing PromotionBetInterceptor in Your Code:
+
+```javascript
+// Import from core if you need to reference it
+import { EventInterceptors } from "sc-game-base/core";
+const { PromotionBetInterceptor } = EventInterceptors;
+
+// Or import directly
+import { PromotionBetInterceptor } from "sc-game-base/core/event-interceptors";
+
+// Example: Extending the built-in interceptor
+export default class MyGamePromotionInterceptor extends PromotionBetInterceptor {
+  constructor(dependencies) {
+    super(dependencies);
+  }
+
+  // Override shouldIntercept to add game-specific conditions
+  shouldIntercept(context) {
+    const baseCheck = super.shouldIntercept(context);
+
+    // Add game-specific logic
+    const { payload } = context;
+    return baseCheck && payload.gameMode !== "practice";
+  }
+
+  // Override transformEventData to add game-specific fields
+  transformEventData(transformName, context) {
+    // Call parent transformation first
+    let result = super.transformEventData(transformName, context);
+
+    // Add game-specific enhancements
+    if (transformName === "enhanceBetRecord") {
+      const { payload } = context;
+      if (payload.gameSpecificData) {
+        result.gameSpecificData = payload.gameSpecificData;
+      }
+    }
+
+    return result;
+  }
+}
+```
+
+### Step 5: Create Custom Event Interceptors (Advanced)
+
+Only needed if you require completely custom promotion logic beyond extending the built-in interceptor:
 
 ```javascript
 // src/event-interceptors/your-game-promotion-interceptor.js
 import { BaseEventInterceptor } from "sc-game-base/core/event-interceptors";
 
 export default class YourGamePromotionInterceptor extends BaseEventInterceptor {
-  constructor({ promotionClient, logService }) {
-    super();
-    this.promotionApiClient = promotionClient.instance();
-    this.logService = logService;
+  constructor({ gamePromotionApiClient, logService, definition }) {
+    super({ logService, definition });
+    this.gamePromotionApiClient = gamePromotionApiClient.instance();
   }
 
   shouldIntercept(context) {
-    // Your game-specific logic to determine if this interceptor applies
     const { payload } = context;
-    return payload?.usePromotion === true && this.promotionApiClient !== null;
+
+    // Game-specific logic - example: only for special game modes
+    return payload?.usePromotion === true && payload?.gameMode === "tournament" && this.gamePromotionApiClient !== null;
   }
 
   async beforeEvent(context) {
-    // Custom logic before bet processing
     const { player, payload } = context;
 
     try {
@@ -256,52 +364,9 @@ export default class YourGamePromotionInterceptor extends BaseEventInterceptor {
 }
 ```
 
-### Step 5: Register Custom Interceptors and ProcessBetQueue Integration
+### Step 6: Extend PlaceBetConsumer for Promotion Support (Optional)
 
-```javascript
-// src/container-registry.js
-import YourGamePromotionInterceptor from "./event-interceptors/your-game-promotion-interceptor.js";
-
-export default class YourGameContainerRegistry extends ContainerRegistry {
-  registerInterceptors() {
-    // Call parent method first
-    super.registerInterceptors();
-
-    // Register your game-specific interceptors
-    this.container.register({
-      yourGamePromotionInterceptor: asClass(YourGamePromotionInterceptor).singleton(),
-    });
-  }
-
-  registerInterceptorArrays() {
-    // Register interceptor arrays for ProcessBetQueue integration
-    this.container.register({
-      betEventInterceptors: asFunction((container) => {
-        const interceptors = [];
-
-        // Add base promotion interceptor
-        if (container.hasRegistration("promotionBetInterceptor")) {
-          interceptors.push(container.resolve("promotionBetInterceptor"));
-        }
-
-        // Add your game-specific interceptors
-        if (container.hasRegistration("yourGamePromotionInterceptor")) {
-          interceptors.push(container.resolve("yourGamePromotionInterceptor"));
-        }
-
-        return interceptors;
-      }).singleton(),
-    });
-  }
-
-  registerProcessors() {
-    // ProcessBetQueue automatically integrates with betEventInterceptors
-    super.registerProcessors();
-  }
-}
-```
-
-### Step 6: Extend PlaceBetConsumer for Promotion Support
+Only needed if you require game-specific promotion bet amount calculations:
 
 ```javascript
 // src/event-consumers/your-game-place-bet-consumer.js
@@ -363,7 +428,7 @@ export default class YourGamePlaceBetConsumer extends PlaceBetConsumer {
 }
 ```
 
-### Step 7: Update Container Registration
+### Step 7: Update Container Registration (If Using Custom Components)
 
 ```javascript
 // Register your custom consumer instead of the base one
@@ -377,7 +442,7 @@ registerConsumers() {
 }
 ```
 
-### Step 8: Configuration Updates
+### Step 8: Configuration Updates (Optional)
 
 Add promotion-related configuration to your game configs:
 
@@ -395,6 +460,25 @@ export const gameConfigs = {
   },
 };
 ```
+
+## 🎯 What's Automatic vs Manual
+
+### ✅ **Automatic (No Action Required)**
+
+- Promotion client registration (`gamePromotionApiClient`)
+- `PromotionBetInterceptor` registration
+- `betEventInterceptors` array creation
+- `ProcessBetQueue` integration with interceptors
+- Graceful degradation when promotion API not configured
+- **Standard promotion workflows** (deduct → bet → ticket/rollback)
+
+### 🔧 **Manual (Only If Needed)**
+
+- Promotion API configuration (`promotionApiSettings`)
+- Custom interceptors for game-specific logic
+- Custom `PlaceBetConsumer` extensions
+- Game-specific promotion validation rules
+- **Extending built-in PromotionBetInterceptor** for game-specific enhancements
 
 ## 🧪 Testing Strategy
 
@@ -486,35 +570,82 @@ describe("Promotion Integration Flow", () => {
 
 ## 🚨 Common Migration Issues
 
-### Issue 1: Container Resolution Errors
+### Issue 1: Container Resolution Error for betEventInterceptors
 
-**Problem**: Interceptors not properly registered
-**Solution**: Ensure `registerInterceptorArrays()` is called after all interceptors are registered
+**Problem**: Getting Awilix resolution error: `processBetQueue -> betEventInterceptors -> container`
 
-### Issue 2: Missing Promotion Client
+```
+Resolution path: processBetQueue -> betEventInterceptors -> container
+    at resolve (node_modules\awilix\lib\container.js:252:23)
+    ...
+    cannot resolve path
+```
 
-**Problem**: `promotionClient` not found
-**Solution**: Verify the client is registered in container registry and promotion API settings are configured
+**Root Cause**: The `registerInterceptorArrays()` method in older versions incorrectly tried to access the container directly in the factory function.
 
-### Issue 3: Validation Failures
+**Solution**: Upgrade to sc-game-base 6.0.0+ which fixes this issue, or if extending `ContainerRegistry`, use the correct Awilix pattern:
+
+```javascript
+// ❌ WRONG - This causes the error
+registerInterceptorArrays() {
+  this.container.register({
+    betEventInterceptors: asFunction((container) => { // Wrong parameter
+      if (container.hasRegistration("promotionBetInterceptor")) { // Wrong approach
+        // ...
+      }
+    }).singleton(),
+  });
+}
+
+// ✅ CORRECT - Use dependency injection
+registerInterceptorArrays() {
+  this.container.register({
+    betEventInterceptors: asFunction(({ promotionBetInterceptor, yourCustomInterceptor }) => {
+      const interceptors = [];
+
+      if (promotionBetInterceptor) {
+        interceptors.push(promotionBetInterceptor);
+      }
+
+      if (yourCustomInterceptor) {
+        interceptors.push(yourCustomInterceptor);
+      }
+
+      return interceptors;
+    }).singleton(),
+  });
+}
+```
+
+### Issue 2: Promotion Features Not Working
+
+**Problem**: Promotion bets are processed as regular bets
+**Solution**: Ensure `promotionApiSettings` is configured in your app config. Without this, promotion features are automatically disabled.
+
+### Issue 3: Container Resolution Errors
+
+**Problem**: Custom interceptors not properly registered
+**Solution**: Ensure `registerInterceptorArrays()` is called after all custom interceptors are registered
+
+### Issue 4: Missing Promotion Client
+
+**Problem**: `gamePromotionApiClient` not found
+**Solution**: This should be automatic. Verify you're extending from the base `ContainerRegistry` class properly.
+
+### Issue 5: Validation Failures
 
 **Problem**: Promotion validation always fails
 **Solution**: Check that `composePromotionValidationCriteria` returns valid criteria format
 
-### Issue 4: Interceptor Not Triggered
+### Issue 6: Custom Interceptor Not Triggered
 
 **Problem**: Custom interceptor never executes
 **Solution**: Verify `shouldIntercept()` method returns `true` for your scenarios and that interceptors are properly registered in `betEventInterceptors`
 
-### Issue 5: Promotion API Configuration Missing
-
-**Problem**: PromotionClient not initialized
-**Solution**: Ensure `promotionApiSettings` is properly configured in your app config
-
-### Issue 6: ProcessBetQueue Integration Issues
+### Issue 7: ProcessBetQueue Integration Issues
 
 **Problem**: Interceptors not executing in ProcessBetQueue
-**Solution**: Verify `betEventInterceptors` array is properly passed to ProcessBetQueue constructor and contains your interceptors
+**Solution**: This should be automatic. Verify you haven't overridden the base `registerCrons()` method incorrectly.
 
 ## 📊 Performance Considerations
 
@@ -578,7 +709,7 @@ If you encounter issues during migration:
 ## 📝 Post-Migration Checklist
 
 - [ ] All tests passing
-- [ ] Promotion flows working correctly
+- [ ] Promotion flows working correctly (if enabled)
 - [ ] Performance metrics within acceptable ranges
 - [ ] Error handling tested
 - [ ] Monitoring and alerting configured
