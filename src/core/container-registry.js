@@ -148,13 +148,13 @@ export default class ContainerRegistry {
 
     registerPromotionApiClient() {
         this.container.register({
-            gamePromotionApiClient: asClass(PromotionClient).singleton(),
+            gamePromotionApiClient: asClass(PromotionClient).singleton().proxy(),
         });
     }
 
     registerInterceptors() {
         this.container.register({
-            promotionBetInterceptor: asClass(EventInterceptors.PromotionBetInterceptor).singleton(),
+            promotionBetInterceptor: asClass(EventInterceptors.PromotionBetInterceptor).singleton().proxy(),
         });
     }
 

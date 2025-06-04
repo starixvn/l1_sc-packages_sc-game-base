@@ -35,7 +35,7 @@ describe("PromotionClient", () => {
                     useAuthentication: true,
                 },
             };
-            factory = new PromotionClient(mockAppConfigs);
+            factory = new PromotionClient({ appConfigs: mockAppConfigs });
         });
 
         it("should create GamePromotionApiClient with correct configuration", () => {
@@ -64,7 +64,7 @@ describe("PromotionClient", () => {
     describe("when promotion settings are not configured", () => {
         beforeEach(() => {
             mockAppConfigs = {};
-            factory = new PromotionClient(mockAppConfigs);
+            factory = new PromotionClient({ appConfigs: mockAppConfigs });
         });
 
         it("should not create GamePromotionApiClient", () => {
@@ -93,7 +93,7 @@ describe("PromotionClient", () => {
 
         it("should throw an error", () => {
             expect(() => {
-                new PromotionClient(mockAppConfigs);
+                new PromotionClient({ appConfigs: mockAppConfigs });
             }).toThrow("baseUrl is required in promotionApiSettings");
         });
     });
@@ -106,7 +106,7 @@ describe("PromotionClient", () => {
                     useAuthentication: false,
                 },
             };
-            factory = new PromotionClient(mockAppConfigs);
+            factory = new PromotionClient({ appConfigs: mockAppConfigs });
         });
 
         it("should use default timeout of 5000ms", () => {
@@ -129,7 +129,7 @@ describe("PromotionClient", () => {
                     useAuthentication: false,
                 },
             };
-            factory = new PromotionClient(mockAppConfigs);
+            factory = new PromotionClient({ appConfigs: mockAppConfigs });
         });
 
         it("should create client with basic headers only", () => {
@@ -152,7 +152,7 @@ describe("PromotionClient", () => {
                     useAuthentication: true,
                 },
             };
-            factory = new PromotionClient(mockAppConfigs);
+            factory = new PromotionClient({ appConfigs: mockAppConfigs });
         });
 
         it("should use the custom timeout", () => {
