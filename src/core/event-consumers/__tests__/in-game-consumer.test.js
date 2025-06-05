@@ -86,6 +86,79 @@ describe("in-game-consumer tests", () => {
             expect(actualResult.user).toEqual({ UID: 1, name: "user", red: 2000, rate: 1000 });
             expect(actualResult.roundHistory).toEqual([]);
         });
+
+        it("should include promotion data when player has promotion", async () => {
+            // arrange
+            const promotionData = {
+                promotionId: "winter2024",
+                code: "WIN24",
+                bonusItemCount: 5,
+                isActive: true,
+                promotionType: "free_bet",
+                expiryDate: "2024-12-31T23:59:59Z",
+                lastUsedDate: "2024-01-15T10:30:00Z",
+            };
+            const realPlayerWithPromotion = {
+                ...realPlayer,
+                promotion: promotionData,
+            };
+            consumer.getUserInfo = jest.fn().mockReturnValueOnce({ UID: 1, name: "user", red: 2000 });
+            roundQuery.getList.mockReturnValueOnce([]);
+
+            // act
+            const actualResult = await consumer.buildPayload(realPlayerWithPromotion);
+
+            // assert
+            expect(actualResult.promotion).toEqual(promotionData);
+            expect(Object.keys(actualResult)).toContain("promotion");
+        });
+
+        it("should not include promotion data when player has no promotion", async () => {
+            // arrange
+            consumer.getUserInfo = jest.fn().mockReturnValueOnce({ UID: 1, name: "user", red: 2000 });
+            roundQuery.getList.mockReturnValueOnce([]);
+
+            // act
+            const actualResult = await consumer.buildPayload(realPlayer);
+
+            // assert
+            expect(actualResult.promotion).toBeUndefined();
+            expect(Object.keys(actualResult)).not.toContain("promotion");
+        });
+
+        it("should handle null promotion data gracefully", async () => {
+            // arrange
+            const realPlayerWithNullPromotion = {
+                ...realPlayer,
+                promotion: null,
+            };
+            consumer.getUserInfo = jest.fn().mockReturnValueOnce({ UID: 1, name: "user", red: 2000 });
+            roundQuery.getList.mockReturnValueOnce([]);
+
+            // act
+            const actualResult = await consumer.buildPayload(realPlayerWithNullPromotion);
+
+            // assert
+            expect(actualResult.promotion).toBeUndefined();
+            expect(Object.keys(actualResult)).not.toContain("promotion");
+        });
+
+        it("should handle undefined promotion data gracefully", async () => {
+            // arrange
+            const realPlayerWithUndefinedPromotion = {
+                ...realPlayer,
+                promotion: undefined,
+            };
+            consumer.getUserInfo = jest.fn().mockReturnValueOnce({ UID: 1, name: "user", red: 2000 });
+            roundQuery.getList.mockReturnValueOnce([]);
+
+            // act
+            const actualResult = await consumer.buildPayload(realPlayerWithUndefinedPromotion);
+
+            // assert
+            expect(actualResult.promotion).toBeUndefined();
+            expect(Object.keys(actualResult)).not.toContain("promotion");
+        });
     });
 
     describe("getUserInfo tests", () => {

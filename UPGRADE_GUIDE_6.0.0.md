@@ -58,6 +58,7 @@ const consumer = new PlaceBetConsumer(/* standard dependencies */);
 ### 3. **API Changes**
 
 - `PlaceBetConsumer` includes new promotion methods: `getPromotionBetAmount()` and `handlePromotionLogic()`
+- `InGameConsumer` automatically includes promotion data in game payload when player has active promotions
 - `ProcessBetQueue` constructor automatically receives `betEventInterceptors` parameter
 - New validation methods in consumers for promotion eligibility
 
@@ -195,6 +196,36 @@ The `PromotionBetInterceptor` is automatically registered and handles all standa
 
 1. `promotionApiSettings` is configured
 2. Client sends promotion data in bet payload
+
+### Built-in InGameConsumer Promotion Support
+
+The `InGameConsumer` automatically includes promotion data when players enter the game:
+
+- ✅ **Automatic promotion data inclusion** in game payload
+- ✅ **Seamless client-side promotion display**
+- ✅ **No additional configuration required**
+- ✅ **Graceful handling** of players without promotions
+
+**Promotion data included in game payload:**
+
+```javascript
+// Game payload automatically includes promotion when available
+{
+  "roundId": "round-123",
+  "gameConfigs": { /* game settings */ },
+  "user": { /* user data */ },
+  "promotion": {
+    "promotionId": "winter2024",
+    "code": "WIN24",
+    "bonusItemCount": 5,
+    "isActive": true,
+    "promotionType": "free_bet",
+    "expiryDate": "2024-12-31T23:59:59Z",
+    "lastUsedDate": "2024-01-15T10:30:00Z"
+  }
+  // ... other game data
+}
+```
 
 #### Built-in PromotionBetInterceptor Features:
 
@@ -469,6 +500,7 @@ export const gameConfigs = {
 - `PromotionBetInterceptor` registration
 - `betEventInterceptors` array creation
 - `ProcessBetQueue` integration with interceptors
+- `InGameConsumer` promotion data inclusion in game payload
 - Graceful degradation when promotion API not configured
 - **Standard promotion workflows** (deduct → bet → ticket/rollback)
 
@@ -487,6 +519,48 @@ export const gameConfigs = {
 Update your test files to include promotion scenarios:
 
 ```javascript
+// __tests__/in-game-consumer.test.js
+describe("InGameConsumer with Promotions", () => {
+  let consumer;
+  let mockPlayer;
+
+  beforeEach(() => {
+    mockPlayer = {
+      profile: { name: "testPlayer" },
+      session: { currencyGroupId: 1, currencyCode: "USD", multiplier: 1000 },
+      socketClient: { emit: jest.fn() },
+    };
+    consumer = new InGameConsumer(/* dependencies */);
+  });
+
+  it("should include promotion data when player has promotion", async () => {
+    const promotionData = {
+      promotionId: "winter2024",
+      code: "WIN24",
+      bonusItemCount: 5,
+      isActive: true,
+      promotionType: "free_bet",
+      expiryDate: "2024-12-31T23:59:59Z",
+      lastUsedDate: "2024-01-15T10:30:00Z",
+    };
+
+    mockPlayer.promotion = promotionData;
+    consumer.getUserInfo = jest.fn().mockReturnValue({ UID: 1, name: "user", red: 2000 });
+
+    const payload = await consumer.buildPayload(mockPlayer);
+
+    expect(payload.promotion).toEqual(promotionData);
+  });
+
+  it("should not include promotion data when player has no promotion", async () => {
+    consumer.getUserInfo = jest.fn().mockReturnValue({ UID: 1, name: "user", red: 2000 });
+
+    const payload = await consumer.buildPayload(mockPlayer);
+
+    expect(payload.promotion).toBeUndefined();
+  });
+});
+
 // __tests__/place-bet-consumer.test.js
 describe("YourGamePlaceBetConsumer with Promotions", () => {
   let consumer;

@@ -45,7 +45,7 @@ export default class InGameConsumer {
         const { ownBets, clientSeed } = this.gameData.ingame[realPlayer.profile.name] || { ownBets: {} };
         const roundHistory = await this.roundQuery.getList(this.definition.numberOfRoundHistory);
 
-        return {
+        const payload = {
             roundId,
             gameConfigs,
             roundHistory,
@@ -55,6 +55,12 @@ export default class InGameConsumer {
             resultHash: this.getResultHash(),
             clientSeed,
         };
+
+        if (realPlayer.promotion) {
+            payload.promotion = realPlayer.promotion;
+        }
+
+        return payload;
     }
 
     getResultHash() {
