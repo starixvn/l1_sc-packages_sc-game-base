@@ -25,7 +25,7 @@ export default class UserSignInConsumer {
         appConfigs,
         gameManagementApiClientFactory,
         logService,
-        gamePromotionApiClientFactory = null
+        gamePromotionApiClient = null
     ) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
@@ -33,8 +33,7 @@ export default class UserSignInConsumer {
         this.appConfigs = appConfigs;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
         this.logService = logService;
-        this.gamePromotionApiClientFactory = gamePromotionApiClientFactory;
-        this.gamePromotionApiClient = gamePromotionApiClientFactory?.instance();
+        this.promotionApiClient = gamePromotionApiClient?.instance();
     }
 
     /**
@@ -113,15 +112,15 @@ export default class UserSignInConsumer {
      */
     async claimPlayerPromotions(userSession) {
         // Check if game offers promotion (factory and client must be available)
-        if (!this.gamePromotionApiClientFactory || !this.gamePromotionApiClient || !this.appConfigs.promotionApiSettings) {
+        if (!this.promotionApiClient || !this.appConfigs.promotionApiSettings) {
             return null;
         }
 
         // Get player-specific data (these should come from user session or player data)
-        const { operatorId, siteName, currencyGroup, playerId } = userSession;
+        const { operatorId, siteName, currencyGroupId, playerId } = userSession;
 
         // Validate required player data
-        if (!operatorId || !siteName || !currencyGroup || !playerId) {
+        if (!operatorId || !siteName || !currencyGroupId || !playerId) {
             return null;
         }
 
@@ -130,10 +129,10 @@ export default class UserSignInConsumer {
                 operatorId,
                 siteName,
                 playerId,
-                currencyGroup,
+                currencyGroup: currencyGroupId,
             };
 
-            const result = await this.gamePromotionApiClient.claimPromotion(playerDto);
+            const result = await this.promotionApiClient.claimPromotion(playerDto);
 
             if (!result || !result.promotion) {
                 return null;

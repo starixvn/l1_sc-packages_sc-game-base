@@ -11,9 +11,28 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
      * @param {TableGameData} gameData
      * @param {TableUserSignInPublisher} userSignInPublisher
      * @param {Object} appConfigs
+     * @param {Object} logService
+     * @param {PromotionClient} gamePromotionApiClient - Optional: GamePromotionApiClient
      */
-    constructor(definition, gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, gameManagementApiClientFactory) {
-        super(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, gameManagementApiClientFactory);
+    constructor(
+        definition,
+        gameData,
+        userSignInPublisher,
+        playGamePermissionValidator,
+        appConfigs,
+        gameManagementApiClientFactory,
+        logService,
+        gamePromotionApiClient = null
+    ) {
+        super(
+            gameData,
+            userSignInPublisher,
+            playGamePermissionValidator,
+            appConfigs,
+            gameManagementApiClientFactory,
+            logService,
+            gamePromotionApiClient
+        );
 
         this.definition = definition;
     }
@@ -38,8 +57,8 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
         }
     }
 
-    handleSignInSuccess(socketClient, userInfo, userSession) {
-        super.handleSignInSuccess(socketClient, userInfo, userSession);
+    handleSignInSuccess(socketClient, userInfo, userSession, promotionData = null) {
+        super.handleSignInSuccess(socketClient, userInfo, userSession, promotionData);
 
         this.userSignInPublisher.publishToGameMessage(socketClient, this.definition.name);
     }
