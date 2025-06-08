@@ -29,12 +29,10 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
     shouldIntercept(context) {
         const { payload } = context;
 
-        // Check if this is a promotion bet
         if (!payload || !payload.usePromotion || !payload.promotionId) {
             return false;
         }
 
-        // Check if promotion API is available
         if (!this.isPromotionApiAvailable()) {
             return false;
         }
@@ -57,10 +55,8 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
 
             const deductDto = {
                 operatorId: player.session.operatorId,
-                siteName: player.session.siteName,
                 playerId: player.session.playerId,
                 promotionId: promotionData.promotionId,
-                quantity: 1,
             };
 
             const deductResult = await this.gamePromotionApiClient.deductBonusItem(deductDto);
@@ -178,27 +174,24 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      * @returns {Object} Transformed data
      */
     transformEventData(transformName, context) {
-        const { payload, betInfo, betRecord, betLog, bet } = context;
+        let { payload, betInfo, betRecord, betLog, bet } = context;
 
         switch (transformName) {
             case "enhanceBetInfo":
-                if (payload?.usePromotion && payload?.promotionId) {
-                    betInfo.metadata = betInfo.metadata || {};
-                    betInfo.metadata.usePromotion = true;
-                    betInfo.metadata.promotionId = payload.promotionId;
+                if (betInfo && payload.promotionId) {
+                    betInfo.promotionCode = payload.promotionCode;
+                    betInfo.promotionId = payload.promotionId;
                 }
                 return betInfo;
 
             case "enhanceBetRecord":
-                if (bet?.usePromotion && bet?.promotionId) {
-                    betRecord.usePromotion = true;
+                if (bet?.promotionId) {
                     betRecord.promotionId = bet.promotionId;
                 }
                 return betRecord;
 
             case "enhanceBetLog":
-                if (bet?.usePromotion && bet?.promotionId) {
-                    betLog.usePromotion = true;
+                if (bet?.promotionId) {
                     betLog.promotionId = bet.promotionId;
                 }
                 return betLog;

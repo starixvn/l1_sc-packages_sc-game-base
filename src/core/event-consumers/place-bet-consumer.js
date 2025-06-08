@@ -78,9 +78,6 @@ export default class PlaceBetConsumer {
         }
     }
 
-    /**
-     * Handle promotion logic - NEW METHOD
-     */
     handlePromotionLogic(player, payload) {
         const usePromotion = player.promotion !== null && player.promotion !== undefined;
 
@@ -172,14 +169,9 @@ export default class PlaceBetConsumer {
         const configs = this.gameData.gameConfigs;
         const { betTracks } = this.gameData.ingame[player.profile.name] || { betTracks: {} };
 
-        // Skip amount validation for promotion bets - NEW
-        if (player.promotion && amount === this.getPromotionBetAmount(player, { betChoice, amount })) {
-            return [
-                {
-                    failure: freeBet && !configs.enableFreeBet,
-                    notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
-                },
-            ];
+        // Skip amount validation for promotion bets - they use predetermined amounts
+        if (player.promotion) {
+            return []; // No amount validation needed for promotion bets
         }
 
         // Regular validation for non-promotion bets

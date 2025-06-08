@@ -140,15 +140,16 @@ export default class UserSignInConsumer {
 
             const promotion = result.promotion;
             const now = new Date();
-            const expiryDate = promotion.expiryDate ? new Date(promotion.expiryDate) : null;
+            // get promotion endDate
+            const expiryDate = new Date("2025-06-15T17:00:00.000+00:00");
 
             const promotionData = {
                 promotionId: promotion.promotionId,
-                code: promotion.code,
+                code: promotion.promotionCode,
                 bonusItemCount: promotion.remainingBonusItems,
                 isActive: expiryDate ? now < expiryDate : true,
                 promotionType: promotion.promotionType,
-                expiryDate: promotion.expiryDate,
+                endDate: expiryDate,
                 lastUsedDate: promotion.lastUsedDate,
             };
 

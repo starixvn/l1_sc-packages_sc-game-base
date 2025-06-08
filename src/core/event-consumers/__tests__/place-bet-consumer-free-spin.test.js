@@ -397,6 +397,64 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
             expect(betPayload.amount).toBe(500); // Should use slot-specific amount
             expect(mockGameData.ingame[player.profile.name].betQueue).toHaveLength(1);
         });
+
+        it("should skip amount validation entirely for promotion bets", async () => {
+            // Arrange
+            const player = createMockPlayerWithPromotion();
+            const betPayload = {
+                betChoice: "red",
+                amount: 999999999, // Extremely high amount that would normally fail validation
+                freeBet: false,
+                clientSeed: "valid-seed",
+            };
+
+            // Act
+            await placeBetConsumer.consume(player, betPayload);
+
+            // Assert - Should succeed despite invalid amount because promotion skips validation
+            expect(mockGameData.ingame[player.profile.name].betQueue).toHaveLength(1);
+            expect(betPayload.amount).toBe(1); // Should be overridden to promotional amount
+        });
+
+        it("should not validate freeBet enablement for promotion bets", async () => {
+            // Arrange - Disable free bets but use promotion
+            mockGameData.gameConfigs.enableFreeBet = false;
+            const player = createMockPlayerWithPromotion();
+            const betPayload = {
+                betChoice: "red",
+                amount: 100,
+                freeBet: true, // This would normally fail validation
+                clientSeed: "valid-seed",
+            };
+
+            // Act
+            await placeBetConsumer.consume(player, betPayload);
+
+            // Assert - Should succeed because promotion bets don't validate freeBet settings
+            expect(mockGameData.ingame[player.profile.name].betQueue).toHaveLength(1);
+            expect(betPayload.amount).toBe(1); // Should be overridden to promotional amount
+        });
+
+        it("should bypass min/max bet limits for promotion bets", async () => {
+            // Arrange - Set very restrictive bet limits
+            const player = createMockPlayerWithPromotion();
+            player.profile.minBet = 1000;
+            player.profile.maxBet = 2000;
+
+            const betPayload = {
+                betChoice: "red",
+                amount: 50, // Below minimum bet
+                freeBet: false,
+                clientSeed: "valid-seed",
+            };
+
+            // Act
+            await placeBetConsumer.consume(player, betPayload);
+
+            // Assert - Should succeed despite being below minimum bet
+            expect(mockGameData.ingame[player.profile.name].betQueue).toHaveLength(1);
+            expect(betPayload.amount).toBe(1); // Should be overridden to promotional amount
+        });
     });
 
     describe("Edge Cases and Error Handling", () => {
@@ -447,6 +505,47 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                     }),
                 })
             );
+        });
+    });
+
+    describe("composeBetAmountValidationCriteria with Promotions", () => {
+        it("should return empty array for promotion bets (no amount validation)", async () => {
+            // Arrange
+            const player = createMockPlayerWithPromotion();
+
+            // Act
+            const criteria = placeBetConsumer.composeBetAmountValidationCriteria(player, "red", 999999, true);
+
+            // Assert
+            expect(criteria).toEqual([]); // No validation criteria for promotion bets
+        });
+
+        it("should return validation criteria for regular bets", async () => {
+            // Arrange
+            const player = createMockPlayer(); // No promotion
+
+            // Act
+            const criteria = placeBetConsumer.composeBetAmountValidationCriteria(player, "red", 500, false);
+
+            // Assert
+            expect(criteria).toHaveLength(5); // Should have all normal validation criteria
+            expect(criteria[0]).toHaveProperty("failure");
+            expect(criteria[0]).toHaveProperty("notice");
+        });
+
+        it("should validate freeBet setting for regular bets but not promotion bets", async () => {
+            // Arrange - Disable free bets
+            mockGameData.gameConfigs.enableFreeBet = false;
+            const regularPlayer = createMockPlayer();
+            const promotionPlayer = createMockPlayerWithPromotion();
+
+            // Act
+            const regularCriteria = placeBetConsumer.composeBetAmountValidationCriteria(regularPlayer, "red", 500, true);
+            const promotionCriteria = placeBetConsumer.composeBetAmountValidationCriteria(promotionPlayer, "red", 500, true);
+
+            // Assert
+            expect(regularCriteria[0].failure).toBe(true); // Should fail freeBet validation
+            expect(promotionCriteria).toEqual([]); // Should skip all validation
         });
     });
 

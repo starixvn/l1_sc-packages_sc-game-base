@@ -609,6 +609,18 @@ describe("YourGamePlaceBetConsumer with Promotions", () => {
       const failed = criteria.find((c) => c.failure);
       expect(failed).toBeDefined();
     });
+
+    it("should skip amount validation entirely for promotion bets", () => {
+      const amountCriteria = consumer.composeBetAmountValidationCriteria(mockPlayer, "red", 999999, true);
+      expect(amountCriteria).toEqual([]); // No validation for promotion bets
+    });
+
+    it("should not validate freeBet settings for promotion bets", () => {
+      // Even with freeBet disabled and freeBet=true, promotion bets should pass
+      const mockConfigs = { enableFreeBet: false };
+      const criteria = consumer.composeBetAmountValidationCriteria(mockPlayer, "red", 100, true);
+      expect(criteria).toEqual([]); // Should skip all amount validation including freeBet
+    });
   });
 });
 ```
