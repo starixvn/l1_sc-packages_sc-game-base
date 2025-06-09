@@ -8,31 +8,31 @@ The place bet flow follows the sc-game-base architecture with proper separation 
 
 ```mermaid
 flowchart TB
-    Client[Client Application] --> Socket[WebSocket]
-    Socket --> Routers[BaseSocketRouter]
+    Client["Client Application"] --> Socket["WebSocket"]
+    Socket --> Routers["BaseSocketRouter"]
 
     subgraph "Event Consumers"
-        UserSignIn[UserSignInConsumer]
-        PlaceBet[PlaceBetConsumer]
+        UserSignIn["UserSignInConsumer"]
+        PlaceBet["PlaceBetConsumer"]
     end
 
     subgraph "Event Interceptors"
-        PromotionInterceptor[PromotionBetInterceptor]
-        BaseInterceptor[BaseEventInterceptor]
+        PromotionInterceptor["PromotionBetInterceptor"]
+        BaseInterceptor["BaseEventInterceptor"]
     end
 
     subgraph "Crons"
-        ProcessQueue[ProcessBetQueue]
+        ProcessQueue["ProcessBetQueue"]
     end
 
     subgraph "Event Publishers"
-        PlaceBetPub[PlaceBetPublisher]
-        StatusPub[GameStatusPublisher]
+        PlaceBetPub["PlaceBetPublisher"]
+        StatusPub["GameStatusPublisher"]
     end
 
     subgraph "External APIs"
-        PromotionAPI[GamePromotionApiClient]
-        BetAPI[External Bet API]
+        PromotionAPI["GamePromotionApiClient"]
+        BetAPI["External Bet API"]
     end
 
     Routers --> UserSignIn
@@ -63,26 +63,26 @@ flowchart TB
 
 ```mermaid
 flowchart TD
-    SignInRequest[User Sign-In Request] --> Router[BaseSocketRouter]
-    Router --> UserSignInConsumer[src/core/event-consumers/<br/>UserSignInConsumer]
+    SignInRequest["User Sign-In Request"] --> Router["BaseSocketRouter"]
+    Router --> UserSignInConsumer["src/core/event-consumers/<br/>UserSignInConsumer"]
 
-    UserSignInConsumer --> ValidateUser[Validate User Session]
-    ValidateUser --> UserValid{User Valid?}
+    UserSignInConsumer --> ValidateUser["Validate User Session"]
+    ValidateUser --> UserValid{"User Valid?"}
 
-    UserValid -->|No| RejectSignIn[Reject Sign-In]
-    UserValid -->|Yes| CallOfficialAPI[Call GamePromotionApiClient.claimPromotion()]
+    UserValid -->|"No"| RejectSignIn["Reject Sign-In"]
+    UserValid -->|"Yes"| CallOfficialAPI["Call GamePromotionApiClient.claimPromotion()"]
 
-    CallOfficialAPI --> PromotionResult{Promotion Available?}
-    PromotionResult -->|No| CreatePlayerData[Create PlayerInGame without Promotions]
-    PromotionResult -->|Yes| StorePromotionData[Store Promotion Data in PlayerInGame]
+    CallOfficialAPI --> PromotionResult{"Promotion Available?"}
+    PromotionResult -->|"No"| CreatePlayerData["Create PlayerInGame without Promotions"]
+    PromotionResult -->|"Yes"| StorePromotionData["Store Promotion Data in PlayerInGame"]
 
-    StorePromotionData --> SetPromotion[Set promotion Object]
-    SetPromotion --> SetPromotionFields[promotionId, code, bonusItemCount]
-    SetPromotionFields --> CompleteSignIn[Complete Sign-In Process]
+    StorePromotionData --> SetPromotion["Set promotion Object"]
+    SetPromotion --> SetPromotionFields["promotionId, code, bonusItemCount"]
+    SetPromotionFields --> CompleteSignIn["Complete Sign-In Process"]
 
     CreatePlayerData --> CompleteSignIn
-    CompleteSignIn --> Publisher[UserSignInPublisher]
-    Publisher --> NotifyClient[Notify Client of Sign-In Success]
+    CompleteSignIn --> Publisher["UserSignInPublisher"]
+    Publisher --> NotifyClient["Notify Client of Sign-In Success"]
 
     classDef consumerStyle fill:#e1f5fe,stroke:#0277bd
     classDef apiStyle fill:#ffebee,stroke:#c62828
@@ -101,25 +101,25 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Client[Client Application] -->|bet event| Socket[WebSocket Connection]
-    Socket --> Router[BaseSocketRouter]
-    Router --> Verify{verify connection?}
-    Verify -->|No| Reject[Reject Request]
-    Verify -->|Yes| PlaceBetConsumer[src/core/event-consumers/<br/>PlaceBetConsumer]
+    Client["Client Application"] -->|"bet event"| Socket["WebSocket Connection"]
+    Socket --> Router["BaseSocketRouter"]
+    Router --> Verify{"verify connection?"}
+    Verify -->|"No"| Reject["Reject Request"]
+    Verify -->|"Yes"| PlaceBetConsumer["src/core/event-consumers/<br/>PlaceBetConsumer"]
 
-    PlaceBetConsumer --> Normalize[Normalize Payload]
-    Normalize --> HandlePromotion[handlePromotionLogic()]
-    HandlePromotion --> GetPromotionAmount[getPromotionBetAmount()]
-    GetPromotionAmount --> ParamCheck[Parameter Validation]
+    PlaceBetConsumer --> Normalize["Normalize Payload"]
+    Normalize --> HandlePromotion["handlePromotionLogic()"]
+    HandlePromotion --> GetPromotionAmount["getPromotionBetAmount()"]
+    GetPromotionAmount --> ParamCheck["Parameter Validation"]
 
-    ParamCheck -->|Invalid| ErrorResponse[Send Error Response]
-    ParamCheck -->|Valid| BetValidation[Business Logic Validation]
-    BetValidation --> PromotionValidation[composePromotionValidationCriteria()]
+    ParamCheck -->|"Invalid"| ErrorResponse["Send Error Response"]
+    ParamCheck -->|"Valid"| BetValidation["Business Logic Validation"]
+    BetValidation --> PromotionValidation["composePromotionValidationCriteria()"]
 
-    PromotionValidation -->|Invalid| ValidationError[Validation Error]
-    PromotionValidation -->|Valid| InitializePlayer[initializePlayerData()]
-    InitializePlayer --> AdjustTracks[adjustBetTracks()]
-    AdjustTracks --> QueueBet[Add to betQueue]
+    PromotionValidation -->|"Invalid"| ValidationError["Validation Error"]
+    PromotionValidation -->|"Valid"| InitializePlayer["initializePlayerData()"]
+    InitializePlayer --> AdjustTracks["adjustBetTracks()"]
+    AdjustTracks --> QueueBet["Add to betQueue"]
 
     classDef consumerStyle fill:#e1f5fe,stroke:#0277bd
     classDef errorStyle fill:#ffebee,stroke:#c62828
@@ -136,23 +136,23 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    InterceptorStart[Interceptor System Start] --> GetApplicable[getApplicableInterceptors()]
-    GetApplicable --> CheckPromotion{Promotion Bet?}
+    InterceptorStart["Interceptor System Start"] --> GetApplicable["getApplicableInterceptors()"]
+    GetApplicable --> CheckPromotion{"Promotion Bet?"}
 
-    CheckPromotion -->|No| RegularFlow[Regular Bet Flow]
-    CheckPromotion -->|Yes| PromotionBetInterceptor[src/core/event-interceptors/<br/>PromotionBetInterceptor]
+    CheckPromotion -->|"No"| RegularFlow["Regular Bet Flow"]
+    CheckPromotion -->|"Yes"| PromotionBetInterceptor["src/core/event-interceptors/<br/>PromotionBetInterceptor"]
 
-    PromotionBetInterceptor --> BeforeEvent[beforeEvent()]
-    BeforeEvent --> ValidatePromotion[Validate Promotion Eligibility]
-    ValidatePromotion --> TransformBet[enhanceBetInfo()]
-    TransformBet --> SetPromotionMeta[Set Promotion Metadata]
-    SetPromotionMeta --> AfterSuccess[afterSuccessEvent()]
+    PromotionBetInterceptor --> BeforeEvent["beforeEvent()"]
+    BeforeEvent --> ValidatePromotion["Validate Promotion Eligibility"]
+    ValidatePromotion --> TransformBet["enhanceBetInfo()"]
+    TransformBet --> SetPromotionMeta["Set Promotion Metadata"]
+    SetPromotionMeta --> AfterSuccess["afterSuccessEvent()"]
 
-    AfterSuccess --> CreateTicket[createPromotionTicket()]
-    CreateTicket --> AfterFailure[afterFailureEvent() - on error]
-    AfterFailure --> RollbackBonus[rollbackBonusItem()]
+    AfterSuccess --> CreateTicket["createPromotionTicket()"]
+    CreateTicket --> AfterFailure["afterFailureEvent() - on error"]
+    AfterFailure --> RollbackBonus["rollbackBonusItem()"]
 
-    RegularFlow --> ContinueProcessing[Continue to ProcessBetQueue]
+    RegularFlow --> ContinueProcessing["Continue to ProcessBetQueue"]
     RollbackBonus --> ContinueProcessing
     CreateTicket --> ContinueProcessing
 
@@ -171,31 +171,31 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    QueueProcessor[src/core/crons/<br/>ProcessBetQueue] --> CheckQueues[Check All Player Queues]
-    CheckQueues --> HasBets{Queue Has Bets?}
-    HasBets -->|No| WaitLoop[Wait 50ms]
+    QueueProcessor["src/core/crons/<br/>ProcessBetQueue"] --> CheckQueues["Check All Player Queues"]
+    CheckQueues --> HasBets{"Queue Has Bets?"}
+    HasBets -->|"No"| WaitLoop["Wait 50ms"]
     WaitLoop --> CheckQueues
 
-    HasBets -->|Yes| CheckProcessing{Player Processing?}
-    CheckProcessing -->|Yes| WaitLoop
-    CheckProcessing -->|No| DequeueBet[Dequeue Next Bet]
+    HasBets -->|"Yes"| CheckProcessing{"Player Processing?"}
+    CheckProcessing -->|"Yes"| WaitLoop
+    CheckProcessing -->|"No"| DequeueBet["Dequeue Next Bet"]
 
-    DequeueBet --> SetProcessing[Set Player Processing = true]
-    SetProcessing --> GetInterceptors[getApplicableInterceptors()]
-    GetInterceptors --> BeforeEvent[Execute beforeEvent Interceptors]
-    BeforeEvent --> ValidateBet[validateBetRequest()]
+    DequeueBet --> SetProcessing["Set Player Processing = true"]
+    SetProcessing --> GetInterceptors["getApplicableInterceptors()"]
+    GetInterceptors --> BeforeEvent["Execute beforeEvent Interceptors"]
+    BeforeEvent --> ValidateBet["validateBetRequest()"]
 
-    ValidateBet -->|Invalid| FailureFlow[Handle Failed Bet]
-    ValidateBet -->|Valid| EnhanceBetInfo[enhanceBetInfo() Transform]
-    EnhanceBetInfo --> APICall[Call External Bet API]
+    ValidateBet -->|"Invalid"| FailureFlow["Handle Failed Bet"]
+    ValidateBet -->|"Valid"| EnhanceBetInfo["enhanceBetInfo() Transform"]
+    EnhanceBetInfo --> APICall["Call External Bet API"]
 
-    APICall --> APIResponse{API Success?}
-    APIResponse -->|Yes| SuccessFlow[handleSuccessBet()]
-    APIResponse -->|No| FailureFlow
+    APICall --> APIResponse{"API Success?"}
+    APIResponse -->|"Yes"| SuccessFlow["handleSuccessBet()"]
+    APIResponse -->|"No"| FailureFlow
 
-    SuccessFlow --> AfterSuccess[Execute afterSuccessEvent]
-    FailureFlow --> AfterFailure[Execute afterFailureEvent]
-    AfterSuccess --> ProcessComplete[Set Processing = false]
+    SuccessFlow --> AfterSuccess["Execute afterSuccessEvent"]
+    FailureFlow --> AfterFailure["Execute afterFailureEvent"]
+    AfterSuccess --> ProcessComplete["Set Processing = false"]
     AfterFailure --> ProcessComplete
 
     classDef cronStyle fill:#e8f5e8,stroke:#1b5e20
@@ -213,24 +213,24 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    ResponseHandler[Response Handler] --> CheckResult{Success or Failure?}
+    ResponseHandler["Response Handler"] --> CheckResult{"Success or Failure?"}
 
-    CheckResult -->|Success| PlaceBetPublisher[src/core/event-publishers/<br/>PlaceBetPublisher]
-    CheckResult -->|Failure| PlaceBetPublisher
+    CheckResult -->|"Success"| PlaceBetPublisher["src/core/event-publishers/<br/>PlaceBetPublisher"]
+    CheckResult -->|"Failure"| PlaceBetPublisher
 
-    PlaceBetPublisher --> PublishSuccess[publishSuccessBet()]
-    PlaceBetPublisher --> PublishFailure[publishGameFailedBet()]
+    PlaceBetPublisher --> PublishSuccess["publishSuccessBet()"]
+    PlaceBetPublisher --> PublishFailure["publishGameFailedBet()"]
 
-    PublishSuccess --> StatusPublisher[GameStatusPublisher]
+    PublishSuccess --> StatusPublisher["GameStatusPublisher"]
     PublishFailure --> StatusPublisher
 
-    StatusPublisher --> SocketBroadcast[Socket.io Broadcast]
-    SocketBroadcast --> ClientResponse[Client Response]
+    StatusPublisher --> SocketBroadcast["Socket.io Broadcast"]
+    SocketBroadcast --> ClientResponse["Client Response"]
 
     subgraph "Response Types"
-        SuccessResp[Success: balance, betResult, ownBets]
-        FailureResp[Failure: error, rollback notification]
-        PromotionResp[Promotion: ticket created, bonus updated]
+        SuccessResp["Success: balance, betResult, ownBets"]
+        FailureResp["Failure: error, rollback notification"]
+        PromotionResp["Promotion: ticket created, bonus updated"]
     end
 
     ClientResponse --> SuccessResp
@@ -255,13 +255,13 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     participant Client
-    participant Router as BaseSocketRouter
-    participant Consumer as event-consumers/<br/>PlaceBetConsumer
-    participant Queue as crons/<br/>ProcessBetQueue
-    participant Interceptor as event-interceptors/<br/>PromotionBetInterceptor
-    participant PromotionAPI as GamePromotionApiClient
-    participant BetAPI as External Bet API
-    participant Publisher as event-publishers/<br/>PlaceBetPublisher
+    participant Router as "BaseSocketRouter"
+    participant Consumer as "event-consumers/<br/>PlaceBetConsumer"
+    participant Queue as "crons/<br/>ProcessBetQueue"
+    participant Interceptor as "event-interceptors/<br/>PromotionBetInterceptor"
+    participant PromotionAPI as "GamePromotionApiClient"
+    participant BetAPI as "External Bet API"
+    participant Publisher as "event-publishers/<br/>PlaceBetPublisher"
     participant GameData
 
     Client->>Router: Send bet event
