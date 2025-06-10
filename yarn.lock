@@ -2126,10 +2126,10 @@
   resolved "http://npm.lumigame.com/@protobufjs/utf8/-/utf8-1.1.0.tgz"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@sc/game-promotion-api-client@^1.0.1-beta.0":
-  version "1.0.1-beta.0"
-  resolved "http://npm.lumigame.com/@sc/game-promotion-api-client/-/game-promotion-api-client-1.0.1-beta.0.tgz"
-  integrity sha512-mvN20eMjtnVvUqe0S68AXWlucSLREjt1gyKIrDfGNjnZjEmZM1orlGRR2bFalh+Jf28URH4OiEP6aKpCYlpJiQ==
+"@sc/game-promotion-api-client@^1.0.1-beta.1":
+  version "1.0.1-beta.1"
+  resolved "https://npm.lumigame.com/@sc/game-promotion-api-client/-/game-promotion-api-client-1.0.1-beta.1.tgz"
+  integrity sha512-j5gfc/cCOCgjK/9MVoL+BySXDQqwq789/XMFR3dDZog9lJddH0bnQmy9VnOq78oMqcifSGUF9A2Tdx1dqY6mcA==
   dependencies:
     axios "^1.6.0"
 
@@ -8708,10 +8708,10 @@ sc-api-client@1.4.0:
   dependencies:
     axios "^0.19.2"
 
-sc-base-apis@2.0.0:
-  version "2.0.0"
-  resolved "http://npm.lumigame.com/sc-base-apis/-/sc-base-apis-2.0.0.tgz"
-  integrity sha512-f9UX4fuKkAW5hRY5V7aHvKTerdo7dYsnR0TcuDT4brTLuEphLFfOYakQ9414gu6/EI17qaRLvxyJhkJ5x8E9rw==
+sc-base-apis@2.0.1-beta.0:
+  version "2.0.1-beta.0"
+  resolved "https://npm.lumigame.com/sc-base-apis/-/sc-base-apis-2.0.1-beta.0.tgz"
+  integrity sha512-TnQrsnwlU79kobN5bq7DqO5lDEJRohhpAspmjCsGy+UqAcNvky8CKjoB1ce5bmvT8Tpnx9bvYr9xwcalPcTq1Q==
   dependencies:
     moment "^2.29.4"
     sc-api-client "1.4.0"
