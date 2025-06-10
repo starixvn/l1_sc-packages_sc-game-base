@@ -151,6 +151,8 @@ export default class UserSignInConsumer {
                 promotionType: promotion.promotionType,
                 endDate: expiryDate,
                 lastUsedDate: promotion.lastUsedDate,
+                isGiftCode: promotion.isGiftCode,
+                betLevel: promotion.betLevel
             };
 
             return promotionData;
