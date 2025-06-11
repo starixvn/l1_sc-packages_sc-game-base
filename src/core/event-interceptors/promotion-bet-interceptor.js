@@ -101,6 +101,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             const ticketDto = {
                 playerId: player.session.playerId,
                 operatorId: player.session.operatorId,
+                promotionId: player.promotion.promotionId,
                 gameId: this.definition.id,
                 gameRoundId: bet.roundId,
                 appType: 1,
