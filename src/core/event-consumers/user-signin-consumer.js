@@ -137,6 +137,11 @@ export default class UserSignInConsumer {
             if (!result || !result.promotion) {
                 return null;
             }
+            const totalWin = await this.promotionApiClient.getTotalWin({
+                promotionId: result.promotion.promotionId,
+                playerId,
+                operatorId
+            });
 
             const promotion = result.promotion;
             const now = new Date();
@@ -152,7 +157,8 @@ export default class UserSignInConsumer {
                 endDate: expiryDate,
                 lastUsedDate: promotion.lastUsedDate,
                 isGiftCode: promotion.isGiftCode,
-                betLevel: promotion.betLevel
+                betLevel: promotion.betLevel,
+                totalWin: totalWin,
             };
 
             return promotionData;

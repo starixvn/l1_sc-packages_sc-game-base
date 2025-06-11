@@ -2126,10 +2126,10 @@
   resolved "http://npm.lumigame.com/@protobufjs/utf8/-/utf8-1.1.0.tgz"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@sc/game-promotion-api-client@^1.0.1-beta.1":
-  version "1.0.1-beta.1"
-  resolved "https://npm.lumigame.com/@sc/game-promotion-api-client/-/game-promotion-api-client-1.0.1-beta.1.tgz"
-  integrity sha512-j5gfc/cCOCgjK/9MVoL+BySXDQqwq789/XMFR3dDZog9lJddH0bnQmy9VnOq78oMqcifSGUF9A2Tdx1dqY6mcA==
+"@sc/game-promotion-api-client@^1.0.1-beta.2":
+  version "1.0.1-beta.2"
+  resolved "https://npm.lumigame.com/@sc/game-promotion-api-client/-/game-promotion-api-client-1.0.1-beta.2.tgz"
+  integrity sha512-qwdre+ubRUpmLMZj6xEGHBLBeFN4rV0mSq0LMGyfYlJwh5LTNpYumR1HS3aPUZ6YAt90EJTBWAK34sOTcQTrjg==
   dependencies:
     axios "^1.6.0"
 
