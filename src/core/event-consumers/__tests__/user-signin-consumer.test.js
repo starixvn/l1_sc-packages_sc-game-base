@@ -281,6 +281,7 @@ describe("UserSignInConsumer", () => {
             // Mock the actual promotion API instance methods
             mockPromotionApiInstance = {
                 claimPromotion: jest.fn(),
+                getTotalWin: jest.fn(),
             };
 
             // Mock GamePromotionApiClient (the factory)
