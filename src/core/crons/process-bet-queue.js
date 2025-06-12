@@ -224,6 +224,18 @@ export default class ProcessBetQueue extends BetProcessorWithInterceptors {
             });
         }
 
+        if (player.promotion && player.promotion.bonusItemCount <= 0) {
+            const totalWin = await this.gamePromotionApiClient.getTotalWin({
+                promotionId: player.promotion.promotionId,
+                playerId: player.session.playerId,
+                operatorId: player.session.operatorId
+            });
+            this.placeBetPublisher.placeBetPublisher(player.UID, {
+                endPromotion: { totalWin: totalWin },
+            });
+            delete player.promotion;
+        }
+
         const balanceValue = balance?.red || balance?.balance || 0;
         callAndForget(
             this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({

@@ -110,17 +110,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             };
 
             const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
-            if (player.promotion.bonusItemCount <= 0) {
-                const totalWin = await this.gamePromotionApiClient.getTotalWin({
-                    promotionId: player.promotion.promotionId,
-                    playerId: player.session.playerId,
-                    operatorId: player.session.operatorId
-                });
-                this.placeBetPublisher.placeBetPublisher(player.UID, {
-                    endPromotion: { totalWin: totalWin },
-                });
-                delete player.promotion;
-            }
+            this.endPromotionEvent(context);
             if (!ticketResult || !ticketResult.success) {
                 this.logService.logError(`Failed to create promotion ticket for player ${player.profile.name}:`, {
                     error: ticketResult?.error || "Unknown error",
@@ -136,6 +126,38 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 stack: error.stack,
             });
         }
+    }
+
+    /**
+     * Process after promotion end
+     * @param {Object} context - Event context
+     * @param {Object} context.player - Player object
+     * @returns {Promise<void>}
+     */
+    async endPromotionEvent(context) {
+        const { player } = context;
+        try {
+            if (player.promotion.bonusItemCount <= 0) {
+                const totalWin = await this.gamePromotionApiClient.getTotalWin({
+                    promotionId: player.promotion.promotionId,
+                    playerId: player.session.playerId,
+                    operatorId: player.session.operatorId
+                });
+                this.placeBetPublisher.publishToUser(player.UID, { 
+                    endPromotion: true,
+                    totalWin: totalWin
+                }, this.definition.name);
+    
+                delete player.promotion;
+            }
+        } catch (error) {
+            this.logService.logError(`Error ending promotion for player ${player.profile.name}:`, {
+                error: error.message,
+                promotionId: player.promotion.promotionId,
+                stack: error.stack,
+            });
+        }
+        
     }
 
     /**
