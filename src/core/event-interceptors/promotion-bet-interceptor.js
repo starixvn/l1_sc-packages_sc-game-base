@@ -144,8 +144,10 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                     operatorId: player.session.operatorId
                 });
                 this.placeBetPublisher.publishToUser(player.UID, { 
-                    endPromotion: true,
-                    totalWin: totalWin
+                    finishPromotion : {
+                        endPromotion: true,
+                        totalWin: totalWin
+                    }
                 }, this.definition.name);
     
                 delete player.promotion;
