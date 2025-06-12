@@ -13,13 +13,11 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      * @param {Object} dependencies.definition - Game definition
      * @param {Object} dependencies.placeBetPublisher - Publisher for bet events
      * @param {Object} dependencies.gamePromotionApiClient - Promotion API client
-     * @param {Object} dependencies.promotionFreeSpinsPublisher - Publisher for promotion free spins
      */
-    constructor({ logService, definition, placeBetPublisher, gamePromotionApiClient, promotionFreeSpinsPublisher }) {
+    constructor({ logService, definition, placeBetPublisher, gamePromotionApiClient }) {
         super({ logService, definition });
         this.placeBetPublisher = placeBetPublisher;
         this.gamePromotionApiClient = gamePromotionApiClient.instance();
-        this.promotionFreeSpinsPublisher = promotionFreeSpinsPublisher;
     }
 
     /**
@@ -113,13 +111,13 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
 
             const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
             if (player.promotion.bonusItemCount <= 0) {
-                const totalWin = await this.promotionApiClient.getTotalWin({
+                const totalWin = await this.gamePromotionApiClient.getTotalWin({
                     promotionId: player.promotion.promotionId,
                     playerId: player.session.playerId,
                     operatorId: player.session.operatorId
                 });
-                this.promotionFreeSpinsPublisher.publishEndPromotion(player.UID, {
-                    totalWin: totalWin,
+                this.placeBetPublisher.placeBetPublisher(player.UID, {
+                    endPromotion: { totalWin: totalWin },
                 });
                 delete player.promotion;
             }
