@@ -48,6 +48,16 @@ export default class BaseEventPublisher {
         }
     }
 
+    publishToUserByPlayerId(userId, payload, path = this.gameName) {
+        const realPlayer = Object.values(this.gameData.realPlayers).find(
+            (player) => player.session?.playerId === userId && player.socketClient && player.socketClient.connected
+        );
+
+        if (realPlayer && realPlayer.socketClient) {
+            realPlayer.socketClient.emit(path, payload);
+        }
+    }
+
     publishToAllAdmins(payload) {
         const socketAdmins = Object.values(this.gameData.admins)
             .map((admin) => admin.socketClient)
