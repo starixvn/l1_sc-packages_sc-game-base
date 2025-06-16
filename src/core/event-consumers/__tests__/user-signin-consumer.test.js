@@ -281,6 +281,7 @@ describe("UserSignInConsumer", () => {
             // Mock the actual promotion API instance methods
             mockPromotionApiInstance = {
                 claimPromotion: jest.fn(),
+                getRunningPromotions: jest.fn(),
                 getTotalWin: jest.fn(),
             };
 
@@ -347,15 +348,19 @@ describe("UserSignInConsumer", () => {
                 const mockPromotionResult = {
                     promotion: {
                         promotionId: "promo123",
-                        code: "FREE_SPIN",
+                        promotionCode: "FREE_SPIN",
                         remainingBonusItems: 10,
                         promotionType: "FREE_SPIN",
-                        expiryDate: "2025-12-31T23:59:59Z",
+                        endDate: new Date("2025-12-31T23:59:59Z"),
                         lastUsedDate: "2024-01-01T00:00:00Z",
+                        isGiftCode: false,
+                        betLevel: 1,
                     },
                 };
 
                 mockPromotionApiInstance.claimPromotion.mockResolvedValue(mockPromotionResult);
+                mockPromotionApiInstance.getRunningPromotions.mockResolvedValue([]);
+                mockPromotionApiInstance.getTotalWin.mockResolvedValue(100);
 
                 const userSession = {
                     userId: "user123",
@@ -376,12 +381,15 @@ describe("UserSignInConsumer", () => {
 
                 expect(result).toEqual({
                     promotionId: "promo123",
-                    code: undefined, // ✅ Implementation returns promotion.promotionCode which is undefined in mock
+                    code: "FREE_SPIN",
                     bonusItemCount: 10,
                     isActive: true,
                     promotionType: "FREE_SPIN",
-                    endDate: new Date("2025-06-15T17:00:00.000+00:00"), // ✅ Implementation returns endDate, not expiryDate
+                    endDate: new Date("2025-12-31T23:59:59Z"),
                     lastUsedDate: "2024-01-01T00:00:00Z",
+                    isGiftCode: false,
+                    betLevel: 1,
+                    totalWin: 100,
                 });
             });
 
@@ -481,15 +489,19 @@ describe("UserSignInConsumer", () => {
                 const expiredPromotionResult = {
                     promotion: {
                         promotionId: "promo123",
-                        code: "EXPIRED",
+                        promotionCode: "EXPIRED",
                         remainingBonusItems: 5,
                         promotionType: "FREE_SPIN",
-                        expiryDate: "2020-01-01T00:00:00Z", // Expired date
+                        endDate: new Date("2020-01-01T00:00:00Z"), // Expired date
                         lastUsedDate: "2019-12-01T00:00:00Z",
+                        isGiftCode: false,
+                        betLevel: 1,
                     },
                 };
 
                 mockPromotionApiInstance.claimPromotion.mockResolvedValue(expiredPromotionResult);
+                mockPromotionApiInstance.getRunningPromotions.mockResolvedValue([]);
+                mockPromotionApiInstance.getTotalWin.mockResolvedValue(0);
 
                 const userSession = {
                     userId: "user123",
@@ -501,7 +513,7 @@ describe("UserSignInConsumer", () => {
 
                 const result = await consumerWithPromotion.claimPlayerPromotions(userSession);
 
-                expect(result.isActive).toBe(true); // ✅ Implementation uses hardcoded endDate "2025-06-15T17:00:00.000+00:00" which is still in future
+                expect(result.isActive).toBe(false); // ✅ Should be false for expired date
             });
         });
 
@@ -531,14 +543,19 @@ describe("UserSignInConsumer", () => {
                 const mockPromotionResult = {
                     promotion: {
                         promotionId: "promo123",
-                        code: "FREE_SPIN",
+                        promotionCode: "FREE_SPIN",
                         remainingBonusItems: 5,
                         promotionType: "FREE_SPIN",
-                        expiryDate: "2025-12-31T23:59:59Z",
+                        endDate: new Date("2025-12-31T23:59:59Z"),
+                        lastUsedDate: "2024-01-01T00:00:00Z",
+                        isGiftCode: false,
+                        betLevel: 1,
                     },
                 };
 
                 mockPromotionApiInstance.claimPromotion.mockResolvedValue(mockPromotionResult);
+                mockPromotionApiInstance.getRunningPromotions.mockResolvedValue([]);
+                mockPromotionApiInstance.getTotalWin.mockResolvedValue(50);
 
                 const payload = {
                     ss: "session123",
@@ -566,12 +583,15 @@ describe("UserSignInConsumer", () => {
                     socketClient: mockSocketClient,
                     promotion: {
                         promotionId: "promo123",
-                        code: undefined, // ✅ Implementation returns promotion.promotionCode which is undefined in mock
+                        code: "FREE_SPIN",
                         bonusItemCount: 5,
                         isActive: true,
                         promotionType: "FREE_SPIN",
-                        endDate: new Date("2025-06-15T17:00:00.000+00:00"), // ✅ Implementation returns endDate, not expiryDate
-                        lastUsedDate: undefined,
+                        endDate: new Date("2025-12-31T23:59:59Z"),
+                        lastUsedDate: "2024-01-01T00:00:00Z",
+                        isGiftCode: false,
+                        betLevel: 1,
+                        totalWin: 50,
                     },
                 });
 
