@@ -133,10 +133,6 @@ export default class UserSignInConsumer {
             };
 
             const result = await this.promotionApiClient.claimPromotion(playerDto);
-            const runningPromotions = await this.promotionApiClient.getRunningPromotions({
-                operatorId: "ONEworks_VG",
-                gameId: 66,
-            });
 
             if (!result || !result.promotion) {
                 return null;
@@ -150,12 +146,11 @@ export default class UserSignInConsumer {
             const promotion = result.promotion;
             const now = new Date();
             // get promotion endDate
-
             const promotionData = {
                 promotionId: promotion.promotionId,
                 code: promotion.promotionCode,
                 bonusItemCount: promotion.remainingBonusItems,
-                isActive: promotion.endDate ? now < promotion.endDate : true,
+                isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
                 promotionType: promotion.promotionType,
                 endDate: promotion.endDate,
                 lastUsedDate: promotion.lastUsedDate,
