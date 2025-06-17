@@ -53,7 +53,7 @@ export default class PlaceBetConsumer {
             // Handle promotion logic - NEW ADDITION
             this.handlePromotionLogic(player, payload);
 
-            const { amount, betChoice, freeBet, roundId } = payload;
+            const { betChoice, freeBet, roundId } = payload;
             const name = player.profile.name;
 
             if (!this.validateRequestParams(payload, player)) {

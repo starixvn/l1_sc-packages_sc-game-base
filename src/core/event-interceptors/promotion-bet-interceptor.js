@@ -29,15 +29,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
     shouldIntercept(context) {
         const { payload } = context;
 
-        if (!payload || !payload.usePromotion || !payload.promotionId) {
-            return false;
-        }
-
-        if (!this.isPromotionApiAvailable()) {
-            return false;
-        }
-
-        return true;
+        return !!(payload && payload.usePromotion && payload.promotionId && this.isPromotionApiAvailable());
     }
 
     /**
@@ -95,7 +87,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      * @returns {Promise<void>}
      */
     async afterSuccessEvent(context) {
-        const { player, bet, betTime } = context;
+        const { player, bet } = context;
 
         try {
             const ticketDto = {
@@ -209,7 +201,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      * @returns {Object} Transformed data
      */
     transformEventData(transformName, context) {
-        let { payload, betInfo, betRecord, betLog, bet } = context;
+        const { payload, betInfo, betRecord, betLog, bet } = context;
 
         switch (transformName) {
             case "enhanceBetInfo":

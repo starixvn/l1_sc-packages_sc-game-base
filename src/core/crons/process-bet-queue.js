@@ -151,8 +151,7 @@ export default class ProcessBetQueue extends BetProcessorWithInterceptors {
     }
 
     async composeValidationCriteria(player, payload) {
-        const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
-        return bettingTimeValidationCriteria;
+        return this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
     }
 
     composeBettingTimeValidationCriteria(roundId) {

@@ -146,7 +146,7 @@ export default class UserSignInConsumer {
             const promotion = result.promotion;
             const now = new Date();
             // get promotion endDate
-            const promotionData = {
+            return {
                 promotionId: promotion.promotionId,
                 code: promotion.promotionCode,
                 bonusItemCount: promotion.remainingBonusItems,
@@ -158,8 +158,6 @@ export default class UserSignInConsumer {
                 betLevel: promotion.betLevel,
                 totalWin: totalWin,
             };
-
-            return promotionData;
         } catch (error) {
             this.logService.logError(`Failed to claim promotion for player ${playerId}: ${error.message}`);
             return null;
