@@ -6,13 +6,8 @@ import TableGameData from "./../table-game-data";
 import TableGameDefinition from "./../table-game-definition";
 
 /**
- * Configuration interface for TableUserSignInConsumer
- * @typedef {Object} TableUserSignInConfig
- * @property {Object} playGamePermissionValidator - Permission validator instance
- * @property {Object} appConfigs - Application configurations
- * @property {Object} gameManagementApiClientFactory - Game management API client factory
- * @property {Object} logService - Logging service
- * @property {Object} [gamePromotionApiClient] - Optional promotion API client
+ * Configuration interface for TableUserSignInConsumer (extends UserSignInConfig)
+ * @typedef {import("../../core/event-consumers/user-signin-consumer").UserSignInConfig} TableUserSignInConfig
  */
 
 export default class TableUserSignInConsumer extends UserSignInConsumer {
@@ -31,11 +26,7 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
         super(
             gameData,
             userSignInPublisher,
-            config.playGamePermissionValidator,
-            config.appConfigs,
-            config.gameManagementApiClientFactory,
-            config.logService,
-            config.gamePromotionApiClient
+            config
         );
 
         this.definition = definition;

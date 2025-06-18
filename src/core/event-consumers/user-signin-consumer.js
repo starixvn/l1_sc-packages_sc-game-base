@@ -8,32 +8,34 @@ import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
 
+/**
+ * Configuration interface for UserSignInConsumer
+ * @typedef {Object} UserSignInConfig
+ * @property {PlayGamePermissionValidator} playGamePermissionValidator - Permission validator instance
+ * @property {Object} appConfigs - Application configurations
+ * @property {GameManagementApiClientFactory} gameManagementApiClientFactory - Game management API client factory
+ * @property {Object} logService - Logging service
+ * @property {PromotionClient} [gamePromotionApiClient] - Optional promotion API client
+ */
+
 export default class UserSignInConsumer {
     /**
      * @param {GameData} gameData
      * @param {UserSignInPublisher} userSignInPublisher
-     * @param {PlayGamePermissionValidator} playGamePermissionValidator
-     * @param {Object} appConfigs
-     * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
-     * @param {Object} logService
-     * @param {PromotionClient} gamePromotionApiClientFactory - Optional: GamePromotionApiClientFactory
+     * @param {UserSignInConfig} config - Configuration object
      */
     constructor(
         gameData,
         userSignInPublisher,
-        playGamePermissionValidator,
-        appConfigs,
-        gameManagementApiClientFactory,
-        logService,
-        gamePromotionApiClient = null
+        config
     ) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
-        this.playGamePermissionValidator = playGamePermissionValidator;
-        this.appConfigs = appConfigs;
-        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
-        this.logService = logService;
-        this.promotionApiClient = gamePromotionApiClient?.instance();
+        this.playGamePermissionValidator = config.playGamePermissionValidator;
+        this.appConfigs = config.appConfigs;
+        this.gameManagementApiClient = config.gameManagementApiClientFactory.instance();
+        this.logService = config.logService;
+        this.promotionApiClient = config.gamePromotionApiClient?.instance();
     }
 
     /**
