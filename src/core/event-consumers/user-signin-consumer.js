@@ -139,6 +139,12 @@ export default class UserSignInConsumer {
             if (!result || !result.promotion) {
                 return null;
             }
+
+            const promotionFreeSpin = await this.promotionApiClient.getPromotionById(result.promotion.promotionId);            
+            if(!promotionFreeSpin.gameIds.includes(this.gameData.gameConfigs.gameId)) {
+                return null;
+            }
+
             const totalWin = await this.promotionApiClient.getTotalWin({
                 promotionId: result.promotion.promotionId,
                 playerId,

@@ -80,8 +80,7 @@ describe("UserSignInConsumer", () => {
             }
         );
 
-        // Mock the claimPlayerPromotions method to return null for existing tests
-        consumer.claimPlayerPromotions = jest.fn().mockResolvedValue(null);
+        // Note: claimPlayerPromotions is not mocked here to allow promotion integration tests to work
     });
 
     describe("consume", () => {
@@ -285,6 +284,7 @@ describe("UserSignInConsumer", () => {
                 claimPromotion: jest.fn(),
                 getRunningPromotions: jest.fn(),
                 getTotalWin: jest.fn(),
+                getPromotionById: jest.fn(),
             };
 
             // Mock GamePromotionApiClient (the factory)
@@ -301,6 +301,9 @@ describe("UserSignInConsumer", () => {
                 },
             };
             gameManagementApiClientFactory.instance.mockReturnValue(mockApiClient);
+
+            // Set up gameData with gameConfigs for promotion tests
+            gameData.gameConfigs = { gameId: "test-game-123" };
 
             // Create consumer with promotion client
             consumerWithPromotion = new UserSignInConsumer(
@@ -365,6 +368,9 @@ describe("UserSignInConsumer", () => {
                 mockPromotionApiInstance.claimPromotion.mockResolvedValue(mockPromotionResult);
                 mockPromotionApiInstance.getRunningPromotions.mockResolvedValue([]);
                 mockPromotionApiInstance.getTotalWin.mockResolvedValue(100);
+                mockPromotionApiInstance.getPromotionById.mockResolvedValue({
+                    gameIds: ["test-game-123", "other-game-456"]
+                });
 
                 const userSession = {
                     userId: "user123",
@@ -508,6 +514,9 @@ describe("UserSignInConsumer", () => {
                 mockPromotionApiInstance.claimPromotion.mockResolvedValue(expiredPromotionResult);
                 mockPromotionApiInstance.getRunningPromotions.mockResolvedValue([]);
                 mockPromotionApiInstance.getTotalWin.mockResolvedValue(0);
+                mockPromotionApiInstance.getPromotionById.mockResolvedValue({
+                    gameIds: ["test-game-123", "other-game-456"]
+                });
 
                 const userSession = {
                     userId: "user123",
@@ -562,6 +571,9 @@ describe("UserSignInConsumer", () => {
                 mockPromotionApiInstance.claimPromotion.mockResolvedValue(mockPromotionResult);
                 mockPromotionApiInstance.getRunningPromotions.mockResolvedValue([]);
                 mockPromotionApiInstance.getTotalWin.mockResolvedValue(50);
+                mockPromotionApiInstance.getPromotionById.mockResolvedValue({
+                    gameIds: ["test-game-123", "other-game-456"]
+                });
 
                 const payload = {
                     ss: "session123",
