@@ -167,17 +167,15 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
         try {
             const rollbackDto = {
                 operatorId: player.session.operatorId,
-                siteName: player.session.siteName,
                 playerId: player.session.playerId,
-                promotionId: bet.promotionId,
-                quantity: 1,
+                promotionId: bet.promotionId
             };
 
             const rollbackResult = await this.gamePromotionApiClient.rollbackBonusItem(rollbackDto);
 
             if (rollbackResult && rollbackResult.success) {
                 if (player.promotion && player.promotion.promotionId === bet.promotionId) {
-                    player.promotion.bonusItemCount = rollbackResult.remainingBonusItems || player.promotion.bonusItemCount + 1;
+                    player.promotion.bonusItemCount += 1;
                 }
             } else {
                 this.logService.logError(`Failed to rollback promotion after failure for player ${player.profile.name}:`, {
