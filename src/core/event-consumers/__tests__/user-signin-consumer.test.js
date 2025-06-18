@@ -72,10 +72,12 @@ describe("UserSignInConsumer", () => {
         consumer = new UserSignInConsumer(
             gameData,
             userSignInPublisher,
-            playGamePermissionValidator,
-            appConfigs,
-            gameManagementApiClientFactory,
-            mockLogService
+            {
+                playGamePermissionValidator,
+                appConfigs,
+                gameManagementApiClientFactory,
+                logService: mockLogService,
+            }
         );
 
         // Mock the claimPlayerPromotions method to return null for existing tests
@@ -304,18 +306,20 @@ describe("UserSignInConsumer", () => {
             consumerWithPromotion = new UserSignInConsumer(
                 gameData,
                 userSignInPublisher,
-                playGamePermissionValidator,
                 {
-                    ...appConfigs,
-                    promotionApiSettings: {
-                        baseUrl: "https://promotion-api.test.com",
-                        timeout: 5000,
-                        useAuthentication: true,
+                    playGamePermissionValidator,
+                    appConfigs: {
+                        ...appConfigs,
+                        promotionApiSettings: {
+                            baseUrl: "https://promotion-api.test.com",
+                            timeout: 5000,
+                            useAuthentication: true,
+                        },
                     },
-                },
-                gameManagementApiClientFactory,
-                mockLogService,
-                mockGamePromotionApiClient
+                    gameManagementApiClientFactory,
+                    logService: mockLogService,
+                    gamePromotionApiClient: mockGamePromotionApiClient,
+                }
             );
 
             // Mock external functions with player-specific data
@@ -430,11 +434,13 @@ describe("UserSignInConsumer", () => {
                 const consumerWithoutSettings = new UserSignInConsumer(
                     gameData,
                     userSignInPublisher,
-                    playGamePermissionValidator,
-                    appConfigs, // No promotionApiSettings
-                    gameManagementApiClientFactory,
-                    mockLogService,
-                    mockGamePromotionApiClient // Client is available but settings are not
+                    {
+                        playGamePermissionValidator,
+                        appConfigs, // No promotionApiSettings
+                        gameManagementApiClientFactory,
+                        logService: mockLogService,
+                        gamePromotionApiClient: mockGamePromotionApiClient, // Client is available but settings are not
+                    }
                 );
 
                 const userSession = {
