@@ -79,7 +79,7 @@ export default class PlaceBetConsumer {
     }
 
     handlePromotionLogic(player, payload) {
-        const usePromotion = player.promotion !== null && player.promotion && player.promotion.isUsePromotion && !payload.freeSpin;
+        const usePromotion = player.promotion !== null && player.promotion && player.promotion.isClaimed && !payload.freeSpin;
 
         if (usePromotion) {
             const promotionBetAmount = this.getPromotionBetAmount(player, payload);
