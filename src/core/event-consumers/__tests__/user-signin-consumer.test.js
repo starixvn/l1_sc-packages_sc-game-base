@@ -357,6 +357,7 @@ describe("UserSignInConsumer", () => {
                         promotionId: "promo123",
                         promotionCode: "FREE_SPIN",
                         remainingBonusItems: 10,
+                        initialBonusItem: 15,
                         promotionType: "FREE_SPIN",
                         endDate: new Date("2025-12-31T23:59:59Z"),
                         lastUsedDate: "2024-01-01T00:00:00Z",
@@ -393,6 +394,7 @@ describe("UserSignInConsumer", () => {
                     promotionId: "promo123",
                     code: "FREE_SPIN",
                     bonusItemCount: 10,
+                    initialBonusItem: 15,
                     isActive: true,
                     promotionType: "FREE_SPIN",
                     endDate: new Date("2025-12-31T23:59:59Z"),
@@ -400,6 +402,7 @@ describe("UserSignInConsumer", () => {
                     isGiftCode: false,
                     betLevel: 1,
                     totalWin: 100,
+                    isClaimed: true,
                 });
             });
 
@@ -560,11 +563,14 @@ describe("UserSignInConsumer", () => {
                         promotionId: "promo123",
                         promotionCode: "FREE_SPIN",
                         remainingBonusItems: 5,
+                        initialBonusItem: 15,
                         promotionType: "FREE_SPIN",
                         endDate: new Date("2025-12-31T23:59:59Z"),
                         lastUsedDate: "2024-01-01T00:00:00Z",
                         isGiftCode: false,
                         betLevel: 1,
+                        totalWin: 50,
+                        isUsePromotion: true,
                     },
                 };
 
@@ -603,6 +609,7 @@ describe("UserSignInConsumer", () => {
                         promotionId: "promo123",
                         code: "FREE_SPIN",
                         bonusItemCount: 5,
+                        initialBonusItem: 15,
                         isActive: true,
                         promotionType: "FREE_SPIN",
                         endDate: new Date("2025-12-31T23:59:59Z"),
@@ -610,6 +617,7 @@ describe("UserSignInConsumer", () => {
                         isGiftCode: false,
                         betLevel: 1,
                         totalWin: 50,
+                        isClaimed: true,
                     },
                 });
 

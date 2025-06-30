@@ -241,6 +241,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 expect.objectContaining({
                     endBet: -1,
                     notice: expect.objectContaining({
+                        errorCode: "INVALID_BET",
                         msg: "No promotions available",
                     }),
                 })
@@ -270,6 +271,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 expect.objectContaining({
                     endBet: -1,
                     notice: expect.objectContaining({
+                        errorCode: "INVALID_BET",
                         msg: "Promotion has expired",
                     }),
                 })
@@ -297,6 +299,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 expect.objectContaining({
                     endBet: -1,
                     notice: expect.objectContaining({
+                        errorCode: "INVALID_BET",
                         msg: "Promotion is not active",
                     }),
                 })
@@ -581,6 +584,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
             isActive: true,
             promotionType: "FREE_SPIN",
             endDate: futureDate.toISOString(),
+            isUsePromotion: true,
         };
         return player;
     }

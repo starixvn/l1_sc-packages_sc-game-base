@@ -155,6 +155,7 @@ export default class UserSignInConsumer {
                     promotionId: promotion.promotionId,
                     code: promotion.promotionCode,
                     bonusItemCount: promotion.remainingBonusItems,
+                    initialBonusItem : promotion.initialBonusItem,
                     isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
                     promotionType: promotion.promotionType,
                     endDate: promotion.endDate,
@@ -162,13 +163,13 @@ export default class UserSignInConsumer {
                     isGiftCode: promotion.isGiftCode,
                     betLevel: promotion.betLevel,
                     totalWin: totalWin,
-                    isUsePromotion: true
+                    isClaimed: true
                 };
             }
 
             const hasPromotion = await this.promotionApiClient.checkEligibility(playerDto);
-            if(hasPromotion.length > 0) {
-                const promotion = hasPromotion[0];
+            if(hasPromotion && hasPromotion.promotions.length > 0) {
+                const promotion = hasPromotion.promotions[0];
                 return {
                     promotionId: promotion._id,
                     code: promotion.code,
@@ -177,7 +178,7 @@ export default class UserSignInConsumer {
                     endDate: promotion.endDate,
                     isGiftCode: promotion.isGiftCode,
                     betLevel: promotion.betLevel,
-                    isUsePromotion: false
+                    isClaimed: false
                 };
             }
             return null;            
