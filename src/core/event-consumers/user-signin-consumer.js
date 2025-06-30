@@ -135,37 +135,52 @@ export default class UserSignInConsumer {
             };
 
             const result = await this.promotionApiClient.claimPromotion(playerDto);
-
-            if (!result || !result.promotion) {
-                return null;
-            }
-
-            const promotionFreeSpin = await this.promotionApiClient.getPromotionById(result.promotion.promotionId);            
-            if(!promotionFreeSpin.gameIds.includes(this.gameData.gameConfigs.gameId)) {
-                return null;
-            }
-
-            const totalWin = await this.promotionApiClient.getTotalWin({
-                promotionId: result.promotion.promotionId,
-                playerId,
-                operatorId
-            });
-
-            const promotion = result.promotion;
             const now = new Date();
-            // get promotion endDate
-            return {
-                promotionId: promotion.promotionId,
-                code: promotion.promotionCode,
-                bonusItemCount: promotion.remainingBonusItems,
-                isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
-                promotionType: promotion.promotionType,
-                endDate: promotion.endDate,
-                lastUsedDate: promotion.lastUsedDate,
-                isGiftCode: promotion.isGiftCode,
-                betLevel: promotion.betLevel,
-                totalWin: totalWin,
-            };
+
+            if(result && result.promotion) {
+                const promotionFreeSpin = await this.promotionApiClient.getPromotionById(result.promotion.promotionId);            
+                if(!promotionFreeSpin.gameIds.includes(this.gameData.gameConfigs.gameId)) {
+                    return null;
+                }
+    
+                const totalWin = await this.promotionApiClient.getTotalWin({
+                    promotionId: result.promotion.promotionId,
+                    playerId,
+                    operatorId
+                });
+    
+                const promotion = result.promotion;
+                // get promotion endDate
+                return {
+                    promotionId: promotion.promotionId,
+                    code: promotion.promotionCode,
+                    bonusItemCount: promotion.remainingBonusItems,
+                    isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
+                    promotionType: promotion.promotionType,
+                    endDate: promotion.endDate,
+                    lastUsedDate: promotion.lastUsedDate,
+                    isGiftCode: promotion.isGiftCode,
+                    betLevel: promotion.betLevel,
+                    totalWin: totalWin,
+                    isUsePromotion: true
+                };
+            }
+
+            const hasPromotion = await this.promotionApiClient.checkEligibility(playerDto);
+            if(hasPromotion.length > 0) {
+                const promotion = hasPromotion[0];
+                return {
+                    promotionId: promotion._id,
+                    code: promotion.code,
+                    bonusItemCount: promotion.bonusItemCount,
+                    isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
+                    endDate: promotion.endDate,
+                    isGiftCode: promotion.isGiftCode,
+                    betLevel: promotion.betLevel,
+                    isUsePromotion: false
+                };
+            }
+            return null;            
         } catch (error) {
             this.logService.logError(`Failed to claim promotion for player ${playerId}: ${error.message}`);
             return null;
