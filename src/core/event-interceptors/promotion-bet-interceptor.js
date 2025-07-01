@@ -93,6 +93,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             const ticketDto = {
                 playerId: player.session.playerId,
                 operatorId: player.session.operatorId,
+                siteName: player.session.siteName,
                 promotionId: player.promotion.promotionId,
                 gameId: this.definition.id,
                 gameRoundId: bet.roundId,
@@ -133,7 +134,8 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 const totalWin = await this.gamePromotionApiClient.getTotalWin({
                     promotionId: player.promotion.promotionId,
                     playerId: player.session.playerId,
-                    operatorId: player.session.operatorId
+                    operatorId: player.session.operatorId,
+                    siteName: player.session.siteName
                 });
                 this.placeBetPublisher.publishToUser(player.UID, { 
                     finishPromotion : {

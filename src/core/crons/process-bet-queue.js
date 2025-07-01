@@ -227,7 +227,8 @@ export default class ProcessBetQueue extends BetProcessorWithInterceptors {
             const totalWin = await this.gamePromotionApiClient.getTotalWin({
                 promotionId: player.promotion.promotionId,
                 playerId: player.session.playerId,
-                operatorId: player.session.operatorId
+                operatorId: player.session.operatorId,
+                siteName: player.session.siteName
             });
             this.placeBetPublisher.placeBetPublisher(player.UID, {
                 endPromotion: { totalWin: totalWin },

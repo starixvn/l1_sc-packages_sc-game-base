@@ -146,8 +146,9 @@ export default class UserSignInConsumer {
                 const totalWin = await this.promotionApiClient.getTotalWin({
                     promotionId: result.promotion.promotionId,
                     playerId,
-                    operatorId
-                });
+                    operatorId,
+                    siteName
+            });
     
                 const promotion = result.promotion;
                 // get promotion endDate

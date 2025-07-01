@@ -75,7 +75,8 @@ export default class RedeemConsumer {
             const totalWin = await this.promotionApiClient.getTotalWin({
                 promotionId: result.promotion.promotionId,
                 playerId: player.session.playerId,
-                operatorId: player.session.operatorId
+                operatorId: player.session.operatorId,
+                siteName: player.session.siteName
             });
     
             const promotion = result.promotion;
