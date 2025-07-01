@@ -71,31 +71,29 @@ export default class RedeemConsumer {
     async updatePromotion(player, result) {
         const promotionFreeSpin = await this.promotionApiClient.getPromotionById(result.promotion.promotionId);      
         const now = new Date();
-        if(!promotionFreeSpin.gameIds.includes(this.gameData.gameConfigs.gameId)) {
-            return null;
+        if(promotionFreeSpin.gameIds.includes(this.gameData.gameConfigs.gameId)) {
+            const totalWin = await this.promotionApiClient.getTotalWin({
+                promotionId: result.promotion.promotionId,
+                playerId: player.session.playerId,
+                operatorId: player.session.operatorId
+            });
+    
+            const promotion = result.promotion;
+            player.promotion = {
+                promotionId: promotion.promotionId,
+                code: promotion.promotionCode,
+                bonusItemCount: promotion.remainingBonusItems,
+                initialBonusItem : promotion.initialBonusItem,
+                isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
+                promotionType: promotion.promotionType,
+                endDate: promotion.endDate,
+                lastUsedDate: promotion.lastUsedDate,
+                isGiftCode: promotion.isGiftCode,
+                betLevel: promotion.betLevel,
+                totalWin: totalWin,
+                isClaimed: true
+            };
         }
-
-        const totalWin = await this.promotionApiClient.getTotalWin({
-            promotionId: result.promotion.promotionId,
-            playerId: player.session.playerId,
-            operatorId: player.session.operatorId
-        });
-
-        const promotion = result.promotion;
-        player.promotion = {
-            promotionId: promotion.promotionId,
-            code: promotion.promotionCode,
-            bonusItemCount: promotion.remainingBonusItems,
-            initialBonusItem : promotion.initialBonusItem,
-            isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
-            promotionType: promotion.promotionType,
-            endDate: promotion.endDate,
-            lastUsedDate: promotion.lastUsedDate,
-            isGiftCode: promotion.isGiftCode,
-            betLevel: promotion.betLevel,
-            totalWin: totalWin,
-            isClaimed: true
-        };
     }
 
     /**
