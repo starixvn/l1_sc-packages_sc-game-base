@@ -3,128 +3,105 @@ import RedeemConsumer from "../redeem-consumer";
 describe("RedeemConsumer", () => {
     let redeemConsumer;
     let mockGameData;
-    let mockDefinition;
-    let mockLogService;
     let mockPublisher;
+    let mockLogService;
     let mockPromotionApiClient;
+    let mockPromotionApiClientInstance;
+    let player;
 
     beforeEach(() => {
-        // Arrange - Setup mocks and dependencies
         mockGameData = {
-            roundId: 123,
-            remainingTime: 25,
-            gameConfigs: {
-                enabled: true,
-            },
+            gameConfigs: { gameId: "GAME_ID" }
         };
-
-        mockDefinition = {
-            name: "test-game",
-            choices: ["red", "black"],
-        };
-
-        mockLogService = {
-            logInfo: jest.fn(),
-            logError: jest.fn(),
-            logWarning: jest.fn(),
-        };
-
-        mockPublisher = {
-            publishToUser: jest.fn(),
-        };
-
-        mockPromotionApiClient = {
+        mockPublisher = { publishToUser: jest.fn() };
+        mockLogService = { logError: jest.fn() };
+        mockPromotionApiClientInstance = {
             redeemGiftCode: jest.fn(),
+            getPromotionById: jest.fn(),
+            getTotalWin: jest.fn()
         };
-
-        redeemConsumer = new RedeemConsumer({
-            definition: mockDefinition,
-            gameData: mockGameData,
-            publisher: mockPublisher,
-            logService: mockLogService,
-            gamePromotionApiClient: mockPromotionApiClient,
-        });
+        mockPromotionApiClient = {
+            instance: () => mockPromotionApiClientInstance
+        };
+        player = {
+            UID: "player1",
+            session: {
+                operatorId: "op1",
+                siteName: "site1",
+                playerId: "p1",
+                currencyGroupId: "cg1"
+            }
+        };
+        redeemConsumer = new RedeemConsumer(
+            mockGameData,
+            mockPublisher,
+            {
+                logService: mockLogService,
+                gamePromotionApiClient: mockPromotionApiClient
+            }
+        );
+        redeemConsumer.promotionApiClient = mockPromotionApiClientInstance;
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
+    it("should process redeem with valid gift code and update promotion", async () => {
+        const payload = { giftCode: "VALID_CODE" };
+        const promotionObj = { promotionId: "PROMO_ID", promotionCode: "CODE", remainingBonusItems: 2, initialBonusItem: 2, promotionType: "type", endDate: null, lastUsedDate: null, isGiftCode: true, betLevel: 1 };
+        mockPromotionApiClientInstance.redeemGiftCode.mockResolvedValue({ success: true, promotion: promotionObj });
+        mockPromotionApiClientInstance.getPromotionById.mockResolvedValue({ gameIds: ["GAME_ID"] });
+        mockPromotionApiClientInstance.getTotalWin.mockResolvedValue(100);
+        player.promotion = undefined;
+
+        const spyUpdate = jest.spyOn(redeemConsumer, "updatePromotion");
+        await redeemConsumer.processRedeem(player, payload);
+
+        expect(mockPromotionApiClientInstance.redeemGiftCode).toHaveBeenCalledWith({
+            giftCode: "VALID_CODE",
+            operatorId: "op1",
+            siteName: "site1",
+            playerId: "p1",
+            currencyGroup: "cg1"
+        });
+        expect(spyUpdate).toHaveBeenCalledWith(player, expect.objectContaining({ promotion: promotionObj }));
+        expect(mockPublisher.publishToUser).toHaveBeenCalledWith(
+            "player1",
+            expect.objectContaining({
+                redeemResult: 1,
+                promotion: promotionObj
+            })
+        );
+        expect(player.promotion).toBeDefined();
+        expect(player.promotion.promotionId).toBe("PROMO_ID");
+        expect(player.promotion.totalWin).toBe(100);
     });
 
-    describe("processRedeem", () => {
-        it("should log processing information and send success response", async () => {
-            // Arrange
-            const player = {
-                profile: { name: "testPlayer" },
-                UID: "player123",
-                session: { playerId: "p1", operatorId: "op1", siteName: "site", currencyGroup: "cg" }
-            };
-            const payload = { giftCode: "VALID_CODE" };
-
-            mockPromotionApiClient.redeemGiftCode.mockResolvedValue({ success: true });
-
-            // Act
-            await redeemConsumer.processRedeem(player, payload);
-
-            // Assert
-            expect(mockPublisher.publishToUser).toHaveBeenCalledWith(
-                "player123",
-                expect.objectContaining({
-                    redeemResult: 1,
-                    notice: expect.objectContaining({
-                        errorCode: "REDEEM_SUCCESS",
-                    }),
-                })
-            );
-        });
-
-        it("should handle invalid gift code", async () => {
-            // Arrange
-            const player = {
-                profile: { name: "testPlayer" },
-                UID: "player123",
-                session: { playerId: "p1", operatorId: "op1", siteName: "site", currencyGroup: "cg" }
-            };
-            const payload = { giftCode: "INVALID_CODE" };
-
-            mockPromotionApiClient.redeemGiftCode.mockResolvedValue({ success: false, errorCode: "Invalide_gift_code_error_message", message: "Invalid Gift Code." });
-
-            // Act
-            await redeemConsumer.processRedeem(player, payload);
-
-            // Assert
-            expect(mockPublisher.publishToUser).toHaveBeenCalledWith(
-                "player123",
-                expect.objectContaining({
-                    redeemResult: -1,
-                    notice: expect.objectContaining({
-                        errorCode: "Invalide_gift_code_error_message",
-                        message: "Invalid Gift Code.",
-                    }),
-                })
-            );
-        });
+    it("should process redeem with invalid gift code and call sendRedeemError", async () => {
+        const payload = { giftCode: "INVALID_CODE" };
+        mockPromotionApiClientInstance.redeemGiftCode.mockResolvedValue({ success: false, errorCode: "ERR", message: "Invalid" });
+        const spySendError = jest.spyOn(redeemConsumer, "sendRedeemError");
+        await redeemConsumer.processRedeem(player, payload);
+        expect(spySendError).toHaveBeenCalledWith(player, "ERR", "Invalid");
+        expect(mockPublisher.publishToUser).toHaveBeenCalledWith(
+            "player1",
+            expect.objectContaining({
+                redeemResult: -1,
+                notice: expect.objectContaining({ errorCode: "ERR", message: "Invalid" })
+            })
+        );
     });
 
-    describe("getNoticeObj", () => {
-        it("should return notice object with error code", () => {
-            // Act
-            const result = redeemConsumer.getNoticeObj("TEST_ERROR");
-
-            // Assert
-            expect(result).toEqual({
-                errorCode: "TEST_ERROR",
-            });
-        });
-
-        it("should return notice object with error code and extra data", () => {
-            // Act
-            const result = redeemConsumer.getNoticeObj("TEST_ERROR", { message: "Test message" });
-
-            // Assert
-            expect(result).toEqual({
-                errorCode: "TEST_ERROR",
-                message: "Test message",
-            });
-        });
+    it("should update promotion for player if promotion is valid", async () => {
+        const promotionObj = { promotionId: "PROMO_ID", promotionCode: "CODE", remainingBonusItems: 2, initialBonusItem: 2, promotionType: "type", endDate: null, lastUsedDate: null, isGiftCode: true, betLevel: 1 };
+        const result = { promotion: promotionObj };
+        mockPromotionApiClientInstance.getPromotionById.mockResolvedValue({ gameIds: ["GAME_ID"] });
+        mockPromotionApiClientInstance.getTotalWin.mockResolvedValue(50);
+        await redeemConsumer.updatePromotion(player, result);
+        expect(player.promotion).toBeDefined();
+        expect(player.promotion.promotionId).toBe("PROMO_ID");
+        expect(player.promotion.totalWin).toBe(50);
     });
-}); 
+
+    it("should return notice object with error code and extra data", () => {
+        const result = redeemConsumer.getNoticeObj("ERR", { message: "msg" });
+        expect(result).toEqual({ errorCode: "ERR", message: "msg" });
+    });
+});
