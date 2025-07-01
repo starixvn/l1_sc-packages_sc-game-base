@@ -5,6 +5,7 @@ import GameResultServiceConsumer from "./game-result-service-consumer";
 import InGameConsumer from "./in-game-consumer";
 import PlaceBetConsumer from "./place-bet-consumer";
 import ProvablyFairConsumer from "./provably-fair-consumer";
+import RedeemConsumer from "./redeem-consumer";
 import RoundIdConsumer from "./round-id-consumer";
 import RoundResultConsumer from "./round-result-consumer";
 import SettleGameRoundConsumer from "./settle-game-round-consumer";
@@ -20,6 +21,7 @@ export {
     InGameConsumer,
     PlaceBetConsumer,
     ProvablyFairConsumer,
+    RedeemConsumer,
     RoundIdConsumer,
     RoundResultConsumer,
     SettleGameRoundConsumer,

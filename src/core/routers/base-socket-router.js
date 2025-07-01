@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 
 import { PlayGamePermissionValidator } from "../validators";
-import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
+import { InGameConsumer, PlaceBetConsumer, RedeemConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
 import { HistoryQuery } from "./../query-apis";
 
@@ -16,6 +16,7 @@ export default class BaseSocketRouter {
      * @param {UserSignInConsumer} dependencies.userSignInConsumer
      * @param {InGameConsumer} dependencies.inGameConsumer
      * @param {PlaceBetConsumer} dependencies.placeBetConsumer
+     * @param {RedeemConsumer} dependencies.redeemConsumer
      * @param {UserDisconnectConsumer} dependencies.userDisconnectConsumer
      * @param {UserSignInPublisher} dependencies.userSignInPublisher
      * @param {HistoryQuery} dependencies.historyQuery
@@ -29,6 +30,7 @@ export default class BaseSocketRouter {
         userSignInConsumer,
         inGameConsumer,
         placeBetConsumer,
+        redeemConsumer,
         userDisconnectConsumer,
         userSignInPublisher,
         historyQuery,
@@ -42,6 +44,7 @@ export default class BaseSocketRouter {
         this.userSignInConsumer = userSignInConsumer;
         this.inGameConsumer = inGameConsumer;
         this.placeBetConsumer = placeBetConsumer;
+        this.redeemConsumer = redeemConsumer;
         this.userDisconnectConsumer = userDisconnectConsumer;
         this.userSignInPublisher = userSignInPublisher;
         this.historyQuery = historyQuery;
@@ -63,6 +66,7 @@ export default class BaseSocketRouter {
         this.socketClient.on("disconnect", this.handleDisconnect.bind(this));
         this.socketClient.on("getRoundPF", this.handleGetRoundPF.bind(this));
         this.socketClient.on("betDetails", this.handleBetDetails.bind(this));
+        this.socketClient.on("redeem", this.handleRedeem.bind(this));
     }
 
     async handleBetDetails(payload) {
@@ -105,6 +109,18 @@ export default class BaseSocketRouter {
             }
 
             this.placeBetConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
+        } catch (error) {
+            this.logService.logError(error);
+        }
+    }
+
+    handleRedeem(payload) {
+        try {
+            if (!this.verify()) {
+                return;
+            }
+
+            this.redeemConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
         } catch (error) {
             this.logService.logError(error);
         }
