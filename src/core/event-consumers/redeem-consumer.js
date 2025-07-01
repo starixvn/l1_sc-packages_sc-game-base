@@ -64,7 +64,7 @@ export default class RedeemConsumer {
             });
         }
         else {
-            this.sendRedeemError(player, result.errorCode, result.message);
+            this.sendRedeemError(player, result.code, result.message);
         }       
     }
 

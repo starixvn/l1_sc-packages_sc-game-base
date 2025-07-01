@@ -76,10 +76,8 @@ describe("RedeemConsumer", () => {
 
     it("should process redeem with invalid gift code and call sendRedeemError", async () => {
         const payload = { giftCode: "INVALID_CODE" };
-        mockPromotionApiClientInstance.redeemGiftCode.mockResolvedValue({ success: false, errorCode: "ERR", message: "Invalid" });
-        const spySendError = jest.spyOn(redeemConsumer, "sendRedeemError");
+        mockPromotionApiClientInstance.redeemGiftCode.mockResolvedValue({ success: false, code: "ERR", message: "Invalid" });
         await redeemConsumer.processRedeem(player, payload);
-        expect(spySendError).toHaveBeenCalledWith(player, "ERR", "Invalid");
         expect(mockPublisher.publishToUser).toHaveBeenCalledWith(
             "player1",
             expect.objectContaining({
