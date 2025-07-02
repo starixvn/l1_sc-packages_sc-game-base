@@ -45,7 +45,7 @@ describe("RedeemConsumer", () => {
 
     it("should process redeem with valid gift code and update promotion", async () => {
         const payload = { giftCode: "VALID_CODE" };
-        const promotionObj = { promotionId: "PROMO_ID", promotionCode: "CODE", remainingBonusItems: 2, initialBonusItem: 2, promotionType: "type", endDate: null, lastUsedDate: null, isGiftCode: true, betLevel: 1 };
+        const promotionObj = { isClaimed: true, promotionId: "PROMO_ID", promotionCode: "CODE", remainingBonusItems: 2, initialBonusItem: 2, promotionType: "type", endDate: null, lastUsedDate: null, isGiftCode: true, betLevel: 1 };
         mockPromotionApiClientInstance.redeemGiftCode.mockResolvedValue({ success: true, promotion: promotionObj });
         mockPromotionApiClientInstance.getPromotionById.mockResolvedValue({ gameIds: ["GAME_ID"] });
         mockPromotionApiClientInstance.getTotalWin.mockResolvedValue(100);
