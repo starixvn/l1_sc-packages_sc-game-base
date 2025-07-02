@@ -82,7 +82,7 @@ describe("RedeemConsumer", () => {
             "player1",
             expect.objectContaining({
                 redeemResult: -1,
-                notice: expect.objectContaining({ errorCode: "ERR", message: "Invalid" })
+                redemptionNotice: expect.objectContaining({ errorCode: "ERR", message: "Invalid" })
             })
         );
     });
