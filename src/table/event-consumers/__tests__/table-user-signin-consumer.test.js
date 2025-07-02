@@ -43,12 +43,16 @@ describe("table user signin consumer in testing", () => {
             gamePromotionApiClient: null
         };
 
-        consumer = new TableUserSignInConsumer(
+        consumer = new TableUserSignInConsumer({
             definition,
             gameData,
             userSignInPublisher,
-            config
-        );
+            playGamePermissionValidator,
+            appConfigs: null,
+            gameManagementApiClientFactory,
+            logService: null,
+            gamePromotionApiClient: null
+        });
     });
 
     it("Inherit UserSignInConsumer", () => {

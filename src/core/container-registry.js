@@ -107,10 +107,10 @@ export default class ContainerRegistry {
         this.container.register({
             inGameConsumer: asClass(EventConsumers.InGameConsumer).singleton(),
             placeBetConsumer: asClass(EventConsumers.PlaceBetConsumer).singleton(),
-            redeemConsumer: asClass(EventConsumers.RedeemConsumer).singleton(),
+            redeemConsumer: asClass(EventConsumers.RedeemConsumer).singleton().proxy(),
             settleGameRoundConsumer: asClass(EventConsumers.SettleGameRoundConsumer).singleton().proxy(),
             userDisconnectConsumer: asClass(EventConsumers.UserDisconnectConsumer).singleton(),
-            userSignInConsumer: asClass(EventConsumers.UserSignInConsumer).singleton(),
+            userSignInConsumer: asClass(EventConsumers.UserSignInConsumer).singleton().proxy(),
             roundResultConsumer: asClass(EventConsumers.RoundResultConsumer).singleton(),
             roundIdConsumer: asClass(EventConsumers.RoundIdConsumer).singleton(),
             provablyFairConsumer: asClass(EventConsumers.ProvablyFairConsumer).singleton(),

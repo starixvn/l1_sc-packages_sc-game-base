@@ -5,29 +5,38 @@ import TableUserSignInPublisher from "./../event-publishers/table-user-signin-pu
 import TableGameData from "./../table-game-data";
 import TableGameDefinition from "./../table-game-definition";
 
-/**
- * Configuration interface for TableUserSignInConsumer (extends UserSignInConfig)
- * @typedef {import("../../core/event-consumers/user-signin-consumer").UserSignInConfig} TableUserSignInConfig
- */
 
 export default class TableUserSignInConsumer extends UserSignInConsumer {
     /**
-     * @param {TableGameDefinition} definition
-     * @param {TableGameData} gameData
-     * @param {TableUserSignInPublisher} userSignInPublisher
-     * @param {TableUserSignInConfig} config - Configuration object
+     * @param {Object} dependencies
+     * @param {TableGameDefinition} dependencies.definition
+     * @param {TableGameData} dependencies.gameData
+     * @param {TableUserSignInPublisher} dependencies.userSignInPublisher
+     * @param {PlayGamePermissionValidator} dependencies.playGamePermissionValidator
+     * @param {Object} dependencies.appConfigs
+     * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
+     * @param {Object} dependencies.logService
+     * @param {PromotionClient} [dependencies.gamePromotionApiClient]
      */
-    constructor(
+    constructor({
         definition,
         gameData,
         userSignInPublisher,
-        config
-    ) {
-        super(
+        playGamePermissionValidator,
+        appConfigs,
+        gameManagementApiClientFactory,
+        logService,
+        gamePromotionApiClient,
+    }) {
+        super({
             gameData,
             userSignInPublisher,
-            config
-        );
+            playGamePermissionValidator,
+            appConfigs,
+            gameManagementApiClientFactory,
+            logService,
+            gamePromotionApiClient,
+        });
 
         this.definition = definition;
     }

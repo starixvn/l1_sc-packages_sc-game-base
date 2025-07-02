@@ -1,24 +1,24 @@
 import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 
-/**
- * Configuration interface for RedeemConsumer
- * @typedef {Object} RedeemConfig
- * @property {Object} logService - Logging service
- * @property {PromotionClient} [gamePromotionApiClient] - Optional promotion API client
- */
-
 export default class RedeemConsumer {
     /**
-     * @param {GameData} gameData
-     * @param {BaseEventPublisher} publisher
-     * @param {RedeemConfig} config - Configuration object
+     * @param {Object} dependencies
+     * @param {GameData} dependencies.gameData
+     * @param {BaseEventPublisher} dependencies.publisher
+     * @param {Object} dependencies.logService
+     * @param {PromotionClient} [dependencies.gamePromotionApiClient]
      */
-    constructor(gameData, publisher, config) {
+    constructor({
+        gameData,
+        publisher,
+        logService,
+        gamePromotionApiClient,
+    }) {
         this.gameData = gameData;
         this.publisher = publisher;
-        this.logService = config.logService;
-        this.promotionApiClient = config.gamePromotionApiClient?.instance();
+        this.logService = logService;
+        this.promotionApiClient = gamePromotionApiClient?.instance();
     }
 
     /**

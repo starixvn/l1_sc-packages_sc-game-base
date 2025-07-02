@@ -69,16 +69,14 @@ describe("UserSignInConsumer", () => {
         };
         gameManagementApiClientFactory.instance.mockReturnValue(mockApiClient);
 
-        consumer = new UserSignInConsumer(
+        consumer = new UserSignInConsumer({
             gameData,
             userSignInPublisher,
-            {
-                playGamePermissionValidator,
-                appConfigs,
-                gameManagementApiClientFactory,
-                logService: mockLogService,
-            }
-        );
+            playGamePermissionValidator,
+            appConfigs,
+            gameManagementApiClientFactory,
+            logService: mockLogService,
+        });
 
         // Note: claimPlayerPromotions is not mocked here to allow promotion integration tests to work
     });
@@ -306,24 +304,22 @@ describe("UserSignInConsumer", () => {
             gameData.gameConfigs = { gameId: "test-game-123" };
 
             // Create consumer with promotion client
-            consumerWithPromotion = new UserSignInConsumer(
+            consumerWithPromotion = new UserSignInConsumer({
                 gameData,
                 userSignInPublisher,
-                {
-                    playGamePermissionValidator,
-                    appConfigs: {
-                        ...appConfigs,
-                        promotionApiSettings: {
-                            baseUrl: "https://promotion-api.test.com",
-                            timeout: 5000,
-                            useAuthentication: true,
-                        },
+                playGamePermissionValidator,
+                appConfigs: {
+                    ...appConfigs,
+                    promotionApiSettings: {
+                        baseUrl: "https://promotion-api.test.com",
+                        timeout: 5000,
+                        useAuthentication: true,
                     },
-                    gameManagementApiClientFactory,
-                    logService: mockLogService,
-                    gamePromotionApiClient: mockGamePromotionApiClient,
-                }
-            );
+                },
+                gameManagementApiClientFactory,
+                logService: mockLogService,
+                gamePromotionApiClient: mockGamePromotionApiClient,
+            });
 
             // Mock external functions with player-specific data
             userServiceSignInGame.mockResolvedValue({
@@ -440,17 +436,15 @@ describe("UserSignInConsumer", () => {
             });
 
             it("should return null when promotion settings are not configured", async () => {
-                const consumerWithoutSettings = new UserSignInConsumer(
+                const consumerWithoutSettings = new UserSignInConsumer({
                     gameData,
                     userSignInPublisher,
-                    {
-                        playGamePermissionValidator,
-                        appConfigs, // No promotionApiSettings
-                        gameManagementApiClientFactory,
-                        logService: mockLogService,
-                        gamePromotionApiClient: mockGamePromotionApiClient, // Client is available but settings are not
-                    }
-                );
+                    playGamePermissionValidator,
+                    appConfigs, // No promotionApiSettings
+                    gameManagementApiClientFactory,
+                    logService: mockLogService,
+                    gamePromotionApiClient: mockGamePromotionApiClient, // Client is available but settings are not
+                });
 
                 const userSession = {
                     userId: "user123",

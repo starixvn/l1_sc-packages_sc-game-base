@@ -32,14 +32,12 @@ describe("RedeemConsumer", () => {
                 currencyGroupId: "cg1"
             }
         };
-        redeemConsumer = new RedeemConsumer(
-            mockGameData,
-            mockPublisher,
-            {
-                logService: mockLogService,
-                gamePromotionApiClient: mockPromotionApiClient
-            }
-        );
+        redeemConsumer = new RedeemConsumer({
+            gameData: mockGameData,
+            publisher: mockPublisher,
+            logService: mockLogService,
+            gamePromotionApiClient: mockPromotionApiClient
+        });
         redeemConsumer.promotionApiClient = mockPromotionApiClientInstance;
     });
 
