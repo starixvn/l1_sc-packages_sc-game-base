@@ -83,7 +83,7 @@ export default class RedeemConsumer {
             player.promotion = {
                 promotionId: promotion.promotionId,
                 code: promotion.promotionCode,
-                bonusItemCount: promotion.remainingBonusItems,
+                remainingBonusItems: promotion.remainingBonusItems,
                 initialBonusItem : promotion.initialBonusItem,
                 isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
                 promotionType: promotion.promotionType,

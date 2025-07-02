@@ -227,7 +227,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
         it("should reject promotion when no bonus items available", async () => {
             // Arrange
             const player = createMockPlayerWithPromotion();
-            player.promotion.bonusItemCount = 0;
+            player.promotion.remainingBonusItems = 0;
             const betPayload = {
                 betChoice: "red",
                 amount: 0,
@@ -593,7 +593,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
         player.promotion = {
             promotionId: "promo123",
             code: "FREESPIN50",
-            bonusItemCount: 50,
+            remainingBonusItems: 50,
             isActive: true,
             promotionType: "FREE_SPIN",
             endDate: futureDate.toISOString(),

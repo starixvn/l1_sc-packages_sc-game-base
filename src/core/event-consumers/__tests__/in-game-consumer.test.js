@@ -92,7 +92,7 @@ describe("in-game-consumer tests", () => {
             const promotionData = {
                 promotionId: "winter2024",
                 code: "WIN24",
-                bonusItemCount: 5,
+                remainingBonusItems: 5,
                 isActive: true,
                 promotionType: "free_bet",
                 expiryDate: "2024-12-31T23:59:59Z",

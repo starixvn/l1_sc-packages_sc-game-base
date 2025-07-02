@@ -231,7 +231,7 @@ export default class PlaceBetConsumer {
                 notice: this.getNoticeObj(helpers.noticeHelper.invalidBet, { msg: "No active promotion" }),
             },
             {
-                failure: promotion.bonusItemCount <= 0,
+                failure: promotion.remainingBonusItems <= 0,
                 notice: this.getNoticeObj(helpers.noticeHelper.invalidBet, { msg: "No promotions available" }),
             },
             {

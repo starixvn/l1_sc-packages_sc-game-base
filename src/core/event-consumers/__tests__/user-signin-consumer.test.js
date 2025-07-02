@@ -393,7 +393,7 @@ describe("UserSignInConsumer", () => {
                 expect(result).toEqual({
                     promotionId: "promo123",
                     code: "FREE_SPIN",
-                    bonusItemCount: 10,
+                    remainingBonusItems: 10,
                     initialBonusItem: 15,
                     isActive: true,
                     promotionType: "FREE_SPIN",
@@ -608,7 +608,7 @@ describe("UserSignInConsumer", () => {
                     promotion: {
                         promotionId: "promo123",
                         code: "FREE_SPIN",
-                        bonusItemCount: 5,
+                        remainingBonusItems: 5,
                         initialBonusItem: 15,
                         isActive: true,
                         promotionType: "FREE_SPIN",

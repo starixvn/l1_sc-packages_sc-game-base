@@ -223,7 +223,7 @@ export default class ProcessBetQueue extends BetProcessorWithInterceptors {
             });
         }
 
-        if (player.promotion && player.promotion.bonusItemCount <= 0) {
+        if (player.promotion && player.promotion.remainingBonusItems <= 0) {
             const totalWin = await this.gamePromotionApiClient.getTotalWin({
                 promotionId: player.promotion.promotionId,
                 playerId: player.session.playerId,

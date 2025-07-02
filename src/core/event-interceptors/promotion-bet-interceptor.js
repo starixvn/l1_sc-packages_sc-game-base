@@ -46,7 +46,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             if(payload.freeSpinExtra){
                 return { success: true };
             }
-            
+
             const promotionData = player.promotion;
 
             const deductDto = {
@@ -68,7 +68,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             }
 
             // Update player's promotion data
-            player.promotion.bonusItemCount = deductResult.remainingBonusItems || promotionData.bonusItemCount - 1;
+            player.promotion.remainingBonusItems = deductResult.remainingBonusItems || promotionData.remainingBonusItems - 1;
 
             return { success: true };
         } catch (error) {
@@ -134,7 +134,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
     async endPromotionEvent(context) {
         const { player } = context;
         try {
-            if (player.promotion.bonusItemCount <= 0) {
+            if (player.promotion.remainingBonusItems <= 0) {
                 const totalWin = await this.gamePromotionApiClient.getTotalWin({
                     promotionId: player.promotion.promotionId,
                     playerId: player.session.playerId,
@@ -181,7 +181,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
 
             if (rollbackResult && rollbackResult.success) {
                 if (player.promotion && player.promotion.promotionId === bet.promotionId) {
-                    player.promotion.bonusItemCount += 1;
+                    player.promotion.remainingBonusItems += 1;
                 }
             } else {
                 this.logService.logError(`Failed to rollback promotion after failure for player ${player.profile.name}:`, {

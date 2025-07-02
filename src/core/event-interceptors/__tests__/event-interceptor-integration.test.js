@@ -98,7 +98,7 @@ describe("Event Interceptor Integration", () => {
             },
             promotion: {
                 promotionId: chance.string(),
-                bonusItemCount: 5,
+                remainingBonusItems: 5,
             },
         };
 

@@ -155,7 +155,7 @@ export default class UserSignInConsumer {
                 return {
                     promotionId: promotion.promotionId,
                     code: promotion.promotionCode,
-                    bonusItemCount: promotion.remainingBonusItems,
+                    remainingBonusItems: promotion.remainingBonusItems,
                     initialBonusItem : promotion.initialBonusItem,
                     isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
                     promotionType: promotion.promotionType,
@@ -174,7 +174,7 @@ export default class UserSignInConsumer {
                 return {
                     promotionId: promotion._id,
                     code: promotion.code,
-                    bonusItemCount: promotion.bonusItemCount,
+                    remainingBonusItems: promotion.bonusItemCount,
                     isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
                     endDate: promotion.endDate,
                     isGiftCode: promotion.isGiftCode,
