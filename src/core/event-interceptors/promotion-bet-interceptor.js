@@ -43,6 +43,10 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
         const { player, payload } = context;
 
         try {
+            if(payload.freeSpinExtra){
+                return { success: true };
+            }
+            
             const promotionData = player.promotion;
 
             const deductDto = {

@@ -148,7 +148,7 @@ export default class UserSignInConsumer {
                     playerId,
                     operatorId,
                     siteName
-            });
+                });
     
                 const promotion = result.promotion;
                 // get promotion endDate
