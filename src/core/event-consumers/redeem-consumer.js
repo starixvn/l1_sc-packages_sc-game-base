@@ -39,7 +39,7 @@ export default class RedeemConsumer {
     sendRedeemError(player, errorCode, message) {
         this.publisher.publishToUser(player.UID, {
             redeemResult: -1,
-            notice: this.getNoticeObj(errorCode, { message }),
+            redemptionNotice: this.getNoticeObj(errorCode, { message }),
         });
     }
 
