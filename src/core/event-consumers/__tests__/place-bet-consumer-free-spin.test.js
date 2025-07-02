@@ -156,7 +156,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 100, // This will be auto-assigned to 1
                 freeBet: false,
-                freeSpin: false, // Explicitly set to false to allow promotion logic
+                freeSpin: true, // Must be true to activate promotion logic
                 clientSeed: "valid-seed",
             };
 
@@ -176,7 +176,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 0, // Invalid for regular bets
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -205,7 +205,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 0, // Invalid for regular bets
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -232,7 +232,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 0,
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -263,7 +263,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 0,
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -292,7 +292,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 0,
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -323,7 +323,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 100, // This will be auto-assigned to 1
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -344,7 +344,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 100, // This will be auto-assigned to 1
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -363,7 +363,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 100,
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -399,7 +399,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 100,
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -418,7 +418,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 999999999, // Extremely high amount that would normally fail validation
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -438,7 +438,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 100,
                 freeBet: true, // This would normally fail validation
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
@@ -460,7 +460,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
                 betChoice: "red",
                 amount: 50, // Below minimum bet
                 freeBet: false,
-                freeSpin: false,
+                freeSpin: true,
                 clientSeed: "valid-seed",
             };
 
