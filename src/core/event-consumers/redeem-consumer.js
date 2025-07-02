@@ -60,7 +60,10 @@ export default class RedeemConsumer {
             await this.updatePromotion(player, result);
             this.publisher.publishToUser(player.UID, {
                 redeemResult: 1,
-                promotion: result.promotion               
+                promotion: {
+                    ...result.promotion,
+                    isClaimed: true
+                }
             });
         }
         else {
