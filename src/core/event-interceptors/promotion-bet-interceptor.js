@@ -43,7 +43,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
         const { player, payload } = context;
 
         try {
-            if(payload.freeSpinExtra){
+            if(player.promotion.freeSpinExtra){
                 return { success: true };
             }
 
@@ -132,10 +132,10 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      * @returns {Promise<void>}
      */
     async endPromotionEvent(context) {
-        const { player, bet } = context;
+        const { player } = context;
         try {
-            if (player.promotion.remainingBonusItems === 0 
-                && (bet.freeSpinExtra === false || (bet.freeSpinExtra === true && bet.freeSpinExtraAvailable === 1))) {
+            if (player.promotion.remainingBonusItems === 0 && (player.promotion.freeSpinExtra === false 
+                    || (player.promotion.freeSpinExtra === true && player.promotion.freeSpinAvailable === 1))) {
                 const totalWin = await this.gamePromotionApiClient.getTotalWin({
                     promotionId: player.promotion.promotionId,
                     playerId: player.session.playerId,
