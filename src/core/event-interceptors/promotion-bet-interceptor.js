@@ -132,9 +132,10 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      * @returns {Promise<void>}
      */
     async endPromotionEvent(context) {
-        const { player } = context;
+        const { player, bet } = context;
         try {
-            if (player.promotion.remainingBonusItems <= 0) {
+            if (player.promotion.remainingBonusItems === 0 
+                && (bet.freeSpinExtra === false || (bet.freeSpinExtra === true && bet.freeSpinExtraAvailable === 1))) {
                 const totalWin = await this.gamePromotionApiClient.getTotalWin({
                     promotionId: player.promotion.promotionId,
                     playerId: player.session.playerId,
