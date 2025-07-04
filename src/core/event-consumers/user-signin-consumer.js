@@ -168,12 +168,10 @@ export default class UserSignInConsumer {
             }
 
             const hasPromotion = await this.promotionApiClient.checkEligibility(playerDto);
-            if(hasPromotion && hasPromotion.promotions.length > 0) {
-                const promotion = hasPromotion.promotions[0];
-                const promotionFreeSpin = await this.promotionApiClient.getPromotionById(promotion._id);            
-                if(!promotionFreeSpin.gameIds.includes(this.gameData.gameConfigs.gameId)) {
-                    return null;
-                }
+            if(hasPromotion && hasPromotion.promotions.length > 0 
+                && hasPromotion.promotions.find(promotion => promotion.gameIds.includes(this.gameData.gameConfigs.gameId))) {
+                const promotion = hasPromotion.promotions.find(promotion => promotion.gameIds.includes(this.gameData.gameConfigs.gameId));
+
                 return {
                     promotionId: promotion._id,
                     code: promotion.code,
