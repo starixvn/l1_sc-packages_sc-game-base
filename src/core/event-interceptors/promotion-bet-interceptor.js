@@ -47,7 +47,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 playerPromotion: player.promotion,
                 payload: payload
             }, this.definition.name);
-            if(player.promotion.freeSpinExtra){
+            if(player.promotion.freeSpinAvailable > 0){
                 return { success: true };
             }
 
