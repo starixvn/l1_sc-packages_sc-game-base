@@ -1,22 +1,22 @@
-import { BaseEventPublisher } from "./../event-publishers";
+import { PromotionFreeSpinsPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 
 export default class RedeemConsumer {
     /**
      * @param {Object} dependencies
      * @param {GameData} dependencies.gameData
-     * @param {BaseEventPublisher} dependencies.publisher
+     * @param {PromotionFreeSpinsPublisher} dependencies.publisher
      * @param {Object} dependencies.logService
      * @param {PromotionClient} [dependencies.gamePromotionApiClient]
      */
     constructor({
         gameData,
-        publisher,
+        promotionFreeSpinsPublisher,
         logService,
         gamePromotionApiClient,
     }) {
         this.gameData = gameData;
-        this.publisher = publisher;
+        this.promotionFreeSpinsPublisher = promotionFreeSpinsPublisher;
         this.logService = logService;
         this.promotionApiClient = gamePromotionApiClient?.instance();
     }
@@ -34,7 +34,7 @@ export default class RedeemConsumer {
     }
 
     publishRedemptionError(player, errorCode, message) {
-        this.publisher.publishToUser(player.UID, {
+        this.promotionFreeSpinsPublisher.publishToUser(player.UID, {
             redeemResult: -1,
             redemptionNotice: this.getNoticeObj(errorCode, { message }),
         });
@@ -55,7 +55,7 @@ export default class RedeemConsumer {
 
         if(result.success) {
             await this.updatePromotion(player, result);
-            this.publisher.publishToUser(player.UID, {
+            this.promotionFreeSpinsPublisher.publishToUser(player.UID, {
                 redeemResult: 1,
                 promotion: {
                     ...result.promotion,
@@ -72,13 +72,6 @@ export default class RedeemConsumer {
         const promotionFreeSpin = await this.promotionApiClient.getPromotionById(result.promotion.promotionId);      
         const now = new Date();
         if(promotionFreeSpin.gameIds.includes(this.gameData.gameConfigs.gameId)) {
-            const totalWin = await this.promotionApiClient.getTotalWin({
-                promotionId: result.promotion.promotionId,
-                playerId: player.session.playerId,
-                operatorId: player.session.operatorId,
-                siteName: player.session.siteName
-            });
-    
             const promotion = result.promotion;
             player.promotion = {
                 promotionId: promotion.promotionId,
@@ -91,7 +84,7 @@ export default class RedeemConsumer {
                 lastUsedDate: promotion.lastUsedDate,
                 isGiftCode: promotion.isGiftCode,
                 betLevel: promotion.betLevel,
-                totalWin: totalWin,
+                totalWin: 0,
                 isClaimed: true
             };
         }

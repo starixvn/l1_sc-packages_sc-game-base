@@ -90,6 +90,7 @@ export default class ContainerRegistry {
             publisher: asClass(EventPublishers.BaseEventPublisher).singleton(),
             gameStatusPublisher: asClass(EventPublishers.GameStatusPublisher).singleton(),
             placeBetPublisher: asClass(EventPublishers.PlaceBetPublisher).singleton(),
+            promotionFreeSpinsPublisher: asClass(EventPublishers.PromotionFreeSpinsPublisher).singleton(),
             roundResultPublisher: asClass(EventPublishers.RoundResultPublisher).singleton(),
             runningRoundInfoPublisher: asClass(EventPublishers.RunningRoundInfoPublisher).singleton(),
             userBetResultPublisher: asClass(EventPublishers.UserBetResultPublisher).singleton(),

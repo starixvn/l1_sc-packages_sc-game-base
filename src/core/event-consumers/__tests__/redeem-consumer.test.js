@@ -34,7 +34,7 @@ describe("RedeemConsumer", () => {
         };
         redeemConsumer = new RedeemConsumer({
             gameData: mockGameData,
-            publisher: mockPublisher,
+            promotionFreeSpinsPublisher: mockPublisher,
             logService: mockLogService,
             gamePromotionApiClient: mockPromotionApiClient
         });
@@ -69,7 +69,7 @@ describe("RedeemConsumer", () => {
         );
         expect(player.promotion).toBeDefined();
         expect(player.promotion.promotionId).toBe("PROMO_ID");
-        expect(player.promotion.totalWin).toBe(100);
+        expect(player.promotion.totalWin).toBe(0);
     });
 
     it("should process redeem with invalid gift code and call sendRedeemError", async () => {
@@ -93,7 +93,7 @@ describe("RedeemConsumer", () => {
         await redeemConsumer.updatePromotion(player, result);
         expect(player.promotion).toBeDefined();
         expect(player.promotion.promotionId).toBe("PROMO_ID");
-        expect(player.promotion.totalWin).toBe(50);
+        expect(player.promotion.totalWin).toBe(0);
     });
 
     it("should return notice object with error code and extra data", () => {
