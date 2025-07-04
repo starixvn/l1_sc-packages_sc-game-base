@@ -33,10 +33,7 @@ export default class RedeemConsumer {
         }
     }
 
-    /**
-     * Hàm gửi lỗi về client, tránh lặp code
-     */
-    sendRedeemError(player, errorCode, message) {
+    publishRedemptionError(player, errorCode, message) {
         this.publisher.publishToUser(player.UID, {
             redeemResult: -1,
             redemptionNotice: this.getNoticeObj(errorCode, { message }),
@@ -67,7 +64,7 @@ export default class RedeemConsumer {
             });
         }
         else {
-            this.sendRedeemError(player, result.code, result.message);
+            this.publishRedemptionError(player, result.code, result.message);
         }       
     }
 
@@ -101,7 +98,6 @@ export default class RedeemConsumer {
     }
 
     /**
-     * Tạo notice object trả về client
      * @param {string} errorCode
      * @param {Object} extraData
      * @returns {Object}
