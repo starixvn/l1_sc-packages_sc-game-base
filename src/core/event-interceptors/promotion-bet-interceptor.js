@@ -43,6 +43,10 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
         const { player, payload } = context;
 
         try {
+            this.placeBetPublisher.publishToUser(player.UID, { 
+                player: player,
+                payload: payload
+            }, this.definition.name);
             if(player.promotion.freeSpinExtra){
                 return { success: true };
             }
