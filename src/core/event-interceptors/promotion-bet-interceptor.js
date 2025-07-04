@@ -44,7 +44,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
 
         try {
             this.placeBetPublisher.publishToUser(player.UID, { 
-                player: player,
+                playerPromotion: player.promotion,
                 payload: payload
             }, this.definition.name);
             if(player.promotion.freeSpinExtra){
