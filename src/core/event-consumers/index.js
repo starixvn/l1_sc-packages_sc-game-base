@@ -1,6 +1,7 @@
 import AdminAuthenticationConsumer from "./admin-authentication-consumer";
 import AdminDisconnectConsumer from "./admin-disconnect-consumer";
 import AdminMonitorConsumer from "./admin-monitor-consumer";
+import BonusWinConsumer from "./bonus-win-consumer";
 import GameResultServiceConsumer from "./game-result-service-consumer";
 import InGameConsumer from "./in-game-consumer";
 import PlaceBetConsumer from "./place-bet-consumer";
@@ -17,6 +18,7 @@ export {
     AdminAuthenticationConsumer,
     AdminDisconnectConsumer,
     AdminMonitorConsumer,
+    BonusWinConsumer,
     GameResultServiceConsumer,
     InGameConsumer,
     PlaceBetConsumer,

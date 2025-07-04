@@ -38,6 +38,7 @@ export default class BaseSocketRouter {
         playGamePermissionValidator,
         roundQuery,
         gameResultServiceConsumer,
+        bonusWinConsumer,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -52,6 +53,7 @@ export default class BaseSocketRouter {
         this.playGamePermissionValidator = playGamePermissionValidator;
         this.roundQuery = roundQuery;
         this.gameResultServiceConsumer = gameResultServiceConsumer;
+        this.bonusWinConsumer = bonusWinConsumer;
     }
 
     /**
@@ -67,6 +69,7 @@ export default class BaseSocketRouter {
         this.socketClient.on("getRoundPF", this.handleGetRoundPF.bind(this));
         this.socketClient.on("betDetails", this.handleBetDetails.bind(this));
         this.socketClient.on("redeem", this.handleRedeem.bind(this));
+        this.socketClient.on("claim-bonus-win", this.handleClaimBonusWin.bind(this));
     }
 
     async handleBetDetails(payload) {
@@ -78,7 +81,15 @@ export default class BaseSocketRouter {
             const { playerId, operatorId, siteId } = this.gameData.realPlayers[this.socketClient.id].session;
             const { mode, timeZoneOffset, roundId, language } = payload;
 
-            const result = await this.gameResultServiceConsumer.getUrl({ playerId, operatorId, siteId, roundId, mode, timeZoneOffset, language });
+            const result = await this.gameResultServiceConsumer.getUrl({
+                playerId,
+                operatorId,
+                siteId,
+                roundId,
+                mode,
+                timeZoneOffset,
+                language,
+            });
 
             if (result.isAuthenticated) {
                 this.socketClient.emit(this.definition.name, { betDetailsUrl: result.redirectUrl });
@@ -167,6 +178,18 @@ export default class BaseSocketRouter {
     handleDisconnect() {
         try {
             this.userDisconnectConsumer.consume(this.socketClient);
+        } catch (error) {
+            this.logService.logError(error);
+        }
+    }
+
+    handleClaimBonusWin() {
+        try {
+            if (!this.verify()) {
+                return;
+            }
+
+            this.bonusWinConsumer.consume(this.gameData.realPlayers[this.socketClient.id]);
         } catch (error) {
             this.logService.logError(error);
         }

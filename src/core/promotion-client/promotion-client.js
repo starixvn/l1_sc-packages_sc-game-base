@@ -1,5 +1,5 @@
-import { logger } from "sc-common";
 import { GamePromotionApiClient } from "@sc/game-promotion-api-client";
+import { logger } from "sc-common";
 
 export default class PromotionClient {
     constructor({ appConfigs }) {

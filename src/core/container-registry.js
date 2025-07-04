@@ -1,20 +1,19 @@
 import { asClass, asFunction, asValue, createContainer, InjectionMode } from "awilix";
-import { endGame, getBalance, placeBet } from "sc-base-apis";
+import { award, endGame, getBalance, placeBet } from "sc-base-apis";
 import { logger } from "sc-common";
-import { GamePromotionApiClient } from "@sc/game-promotion-api-client";
 
 import * as Crons from "./crons";
 import * as EventConsumers from "./event-consumers";
-import * as EventPublishers from "./event-publishers";
 import * as EventInterceptors from "./event-interceptors";
+import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import GameManagementApiClientFactory from "./game-management-api";
 import { PromotionClient } from "./promotion-client";
 
+import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
 import { PlayGamePermissionValidator } from "./validators";
-import { RoundQuery, HistoryQuery, MetricQuery } from "./query-apis";
 
 export default class ContainerRegistry {
     /**
@@ -77,6 +76,7 @@ export default class ContainerRegistry {
             endGame: asValue(endGame),
             getBalance: asValue(getBalance),
             placeBet: asValue(placeBet),
+            award: asValue(award),
             logService: asValue(logger),
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
@@ -117,6 +117,7 @@ export default class ContainerRegistry {
             provablyFairConsumer: asClass(EventConsumers.ProvablyFairConsumer).singleton(),
             unsettledRoundConsumer: asClass(EventConsumers.UnsettledRoundConsumer).singleton().proxy(),
             gameResultServiceConsumer: asClass(EventConsumers.GameResultServiceConsumer).proxy(),
+            bonusWinConsumer: asClass(EventConsumers.BonusWinConsumer).singleton().proxy(),
         });
     }
 
