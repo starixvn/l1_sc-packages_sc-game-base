@@ -228,6 +228,7 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
             // Arrange
             const player = createMockPlayerWithPromotion();
             player.promotion.remainingBonusItems = 0;
+            player.promotion.freeSpinExtra = false;
             const betPayload = {
                 betChoice: "red",
                 amount: 0,
