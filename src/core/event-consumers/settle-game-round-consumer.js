@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
+import GameManagementApiClientFactory, { callAndForget } from "../game-management-api";
 import { RoundResultPublisher, UserBetResultPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import GameManagementApiClientFactory, { callAndForget } from "../game-management-api";
 
 export default class SettleGameRoundConsumer {
     /**
@@ -179,6 +179,7 @@ export default class SettleGameRoundConsumer {
         const settlementInfo = {
             redPlay: betResult.totalBetAmount,
             freeBet: bet.freeBet,
+            promotionId: bet.promotionId,
         };
 
         if (betResult.totalWin > 0) {
