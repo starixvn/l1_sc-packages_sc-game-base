@@ -153,7 +153,6 @@ export default class UserSignInConsumer {
                 // get promotion endDate
                 return {
                     promotionId: promotion.promotionId,
-                    code: promotion.promotionCode,
                     remainingBonusItems: promotion.remainingBonusItems,
                     initialBonusItem : promotion.initialBonusItem,
                     isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
@@ -174,7 +173,6 @@ export default class UserSignInConsumer {
 
                 return {
                     promotionId: promotion._id,
-                    code: promotion.code,
                     remainingBonusItems: promotion.bonusItemCount,
                     isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
                     endDate: promotion.endDate,

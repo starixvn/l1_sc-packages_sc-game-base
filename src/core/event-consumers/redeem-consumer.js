@@ -55,10 +55,21 @@ export default class RedeemConsumer {
 
         if(result.success) {
             await this.updatePromotion(player, result);
+            const promotion = result.promotion;
+            const now = new Date();
             this.promotionFreeSpinsPublisher.publishToUser(player.UID, {
                 redeemResult: 1,
                 promotion: {
-                    ...result.promotion,
+                    promotionId: promotion.promotionId,
+                    remainingBonusItems: promotion.remainingBonusItems,
+                    initialBonusItem : promotion.initialBonusItem,
+                    isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
+                    promotionType: promotion.promotionType,
+                    endDate: promotion.endDate,
+                    lastUsedDate: promotion.lastUsedDate,
+                    isGiftCode: promotion.isGiftCode,
+                    betLevel: promotion.betLevel,
+                    totalWin: 0,
                     isClaimed: true
                 }
             });
@@ -79,7 +90,6 @@ export default class RedeemConsumer {
                 remainingBonusItems: promotion.remainingBonusItems,
                 initialBonusItem : promotion.initialBonusItem,
                 isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
-                promotionType: promotion.promotionType,
                 endDate: promotion.endDate,
                 lastUsedDate: promotion.lastUsedDate,
                 isGiftCode: promotion.isGiftCode,
