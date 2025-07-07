@@ -388,7 +388,6 @@ describe("UserSignInConsumer", () => {
 
                 expect(result).toEqual({
                     promotionId: "promo123",
-                    code: "FREE_SPIN",
                     remainingBonusItems: 10,
                     initialBonusItem: 15,
                     isActive: true,
@@ -601,7 +600,6 @@ describe("UserSignInConsumer", () => {
                     socketClient: mockSocketClient,
                     promotion: {
                         promotionId: "promo123",
-                        code: "FREE_SPIN",
                         remainingBonusItems: 5,
                         initialBonusItem: 15,
                         isActive: true,

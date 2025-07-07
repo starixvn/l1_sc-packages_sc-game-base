@@ -64,7 +64,19 @@ describe("RedeemConsumer", () => {
             "player1",
             expect.objectContaining({
                 redeemResult: 1,
-                promotion: promotionObj
+                promotion: expect.objectContaining({
+                    promotionId: "PROMO_ID",
+                    remainingBonusItems: 2,
+                    initialBonusItem: 2,
+                    promotionType: "type",
+                    endDate: null,
+                    lastUsedDate: null,
+                    isGiftCode: true,
+                    betLevel: 1,
+                    isActive: true,
+                    totalWin: 0,
+                    isClaimed: true
+                })
             })
         );
         expect(player.promotion).toBeDefined();
