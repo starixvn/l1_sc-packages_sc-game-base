@@ -105,7 +105,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 promotionId: player.promotion.promotionId,
                 gameId: this.definition.id,
                 gameRoundId: bet.roundId,
-                appType: 1,
+                appType: player.session.system,
                 betAmount: bet.amount,
                 winAmount: bet.betWin
             };
