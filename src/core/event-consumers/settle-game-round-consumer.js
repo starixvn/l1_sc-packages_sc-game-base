@@ -149,10 +149,10 @@ export default class SettleGameRoundConsumer {
         };
     }
 
-    async callEndGame(bet, roundId, time, betResult) {
+    async callEndGame(bet, roundId, time, betResult, metaData) {
         const { gameInfo, settlementInfo } = this.formatEndGameInfo(bet, roundId, time, betResult);
 
-        const apiResult = await this.endGame(bet.uid, gameInfo, settlementInfo);
+        const apiResult = await this.endGame(bet.uid, gameInfo, settlementInfo, metaData);
 
         if (apiResult.isOk) {
             settlementInfo.red > 0 &&
