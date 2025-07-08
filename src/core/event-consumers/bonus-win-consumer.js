@@ -26,14 +26,12 @@ export default class BonusWinConsumer {
             });
 
             if (isOk) {
-                const claimResult = await this.gamePromotionApiClient.claimBonusWins({
+                return await this.gamePromotionApiClient.claimBonusWins({
                     playerId: session.playerId,
                     promotionId: promotion.promotionId,
                     operatorId: session.operatorId,
                     siteName: session.siteName,
                 });
-
-                return claimResult;
             }
             return {
                 success: false,

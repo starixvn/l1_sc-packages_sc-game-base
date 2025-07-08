@@ -27,7 +27,7 @@
     "type": "module",
     "license": "ISC",
     "dependencies": {
-        "@sc/game-promotion-api-client": "^1.0.1-beta.15",
+        "@sc/game-promotion-api-client": "^1.0.1-beta.16",
         "awilix": "^8.0.0",
         "axios": "^1.0.0",
         "chance": "^1.1.7",
