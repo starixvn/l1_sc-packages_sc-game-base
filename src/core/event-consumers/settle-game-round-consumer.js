@@ -175,6 +175,7 @@ export default class SettleGameRoundConsumer {
             time: time,
             operatorId: bet.operatorId,
             playerId: bet.playerId,
+            siteName: bet.siteName,
         };
         const settlementInfo = {
             redPlay: betResult.totalBetAmount,

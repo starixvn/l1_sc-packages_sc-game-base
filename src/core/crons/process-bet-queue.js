@@ -3,11 +3,11 @@ import { helpers } from "sc-common";
 import { tracer } from "sc-instrument";
 
 import BaseMetrics from "../base-metrics";
-import GameManagementApiClientFactory, { getOrDefault, callAndForget } from "../game-management-api";
+import GameManagementApiClientFactory, { callAndForget } from "../game-management-api";
+import EventInterceptorMixin from "../mixins/event-interceptor-mixin.js";
 import { PlaceBetPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import EventInterceptorMixin from "../mixins/event-interceptor-mixin.js";
 
 // Create the base class with interceptor functionality
 class BaseBetProcessor {
@@ -292,6 +292,7 @@ export default class ProcessBetQueue extends BetProcessorWithInterceptors {
             newBet.operatorId = player.session.operatorId;
             newBet.playerId = player.session.playerId;
             newBet.appType = player.session.system;
+            newBet.siteName = player.session.siteName;
         }
 
         await this.betsRepository.updateOne(
@@ -330,6 +331,7 @@ export default class ProcessBetQueue extends BetProcessorWithInterceptors {
             newBetLog.operatorId = player.session.operatorId;
             newBetLog.playerId = player.session.playerId;
             newBetLog.appType = player.session.system;
+            newBetLog.siteName = player.session.siteName;
         }
 
         await this.betLogsRepository.create(newBetLog);
