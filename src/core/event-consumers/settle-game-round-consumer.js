@@ -95,13 +95,18 @@ export default class SettleGameRoundConsumer {
                     bet.paid = true;
 
                     await bet.save();
-                    await this.callEndGame(bet, roundId, time, betResult);
+                    const metaData = this.createMetadata(bet, settlementResult);
+                    await this.callEndGame(bet, roundId, time, betResult, metaData);
 
                     this.captureBetResult(bet.uid, betResult, bet.rate);
                     await this.userBetResultPublisher.publish(bet.uid, betResult);
                 })
             );
         }
+    }
+
+    createMetadata(bet, settlementResult) {
+        return {};
     }
 
     calculateBetResult(settlementResult, bet, odds) {

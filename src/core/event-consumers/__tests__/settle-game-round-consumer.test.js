@@ -292,6 +292,12 @@ describe("SettleGameRoundConsumer", () => {
                         });
 
                         it("should call endGame", async () => {
+                            // Arrange
+                            const metaData = {
+                                settlementResult,
+                            };
+                            consumer.createMetadata = jest.fn(() => metaData);
+
                             // Act
                             await consumer.settleBets(settleBetParams);
 
@@ -301,7 +307,8 @@ describe("SettleGameRoundConsumer", () => {
                                 queryBets[betIndex],
                                 settleBetParams.roundId,
                                 settleBetParams.time,
-                                betResult
+                                betResult,
+                                metaData
                             );
                         });
 
@@ -363,14 +370,39 @@ describe("SettleGameRoundConsumer", () => {
         const bet = {
             uid: chance.guid(),
         };
+        const metaData = {
+            settlementResult: { red: 10 },
+        };
 
         describe("when api result is ok", () => {
             beforeEach(() => {
                 endGame.mockReturnValueOnce({ isOk: true });
             });
+
+            it("should call endGameAPI with correct params", async () => {
+                // Arrange
+                const gameInfo = {
+                    gameId: definition.id,
+                    gameRoundId: roundId,
+                    siteId: bet.siteId,
+                    time: new Date(),
+                    operatorId: bet.operatorId,
+                    playerId: bet.playerId,
+                };
+                const settlementInfo = {
+                    red: 10,
+                };
+                consumer.formatEndGameInfo = jest.fn(() => ({ gameInfo, settlementInfo }));
+
+                // Act
+                await consumer.callEndGame(bet, roundId, new Date(), { totalWin: 10 }, metaData);
+
+                // Assert
+                expect(endGame).toHaveBeenCalledWith(bet.uid, gameInfo, settlementInfo, metaData);
+            });
             it("should update balance when total win > 0", async () => {
                 // Act
-                await consumer.callEndGame(bet, roundId, new Date(), { totalWin: 10 });
+                await consumer.callEndGame(bet, roundId, new Date(), { totalWin: 10 }, metaData);
 
                 // Assert
                 expect(consumer.gameManagementApiClient.users.updateBalance).toHaveBeenCalledWith({ id: bet.uid, deductionAmount: -10 });
@@ -378,7 +410,7 @@ describe("SettleGameRoundConsumer", () => {
 
             it("should not publish api error", async () => {
                 // Act
-                await consumer.callEndGame(bet, roundId, new Date(), {});
+                await consumer.callEndGame(bet, roundId, new Date(), {}, metaData);
 
                 // Assert
                 expect(userBetResultPublisher.publishApiError).not.toHaveBeenCalled();
@@ -392,7 +424,7 @@ describe("SettleGameRoundConsumer", () => {
                 endGame.mockReturnValueOnce(apiResult);
 
                 // Act
-                await consumer.callEndGame(bet, roundId, new Date(), {});
+                await consumer.callEndGame(bet, roundId, new Date(), {}, metaData);
 
                 // Assert
                 expect(userBetResultPublisher.publishApiError).toHaveBeenCalledWith(bet.uid, apiResult.response);
