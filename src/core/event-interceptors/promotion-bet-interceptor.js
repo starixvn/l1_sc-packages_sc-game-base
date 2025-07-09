@@ -111,7 +111,6 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             };
 
             const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
-            this.endPromotionEvent(context);
             if (!ticketResult || !ticketResult.success) {
                 this.logService.logError(`Failed to create promotion ticket for player ${player.profile.name}:`, {
                     error: ticketResult?.error || "Unknown error",
