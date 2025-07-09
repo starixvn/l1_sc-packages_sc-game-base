@@ -218,7 +218,7 @@ export default class PlaceBetConsumer {
      */
     composePromotionValidationCriteria(player) {
         // Only validate if player has promotion data
-        if (!player.promotion) {
+        if (!player.promotion || !player.usePromotion) {
             return [];
         }
 
