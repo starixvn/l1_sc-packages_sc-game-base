@@ -26,7 +26,7 @@ export default class BonusWinConsumer {
             });
 
             if (isOk) {
-                return await this.gamePromotionApiClient.claimBonusWins({
+                return this.gamePromotionApiClient.claimBonusWins({
                     playerId: session.playerId,
                     promotionId: promotion.promotionId,
                     operatorId: session.operatorId,
