@@ -150,8 +150,6 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                         totalWin: totalWin
                     }
                 }, this.definition.name);
-    
-                delete player.promotion;
             }
         } catch (error) {
             this.logService.logError(`Error ending promotion for player ${player.profile.name}:`, {
