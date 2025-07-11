@@ -47,7 +47,7 @@
         "randomstring": "^1.3.0",
         "sc-base-apis": "3.0.0-beta.4",
         "sc-common": "1.8.1",
-        "sc-game-management-client": "^0.1.0",
+        "sc-game-management-client": "^0.1.4",
         "sc-instrument": "1.1.1-beta.2",
         "sc-instrument-helper": "1.0.0",
         "sc-pf-client-seed": "^1.0.5",
