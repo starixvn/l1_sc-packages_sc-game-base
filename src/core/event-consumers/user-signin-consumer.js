@@ -231,7 +231,7 @@ export default class UserSignInConsumer {
      * @returns {Promise<number>} Total win amount
      */
     async getPromotionTotalWin(promotion, playerDto) {
-        return await this.promotionApiClient.getTotalWin({
+        return this.promotionApiClient.getTotalWin({
             promotionId: promotion.promotionId,
             playerId: playerDto.playerId,
             operatorId: playerDto.operatorId,
