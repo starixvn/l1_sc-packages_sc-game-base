@@ -387,6 +387,7 @@ describe("UserSignInConsumer", () => {
                 });
 
                 expect(result).toEqual({
+                    promotion: {
                     promotionId: "promo123",
                     remainingBonusItems: 10,
                     initialBonusItem: 15,
@@ -396,8 +397,9 @@ describe("UserSignInConsumer", () => {
                     lastUsedDate: "2024-01-01T00:00:00Z",
                     isGiftCode: false,
                     betLevel: 1,
-                    totalWin: 100,
-                    isClaimed: true,
+                        totalWin: 100,
+                        isClaimed: true,
+                    },
                 });
             });
 
@@ -524,7 +526,7 @@ describe("UserSignInConsumer", () => {
 
                 const result = await consumerWithPromotion.claimPlayerPromotions(userSession);
 
-                expect(result.isActive).toBe(false); // ✅ Should be false for expired date
+                expect(result.promotion.isActive).toBe(false); // ✅ Should be false for expired date
             });
         });
 
