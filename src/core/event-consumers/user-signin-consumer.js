@@ -112,80 +112,201 @@ export default class UserSignInConsumer {
      * @returns {Promise<Object|null>} Promotion data or null
      */
     async claimPlayerPromotions(userSession) {
-        // Check if game offers promotion (factory and client must be available)
-        if (!this.promotionApiClient || !this.appConfigs.promotionApiSettings) {
+        if (!this.isPromotionAvailable()) {
             return null;
         }
 
-        // Get player-specific data (these should come from user session or player data)
-        const { operatorId, siteName, currencyGroupId, playerId } = userSession;
-
-        // Validate required player data
-        if (!operatorId || !siteName || !currencyGroupId || !playerId) {
+        const playerData = this.extractPlayerData(userSession);
+        if (!this.isValidPlayerData(playerData)) {
             return null;
         }
 
         try {
-            const playerDto = {
-                operatorId,
-                siteName,
-                playerId,
-                currencyGroup: currencyGroupId,
-            };
+            const playerDto = this.createPlayerDto(playerData);
 
-            const result = await this.promotionApiClient.claimPromotion(playerDto);
-            const now = new Date();
-
-            if(result && result.promotion) {
-                const promotionFreeSpin = await this.promotionApiClient.getPromotionById(result.promotion.promotionId);            
-                if(!promotionFreeSpin.gameIds.includes(this.gameData.gameConfigs.gameId)) {
-                    return null;
-                }
-    
-                const totalWin = await this.promotionApiClient.getTotalWin({
-                    promotionId: result.promotion.promotionId,
-                    playerId,
-                    operatorId,
-                    siteName
-                });
-    
-                const promotion = result.promotion;
-                // get promotion endDate
-                return {
-                    promotionId: promotion.promotionId,
-                    remainingBonusItems: promotion.remainingBonusItems,
-                    initialBonusItem : promotion.initialBonusItem,
-                    isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
-                    promotionType: promotion.promotionType,
-                    endDate: promotion.endDate,
-                    lastUsedDate: promotion.lastUsedDate,
-                    isGiftCode: promotion.isGiftCode,
-                    betLevel: promotion.betLevel,
-                    totalWin: totalWin,
-                    isClaimed: true
-                };
+            // Try to claim existing promotion
+            const claimedPromotion = await this.tryClaimExistingPromotion(playerDto);
+            if (claimedPromotion) {
+                return claimedPromotion;
             }
 
-            const hasPromotion = await this.promotionApiClient.checkEligibility(playerDto);
-            if(hasPromotion && hasPromotion.promotions.length > 0 
-                && hasPromotion.promotions.find(promotion => promotion.gameIds.includes(this.gameData.gameConfigs.gameId))) {
-                const promotion = hasPromotion.promotions.find(promotion => promotion.gameIds.includes(this.gameData.gameConfigs.gameId));
-
-                return {
-                    promotionId: promotion._id,
-                    remainingBonusItems: promotion.bonusItemCount,
-                    isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
-                    endDate: promotion.endDate,
-                    isGiftCode: promotion.isGiftCode,
-                    betLevel: promotion.betLevel,
-                    isClaimed: false
-                };
-            }
-            return null;            
+            // Check for available promotions
+            return await this.checkAvailablePromotions(playerDto);
         } catch (error) {
-            this.logService.logError(`Failed to claim promotion for player ${playerId}: ${error.message}`);
+            this.logService.logError(`Failed to claim promotion for player ${playerData.playerId}: ${error.message}`);
             return null;
         }
+    }
+
+    /**
+     * Check if promotion API is available
+     * @returns {boolean}
+     */
+    isPromotionAvailable() {
+        return this.promotionApiClient && this.appConfigs.promotionApiSettings;
+    }
+
+    /**
+     * Extract player data from user session
+     * @param {Object} userSession - User session data
+     * @returns {Object} Player data object
+     */
+    extractPlayerData(userSession) {
+        const { operatorId, siteName, currencyGroupId, playerId } = userSession;
+        return { operatorId, siteName, currencyGroupId, playerId };
+    }
+
+    /**
+     * Validate if player data contains all required fields
+     * @param {Object} playerData - Player data object
+     * @returns {boolean}
+     */
+    isValidPlayerData(playerData) {
+        const { operatorId, siteName, currencyGroupId, playerId } = playerData;
+        return operatorId && siteName && currencyGroupId && playerId;
+    }
+
+    /**
+     * Create player DTO for API calls
+     * @param {Object} playerData - Player data object
+     * @returns {Object} Player DTO
+     */
+    createPlayerDto(playerData) {
+        const { operatorId, siteName, playerId, currencyGroupId } = playerData;
+        return {
+            operatorId,
+            siteName,
+            playerId,
+            currencyGroup: currencyGroupId,
+        };
+    }
+
+    /**
+     * Try to claim an existing promotion
+     * @param {Object} playerDto - Player DTO
+     * @returns {Promise<Object|null>} Claimed promotion data or null
+     */
+    async tryClaimExistingPromotion(playerDto) {
+        const result = await this.promotionApiClient.claimPromotion(playerDto);
+
+        if (!result?.promotion) {
+            return null;
+        }
+
+        const promotion = result.promotion;
+        const promotionDetails = await this.promotionApiClient.getPromotionById(promotion.promotionId);
+
+        if (!this.isPromotionValidForGame(promotionDetails)) {
+            return null;
+        }
+
+        const totalWin = await this.getPromotionTotalWin(promotion, playerDto);
+        let promotionTOProgress = null;
+        
+        if (promotion.isCompleted) {
+            promotionTOProgress = await this.promotionApiClient.getTOProgress({
+                promotionId: promotion.promotionId,
+                playerId: playerDto.playerId,
+                operatorId: playerDto.operatorId,
+                siteName: playerDto.siteName
+            });
+        }
+        
+        return this.createClaimedPromotionData(promotion, totalWin, promotionTOProgress);
+    }
+
+    /**
+     * Check if promotion is valid for current game
+     * @param {Object} promotionDetails - Promotion details
+     * @returns {boolean}
+     */
+    isPromotionValidForGame(promotionDetails) {
+        return promotionDetails?.gameIds?.includes(this.gameData.gameConfigs.gameId);
+    }
+
+    /**
+     * Get total win for a promotion
+     * @param {Object} promotion - Promotion object
+     * @param {Object} playerDto - Player DTO
+     * @returns {Promise<number>} Total win amount
+     */
+    async getPromotionTotalWin(promotion, playerDto) {
+        return await this.promotionApiClient.getTotalWin({
+            promotionId: promotion.promotionId,
+            playerId: playerDto.playerId,
+            operatorId: playerDto.operatorId,
+            siteName: playerDto.siteName,
+        });
+    }
+
+    /**
+     * Create claimed promotion data object
+     * @param {Object} promotion - Promotion object
+     * @param {number} totalWin - Total win amount
+     * @param {Object|null} promotionTOProgress - Promotion TO progress data
+     * @returns {Object} Claimed promotion data
+     */
+    createClaimedPromotionData(promotion, totalWin, promotionTOProgress = null) {
+        const now = new Date();
+        const promotionData = {
+            promotionId: promotion.promotionId,
+            remainingBonusItems: promotion.remainingBonusItems,
+            initialBonusItem: promotion.initialBonusItem,
+            isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
+            promotionType: promotion.promotionType,
+            endDate: promotion.endDate,
+            lastUsedDate: promotion.lastUsedDate,
+            isGiftCode: promotion.isGiftCode,
+            betLevel: promotion.betLevel,
+            totalWin: totalWin,
+            isClaimed: true,
+        };
+
+        return {
+            promotion: promotionData,
+            ...(promotionTOProgress && { promotionTOProgress }),
+        };
+    }
+
+    /**
+     * Check for available promotions
+     * @param {Object} playerDto - Player DTO
+     * @returns {Promise<Object|null>} Available promotion data or null
+     */
+    async checkAvailablePromotions(playerDto) {
+        const hasPromotion = await this.promotionApiClient.checkEligibility(playerDto);
+
+        if (!hasPromotion?.promotions?.length) {
+            return null;
+        }
+
+        const validPromotion = hasPromotion.promotions.find((promotion) => promotion.gameIds?.includes(this.gameData.gameConfigs.gameId));
+
+        if (!validPromotion) {
+            return null;
+        }
+
+        return this.createAvailablePromotionData(validPromotion);
+    }
+
+    /**
+     * Create available promotion data object
+     * @param {Object} promotion - Promotion object
+     * @returns {Object} Available promotion data
+     */
+    createAvailablePromotionData(promotion) {
+        const now = new Date();
+        return {
+            promotion: {
+                promotionId: promotion._id,
+                remainingBonusItems: promotion.bonusItemCount,
+                isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
+                endDate: promotion.endDate,
+                isGiftCode: promotion.isGiftCode,
+                betLevel: promotion.betLevel,
+                isClaimed: false,
+            },
+        };
     }
 
     handleSignInSuccess(socketClient, userInfo, userSession, promotionData = null) {
@@ -196,8 +317,12 @@ export default class UserSignInConsumer {
             socketClient,
         };
 
-        if (promotionData) {
-            userData.promotion = promotionData;
+        if (promotionData && promotionData.promotion) {
+            userData.promotion = promotionData.promotion;
+        }
+
+        if (promotionData && promotionData.promotionTOProgress) {
+            userData.promotionTOProgress = promotionData.promotionTOProgress;
         }
 
         userSession.characterName = userInfo.name;

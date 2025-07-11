@@ -60,6 +60,10 @@ export default class InGameConsumer {
             payload.promotion = realPlayer.promotion;
         }
 
+        if(realPlayer.promotionTOProgress) {
+            payload.promotionTOProgress = realPlayer.promotionTOProgress;
+        }
+
         return payload;
     }
 

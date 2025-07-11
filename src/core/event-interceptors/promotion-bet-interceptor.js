@@ -137,23 +137,14 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      */
     async endPromotionEvent(context) {
         const { player } = context;
+        
         try {
-            if (player.promotion.remainingBonusItems === 0 && player.promotion.freeSpinAvailable <= 1
-                && player.promotion.bonus === 0
-            ) {
-                const totalWin = await this.gamePromotionApiClient.getTotalWin({
-                    promotionId: player.promotion.promotionId,
-                    playerId: player.session.playerId,
-                    operatorId: player.session.operatorId,
-                    siteName: player.session.siteName
-                });
-                this.placeBetPublisher.publishToUser(player.UID, { 
-                    finishPromotion : {
-                        endPromotion: true,
-                        totalWin: totalWin
-                    }
-                }, this.definition.name);
+            if (!this.shouldCompletePromotion(player)) {
+                return;
             }
+
+            await this.notifyPromotionCompletion(player);
+            await this.completePromotion(player);
         } catch (error) {
             this.logService.logError(`Error ending promotion for player ${player.profile.name}:`, {
                 error: error.message,
@@ -161,7 +152,57 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 stack: error.stack,
             });
         }
+    }
+
+    /**
+     * Check if promotion should be completed
+     * @param {Object} player - Player object
+     * @returns {boolean} Whether promotion should be completed
+     */
+    shouldCompletePromotion(player) {
+        return player.promotion.remainingBonusItems === 0 && 
+               player.promotion.freeSpinAvailable <= 1 &&
+               player.promotion.bonus === 0;
+    }
+
+    /**
+     * Notify user about promotion completion
+     * @param {Object} player - Player object
+     * @param {Object} totalWin - Total win data
+     * @returns {Promise<void>}
+     */
+    async notifyPromotionCompletion(player) {
+        const totalWin = await this.gamePromotionApiClient.getTotalWin({
+            promotionId: player.promotion.promotionId,
+            playerId: player.session.playerId,
+            operatorId: player.session.operatorId,
+            siteName: player.session.siteName
+        });
+        this.placeBetPublisher.publishToUser(player.UID, { 
+            finishPromotion: {
+                endPromotion: true,
+                totalWin: totalWin
+            }
+        }, this.definition.name);
+    }
+
+    /**
+     * Finalize the promotion
+     * @param {Object} player - Player object
+     * @returns {Promise<void>}
+     */
+    async completePromotion(player) {
+        const completePromotionResult = await this.gamePromotionApiClient.completePromotion({
+            promotionId: player.promotion.promotionId,
+            playerId: player.session.playerId,
+            operatorId: player.session.operatorId,
+            currencyGroup: player.session.currencyGroupId,
+            siteName: player.session.siteName
+        });
         
+        this.placeBetPublisher.publishToUser(player.UID, { 
+            promotionTOProgress: completePromotionResult
+        }, this.definition.name);
     }
 
     /**
