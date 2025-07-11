@@ -317,7 +317,7 @@ export default class UserSignInConsumer {
             socketClient,
         };
 
-        if (promotionData && promotionData.promotion) {
+        if (promotionData && promotionData.promotion && !promotionData.promotionTOProgress) {
             userData.promotion = promotionData.promotion;
         }
 
