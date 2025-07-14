@@ -183,13 +183,15 @@ export default class BaseSocketRouter {
         }
     }
 
-    handleClaimBonusWin() {
+    async handleClaimBonusWin() {
         try {
             if (!this.verify()) {
                 return;
             }
 
-            this.bonusWinConsumer.consume(this.gameData.realPlayers[this.socketClient.id]);
+            const result = await this.bonusWinConsumer.claim(this.gameData.realPlayers[this.socketClient.id]);
+
+            this.socketClient.emit(this.definition.name, result);
         } catch (error) {
             this.logService.logError(error);
         }
