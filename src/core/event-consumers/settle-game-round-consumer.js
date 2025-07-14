@@ -81,7 +81,7 @@ export default class SettleGameRoundConsumer {
         return this.betsRepository.find({ roundId }).exec();
     }
 
-    async settleBets({ settlementResult, roundId, time }) {
+    async settleBets({ settlementResult, roundId, time, result }) {
         const bets = await this.queryBets(roundId);
 
         if (bets && bets.length) {
@@ -95,7 +95,7 @@ export default class SettleGameRoundConsumer {
                     bet.paid = true;
 
                     await bet.save();
-                    const metaData = this.createMetadata(bet, settlementResult);
+                    const metaData = this.createMetadata(bet, settlementResult, result);
                     await this.callEndGame(bet, roundId, time, betResult, metaData);
 
                     this.captureBetResult(bet.uid, betResult, bet.rate);
@@ -105,7 +105,7 @@ export default class SettleGameRoundConsumer {
         }
     }
 
-    createMetadata(bet, settlementResult) {
+    createMetadata(bet, settlementResult, result) {
         return {};
     }
 
