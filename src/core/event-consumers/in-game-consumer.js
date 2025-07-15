@@ -61,7 +61,15 @@ export default class InGameConsumer {
         }
 
         if(realPlayer.promotionTOProgress) {
-            payload.promotionTOProgress = realPlayer.promotionTOProgress;
+            payload.promotionTOProgress = {
+                totalTO: realPlayer.promotionTOProgress.totalTurnover,
+                minTO: realPlayer.promotionTOProgress.minRequiredTurnover,
+                remainTO: realPlayer.promotionTOProgress.remainingTO,
+                progress: realPlayer.promotionTOProgress.progressPercentage,
+                canClaim: realPlayer.promotionTOProgress.canClaim,
+                win: realPlayer.promotionTOProgress.totalWinAmount,
+                expire: realPlayer.promotionTOProgress.claimExpirationDate,
+            }
         }
 
         return payload;
