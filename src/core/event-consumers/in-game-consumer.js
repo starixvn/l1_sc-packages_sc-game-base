@@ -56,7 +56,7 @@ export default class InGameConsumer {
             clientSeed,
         };
 
-        if (realPlayer.promotion) {
+        if (realPlayer.promotion && !realPlayer.promotionTOProgress) {
             payload.promotion = realPlayer.promotion;
         }
 
