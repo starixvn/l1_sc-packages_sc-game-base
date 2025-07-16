@@ -14,6 +14,7 @@ const tempBetBaseSchema = {
     operatorId: { type: String, required: false },
     roundId: { type: Number, default: 0, required: true },
     paid: { type: Boolean, default: false },
+    appType: { type: Number, default: 0 },
 };
 
 const betBaseSchema = {
@@ -23,4 +24,3 @@ const betBaseSchema = {
     totalAmount: { type: Number, default: 0 },
 };
 export { betBaseSchema, tempBetBaseSchema };
-

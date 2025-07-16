@@ -266,6 +266,7 @@ export default class ProcessBetQueue {
 
             newBet.operatorId = player.session.operatorId;
             newBet.playerId = player.session.playerId;
+            newBet.appType = player.session.system;
         }
 
         await this.betsRepository.updateOne(
@@ -297,6 +298,7 @@ export default class ProcessBetQueue {
 
             newBetLog.operatorId = player.session.operatorId;
             newBetLog.playerId = player.session.playerId;
+            newBetLog.appType = player.session.system;
         }
 
         await this.betLogsRepository.create(newBetLog);
