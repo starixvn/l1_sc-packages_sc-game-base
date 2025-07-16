@@ -201,7 +201,15 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
         });
         
         this.placeBetPublisher.publishToUser(player.UID, { 
-            promotionTOProgress: completePromotionResult
+            promotionTOProgress: {
+                totalTO: completePromotionResult.totalTurnover,
+                minTO: completePromotionResult.minRequiredTurnover,
+                remainTO: completePromotionResult.remainingTO,
+                progress: completePromotionResult.progressPercentage,
+                canClaim: completePromotionResult.canClaim,
+                win: completePromotionResult.totalWinAmount,
+                expire: completePromotionResult.claimExpirationDate,
+            }
         }, this.definition.name);
     }
 
