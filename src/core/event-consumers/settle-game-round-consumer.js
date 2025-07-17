@@ -160,8 +160,9 @@ export default class SettleGameRoundConsumer {
         const apiResult = await this.endGame(bet.uid, gameInfo, settlementInfo, metaData);
 
         if (apiResult.isOk) {
-            settlementInfo.red > 0 &&
+            if (settlementInfo.red > 0 && !settlementInfo.promotionId) {
                 callAndForget(this.gameManagementApiClient.users.updateBalance({ id: bet.uid, deductionAmount: -settlementInfo.red }));
+            }
         } else {
             this.userBetResultPublisher.publishApiError(bet.uid, apiResult.response);
         }
