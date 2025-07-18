@@ -1,3 +1,20 @@
+# [5.5.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.4.0...v5.5.0) (2025-07-18)
+
+
+### Bug Fixes
+
+* add apptype to bet collections ([d0a4d2f](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/d0a4d2f1bd57cc9c3421d4b7b76f35c68350504e))
+* add function createMetaData for endgame ([e643bd8](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e643bd84e2e927779680d04b1be2a2fb3af564c7))
+* change param to object ([0586338](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/05863384d5994718809df68573435a81319da9ef))
+* upgrade sc-bases-api ([30a4d44](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/30a4d441561ee33f0dff0663e3d4ecc07dab5f72))
+* upgrade stable version sc-base-apis ([028f07b](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/028f07b4b67153c0441ead59ee5b933127472afa))
+
+
+### Features
+
+* add metadata for end game ([d920a84](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/d920a8440d00030f203e373e72568a2ae785d5cd))
+* add result for metadata ([71102d8](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/71102d81f29745fc86b43bb45999c6965579081a))
+
 # [5.4.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.3.0...v5.4.0) (2025-03-26)
 
 
