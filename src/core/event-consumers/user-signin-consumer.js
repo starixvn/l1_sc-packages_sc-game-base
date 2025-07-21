@@ -178,6 +178,7 @@ export default class UserSignInConsumer {
             siteName,
             playerId,
             currencyGroup: currencyGroupId,
+            gameId: this.gameData.gameConfigs.gameId
         };
     }
 

@@ -51,6 +51,7 @@ export default class RedeemConsumer {
             siteName: player.session.siteName,
             playerId: player.session.playerId,
             currencyGroup: player.session.currencyGroupId,
+            gameId: this.gameData.gameConfigs.gameId,
         });
 
         if(result.success) {
