@@ -57,7 +57,8 @@ describe("RedeemConsumer", () => {
             operatorId: "op1",
             siteName: "site1",
             playerId: "p1",
-            currencyGroup: "cg1"
+            currencyGroup: "cg1",
+            gameId: "GAME_ID"
         });
         expect(spyUpdate).toHaveBeenCalledWith(player, expect.objectContaining({ promotion: promotionObj }));
         expect(mockPublisher.publishToUser).toHaveBeenCalledWith(

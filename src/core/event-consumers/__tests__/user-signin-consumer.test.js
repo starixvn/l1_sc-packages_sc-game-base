@@ -382,6 +382,7 @@ describe("UserSignInConsumer", () => {
                 expect(mockPromotionApiInstance.claimPromotion).toHaveBeenCalledWith({
                     operatorId: "OP001",
                     siteName: "test-site",
+                    gameId: "test-game-123",
                     playerId: "player456",
                     currencyGroup: "USD_GROUP_1", // ✅ Fixed: Expect currencyGroupId value
                 });
