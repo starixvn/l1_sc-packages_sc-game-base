@@ -57,6 +57,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 operatorId: player.session.operatorId,
                 playerId: player.session.playerId,
                 promotionId: promotionData.promotionId,
+                siteName: player.session.siteName
             };
 
             const deductResult = await this.gamePromotionApiClient.deductBonusItem(deductDto);
