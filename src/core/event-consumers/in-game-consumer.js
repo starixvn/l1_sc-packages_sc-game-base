@@ -56,7 +56,7 @@ export default class InGameConsumer {
             clientSeed,
         };
 
-        if (realPlayer.promotion) {
+        if (realPlayer.promotion && !realPlayer.promotionTOProgress) {
             payload.promotion = realPlayer.promotion;
         }
 
@@ -69,6 +69,7 @@ export default class InGameConsumer {
                 canClaim: realPlayer.promotionTOProgress.canClaim,
                 win: realPlayer.promotionTOProgress.totalWinAmount,
                 expire: realPlayer.promotionTOProgress.claimExpirationDate,
+                promotionId: realPlayer.promotion.promotionId,
             }
         }
 
