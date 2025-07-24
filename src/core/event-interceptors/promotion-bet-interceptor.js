@@ -43,11 +43,15 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
         const { player, payload } = context;
 
         try {
-            this.placeBetPublisher.publishToUser(player.UID, { 
-                playerPromotion: player.promotion,
-                payload: payload
-            }, this.definition.name);
-            if(player.promotion.freeSpinAvailable > 0){
+            this.placeBetPublisher.publishToUser(
+                player.UID,
+                {
+                    playerPromotion: player.promotion,
+                    payload: payload,
+                },
+                this.definition.name
+            );
+            if (player.promotion.freeSpinAvailable > 0) {
                 return { success: true };
             }
 
@@ -57,7 +61,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 operatorId: player.session.operatorId,
                 playerId: player.session.playerId,
                 promotionId: promotionData.promotionId,
-                siteName: player.session.siteName
+                siteName: player.session.siteName,
             };
 
             const deductResult = await this.gamePromotionApiClient.deductBonusItem(deductDto);
@@ -108,7 +112,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 gameRoundId: bet.roundId,
                 appType: player.session.system,
                 betAmount: bet.amount,
-                winAmount: bet.betWin
+                winAmount: bet.betWin,
             };
 
             const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
@@ -138,7 +142,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      */
     async endPromotionEvent(context) {
         const { player } = context;
-        
+
         try {
             if (!this.shouldCompletePromotion(player)) {
                 return;
@@ -161,9 +165,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      * @returns {boolean} Whether promotion should be completed
      */
     shouldCompletePromotion(player) {
-        return player.promotion.remainingBonusItems === 0 && 
-               player.promotion.freeSpinAvailable <= 1 &&
-               player.promotion.bonus === 0;
+        return player.promotion.remainingBonusItems === 0;
     }
 
     /**
@@ -177,14 +179,18 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             promotionId: player.promotion.promotionId,
             playerId: player.session.playerId,
             operatorId: player.session.operatorId,
-            siteName: player.session.siteName
+            siteName: player.session.siteName,
         });
-        this.placeBetPublisher.publishToUser(player.UID, { 
-            finishPromotion: {
-                endPromotion: true,
-                totalWin: totalWin
-            }
-        }, this.definition.name);
+        this.placeBetPublisher.publishToUser(
+            player.UID,
+            {
+                finishPromotion: {
+                    endPromotion: true,
+                    totalWin: totalWin,
+                },
+            },
+            this.definition.name
+        );
     }
 
     /**
@@ -198,20 +204,24 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             playerId: player.session.playerId,
             operatorId: player.session.operatorId,
             currencyGroup: player.session.currencyGroupId,
-            siteName: player.session.siteName
+            siteName: player.session.siteName,
         });
-        
-        this.placeBetPublisher.publishToUser(player.UID, { 
-            promotionTOProgress: {
-                totalTO: completePromotionResult.totalTurnover,
-                minTO: completePromotionResult.minRequiredTurnover,
-                remainTO: completePromotionResult.remainingTO,
-                progress: completePromotionResult.progressPercentage,
-                canClaim: completePromotionResult.canClaim,
-                win: completePromotionResult.totalWinAmount,
-                expire: completePromotionResult.claimExpirationDate,
-            }
-        }, this.definition.name);
+
+        this.placeBetPublisher.publishToUser(
+            player.UID,
+            {
+                promotionTOProgress: {
+                    totalTO: completePromotionResult.totalTurnover,
+                    minTO: completePromotionResult.minRequiredTurnover,
+                    remainTO: completePromotionResult.remainingTO,
+                    progress: completePromotionResult.progressPercentage,
+                    canClaim: completePromotionResult.canClaim,
+                    win: completePromotionResult.totalWinAmount,
+                    expire: completePromotionResult.claimExpirationDate,
+                },
+            },
+            this.definition.name
+        );
     }
 
     /**
@@ -228,7 +238,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             const rollbackDto = {
                 operatorId: player.session.operatorId,
                 playerId: player.session.playerId,
-                promotionId: bet.promotionId
+                promotionId: bet.promotionId,
             };
 
             const rollbackResult = await this.gamePromotionApiClient.rollbackBonusItem(rollbackDto);
