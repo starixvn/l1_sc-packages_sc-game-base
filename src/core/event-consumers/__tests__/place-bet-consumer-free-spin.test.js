@@ -224,35 +224,6 @@ describe("PlaceBetConsumer with Promotion Integration", () => {
             );
         });
 
-        it("should reject promotion when no bonus items available", async () => {
-            // Arrange
-            const player = createMockPlayerWithPromotion();
-            player.promotion.remainingBonusItems = 0;
-            player.promotion.freeSpinAvailable = 0;
-            const betPayload = {
-                betChoice: "red",
-                amount: 0,
-                freeBet: false,
-                freeSpin: true,
-                clientSeed: "valid-seed",
-            };
-
-            // Act
-            await placeBetConsumer.consume(player, betPayload);
-
-            // Assert
-            expect(mockPublisher.publishToUser).toHaveBeenCalledWith(
-                player.UID,
-                expect.objectContaining({
-                    endBet: -1,
-                    notice: expect.objectContaining({
-                        errorCode: "INVALID_BET",
-                        msg: "No promotions available",
-                    }),
-                })
-            );
-        });
-
         it("should reject promotion when promotion has expired", async () => {
             // Arrange
             const player = createMockPlayerWithPromotion();

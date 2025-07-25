@@ -225,10 +225,6 @@ export default class PlaceBetConsumer {
                 notice: this.getNoticeObj(helpers.noticeHelper.invalidBet, { msg: "No active promotion" }),
             },
             {
-                failure: promotion.remainingBonusItems <= 0 && promotion.freeSpinAvailable <= 0,
-                notice: this.getNoticeObj(helpers.noticeHelper.invalidBet, { msg: "No promotions available" }),
-            },
-            {
                 failure: promotion.endDate && new Date(promotion.endDate) < currentTime,
                 notice: this.getNoticeObj(helpers.noticeHelper.invalidBet, { msg: "Promotion has expired" }),
             },
