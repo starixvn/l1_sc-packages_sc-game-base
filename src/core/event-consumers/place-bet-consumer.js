@@ -79,13 +79,7 @@ export default class PlaceBetConsumer {
     }
 
     handlePromotionLogic(player, payload) {
-        const currentDateTime = new Date();
-        const freeSpinsOfPlayer = this.gameData.ingame[player.profile.name]?.freeSpins ?? [];
-        const soonestExpiredFreeSpinSet = freeSpinsOfPlayer.find((freeSpin) => freeSpin.available > 0 && freeSpin.expiryTime > currentDateTime);
-        const freeSpinExtra = soonestExpiredFreeSpinSet && soonestExpiredFreeSpinSet.promotionId ? true : false;
-        const hasPromotion = player.promotion !== null && player.promotion && player.promotion.isClaimed;
-        const hasFreeSpin = freeSpinExtra || !soonestExpiredFreeSpinSet;
-        const usePromotion = hasPromotion && payload.freeSpin && hasFreeSpin;
+        const usePromotion = player.promotion !== null && player.promotion && player.promotion.isClaimed && payload.freeSpin;
         player.usePromotion = usePromotion;
 
         if (usePromotion) {
