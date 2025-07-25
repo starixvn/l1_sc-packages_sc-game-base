@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import GameManagementApiClientFactory, { getOrDefault, post } from "../game-management-api";
 import { chatBotHelper } from "../helpers";
 import { getEffectivePromotion, getFinishPromotionMessage, getStartPromotionMessage } from "../helpers/promotion-helper";
-import { RoundIdConsumer, RoundResultConsumer, SettleGameRoundConsumer } from "./../event-consumers";
+import { RoundIdConsumer, RoundResultConsumer, SettleGameRoundConsumer, PromotionFreeSpinsConsumer } from "./../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
@@ -27,6 +27,7 @@ export default class BaseGameCron {
      * @param {RoundIdConsumer} dependencies.roundIdConsumer
      * @param {ProvablyFairConsumer} dependencies.provablyFairConsumer
      * @param {UnsettledRoundConsumer} dependencies.unsettledRoundConsumer
+     * @param {PromotionFreeSpinsConsumer} dependencies.promotionFreeSpinsConsumer
      */
     constructor({
         definition,
@@ -43,6 +44,7 @@ export default class BaseGameCron {
         roundIdConsumer,
         provablyFairConsumer,
         unsettledRoundConsumer,
+        promotionFreeSpinsConsumer,
     }) {
         this.definition = definition;
         this.gameData = gameData;
@@ -58,6 +60,7 @@ export default class BaseGameCron {
         this.roundIdConsumer = roundIdConsumer;
         this.provablyFairConsumer = provablyFairConsumer;
         this.unsettledRoundConsumer = unsettledRoundConsumer;
+        this.promotionFreeSpinsConsumer = promotionFreeSpinsConsumer;
     }
 
     async start() {
@@ -92,7 +95,11 @@ export default class BaseGameCron {
 
     async proceed() {
         const { durations } = this.definition;
+        const currentSecond = new Date().getSeconds();
 
+        if (currentSecond === 0) {
+            await this.promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry(this.gameData.gameConfigs.gameId);
+        }
         if (this.gameData.remainingTime === durations.wholeRound) {
             await this.checkGameStatus();
         }
