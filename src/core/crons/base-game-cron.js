@@ -29,6 +29,9 @@ export default class BaseGameCron {
      * @param {UnsettledRoundConsumer} dependencies.unsettledRoundConsumer
      * @param {PromotionFreeSpinsConsumer} dependencies.promotionFreeSpinsConsumer
      */
+    
+    static lastMinuteCheck;
+    
     constructor({
         definition,
         gameData,
@@ -61,6 +64,7 @@ export default class BaseGameCron {
         this.provablyFairConsumer = provablyFairConsumer;
         this.unsettledRoundConsumer = unsettledRoundConsumer;
         this.promotionFreeSpinsConsumer = promotionFreeSpinsConsumer;
+        this.lastMinuteCheck = new Date().getMinutes();
     }
 
     async start() {
@@ -139,12 +143,10 @@ export default class BaseGameCron {
 
     async checkPromotionFreeSpinsExpiry() {
         const currentSecond = new Date().getSeconds();
-        const MILLISECONDS_IN_MINUTE = 60000;
-        const START_OF_MINUTE_SECOND = 0;
-        const currentMinuteTimestamp = Math.floor(Date.now() / MILLISECONDS_IN_MINUTE);
+        const currentMinuteTimestamp = new Date().getMinutes();
                 
-        if (currentSecond === START_OF_MINUTE_SECOND || (this.gameData.lastMinuteCheck !== currentMinuteTimestamp)) {
-            this.gameData.lastMinuteCheck = currentMinuteTimestamp;
+        if (currentSecond === 0 || (this.lastMinuteCheck !== currentMinuteTimestamp)) {
+            this.lastMinuteCheck = currentMinuteTimestamp;
             await this.promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry(this.gameData.gameConfigs.gameId);
         }
     }
