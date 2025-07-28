@@ -95,9 +95,7 @@ export default class BaseGameCron {
 
     async proceed() {
         const { durations } = this.definition;
-        const currentSecond = new Date().getSeconds();
-
-        if (currentSecond === 0) {
+        if (this.gameData.remainingTimeForFirstSecond === this.gameData.remainingTime) {
             await this.promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry(this.gameData.gameConfigs.gameId);
         }
         if (this.gameData.remainingTime === durations.wholeRound) {
