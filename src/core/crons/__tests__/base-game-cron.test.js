@@ -5,7 +5,7 @@ import { logger } from "sc-common";
 
 import cron from "cron";
 import { GameConfig } from "jest-auto-fixture/src/models";
-import { RoundIdConsumer, SettleGameRoundConsumer } from "../../event-consumers";
+import { RoundIdConsumer, SettleGameRoundConsumer, PromotionFreeSpinsConsumer } from "../../event-consumers";
 import ProvablyFairConsumer from "../../event-consumers/provably-fair-consumer";
 import UnsettledRoundConsumer from "../../event-consumers/unsettled-round-consumer";
 import GameStatusPublisher from "../../event-publishers/game-status-publisher";
@@ -20,6 +20,7 @@ jest.mock("../base-bot");
 jest.mock("../../event-consumers/provably-fair-consumer");
 jest.mock("../../event-consumers/settle-game-round-consumer");
 jest.mock("../../event-consumers/round-id-consumer");
+jest.mock("../../event-consumers/promotion-free-spins-consumer");
 jest.mock("../../event-publishers/running-round-info-publisher");
 jest.mock("../../event-publishers/game-status-publisher");
 jest.mock("cron");
@@ -34,6 +35,7 @@ jest.mock("../../helpers/promotion-helper", () => {
 });
 
 const gameData = new GameData(3);
+gameData.gameConfigs = { gameId: 1 };
 const definition = new GameDefinition(
     { id: 1, name: "game name", durations: { lockingBet: 2, wholeRound: 30, placingBets: 25 } },
     jest.fn,
@@ -46,6 +48,8 @@ const runningRoundInfoPublisher = new RunningRoundInfoPublisher();
 const gameStatusPublisher = new GameStatusPublisher();
 const provablyFairConsumer = new ProvablyFairConsumer();
 const unsettledRoundConsumer = stub(UnsettledRoundConsumer);
+const promotionFreeSpinsConsumer = new PromotionFreeSpinsConsumer();
+promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry = jest.fn();
 
 /** @type {logger}*/
 const logService = stub(logger);
@@ -76,6 +80,7 @@ const createBaseGameCron = function (newGameData) {
         roundIdConsumer,
         provablyFairConsumer,
         unsettledRoundConsumer,
+        promotionFreeSpinsConsumer,
     });
 };
 
@@ -409,6 +414,7 @@ describe("proceed", () => {
             const gameCron = createBaseGameCron();
             gameCron.gameData = {
                 remainingTime: -1,
+                gameConfigs: { gameId: 1 },
             };
             gameCron.definition.durations = { wholeRound: 10 };
             gameCron.roundResultConsumer = {
@@ -428,6 +434,7 @@ describe("proceed", () => {
             const gameCron = createBaseGameCron();
             gameCron.gameData = {
                 remainingTime: -1,
+                gameConfigs: { gameId: 1 },
             };
             gameCron.definition.durations = { wholeRound: 10 };
             gameCron.settleGameRoundConsumer = {
@@ -449,6 +456,7 @@ describe("proceed", () => {
             // Arrange
             const gameCron = createBaseGameCron();
             gameCron.gameData.remainingTime = -1;
+            gameCron.gameData.gameConfigs = { gameId: 1 };
             gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
             gameCron.settleGameRoundConsumer = {
                 settleRound: jest.fn(),
@@ -471,6 +479,7 @@ describe("proceed", () => {
                 // Arrange
                 const gameCron = createBaseGameCron();
                 gameCron.gameData.remainingTime = -1;
+                gameCron.gameData.gameConfigs = { gameId: 1 };
                 gameCron.definition.durations = { wholeRound: 22, placingBets: 20, mergeClientSeeds: 1 };
                 gameCron.isStartingTime = jest.fn();
                 when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
