@@ -1,5 +1,6 @@
 export default class GameData {
     constructor(remainingTime) {
+        const MILLISECONDS_IN_MINUTE = 60000;
         this.remainingTime = remainingTime ?? 0;
         this.totalBets = {};
         this.roundId = 1;
@@ -18,7 +19,8 @@ export default class GameData {
         this.partnerGameSiteExclusions = [];
         this.resultHash = {};
         this.winningPlayers = {};
-        this.pf = { clientSeeds: [], serverSeed: "", serverSeedHash: "" };        
-        this.remainingTimeForFirstSecond = new Date().getSeconds();
+        this.pf = { clientSeeds: [], serverSeed: "", serverSeedHash: "" };
+        
+        this.lastMinuteCheck = Math.floor(Date.now() / MILLISECONDS_IN_MINUTE);
     }
 }

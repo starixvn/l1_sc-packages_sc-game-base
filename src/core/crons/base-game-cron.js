@@ -10,7 +10,7 @@ import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
 
-export default class BaseGameCron {
+export default class BaseGameCron {  
     /**
      *
      * @param {Object} dependencies
@@ -91,13 +91,10 @@ export default class BaseGameCron {
         );
 
         job.start();
-    }
+    }    
 
     async proceed() {
-        const { durations } = this.definition;
-        if (this.gameData.remainingTimeForFirstSecond === this.gameData.remainingTime) {
-            await this.promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry(this.gameData.gameConfigs.gameId);
-        }
+        const { durations } = this.definition;        
         if (this.gameData.remainingTime === durations.wholeRound) {
             await this.checkGameStatus();
         }
@@ -136,6 +133,19 @@ export default class BaseGameCron {
         } else if (remainingTime < durations.placingBets) {
             this.bot && (await this.bot.run());
             this.runningRoundInfoPublisher.publish();
+        }
+        await this.checkPromotionFreeSpinsExpiry();        
+    }
+
+    async checkPromotionFreeSpinsExpiry() {
+        const currentSecond = new Date().getSeconds();
+        const MILLISECONDS_IN_MINUTE = 60000;
+        const START_OF_MINUTE_SECOND = 0;
+        const currentMinuteTimestamp = Math.floor(Date.now() / MILLISECONDS_IN_MINUTE);
+                
+        if (currentSecond === START_OF_MINUTE_SECOND || (this.gameData.lastMinuteCheck !== currentMinuteTimestamp)) {
+            this.gameData.lastMinuteCheck = currentMinuteTimestamp;
+            await this.promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry(this.gameData.gameConfigs.gameId);
         }
     }
 
