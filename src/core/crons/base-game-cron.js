@@ -2,15 +2,13 @@ import cron from "cron";
 import mongoose from "mongoose";
 
 import GameManagementApiClientFactory, { getOrDefault, post } from "../game-management-api";
-import { chatBotHelper } from "../helpers";
-import { getEffectivePromotion, getFinishPromotionMessage, getStartPromotionMessage } from "../helpers/promotion-helper";
 import { RoundIdConsumer, RoundResultConsumer, SettleGameRoundConsumer, PromotionFreeSpinsConsumer } from "./../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import BaseBot from "./base-bot";
 
-export default class BaseGameCron {  
+export default class BaseGameCron {
     /**
      *
      * @param {Object} dependencies
@@ -29,9 +27,9 @@ export default class BaseGameCron {
      * @param {UnsettledRoundConsumer} dependencies.unsettledRoundConsumer
      * @param {PromotionFreeSpinsConsumer} dependencies.promotionFreeSpinsConsumer
      */
-    
+
     static lastMinuteCheck;
-    
+
     constructor({
         definition,
         gameData,
@@ -63,6 +61,7 @@ export default class BaseGameCron {
         this.roundIdConsumer = roundIdConsumer;
         this.provablyFairConsumer = provablyFairConsumer;
         this.unsettledRoundConsumer = unsettledRoundConsumer;
+
         this.promotionFreeSpinsConsumer = promotionFreeSpinsConsumer;
         this.lastMinuteCheck = new Date().getMinutes();
     }
@@ -95,10 +94,10 @@ export default class BaseGameCron {
         );
 
         job.start();
-    }    
+    }
 
     async proceed() {
-        const { durations } = this.definition;        
+        const { durations } = this.definition;
         if (this.gameData.remainingTime === durations.wholeRound) {
             await this.checkGameStatus();
         }
@@ -111,7 +110,6 @@ export default class BaseGameCron {
         if (this.isStartingTime(remainingTime, durations)) {
             this.resetForNewRound();
             this.bot && this.bot.reset();
-            this.appConfigs.enabledBoostedOdds && (await this.updatePromotionOddsAndNotify());
         }
 
         if (remainingTime === durations.placingBets && this.isHashedResult()) {
@@ -138,14 +136,15 @@ export default class BaseGameCron {
             this.bot && (await this.bot.run());
             this.runningRoundInfoPublisher.publish();
         }
-        await this.checkPromotionFreeSpinsExpiry();        
+
+        await this.checkPromotionFreeSpinsExpiry();
     }
 
     async checkPromotionFreeSpinsExpiry() {
         const currentSecond = new Date().getSeconds();
         const currentMinuteTimestamp = new Date().getMinutes();
-                
-        if (currentSecond === 0 || (this.lastMinuteCheck !== currentMinuteTimestamp)) {
+
+        if (currentSecond === 0 || this.lastMinuteCheck !== currentMinuteTimestamp) {
             this.lastMinuteCheck = currentMinuteTimestamp;
             await this.promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry(this.gameData.gameConfigs.gameId);
         }
@@ -194,17 +193,6 @@ export default class BaseGameCron {
     }
 
     assignNewGameConfigs(newGameConfigs) {
-        newGameConfigs.originalOdds = newGameConfigs.odds;
-
-        const { gameConfigs: currentGameConfig } = this.gameData;
-
-        if (currentGameConfig.boostedChoices?.length > 0) {
-            newGameConfigs = Object.assign(newGameConfigs, {
-                odds: currentGameConfig.odds,
-                boostedChoices: currentGameConfig.boostedChoices,
-            });
-        }
-
         this.gameData.gameConfigs = newGameConfigs ?? {};
     }
 
@@ -224,52 +212,6 @@ export default class BaseGameCron {
             await this.enableGame();
         } else {
             this.gameStatusPublisher.publishStartGame();
-        }
-    }
-
-    async updatePromotionOdds() {
-        if (!this.gameData.gameConfigs || !this.gameData.gameConfigs.odds) {
-            return {};
-        }
-
-        const promotions = await getOrDefault(this.gameManagementApiClient.promotion.getPromotions(this.definition.id), []);
-
-        const promotion = getEffectivePromotion(promotions);
-        this.gameData.promotion = promotion;
-
-        this.gameData.gameConfigs.boostedChoices = [];
-        this.gameData.gameConfigs.odds = Object.assign({}, this.gameData.gameConfigs.originalOdds);
-
-        if (promotion) {
-            Object.keys(this.gameData.gameConfigs.odds).forEach((choice) => {
-                if (promotion.odds[choice] && promotion.odds[choice] !== this.gameData.gameConfigs.odds[choice]) {
-                    this.gameData.gameConfigs.odds[choice] = promotion.odds[choice];
-                    this.gameData.gameConfigs.boostedChoices.push(choice);
-                }
-            });
-        }
-
-        return promotion;
-    }
-
-    async updatePromotionOddsAndNotify() {
-        const isUsingPromotion = () => {
-            return !!this.gameData.promotion;
-        };
-
-        const previousPromotion = this.gameData.promotion;
-        const havingPreviousPromotion = isUsingPromotion();
-        const promotion = await this.updatePromotionOdds();
-        const havingNewPromotion = isUsingPromotion();
-
-        this.gameStatusPublisher.publishBoostedOdds();
-
-        if (!havingPreviousPromotion && havingNewPromotion) {
-            chatBotHelper.sendBoostedOddsMessage(getStartPromotionMessage(this.definition.name, promotion));
-        } else if (havingPreviousPromotion && !havingNewPromotion) {
-            chatBotHelper.sendBoostedOddsMessage(
-                getFinishPromotionMessage(this.definition.name, previousPromotion, this.gameData.gameConfigs?.odds)
-            );
         }
     }
 

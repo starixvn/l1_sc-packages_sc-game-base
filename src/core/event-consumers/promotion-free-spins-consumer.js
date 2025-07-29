@@ -7,12 +7,7 @@ export default class PromotionFreeSpinsConsumer {
      * @param {Object} dependencies.logService
      * @param {Object} [dependencies.gamePromotionApiClient]
      */
-    constructor({
-        gameData,
-        promotionFreeSpinsPublisher,
-        logService,
-        gamePromotionApiClient,
-    }) {
+    constructor({ gameData, promotionFreeSpinsPublisher, logService, gamePromotionApiClient }) {
         this.gameData = gameData;
         this.promotionFreeSpinsPublisher = promotionFreeSpinsPublisher;
         this.logService = logService;
@@ -22,13 +17,13 @@ export default class PromotionFreeSpinsConsumer {
     toYMDHM = (date) => moment.utc(date).format("YYYY-MM-DDTHH:mm");
 
     async handlePromotionFreeSpinsExpiry(gameId) {
-        const now = moment.utc();          
+        const now = moment.utc();
         const runningPromotions = await this.promotionApiClient.getExpiringPromotions(gameId);
+
         for (const promotion of runningPromotions) {
             if (this.toYMDHM(now) === this.toYMDHM(new Date(promotion.endDate))) {
                 this.promotionFreeSpinsPublisher.publishEndPromotion(promotion.players);
             }
         }
     }
-
-} 
+}

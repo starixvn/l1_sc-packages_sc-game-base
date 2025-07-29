@@ -929,76 +929,6 @@ describe("enableGame", () => {
     });
 });
 
-describe("updatePromotionOdds", () => {
-    describe("when gameConfigs not existed", () => {
-        it("should do nothing", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData.gameConfigs = {
-                x: 123,
-            };
-
-            // Act
-            await gameCron.updatePromotionOdds();
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs).toEqual({ x: 123 });
-        });
-    });
-
-    describe("when gameConfigs.odds not existed", () => {
-        it("should do nothing", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData.gameConfigs = {
-                x: 123,
-            };
-
-            // Act
-            await gameCron.updatePromotionOdds();
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs).toEqual({ x: 123 });
-        });
-    });
-
-    describe("when having effective promotion", () => {
-        it("should update game config odds", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData.gameConfigs = {
-                x: 123,
-                odds: { big: 10, small: 10 },
-                originalOdds: { big: 10, small: 10 },
-            };
-            const promotions = [];
-
-            // Act
-            await gameCron.updatePromotionOdds();
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs.odds).toEqual({ big: 10, small: 11 });
-        });
-
-        it("should update boostedChoices", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData.gameConfigs = {
-                x: 123,
-                odds: { big: 10, small: 10 },
-                originalOdds: { big: 10, small: 10 },
-            };
-            const promotions = [];
-
-            // Act
-            await gameCron.updatePromotionOdds();
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs.boostedChoices).toEqual(["small"]);
-        });
-    });
-});
-
 describe("assignNewGameConfigs", () => {
     let gameCron;
 
@@ -1006,7 +936,7 @@ describe("assignNewGameConfigs", () => {
         gameCron = createBaseGameCron();
     });
 
-    it("always update original odds", () => {
+    it("should assign NEW config", () => {
         // Arrange
         const newConfig = GameConfig({ odds: { small: 2 } });
         gameCron.gameData.gameConfigs = GameConfig();
@@ -1015,60 +945,19 @@ describe("assignNewGameConfigs", () => {
         gameCron.assignNewGameConfigs(newConfig);
 
         // Assert
-        expect(gameCron.gameData.gameConfigs.originalOdds).toEqual(newConfig.odds);
+        expect(gameCron.gameData.gameConfigs).toEqual(newConfig);
     });
 
-    describe("when current game configs NOT contains boosted odds", () => {
-        it("should assign NEW config", () => {
-            // Arrange
-            const newConfig = GameConfig({ odds: { small: 2 } });
-            gameCron.gameData.gameConfigs = GameConfig();
+    it("should update NEW config", () => {
+        // Arrange
+        const newConfig = GameConfig({ odds: { small: 3 } });
+        gameCron.gameData.gameConfigs = GameConfig({ odds: { small: 2 } });
 
-            // Act
-            gameCron.assignNewGameConfigs(newConfig);
+        // Act
+        gameCron.assignNewGameConfigs(newConfig);
 
-            // Assert
-            expect(gameCron.gameData.gameConfigs).toEqual(newConfig);
-        });
-
-        it("should update NEW odds", () => {
-            // Arrange
-            const newConfig = GameConfig({ odds: { small: 3 } });
-            gameCron.gameData.gameConfigs = GameConfig({ odds: { small: 2 } });
-
-            // Act
-            gameCron.assignNewGameConfigs(newConfig);
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs).toEqual(newConfig);
-        });
-    });
-
-    describe("when current game configs contains boosted odds", () => {
-        let currentGameConfig, newConfig;
-
-        beforeEach(() => {
-            currentGameConfig = GameConfig({ odds: { small: 2 } });
-            currentGameConfig.boostedChoices = ["small"];
-            gameCron.gameData.gameConfigs = currentGameConfig;
-
-            newConfig = GameConfig({ odds: { small: 3 } });
-        });
-        it("should keep boosted choices", () => {
-            // Act
-            gameCron.assignNewGameConfigs(newConfig);
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs.boostedChoices).toEqual(currentGameConfig.boostedChoices);
-        });
-
-        it("should keep odds", () => {
-            // Act
-            gameCron.assignNewGameConfigs(newConfig);
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs.odds).toEqual(currentGameConfig.odds);
-        });
+        // Assert
+        expect(gameCron.gameData.gameConfigs).toEqual(newConfig);
     });
 });
 
