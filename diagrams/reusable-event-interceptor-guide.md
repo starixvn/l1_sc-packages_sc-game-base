@@ -4,6 +4,8 @@
 
 The Event Interceptor System has been designed to be **reusable across any event consumer** in the SC Game Base architecture. This guide shows you how to integrate interceptors into different types of event consumers beyond just bet processing.
 
+**Current Implementation**: The system is currently implemented in `ProcessBetQueue` cron with `PromotionBetInterceptor`, providing a proven foundation for expansion to other consumers.
+
 ## Architecture Components
 
 ### 1. **EventInterceptorMixin**
@@ -12,11 +14,133 @@ The Event Interceptor System has been designed to be **reusable across any event
 - **Location**: `src/core/mixins/event-interceptor-mixin.js`
 - **Use Case**: Apply to any consumer that needs interceptor support
 
-### 2. **BaseGenericEventInterceptor**
+### 2. **BaseEventInterceptor**
 
 - **Purpose**: Base class for creating interceptors for any event type
-- **Location**: `src/core/event-interceptors/base-generic-event-interceptor.js`
+- **Location**: `src/core/event-interceptors/base-event-interceptor.js`
 - **Use Case**: Extend this for custom interceptor implementations
+
+## Current Implementation Example
+
+### ProcessBetQueue with PromotionBetInterceptor
+
+```javascript
+// Current working implementation in process-bet-queue.js
+import EventInterceptorMixin from "../mixins/event-interceptor-mixin.js";
+
+// Create base class
+class BaseBetProcessor {
+  constructor() {
+    // Base class for ProcessBetQueue
+  }
+}
+
+// Apply interceptor mixin
+const BetProcessorWithInterceptors = EventInterceptorMixin(BaseBetProcessor);
+
+export default class ProcessBetQueue extends BetProcessorWithInterceptors {
+  constructor({
+    definition,
+    gameData,
+    placeBetPublisher,
+    placeBet,
+    logService,
+    betsRepository,
+    betLogsRepository,
+    gameManagementApiClientFactory,
+    baseMetrics,
+    betEventInterceptors = [], // Array of interceptors
+  }) {
+    super();
+
+    // Standard dependencies
+    this.definition = definition;
+    this.gameData = gameData;
+    this.placeBetPublisher = placeBetPublisher;
+    this.placeBet = placeBet;
+    this.logService = logService;
+    this.betsRepository = betsRepository;
+    this.betLogsRepository = betLogsRepository;
+    this.baseMetrics = baseMetrics;
+    this.gameManagementApiClient = gameManagementApiClientFactory.instance();
+
+    // Initialize interceptor system
+    this.initializeInterceptors(betEventInterceptors, "bet");
+  }
+
+  async proceedBet(player, payload) {
+    // Get applicable interceptors for this bet
+    const applicableInterceptors = this.getApplicableInterceptors({ payload });
+
+    if (!(await this.validateBetRequest(player, payload))) {
+      return;
+    }
+
+    // Execute beforeEvent interceptors
+    const beforeEventResult = await this.executeInterceptorEvent("beforeEvent", applicableInterceptors, {
+      player,
+      payload,
+    });
+
+    if (!beforeEventResult.success) {
+      return; // Error already handled by interceptor
+    }
+
+    // Transform bet info with interceptors
+    let betInfo = this.formatApiBetInfo(payload);
+    betInfo = this.executeInterceptorTransform("enhanceBetInfo", applicableInterceptors, {
+      betInfo,
+      payload,
+    });
+
+    const apiResult = await this.placeBet({ id: player.UID, session: player.session }, betInfo);
+    const { response } = apiResult;
+
+    if (apiResult.isOk) {
+      await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload, applicableInterceptors);
+    } else {
+      await this.handleFailedBet(player, response, payload, applicableInterceptors);
+    }
+  }
+
+  async handleSuccessBet(player, balance, roundId, bet, applicableInterceptors) {
+    // ... existing logic ...
+
+    const betTime = await this.upsertBet(player, roundId, bet, rate, applicableInterceptors);
+
+    // Execute afterSuccessEvent interceptors
+    if (applicableInterceptors) {
+      await this.executeInterceptorEvent("afterSuccessEvent", applicableInterceptors, {
+        player,
+        bet,
+        balance,
+        betTime,
+      });
+    }
+  }
+
+  async upsertBet(player, roundId, bet, rate, applicableInterceptors) {
+    let newBet = {
+      uid: player.UID,
+      name: player.profile.name,
+      time: new Date(),
+      odds: configs.odds,
+      roundId,
+      clientSeed: bet.clientSeed,
+    };
+
+    // Transform bet record with interceptors
+    if (applicableInterceptors) {
+      newBet = this.executeInterceptorTransform("enhanceBetRecord", applicableInterceptors, {
+        betRecord: newBet,
+        bet,
+      });
+    }
+
+    // ... database operations ...
+  }
+}
+```
 
 ## Usage Patterns
 
@@ -105,11 +229,11 @@ export default class MyEventConsumer extends MyProcessorWithInterceptors {
 
 ```javascript
 // Example: Audit interceptor for any event type
-import BaseGenericEventInterceptor from "./base-generic-event-interceptor.js";
+import BaseEventInterceptor from "./base-event-interceptor.js";
 
-export default class AuditInterceptor extends BaseGenericEventInterceptor {
+export default class AuditInterceptor extends BaseEventInterceptor {
   constructor({ logService, definition, auditApiClient }) {
-    super({ logService, definition }, "audit"); // Event type
+    super({ logService, definition });
     this.auditApiClient = auditApiClient;
   }
 
@@ -127,7 +251,7 @@ export default class AuditInterceptor extends BaseGenericEventInterceptor {
       });
       return { success: true };
     } catch (error) {
-      this.log("logError", "Audit logging failed", error);
+      this.logService.logError("Audit logging failed", error);
       return { success: false, error: error.message };
     }
   }
@@ -172,62 +296,139 @@ export default class AuditInterceptor extends BaseGenericEventInterceptor {
 }
 ```
 
-### Pattern 3: Configuring Multiple Interceptor Types
+### Pattern 3: Container Registry Configuration
 
 ```javascript
-// In container-registry.js
+// Current implementation in container-registry.js
+registerInterceptors() {
+    this.container.register({
+        // Individual interceptor registration
+        promotionBetInterceptor: asClass(EventInterceptors.PromotionBetInterceptor).singleton().proxy(),
+
+        // Future interceptors can be added here
+        // auditInterceptor: asClass(EventInterceptors.AuditInterceptor).singleton(),
+        // analyticsInterceptor: asClass(EventInterceptors.AnalyticsInterceptor).singleton(),
+    });
+}
+
 registerInterceptorArrays() {
     this.container.register({
-        // Bet processing interceptors
-        betEventInterceptors: asFunction((container) => {
+        // Bet processing interceptors (current implementation)
+        betEventInterceptors: asFunction(() => {
             const interceptors = [];
-            if (container.hasRegistration("promotionBetInterceptor")) {
-                interceptors.push(container.resolve("promotionBetInterceptor"));
+
+            const promotionBetInterceptor = this.container.resolve("promotionBetInterceptor");
+            if (promotionBetInterceptor) {
+                interceptors.push(promotionBetInterceptor);
             }
-            if (container.hasRegistration("auditInterceptor")) {
-                interceptors.push(container.resolve("auditInterceptor"));
-            }
+
+            // Future interceptors can be added conditionally
+            // if (this.container.hasRegistration("auditInterceptor")) {
+            //     interceptors.push(this.container.resolve("auditInterceptor"));
+            // }
+
             return interceptors;
         }).singleton(),
 
-        // Settlement interceptors
-        settlementEventInterceptors: asFunction((container) => {
-            const interceptors = [];
-            if (container.hasRegistration("analyticsSettlementInterceptor")) {
-                interceptors.push(container.resolve("analyticsSettlementInterceptor"));
-            }
-            if (container.hasRegistration("auditInterceptor")) {
-                interceptors.push(container.resolve("auditInterceptor"));
-            }
-            return interceptors;
-        }).singleton(),
+        // Future interceptor arrays for other event types
+        // settlementEventInterceptors: asFunction((container) => {
+        //     const interceptors = [];
+        //     if (container.hasRegistration("analyticsSettlementInterceptor")) {
+        //         interceptors.push(container.resolve("analyticsSettlementInterceptor"));
+        //     }
+        //     return interceptors;
+        // }).singleton(),
 
-        // Round management interceptors
-        roundEventInterceptors: asFunction((container) => {
-            const interceptors = [];
-            if (container.hasRegistration("metricsInterceptor")) {
-                interceptors.push(container.resolve("metricsInterceptor"));
-            }
-            return interceptors;
-        }).singleton(),
-
-        // User action interceptors
-        userEventInterceptors: asFunction((container) => {
-            const interceptors = [];
-            if (container.hasRegistration("sessionTrackingInterceptor")) {
-                interceptors.push(container.resolve("sessionTrackingInterceptor"));
-            }
-            return interceptors;
-        }).singleton(),
+        // userEventInterceptors: asFunction((container) => {
+        //     const interceptors = [];
+        //     if (container.hasRegistration("sessionTrackingInterceptor")) {
+        //         interceptors.push(container.resolve("sessionTrackingInterceptor"));
+        //     }
+        //     return interceptors;
+        // }).singleton(),
     });
 }
 ```
 
 ## Real-World Use Cases
 
-### 1. **User Sign-In Consumer with Interceptors**
+### 1. **Current Implementation: PromotionBetInterceptor**
 
 ```javascript
+// Actual working interceptor in the codebase
+import BaseEventInterceptor from "./base-event-interceptor.js";
+
+export default class PromotionBetInterceptor extends BaseEventInterceptor {
+  constructor({ logService, definition, placeBetPublisher, gamePromotionApiClient }) {
+    super({ logService, definition });
+    this.placeBetPublisher = placeBetPublisher;
+    this.gamePromotionApiClient = gamePromotionApiClient.instance();
+  }
+
+  shouldIntercept(context) {
+    const { payload } = context;
+    return !!(payload && payload.usePromotion && payload.promotionId && this.isPromotionApiAvailable());
+  }
+
+  async beforeEvent(context) {
+    const { player, payload } = context;
+    // Deduct bonus item before bet placement
+    const deductResult = await this.gamePromotionApiClient.deductBonusItem({
+      operatorId: player.session.operatorId,
+      playerId: player.session.playerId,
+      promotionId: player.promotion.promotionId,
+      siteName: player.session.siteName,
+    });
+
+    if (!deductResult || !deductResult.success) {
+      // Publish failure notification
+      this.placeBetPublisher.publishGameFailedBet(player.UID, {
+        endBet: -1,
+        betChoice: payload.betChoice,
+        notice: { errorCode: helpers.noticeHelper.invalidBet, msg: "Promotion deduction failed" },
+      });
+      return { success: false };
+    }
+
+    // Update player's promotion data
+    player.promotion.remainingBonusItems = deductResult.remainingBonusItems || player.promotion.remainingBonusItems - 1;
+    return { success: true };
+  }
+
+  transformEventData(transformName, context) {
+    const { payload, betInfo, betRecord, betLog, bet } = context;
+
+    switch (transformName) {
+      case "enhanceBetInfo":
+        if (betInfo && payload.promotionId) {
+          betInfo.promotionCode = payload.promotionCode;
+          betInfo.promotionId = payload.promotionId;
+        }
+        return betInfo;
+
+      case "enhanceBetRecord":
+        if (bet?.promotionId) {
+          betRecord.promotionId = bet.promotionId;
+        }
+        return betRecord;
+
+      case "enhanceBetLog":
+        if (bet?.promotionId) {
+          betLog.promotionId = bet.promotionId;
+        }
+        return betLog;
+
+      default:
+        return super.transformEventData(transformName, context);
+    }
+  }
+}
+```
+
+### 2. **Future Implementation: User Sign-In Consumer**
+
+```javascript
+// Example of how to extend to other consumers
 import EventInterceptorMixin from "../mixins/event-interceptor-mixin.js";
 
 const UserSignInWithInterceptors = EventInterceptorMixin(class {});
@@ -275,55 +476,22 @@ export default class UserSignInConsumer extends UserSignInWithInterceptors {
 }
 ```
 
-### 2. **Game Round Consumer with Interceptors**
+## Standard Transform Names
 
-```javascript
-import EventInterceptorMixin from "../mixins/event-interceptor-mixin.js";
+Based on current implementation, use these standardized transform names:
 
-const RoundProcessorWithInterceptors = EventInterceptorMixin(class {});
+### **Bet Processing Transforms**
 
-export default class GameRoundConsumer extends RoundProcessorWithInterceptors {
-  constructor({ gameData, logService, roundEventInterceptors = [] }) {
-    super();
-    this.gameData = gameData;
-    this.logService = logService;
-    this.initializeInterceptors(roundEventInterceptors, "game-round");
-  }
+- `enhanceBetInfo` - Enhance API bet information before submission
+- `enhanceBetRecord` - Enhance bet record before database storage
+- `enhanceBetLog` - Enhance bet log before database storage
 
-  async consume(roundData) {
-    const interceptors = this.getApplicableInterceptors({ roundData });
+### **Future Transform Names**
 
-    // Pre-round processing
-    const beforeResult = await this.executeInterceptorEvent("beforeEvent", interceptors, {
-      roundData,
-      gameData: this.gameData,
-    });
-
-    if (!beforeResult.success) return;
-
-    // Enhanced round data
-    let enhancedRound = this.executeInterceptorTransform("enhanceRound", interceptors, {
-      roundData,
-    });
-
-    // Process round
-    const result = await this.processRound(enhancedRound);
-
-    // Post-round processing
-    if (result.success) {
-      await this.executeInterceptorEvent("afterSuccessEvent", interceptors, {
-        roundData: enhancedRound,
-        result,
-      });
-    } else {
-      await this.executeInterceptorEvent("afterFailureEvent", interceptors, {
-        roundData: enhancedRound,
-        error: result.error,
-      });
-    }
-  }
-}
-```
+- `enhanceSession` - Enhance user session data
+- `enhanceRound` - Enhance round data
+- `enhanceSettlement` - Enhance settlement data
+- `enhanceUserData` - Enhance user profile data
 
 ## Best Practices
 
@@ -331,7 +499,7 @@ export default class GameRoundConsumer extends RoundProcessorWithInterceptors {
 
 - **Event Types**: Use kebab-case (e.g., 'bet', 'settlement', 'user-signin', 'game-round')
 - **Interceptor Arrays**: Use pattern `{eventType}EventInterceptors`
-- **Transform Names**: Use camelCase (e.g., 'enhanceBetInfo', 'enhanceSession')
+- **Transform Names**: Use camelCase with 'enhance' prefix (e.g., 'enhanceBetInfo', 'enhanceSession')
 
 ### 2. **Error Handling**
 
@@ -348,31 +516,46 @@ export default class GameRoundConsumer extends RoundProcessorWithInterceptors {
 ### 4. **Testing**
 
 ```javascript
-describe("MyEventConsumer with Interceptors", () => {
-  let consumer;
-  let mockInterceptor;
+describe("ProcessBetQueue with Interceptors", () => {
+  let processBetQueue;
+  let mockPromotionInterceptor;
 
   beforeEach(() => {
-    mockInterceptor = {
+    mockPromotionInterceptor = {
       shouldIntercept: jest.fn().mockReturnValue(true),
       beforeEvent: jest.fn().mockResolvedValue({ success: true }),
       afterSuccessEvent: jest.fn(),
-      transformEventData: jest.fn((_name, ctx) => Object.values(ctx)[0]),
+      transformEventData: jest.fn((transformName, ctx) => {
+        if (transformName === "enhanceBetInfo") {
+          return { ...Object.values(ctx)[0], promotionId: "test-promo" };
+        }
+        return Object.values(ctx)[0];
+      }),
     };
 
-    consumer = new MyEventConsumer({
+    processBetQueue = new ProcessBetQueue({
       gameData: mockGameData,
+      definition: mockDefinition,
       logService: mockLogService,
-      myEventInterceptors: [mockInterceptor],
+      betEventInterceptors: [mockPromotionInterceptor],
+      // ... other dependencies
     });
   });
 
-  it("should execute interceptor workflow", async () => {
-    await consumer.consume({ eventData: "test" });
+  it("should execute interceptor workflow for promotion bet", async () => {
+    const player = createMockPlayer();
+    const promotionPayload = {
+      amount: 100,
+      betChoice: "red",
+      usePromotion: true,
+      promotionId: "promo123",
+    };
 
-    expect(mockInterceptor.shouldIntercept).toHaveBeenCalled();
-    expect(mockInterceptor.beforeEvent).toHaveBeenCalled();
-    expect(mockInterceptor.afterSuccessEvent).toHaveBeenCalled();
+    await processBetQueue.proceedBet(player, promotionPayload);
+
+    expect(mockPromotionInterceptor.shouldIntercept).toHaveBeenCalled();
+    expect(mockPromotionInterceptor.beforeEvent).toHaveBeenCalled();
+    expect(mockPromotionInterceptor.transformEventData).toHaveBeenCalledWith("enhanceBetInfo", expect.any(Object));
   });
 });
 ```
@@ -385,5 +568,24 @@ describe("MyEventConsumer with Interceptors", () => {
 4. **Execute Events**: Call `executeInterceptorEvent()` for lifecycle events
 5. **Transform Data**: Use `executeInterceptorTransform()` for data enhancement
 6. **Handle Results**: Check success/failure and respond appropriately
+
+## Current Status and Roadmap
+
+**✅ Implemented:**
+
+- EventInterceptorMixin providing core functionality
+- BaseEventInterceptor base class
+- PromotionBetInterceptor with full lifecycle support
+- ProcessBetQueue integration with interceptors
+- Container registry support for interceptor arrays
+- Comprehensive test coverage
+
+**🚧 Potential Extensions:**
+
+- User session interceptors
+- Round management interceptors
+- Settlement interceptors
+- Analytics interceptors
+- Audit logging interceptors
 
 This reusable system provides consistent interceptor functionality across all event consumers while maintaining the established SC Game Base architecture patterns.
