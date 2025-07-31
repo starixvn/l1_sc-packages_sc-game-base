@@ -28,8 +28,6 @@ export default class BaseGameCron {
      * @param {PromotionFreeSpinsConsumer} dependencies.promotionFreeSpinsConsumer
      */
 
-    static lastMinuteCheck;
-
     constructor({
         definition,
         gameData,
@@ -63,7 +61,6 @@ export default class BaseGameCron {
         this.unsettledRoundConsumer = unsettledRoundConsumer;
 
         this.promotionFreeSpinsConsumer = promotionFreeSpinsConsumer;
-        this.lastMinuteCheck = new Date().getMinutes();
     }
 
     async start() {
@@ -137,17 +134,7 @@ export default class BaseGameCron {
             this.runningRoundInfoPublisher.publish();
         }
 
-        await this.checkPromotionFreeSpinsExpiry();
-    }
-
-    async checkPromotionFreeSpinsExpiry() {
-        const currentSecond = new Date().getSeconds();
-        const currentMinuteTimestamp = new Date().getMinutes();
-
-        if (currentSecond === 0 || this.lastMinuteCheck !== currentMinuteTimestamp) {
-            this.lastMinuteCheck = currentMinuteTimestamp;
-            await this.promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry(this.gameData.gameConfigs.gameId);
-        }
+        await this.promotionFreeSpinsConsumer.checkExpiry(this.gameData.gameConfigs.gameId);
     }
 
     isStartingTime(remainingTime, durations) {
