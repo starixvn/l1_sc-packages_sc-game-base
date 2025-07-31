@@ -2,7 +2,13 @@ import cron from "cron";
 import mongoose from "mongoose";
 
 import GameManagementApiClientFactory, { getOrDefault, post } from "../game-management-api";
-import { RoundIdConsumer, RoundResultConsumer, SettleGameRoundConsumer, PromotionFreeSpinsConsumer } from "./../event-consumers";
+import {
+    RoundIdConsumer,
+    RoundResultConsumer,
+    SettleGameRoundConsumer,
+    PromotionFreeSpinsConsumer,
+    UnsettledRoundConsumer,
+} from "./../event-consumers";
 import { GameStatusPublisher, RunningRoundInfoPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
