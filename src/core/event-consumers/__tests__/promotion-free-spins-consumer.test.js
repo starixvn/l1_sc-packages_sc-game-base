@@ -339,10 +339,9 @@ describe("PromotionFreeSpinsConsumer", () => {
             expect(consumer.handlePromotionFreeSpinsExpiry).not.toHaveBeenCalled();
         });
 
-        it("should proceed with expiry check when conditions are met and timing is correct", async () => {
+        it("should proceed with expiry check when minute changes", async () => {
             // Arrange
             const gameId = "test-game-123";
-            jest.spyOn(Date.prototype, "getSeconds").mockReturnValue(0);
             jest.spyOn(Date.prototype, "getMinutes").mockReturnValue(30);
             consumer.lastMinuteCheck = 29;
 
@@ -359,7 +358,6 @@ describe("PromotionFreeSpinsConsumer", () => {
         it("should skip expiry check when same minute", async () => {
             // Arrange
             const gameId = "test-game-123";
-            jest.spyOn(Date.prototype, "getSeconds").mockReturnValue(30);
             jest.spyOn(Date.prototype, "getMinutes").mockReturnValue(15);
             consumer.lastMinuteCheck = 15;
 
@@ -372,10 +370,9 @@ describe("PromotionFreeSpinsConsumer", () => {
             expect(consumer.handlePromotionFreeSpinsExpiry).not.toHaveBeenCalled();
         });
 
-        it("should proceed when different minute even if not zero seconds", async () => {
+        it("should proceed when different minute", async () => {
             // Arrange
             const gameId = "test-game-123";
-            jest.spyOn(Date.prototype, "getSeconds").mockReturnValue(45);
             jest.spyOn(Date.prototype, "getMinutes").mockReturnValue(20);
             consumer.lastMinuteCheck = 19;
 

@@ -300,12 +300,12 @@ class YourPromotionApiClient {
 ### 2. **Promotion Expiry Checking**
 
 ```
-Every cron cycle:
+Every cron cycle (every second):
 1. promotionFreeSpinsConsumer.checkExpiry()
 2. Early exit if !gameData.promotionReady
 3. Early exit if no players have promotions
-4. Check timing (only on minute boundaries)
-5. Call API and expire promotions if needed
+4. Check if minute has changed since last check
+5. If minute changed: Call API and expire promotions
 ```
 
 ### 3. **Gift Code Redemption**
@@ -339,7 +339,7 @@ Client sends redeem event:
 
 - **Conditional Calls**: Only call promotion API when necessary
 - **Player Filtering**: Check if any players have promotions before API calls
-- **Time-based Batching**: Expiry checks only on minute boundaries
+- **Minute-based Execution**: Expiry checks only when minute changes (max once per minute)
 
 ## Best Practices
 
