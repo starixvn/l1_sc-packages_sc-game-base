@@ -109,7 +109,6 @@ export default class ContainerRegistry {
             inGameConsumer: asClass(EventConsumers.InGameConsumer).singleton(),
             placeBetConsumer: asClass(EventConsumers.PlaceBetConsumer).singleton(),
             promotionFreeSpinsConsumer: asClass(EventConsumers.PromotionFreeSpinsConsumer).singleton(),
-            redeemConsumer: asClass(EventConsumers.RedeemConsumer).singleton().proxy(),
             settleGameRoundConsumer: asClass(EventConsumers.SettleGameRoundConsumer).singleton().proxy(),
             userDisconnectConsumer: asClass(EventConsumers.UserDisconnectConsumer).singleton(),
             userSignInConsumer: asClass(EventConsumers.UserSignInConsumer).singleton().proxy(),
