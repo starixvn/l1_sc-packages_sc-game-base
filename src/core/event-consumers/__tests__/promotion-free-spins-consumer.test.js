@@ -147,9 +147,9 @@ describe("PromotionFreeSpinsConsumer", () => {
     });
 
     describe("isPromotionReady", () => {
-        it("should return true when promotion API client is available", () => {
+        it("should return true when gameData.promotionReady is true", () => {
             // Arrange
-            consumer.promotionApiClient = mockPromotionApiClient;
+            consumer.gameData.promotionReady = true;
 
             // Act
             const result = consumer.isPromotionReady();
@@ -158,39 +158,69 @@ describe("PromotionFreeSpinsConsumer", () => {
             expect(result).toBe(true);
         });
 
-        it("should return false when promotion API client is null", () => {
+        it("should return false when gameData.promotionReady is false", () => {
+            // Arrange
+            consumer.gameData.promotionReady = false;
+
+            // Act
+            const result = consumer.isPromotionReady();
+
+            // Assert
+            expect(result).toBe(false);
+        });
+
+        it("should return false when gameData.promotionReady is undefined", () => {
+            // Arrange
+            consumer.gameData.promotionReady = undefined;
+
+            // Act
+            const result = consumer.isPromotionReady();
+
+            // Assert
+            expect(result).toBe(false);
+        });
+
+        it("should return false when gameData.promotionReady is null", () => {
+            // Arrange
+            consumer.gameData.promotionReady = null;
+
+            // Act
+            const result = consumer.isPromotionReady();
+
+            // Assert
+            expect(result).toBe(false);
+        });
+    });
+
+    describe("hasPromotionApiClient", () => {
+        it("should return true when promotionApiClient is available", () => {
+            // Arrange
+            consumer.promotionApiClient = {};
+
+            // Act
+            const result = consumer.hasPromotionApiClient();
+
+            // Assert
+            expect(result).toBe(true);
+        });
+
+        it("should return false when promotionApiClient is null", () => {
             // Arrange
             consumer.promotionApiClient = null;
 
             // Act
-            const result = consumer.isPromotionReady();
+            const result = consumer.hasPromotionApiClient();
 
             // Assert
             expect(result).toBe(false);
         });
 
-        it("should return false when promotion API client is undefined", () => {
+        it("should return false when promotionApiClient is undefined", () => {
             // Arrange
             consumer.promotionApiClient = undefined;
 
             // Act
-            const result = consumer.isPromotionReady();
-
-            // Assert
-            expect(result).toBe(false);
-        });
-
-        it("should return false when gamePromotionApiClient is not injected", () => {
-            // Arrange
-            const consumerWithoutApi = new PromotionFreeSpinsConsumer({
-                gameData: mockGameData,
-                promotionFreeSpinsPublisher: mockPromotionFreeSpinsPublisher,
-                logService: mockLogService,
-                gamePromotionApiClient: null,
-            });
-
-            // Act
-            const result = consumerWithoutApi.isPromotionReady();
+            const result = consumer.hasPromotionApiClient();
 
             // Assert
             expect(result).toBe(false);

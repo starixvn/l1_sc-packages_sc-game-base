@@ -50,6 +50,7 @@ const provablyFairConsumer = new ProvablyFairConsumer();
 const unsettledRoundConsumer = stub(UnsettledRoundConsumer);
 const promotionFreeSpinsConsumer = new PromotionFreeSpinsConsumer();
 promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry = jest.fn();
+promotionFreeSpinsConsumer.hasPromotionApiClient = jest.fn();
 
 /** @type {logger}*/
 const logService = stub(logger);
@@ -163,6 +164,85 @@ describe("start", () => {
 
         // Assert
         expect(gameCron.startCron).toHaveBeenCalledWith();
+    });
+
+    it("should call checkPromotionReadiness", async () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.initRoundId = jest.fn();
+        gameCron.queryLastResult = jest.fn();
+        gameCron.getSettingForNewRound = jest.fn();
+        gameCron.updateExchangeRates = jest.fn();
+        gameCron.checkPromotionReadiness = jest.fn();
+        gameCron.startCron = jest.fn();
+
+        // Act
+        await gameCron.start();
+
+        // Assert
+        expect(gameCron.checkPromotionReadiness).toHaveBeenCalledWith();
+    });
+});
+
+describe("checkPromotionReadiness", () => {
+    it("should set gameData.promotionReady to true when promotionApiClient is available", () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.promotionFreeSpinsConsumer.hasPromotionApiClient.mockReturnValue(true);
+
+        // Act
+        gameCron.checkPromotionReadiness();
+
+        // Assert
+        expect(gameCron.gameData.promotionReady).toBe(true);
+    });
+
+    it("should set gameData.promotionReady to false when promotionApiClient is null", () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.promotionFreeSpinsConsumer.hasPromotionApiClient.mockReturnValue(false);
+
+        // Act
+        gameCron.checkPromotionReadiness();
+
+        // Assert
+        expect(gameCron.gameData.promotionReady).toBe(false);
+    });
+
+    it("should set gameData.promotionReady to false when promotionApiClient is undefined", () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.promotionFreeSpinsConsumer.hasPromotionApiClient.mockReturnValue(false);
+
+        // Act
+        gameCron.checkPromotionReadiness();
+
+        // Assert
+        expect(gameCron.gameData.promotionReady).toBe(false);
+    });
+
+    it("should set gameData.promotionReady to false when promotionFreeSpinsConsumer is not injected", () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.promotionFreeSpinsConsumer = null;
+
+        // Act
+        gameCron.checkPromotionReadiness();
+
+        // Assert
+        expect(gameCron.gameData.promotionReady).toBe(false);
+    });
+
+    it("should set gameData.promotionReady to false when promotionFreeSpinsConsumer is undefined", () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.promotionFreeSpinsConsumer = undefined;
+
+        // Act
+        gameCron.checkPromotionReadiness();
+
+        // Assert
+        expect(gameCron.gameData.promotionReady).toBe(false);
     });
 });
 

@@ -38,6 +38,10 @@ export default class PromotionFreeSpinsConsumer {
     }
 
     isPromotionReady() {
+        return this.gameData.promotionReady === true;
+    }
+
+    hasPromotionApiClient() {
         return this.promotionApiClient !== null && this.promotionApiClient !== undefined;
     }
 

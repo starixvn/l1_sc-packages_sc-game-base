@@ -31,7 +31,7 @@ export default class BaseGameCron {
      * @param {RoundIdConsumer} dependencies.roundIdConsumer
      * @param {ProvablyFairConsumer} dependencies.provablyFairConsumer
      * @param {UnsettledRoundConsumer} dependencies.unsettledRoundConsumer
-     * @param {PromotionFreeSpinsConsumer} dependencies.promotionFreeSpinsConsumer
+     * @param {PromotionFreeSpinsConsumer} [dependencies.promotionFreeSpinsConsumer]
      */
 
     constructor({
@@ -74,6 +74,7 @@ export default class BaseGameCron {
         await this.queryLastResult();
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
+        this.checkPromotionReadiness();
         await this.unsettledRoundConsumer.proceed();
         this.startCron();
     }
@@ -262,6 +263,10 @@ export default class BaseGameCron {
 
     async enableGame() {
         this.gameStatusPublisher.publishEnablingGameStatus();
+    }
+
+    checkPromotionReadiness() {
+        this.gameData.promotionReady = this.promotionFreeSpinsConsumer?.hasPromotionApiClient() ?? false;
     }
 
     getDelayStartTime(configuredlyDisabled, newGameConfigs) {
