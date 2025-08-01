@@ -195,6 +195,8 @@ export default class BaseSocketRouter {
                 return;
             }
 
+            //TODO game support promotion?
+
             const result = await this.bonusWinConsumer.claim(this.gameData.realPlayers[this.socketClient.id]);
 
             this.socketClient.emit(this.definition.name, result);
@@ -215,7 +217,7 @@ export default class BaseSocketRouter {
 
         this.logService.setTag({ id: "socket-io-id", value: this.socketClient.id });
         this.logService.setTag({ id: "username", value: payload?.username });
-        this.logService.logError("User not found in server storage");
+        this.logService.logWarning("User not found in server storage");
         this.logService.setTag({ id: "socket-io-id", value: "" });
         this.logService.setTag({ id: "username", value: "" });
 

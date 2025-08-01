@@ -289,7 +289,7 @@ describe("base socket router test", () => {
                 // assert
                 expect(userSignInPublisher.publishUnauthorizedMessage).toHaveBeenCalled();
                 expect(socketClient.disconnect).toHaveBeenCalledWith(true);
-                expect(logService.logError).toHaveBeenCalledWith("User not found in server storage");
+                expect(logService.logWarning).toHaveBeenCalledWith("User not found in server storage");
                 expect(result).toBeFalsy();
             });
         });
