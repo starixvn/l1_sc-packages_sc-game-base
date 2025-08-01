@@ -108,6 +108,7 @@ src/
 -   Implement proper indexing strategies
 -   Cache frequently accessed data in GameData
 -   Use connection pooling for database operations
+-   Prioritize pure functions when possible for better performance and testability
 
 ### Security
 
