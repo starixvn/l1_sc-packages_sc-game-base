@@ -320,6 +320,283 @@ Client sends redeem event:
 6. Publish result to client
 ```
 
+## RealPlayer Promotion Data Flow
+
+### **Data Structure Overview**
+
+The promotion system uses `gameData.realPlayers` as the authoritative source for player promotion state. This differs from `gameData.ingame` which handles temporary betting operations.
+
+```javascript
+// gameData structure
+gameData = {
+  realPlayers: {
+    // ← Authoritative player state
+    "socket-id-123": {
+      UID: "user123",
+      profile: { name: "john_doe", minBet: 10, maxBet: 1000 },
+      session: { userId: "user123", operatorId: "op_001", playerId: "player123" },
+      socketClient: WebSocketConnection,
+      promotion: {
+        /* promotion data */
+      }, // ← Promotion state
+      promotionTOProgress: {
+        /* turnover data */
+      }, // ← Optional TO progress
+    },
+  },
+  ingame: {
+    // ← Temporary betting state (copies promotion data)
+    player_name: {
+      name: "john_doe",
+      promotion: {
+        /* copied from realPlayers */
+      },
+    },
+  },
+};
+```
+
+### **Sign-In Flow with Promotions**
+
+```javascript
+// UserSignInConsumer.handleSignInSuccess()
+const userData = {
+  UID: userSession.userId,
+  profile: { name: userInfo.name, minBet: userInfo.minBet, maxBet: userInfo.maxBet },
+  session: userSession,
+  socketClient,
+};
+
+// 1. Check for existing/available promotions during sign-in
+const promotionData = await this.claimPlayerPromotions(userSession);
+
+// 2. Add promotion data if available
+if (promotionData && promotionData.promotion) {
+  userData.promotion = {
+    promotionId: "promo_winter2024",
+    remainingBonusItems: 15,
+    initialBonusItem: 20,
+    isActive: true,
+    promotionType: "FREE_SPINS",
+    endDate: "2024-02-01T00:00:00Z",
+    betLevel: 100,
+    totalWin: 0,
+    isClaimed: true,
+  };
+}
+
+// 3. Add turnover progress if promotion is completed
+if (promotionData && promotionData.promotionTOProgress) {
+  userData.promotionTOProgress = {
+    totalTurnover: 500,
+    minRequiredTurnover: 1000,
+    remainingTO: 500,
+    progressPercentage: 50,
+    canClaim: false,
+    totalWinAmount: 150,
+    claimExpirationDate: "2024-02-15T00:00:00Z",
+  };
+}
+
+// 4. Store in realPlayers (authoritative source)
+this.gameData.realPlayers[socketClient.id] = userData;
+```
+
+### **Promotion State Updates During Gameplay**
+
+#### **During Bet Placement**
+
+```javascript
+// PlaceBetConsumer.initializePlayerData()
+if (!this.gameData.ingame[playerName]) {
+  const newPlayer = {
+    name: player.profile.name,
+    currency: player.session.currencyName,
+    system: player.session.system,
+    betTracks: {},
+    betQueue: [],
+    clientSeed: payload.clientSeed,
+    operatorId: player.session.operatorId,
+  };
+
+  // Copy promotion data from realPlayers to ingame
+  if (player.promotion) {
+    newPlayer.promotion = { ...player.promotion }; // ← Copy, not reference
+  }
+
+  this.gameData.ingame[playerName] = newPlayer;
+}
+```
+
+#### **Promotion Deduction (via Event Interceptor)**
+
+```javascript
+// PromotionBetInterceptor.beforeEvent()
+const deductResult = await this.gamePromotionApiClient.deductBonusItem(deductDto);
+
+if (deductResult.success) {
+  // Update authoritative realPlayers data
+  player.promotion.remainingBonusItems = deductResult.remainingBonusItems || player.promotion.remainingBonusItems - 1;
+}
+```
+
+#### **Promotion Completion**
+
+```javascript
+// PromotionBetInterceptor.completePromotion()
+const completePromotionResult = await this.gamePromotionApiClient.completePromotion({...});
+
+// Add turnover progress to realPlayers
+player.promotionTOProgress = {
+    totalTurnover: completePromotionResult.totalTurnover,
+    minRequiredTurnover: completePromotionResult.minRequiredTurnover,
+    remainingTO: completePromotionResult.remainingTO,
+    progressPercentage: completePromotionResult.progressPercentage,
+    canClaim: completePromotionResult.canClaim,
+    totalWinAmount: completePromotionResult.totalWinAmount,
+    claimExpirationDate: completePromotionResult.claimExpirationDate
+};
+```
+
+### **Data Flow Through System Components**
+
+```
+Sign-In Process:
+UserSignInConsumer → realPlayers[socketId] = {promotion, promotionTOProgress}
+
+Game Entry:
+InGameConsumer.buildPayload() → Reads from realPlayers.promotion
+
+Bet Placement:
+PlaceBetConsumer → Copies realPlayers.promotion to ingame[playerName].promotion
+
+Promotion Usage:
+PromotionBetInterceptor → Updates realPlayers.promotion.remainingBonusItems
+
+Promotion Completion:
+PromotionBetInterceptor → Adds realPlayers.promotionTOProgress
+
+Disconnect:
+UserDisconnectConsumer → delete realPlayers[socketId] (cleanup)
+```
+
+### **Key Design Principles**
+
+#### **1. Single Source of Truth**
+
+- `realPlayers` is the authoritative source for promotion state
+- `ingame` contains working copies for bet processing
+- All promotion updates modify `realPlayers` first
+
+#### **2. Data Synchronization**
+
+```javascript
+// ✅ Correct: Update realPlayers (authoritative)
+player.promotion.remainingBonusItems -= 1;
+
+// ❌ Incorrect: Only updating ingame (temporary)
+this.gameData.ingame[playerName].promotion.remainingBonusItems -= 1;
+```
+
+#### **3. Lifetime Management**
+
+```javascript
+// Player lifecycle in realPlayers
+connect    → realPlayers[socketId] = userData
+sign-in    → userData.promotion = promotionData
+gameplay   → userData.promotion.remainingBonusItems--
+complete   → userData.promotionTOProgress = toData
+disconnect → delete realPlayers[socketId]
+```
+
+### **Integration with hasPlayersWithPromotions()**
+
+The `PromotionFreeSpinsConsumer.hasPlayersWithPromotions()` method relies on this data structure:
+
+```javascript
+hasPlayersWithPromotions() {
+    const players = this.gameData.realPlayers || {};  // ← Uses realPlayers, not ingame
+    return Object.values(players).some((player) => player.promotion);
+}
+
+// Usage in expiry checking
+async checkExpiry(gameId) {
+    if (!this.hasPlayersWithPromotions()) {  // ← Checks realPlayers
+        return;  // Skip if no promotions active
+    }
+    // Continue with expiry logic...
+}
+```
+
+### **Client Communication Patterns**
+
+#### **Initial Game Load**
+
+```javascript
+// InGameConsumer.buildPayload()
+const payload = {
+  roundId,
+  gameConfigs,
+  user: { ...user, rate },
+  // ... other game data
+};
+
+// Include promotion data from realPlayers
+if (realPlayer.promotion && !realPlayer.promotionTOProgress) {
+  payload.promotion = realPlayer.promotion; // ← From realPlayers
+}
+
+if (realPlayer.promotionTOProgress) {
+  payload.promotionTOProgress = {
+    totalTO: realPlayer.promotionTOProgress.totalTurnover,
+    minTO: realPlayer.promotionTOProgress.minRequiredTurnover,
+    // ... formatted for client
+    promotionId: realPlayer.promotion.promotionId,
+  };
+}
+```
+
+#### **Real-time Updates**
+
+```javascript
+// When promotion state changes, publish to client
+this.promotionFreeSpinsPublisher.publishToUser(player.UID, {
+  promotion: player.promotion, // ← Current state from realPlayers
+  // ... other update data
+});
+```
+
+### **Best Practices for Promotion Data**
+
+#### **1. Always Update realPlayers First**
+
+```javascript
+// ✅ Correct flow
+player.promotion.remainingBonusItems -= 1; // Update authoritative source
+await this.syncToIngame(player); // Sync to working copy if needed
+```
+
+#### **2. Use realPlayers for State Queries**
+
+```javascript
+// ✅ Check promotion state from authoritative source
+const hasActivePromotion = Object.values(this.gameData.realPlayers).some((player) => player.promotion?.isActive);
+
+// ❌ Don't rely on ingame for state queries
+const hasActivePromotion = Object.values(this.gameData.ingame).some((player) => player.promotion?.isActive); // Unreliable!
+```
+
+#### **3. Clean Data on Disconnect**
+
+```javascript
+// UserDisconnectConsumer automatically handles cleanup
+consume(socketClient) {
+    setTimeout(() => {
+        delete this.gameData.realPlayers[socketClient.id];  // ← Cleanup promotion data
+    });
+}
+```
+
 ## Performance Characteristics
 
 ### **Optimal Performance**
