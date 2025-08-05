@@ -30,11 +30,11 @@ export default class PromotionFreeSpinsConsumer {
 
         const currentMinuteTimestamp = new Date().getMinutes();
 
-        this.logService?.logInfo(
-            `Checking promotion expiry for game ${gameId}, lastMinuteCheck: ${this.lastMinuteCheck}, currentMinuteTimestamp: ${currentMinuteTimestamp}`
-        );
-
         if (this.lastMinuteCheck !== currentMinuteTimestamp) {
+            this.logService?.log(
+                `Checking promotion expiry for game ${gameId}, lastMinuteCheck: ${this.lastMinuteCheck}, currentMinuteTimestamp: ${currentMinuteTimestamp}`
+            );
+
             this.lastMinuteCheck = currentMinuteTimestamp;
             await this.handlePromotionFreeSpinsExpiry(gameId);
         }
@@ -55,9 +55,13 @@ export default class PromotionFreeSpinsConsumer {
 
     async handlePromotionFreeSpinsExpiry(gameId) {
         const now = moment.utc();
+
         const runningPromotions = await this.promotionApiClient.getExpiringPromotions(gameId);
+        this.logService?.log(`Found total ${runningPromotions.length} promotions`);
 
         for (const promotion of runningPromotions) {
+            this.logService?.log(`Found promotion ${promotion.promotionId} with end date ${this.toYMDHM(promotion.endDate)}`);
+
             if (this.toYMDHM(now) === this.toYMDHM(new Date(promotion.endDate))) {
                 this.promotionFreeSpinsPublisher.publishEndPromotion(promotion.players);
             }
