@@ -68,9 +68,12 @@ export default class PromotionFreeSpinsConsumer {
 
         this.logService?.log(`Found ${expiredPlayers.length} players with expired promotions`);
 
-        const expiredPlayerIds = expiredPlayers.map((player) => player.session.playerId);
+        const expiredPlayerData = expiredPlayers.map((player) => ({
+            playerId: player.session.playerId,
+            totalWin: player.promotion.totalWin,
+        }));
 
-        this.promotionFreeSpinsPublisher.publishEndPromotion(expiredPlayerIds);
+        this.promotionFreeSpinsPublisher.publishEndPromotion(expiredPlayerData);
     }
 
     async consume(player, payload) {

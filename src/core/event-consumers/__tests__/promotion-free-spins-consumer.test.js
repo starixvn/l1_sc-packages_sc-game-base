@@ -72,6 +72,7 @@ describe("PromotionFreeSpinsConsumer", () => {
                     promotion: {
                         promotionId: "promo1",
                         endDate: currentMinute.toISOString(), // Expires at current minute
+                        totalWin: 150,
                     },
                 },
                 "socket-456": {
@@ -82,6 +83,7 @@ describe("PromotionFreeSpinsConsumer", () => {
                     promotion: {
                         promotionId: "promo2",
                         endDate: currentMinute.toISOString(), // Expires at current minute
+                        totalWin: 200,
                     },
                 },
             };
@@ -90,7 +92,10 @@ describe("PromotionFreeSpinsConsumer", () => {
             await consumer.handlePromotionFreeSpinsExpiry();
 
             // Assert
-            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith(["player1", "player2"]);
+            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith([
+                { playerId: "player1", totalWin: 150 },
+                { playerId: "player2", totalWin: 200 },
+            ]);
             expect(mockLogService.log).toHaveBeenCalledWith("Found 2 players with expired promotions");
         });
 
@@ -139,6 +144,7 @@ describe("PromotionFreeSpinsConsumer", () => {
                     promotion: {
                         promotionId: "promo2",
                         endDate: currentMinute.toISOString(), // Expires at current minute
+                        totalWin: 100,
                     },
                 },
             };
@@ -147,7 +153,7 @@ describe("PromotionFreeSpinsConsumer", () => {
             await consumer.handlePromotionFreeSpinsExpiry();
 
             // Assert
-            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith(["player2"]);
+            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith([{ playerId: "player2", totalWin: 100 }]);
         });
 
         it("should handle empty realPlayers", async () => {

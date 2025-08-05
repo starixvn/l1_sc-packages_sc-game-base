@@ -673,8 +673,11 @@ const expiredPlayers = Object.values(this.gameData.realPlayers || {}).filter((pl
 });
 
 if (expiredPlayers.length > 0) {
-  const expiredPlayerIds = expiredPlayers.map((player) => player.session.playerId);
-  this.promotionFreeSpinsPublisher.publishEndPromotion(expiredPlayerIds);
+  const expiredPlayerData = expiredPlayers.map((player) => ({
+    playerId: player.session.playerId,
+    totalWin: player.promotion.totalWin,
+  }));
+  this.promotionFreeSpinsPublisher.publishEndPromotion(expiredPlayerData);
 }
 ```
 
@@ -684,6 +687,17 @@ if (expiredPlayers.length > 0) {
 - ✅ **Faster execution** using local data
 - ✅ **Batch notifications** for multiple expired players
 - ✅ **Better error resilience** (no network dependency)
+- ✅ **Complete promotion data** including `totalWin` for end notifications
+
+**Data Structure:**
+
+```javascript
+// Publisher expects: Array<{playerId: string, totalWin: number}>
+[
+  { playerId: "player1", totalWin: 150 },
+  { playerId: "player2", totalWin: 200 },
+];
+```
 
 ### **Optimized TotalWin Access**
 
