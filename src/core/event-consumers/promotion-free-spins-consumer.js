@@ -49,7 +49,7 @@ export default class PromotionFreeSpinsConsumer {
     }
 
     hasPlayersWithPromotions() {
-        const players = this.gameData.ingame || {};
+        const players = this.gameData.realPlayers || {};
         return Object.values(players).some((player) => player.promotion);
     }
 

@@ -228,79 +228,153 @@ describe("PromotionFreeSpinsConsumer", () => {
     });
 
     describe("hasPlayersWithPromotions", () => {
-        it("should return true when players have promotions", () => {
-            // Arrange
-            consumer.gameData.ingame = {
-                player1: { name: "player1", promotion: { promotionId: "promo1" } },
-                player2: { name: "player2" },
-            };
+        describe("when players have promotion data", () => {
+            it("should return true for single player with active promotion", () => {
+                // Arrange
+                const realPlayersWithPromotion = {
+                    "socket-123": {
+                        UID: "user123",
+                        profile: { name: "john_doe", minBet: 10, maxBet: 1000 },
+                        session: { userId: "user123", operatorId: "op_001", playerId: "player123" },
+                        socketClient: {},
+                        promotion: {
+                            promotionId: "promo_winter2024",
+                            remainingBonusItems: 15,
+                            isActive: true,
+                            isClaimed: true,
+                        },
+                    },
+                };
+                consumer.gameData.realPlayers = realPlayersWithPromotion;
 
-            // Act
-            const result = consumer.hasPlayersWithPromotions();
+                // Act
+                const result = consumer.hasPlayersWithPromotions();
 
-            // Assert
-            expect(result).toBe(true);
+                // Assert
+                expect(result).toBe(true);
+            });
+
+            it("should return true when at least one player has promotion", () => {
+                // Arrange
+                const mixedPlayersWithPromotions = {
+                    "socket-123": {
+                        UID: "user123",
+                        profile: { name: "john_doe" },
+                        session: { userId: "user123" },
+                        socketClient: {},
+                        promotion: { promotionId: "promo_active", remainingBonusItems: 5 },
+                    },
+                    "socket-456": {
+                        UID: "user456",
+                        profile: { name: "jane_doe" },
+                        session: { userId: "user456" },
+                        socketClient: {},
+                        promotion: { promotionId: "promo_completed", remainingBonusItems: 0 },
+                    },
+                    "socket-789": {
+                        UID: "user789",
+                        profile: { name: "bob_player" },
+                        session: { userId: "user789" },
+                        socketClient: {},
+                    },
+                };
+                consumer.gameData.realPlayers = mixedPlayersWithPromotions;
+
+                // Act
+                const result = consumer.hasPlayersWithPromotions();
+
+                // Assert
+                expect(result).toBe(true);
+            });
         });
 
-        it("should return false when no players have promotions", () => {
-            // Arrange
-            consumer.gameData.ingame = {
-                player1: { name: "player1" },
-                player2: { name: "player2" },
-            };
+        describe("when no players have promotion data", () => {
+            it("should return false for players without promotions", () => {
+                // Arrange
+                const playersWithoutPromotions = {
+                    "socket-123": {
+                        UID: "user123",
+                        profile: { name: "john_doe" },
+                        session: { userId: "user123" },
+                        socketClient: {},
+                    },
+                    "socket-456": {
+                        UID: "user456",
+                        profile: { name: "jane_doe" },
+                        session: { userId: "user456" },
+                        socketClient: {},
+                    },
+                };
+                consumer.gameData.realPlayers = playersWithoutPromotions;
 
-            // Act
-            const result = consumer.hasPlayersWithPromotions();
+                // Act
+                const result = consumer.hasPlayersWithPromotions();
 
-            // Assert
-            expect(result).toBe(false);
+                // Assert
+                expect(result).toBe(false);
+            });
+
+            it("should return false when realPlayers is empty", () => {
+                // Arrange
+                consumer.gameData.realPlayers = {};
+
+                // Act
+                const result = consumer.hasPlayersWithPromotions();
+
+                // Assert
+                expect(result).toBe(false);
+            });
+
+            it("should return false when realPlayers is null", () => {
+                // Arrange
+                consumer.gameData.realPlayers = null;
+
+                // Act
+                const result = consumer.hasPlayersWithPromotions();
+
+                // Assert
+                expect(result).toBe(false);
+            });
+
+            it("should return false when realPlayers is undefined", () => {
+                // Arrange
+                consumer.gameData.realPlayers = undefined;
+
+                // Act
+                const result = consumer.hasPlayersWithPromotions();
+
+                // Assert
+                expect(result).toBe(false);
+            });
         });
 
-        it("should return false when ingame is empty", () => {
-            // Arrange
-            consumer.gameData.ingame = {};
+        describe("when players have invalid promotion properties", () => {
+            it("should return false for null promotion properties", () => {
+                // Arrange
+                const playersWithNullPromotions = {
+                    "socket-123": {
+                        UID: "user123",
+                        profile: { name: "john_doe" },
+                        session: { userId: "user123" },
+                        socketClient: {},
+                        promotion: null,
+                    },
+                    "socket-456": {
+                        UID: "user456",
+                        profile: { name: "jane_doe" },
+                        session: { userId: "user456" },
+                        socketClient: {},
+                        promotion: undefined,
+                    },
+                };
+                consumer.gameData.realPlayers = playersWithNullPromotions;
 
-            // Act
-            const result = consumer.hasPlayersWithPromotions();
+                // Act
+                const result = consumer.hasPlayersWithPromotions();
 
-            // Assert
-            expect(result).toBe(false);
-        });
-
-        it("should return false when ingame is null", () => {
-            // Arrange
-            consumer.gameData.ingame = null;
-
-            // Act
-            const result = consumer.hasPlayersWithPromotions();
-
-            // Assert
-            expect(result).toBe(false);
-        });
-
-        it("should return false when ingame is undefined", () => {
-            // Arrange
-            consumer.gameData.ingame = undefined;
-
-            // Act
-            const result = consumer.hasPlayersWithPromotions();
-
-            // Assert
-            expect(result).toBe(false);
-        });
-
-        it("should return false when players have null promotions", () => {
-            // Arrange
-            consumer.gameData.ingame = {
-                player1: { name: "player1", promotion: null },
-                player2: { name: "player2", promotion: undefined },
-            };
-
-            // Act
-            const result = consumer.hasPlayersWithPromotions();
-
-            // Assert
-            expect(result).toBe(false);
+                // Assert
+                expect(result).toBe(false);
+            });
         });
     });
 
