@@ -40,7 +40,7 @@ describe("PromotionFreeSpinsConsumer", () => {
 
         mockLogService = {
             logError: jest.fn(),
-            logInfo: jest.fn(),
+            log: jest.fn(),
         };
 
         mockPromotionApiClient = {
