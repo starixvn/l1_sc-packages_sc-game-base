@@ -36,7 +36,7 @@ export default class PromotionFreeSpinsConsumer {
             );
 
             this.lastMinuteCheck = currentMinuteTimestamp;
-            await this.handlePromotionFreeSpinsExpiry(gameId);
+            await this.handlePromotionFreeSpinsExpiry();
         }
     }
 
@@ -53,19 +53,24 @@ export default class PromotionFreeSpinsConsumer {
         return Object.values(players).some((player) => player.promotion);
     }
 
-    async handlePromotionFreeSpinsExpiry(gameId) {
+    async handlePromotionFreeSpinsExpiry() {
         const now = moment.utc();
+        const currentTimeKey = this.toYMDHM(now);
 
-        const runningPromotions = await this.promotionApiClient.getExpiringPromotions(gameId);
-        this.logService?.log(`Found total ${runningPromotions.length} promotions`);
+        const expiredPlayers = Object.values(this.gameData.realPlayers || {}).filter((player) => {
+            if (!player.promotion?.endDate) return false;
+            return currentTimeKey === this.toYMDHM(new Date(player.promotion.endDate));
+        });
 
-        for (const promotion of runningPromotions) {
-            this.logService?.log(`Found promotion ${promotion.promotionId} with end date ${this.toYMDHM(promotion.endDate)}`);
-
-            if (this.toYMDHM(now) === this.toYMDHM(new Date(promotion.endDate))) {
-                this.promotionFreeSpinsPublisher.publishEndPromotion(promotion.players);
-            }
+        if (expiredPlayers.length === 0) {
+            return;
         }
+
+        this.logService?.log(`Found ${expiredPlayers.length} players with expired promotions`);
+
+        const expiredPlayerIds = expiredPlayers.map((player) => player.session.playerId);
+
+        this.promotionFreeSpinsPublisher.publishEndPromotion(expiredPlayerIds);
     }
 
     async consume(player, payload) {

@@ -64,7 +64,6 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 return { success: false };
             }
 
-            // Update player's promotion data
             player.promotion.remainingBonusItems = deductResult.remainingBonusItems || promotionData.remainingBonusItems - 1;
 
             return { success: true };
@@ -104,7 +103,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             };
 
             const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
-            this.endPromotionEvent(context);
+
             if (!ticketResult || !ticketResult.success) {
                 this.logService.logError(`Failed to create promotion ticket for player ${player.profile.name}:`, {
                     error: ticketResult?.error || "Unknown error",
@@ -113,6 +112,12 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 });
                 return;
             }
+
+            if (bet.betWin > 0) {
+                player.promotion.totalWin = (player.promotion.totalWin || 0) + bet.betWin;
+            }
+
+            this.endPromotionEvent(context);
         } catch (error) {
             this.logService.logError(`Error creating promotion ticket for player ${player.profile.name}:`, {
                 error: error.message,
@@ -159,16 +164,11 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
     /**
      * Notify user about promotion completion
      * @param {Object} player - Player object
-     * @param {Object} totalWin - Total win data
      * @returns {Promise<void>}
      */
     async notifyPromotionCompletion(player) {
-        const totalWin = await this.gamePromotionApiClient.getTotalWin({
-            promotionId: player.promotion.promotionId,
-            playerId: player.session.playerId,
-            operatorId: player.session.operatorId,
-            siteName: player.session.siteName,
-        });
+        const totalWin = player.promotion.totalWin || 0;
+
         this.placeBetPublisher.publishToUser(
             player.UID,
             {

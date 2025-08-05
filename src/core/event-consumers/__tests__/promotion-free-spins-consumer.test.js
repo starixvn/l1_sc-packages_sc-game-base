@@ -9,15 +9,7 @@ jest.mock("sc-common", () => ({
     },
 }));
 
-// Mock moment
-jest.mock("moment", () => {
-    const mockMoment = {
-        utc: jest.fn(() => ({
-            format: jest.fn(() => "2024-01-01T12:00"),
-        })),
-    };
-    return mockMoment;
-});
+// No need to mock moment - it's a pure function!
 
 describe("PromotionFreeSpinsConsumer", () => {
     let consumer;
@@ -31,6 +23,7 @@ describe("PromotionFreeSpinsConsumer", () => {
             gameConfigs: {
                 gameId: "test-game-123",
             },
+            realPlayers: {}, // Reset realPlayers for each test
         };
 
         mockPromotionFreeSpinsPublisher = {
@@ -60,89 +53,123 @@ describe("PromotionFreeSpinsConsumer", () => {
     });
 
     describe("handlePromotionFreeSpinsExpiry", () => {
-        it("should handle promotion expiry for game successfully", async () => {
-            // Arrange
-            const gameId = "test-game-123";
-            const mockPromotions = [
-                {
-                    endDate: "2024-01-01T12:00:00Z",
-                    players: [
-                        { playerId: "player1", totalWin: 100 },
-                        { playerId: "player2", totalWin: 200 },
-                    ],
-                },
-            ];
-
-            mockPromotionApiClient.getExpiringPromotions.mockResolvedValue(mockPromotions);
-
-            // Act
-            await consumer.handlePromotionFreeSpinsExpiry(gameId);
-
-            // Assert
-            expect(mockPromotionApiClient.getExpiringPromotions).toHaveBeenCalledWith(gameId);
-            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith(mockPromotions[0].players);
+        beforeEach(() => {
+            // Clear mock calls before each test
+            jest.clearAllMocks();
         });
 
-        it("should handle case when no expiring promotions found", async () => {
-            // Arrange
-            const gameId = "test-game-123";
-            mockPromotionApiClient.getExpiringPromotions.mockResolvedValue([]);
+        it("should handle promotion expiry using realPlayers data", async () => {
+            // Arrange - Use current time so promotions are expired "now"
+            const now = new Date();
+            const currentMinute = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+
+            consumer.gameData.realPlayers = {
+                "socket-123": {
+                    UID: "user123",
+                    profile: { name: "john_doe" },
+                    session: { playerId: "player1" },
+                    socketClient: {},
+                    promotion: {
+                        promotionId: "promo1",
+                        endDate: currentMinute.toISOString(), // Expires at current minute
+                    },
+                },
+                "socket-456": {
+                    UID: "user456",
+                    profile: { name: "jane_doe" },
+                    session: { playerId: "player2" },
+                    socketClient: {},
+                    promotion: {
+                        promotionId: "promo2",
+                        endDate: currentMinute.toISOString(), // Expires at current minute
+                    },
+                },
+            };
 
             // Act
-            await consumer.handlePromotionFreeSpinsExpiry(gameId);
+            await consumer.handlePromotionFreeSpinsExpiry();
 
             // Assert
-            expect(mockPromotionApiClient.getExpiringPromotions).toHaveBeenCalledWith(gameId);
+            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith(["player1", "player2"]);
+            expect(mockLogService.log).toHaveBeenCalledWith("Found 2 players with expired promotions");
+        });
+
+        it("should handle case when no players have expired promotions", async () => {
+            // Arrange - Players with future end dates
+            const futureTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+            consumer.gameData.realPlayers = {
+                "socket-123": {
+                    UID: "user123",
+                    profile: { name: "john_doe" },
+                    session: { playerId: "player1" },
+                    socketClient: {},
+                    promotion: {
+                        promotionId: "promo1",
+                        endDate: futureTime.toISOString(), // Future time
+                    },
+                },
+            };
+
+            // Act
+            await consumer.handlePromotionFreeSpinsExpiry();
+
+            // Assert
             expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).not.toHaveBeenCalled();
         });
 
-        it("should handle case when promotion end date doesn't match current time", async () => {
-            // Arrange
-            const gameId = "test-game-123";
-            const mockPromotions = [
-                {
-                    endDate: "2024-01-01T13:00:00Z", // Different time
-                    players: [{ playerId: "player1", totalWin: 100 }],
-                },
-            ];
+        it("should handle players without promotion data", async () => {
+            // Arrange - Mixed players with and without promotions
+            const now = new Date();
+            const currentMinute = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
 
-            mockPromotionApiClient.getExpiringPromotions.mockResolvedValue(mockPromotions);
+            consumer.gameData.realPlayers = {
+                "socket-123": {
+                    UID: "user123",
+                    profile: { name: "john_doe" },
+                    session: { playerId: "player1" },
+                    socketClient: {},
+                    // No promotion property
+                },
+                "socket-456": {
+                    UID: "user456",
+                    profile: { name: "jane_doe" },
+                    session: { playerId: "player2" },
+                    socketClient: {},
+                    promotion: {
+                        promotionId: "promo2",
+                        endDate: currentMinute.toISOString(), // Expires at current minute
+                    },
+                },
+            };
 
             // Act
-            await consumer.handlePromotionFreeSpinsExpiry(gameId);
+            await consumer.handlePromotionFreeSpinsExpiry();
 
             // Assert
-            expect(mockPromotionApiClient.getExpiringPromotions).toHaveBeenCalledWith(gameId);
+            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith(["player2"]);
         });
 
-        it("should handle multiple expiring promotions", async () => {
+        it("should handle empty realPlayers", async () => {
             // Arrange
-            const gameId = "test-game-123";
-            const mockPromotions = [
-                {
-                    endDate: "2024-01-01T12:00:00Z",
-                    players: [{ playerId: "player1", totalWin: 100 }],
-                },
-                {
-                    endDate: "2024-01-01T12:00:00Z", // Same time
-                    players: [{ playerId: "player2", totalWin: 200 }],
-                },
-                {
-                    endDate: "2024-01-01T13:00:00Z", // Different time
-                    players: [{ playerId: "player3", totalWin: 300 }],
-                },
-            ];
-
-            mockPromotionApiClient.getExpiringPromotions.mockResolvedValue(mockPromotions);
+            consumer.gameData.realPlayers = {};
 
             // Act
-            await consumer.handlePromotionFreeSpinsExpiry(gameId);
+            await consumer.handlePromotionFreeSpinsExpiry();
 
             // Assert
-            expect(mockPromotionApiClient.getExpiringPromotions).toHaveBeenCalledWith(gameId);
-            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledTimes(3);
-            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith(mockPromotions[0].players);
-            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith(mockPromotions[1].players);
+            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).not.toHaveBeenCalled();
+        });
+
+        it("should handle null realPlayers", async () => {
+            // Arrange
+            consumer.gameData.realPlayers = null;
+
+            // Act
+            await consumer.handlePromotionFreeSpinsExpiry();
+
+            // Assert
+            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).not.toHaveBeenCalled();
         });
     });
 
@@ -425,7 +452,7 @@ describe("PromotionFreeSpinsConsumer", () => {
             // Assert
             expect(consumer.isPromotionReady).toHaveBeenCalled();
             expect(consumer.hasPlayersWithPromotions).toHaveBeenCalled();
-            expect(consumer.handlePromotionFreeSpinsExpiry).toHaveBeenCalledWith(gameId);
+            expect(consumer.handlePromotionFreeSpinsExpiry).toHaveBeenCalledWith();
             expect(consumer.lastMinuteCheck).toBe(30);
         });
 
@@ -454,7 +481,7 @@ describe("PromotionFreeSpinsConsumer", () => {
             await consumer.checkExpiry(gameId);
 
             // Assert
-            expect(consumer.handlePromotionFreeSpinsExpiry).toHaveBeenCalledWith(gameId);
+            expect(consumer.handlePromotionFreeSpinsExpiry).toHaveBeenCalledWith();
             expect(consumer.lastMinuteCheck).toBe(20);
         });
     });
@@ -695,8 +722,8 @@ describe("PromotionFreeSpinsConsumer", () => {
             // Act
             const result = consumer.toYMDHM(testDate);
 
-            // Assert
-            expect(result).toBe("2024-01-01T12:00");
+            // Assert - Should format to YYYY-MM-DDTHH:mm (not round down minutes)
+            expect(result).toBe("2024-01-01T12:30");
         });
     });
 });

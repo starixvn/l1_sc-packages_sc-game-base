@@ -26,6 +26,7 @@ describe("Event Interceptor Integration", () => {
             deductBonusItem: jest.fn(),
             createPromotionTicket: jest.fn(),
             rollbackBonusItem: jest.fn(),
+            getTotalWin: jest.fn(),
         };
 
         // Mock dependencies
@@ -355,6 +356,127 @@ describe("Event Interceptor Integration", () => {
             expect(mockApiInstance.deductBonusItem).toHaveBeenCalled();
             expect(mockDependencies.placeBet).toHaveBeenCalled();
             expect(mockApiInstance.createPromotionTicket).toHaveBeenCalled();
+        });
+    });
+
+    describe("Promotion TotalWin Updates", () => {
+        beforeEach(() => {
+            // Clear mock calls before each test
+            jest.clearAllMocks();
+        });
+
+        it("should update player.promotion.totalWin after successful ticket creation", async () => {
+            // Arrange
+            const winningBet = {
+                betWin: 150,
+                roundId: "round123",
+                amount: 100,
+                promotionId: "promo1",
+            };
+            const context = { player, bet: winningBet };
+
+            player.promotion.totalWin = 50; // Initial value
+            mockApiInstance.createPromotionTicket.mockResolvedValue({ success: true });
+
+            // Act
+            await promotionInterceptor.afterSuccessEvent(context);
+
+            // Assert
+            expect(player.promotion.totalWin).toBe(200); // 50 + 150
+            expect(mockApiInstance.createPromotionTicket).toHaveBeenCalledWith({
+                playerId: player.session.playerId,
+                operatorId: player.session.operatorId,
+                siteName: player.session.siteName,
+                promotionId: player.promotion.promotionId,
+                gameId: mockDependencies.definition.id,
+                gameRoundId: winningBet.roundId,
+                appType: player.session.system,
+                betAmount: winningBet.amount,
+                winAmount: winningBet.betWin,
+            });
+        });
+
+        it("should not update totalWin when ticket creation fails", async () => {
+            // Arrange
+            const winningBet = {
+                betWin: 150,
+                roundId: "round123",
+                amount: 100,
+                promotionId: "promo1",
+            };
+            const context = { player, bet: winningBet };
+
+            player.promotion.totalWin = 50; // Initial value
+            mockApiInstance.createPromotionTicket.mockResolvedValue({ success: false, error: "API Error" });
+
+            // Act
+            await promotionInterceptor.afterSuccessEvent(context);
+
+            // Assert
+            expect(player.promotion.totalWin).toBe(50); // Unchanged due to API failure
+        });
+
+        it("should not update totalWin when betWin is zero", async () => {
+            // Arrange
+            const losingBet = {
+                betWin: 0,
+                roundId: "round123",
+                amount: 100,
+                promotionId: "promo1",
+            };
+            const context = { player, bet: losingBet };
+
+            player.promotion.totalWin = 50; // Initial value
+            mockApiInstance.createPromotionTicket.mockResolvedValue({ success: true });
+
+            // Act
+            await promotionInterceptor.afterSuccessEvent(context);
+
+            // Assert
+            expect(player.promotion.totalWin).toBe(50); // Unchanged due to no win
+        });
+
+        it("should handle null totalWin gracefully", async () => {
+            // Arrange
+            const winningBet = {
+                betWin: 100,
+                roundId: "round123",
+                amount: 100,
+                promotionId: "promo1",
+            };
+            const context = { player, bet: winningBet };
+
+            player.promotion.totalWin = undefined; // No initial value
+            mockApiInstance.createPromotionTicket.mockResolvedValue({ success: true });
+
+            // Act
+            await promotionInterceptor.afterSuccessEvent(context);
+
+            // Assert
+            expect(player.promotion.totalWin).toBe(100); // 0 + 100
+        });
+
+        it("should use cached totalWin in notifyPromotionCompletion", async () => {
+            // Arrange
+            player.promotion.totalWin = 250;
+
+            // Act
+            await promotionInterceptor.notifyPromotionCompletion(player);
+
+            // Assert
+            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledWith(
+                player.UID,
+                {
+                    finishPromotion: {
+                        endPromotion: true,
+                        totalWin: 250,
+                    },
+                },
+                mockDependencies.definition.name
+            );
+
+            // Verify no API call was made for getTotalWin
+            expect(mockApiInstance.getTotalWin).not.toHaveBeenCalled();
         });
     });
 });
