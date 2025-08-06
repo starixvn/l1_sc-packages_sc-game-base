@@ -74,6 +74,11 @@ export default class PromotionFreeSpinsConsumer {
         }));
 
         this.promotionFreeSpinsPublisher.publishEndPromotion(expiredPlayerData);
+
+        expiredPlayers.forEach((player) => {
+            delete player.promotion;
+            delete player.promotionTOProgress;
+        });
     }
 
     async consume(player, payload) {

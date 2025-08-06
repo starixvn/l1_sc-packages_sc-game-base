@@ -678,6 +678,12 @@ if (expiredPlayers.length > 0) {
     totalWin: player.promotion.totalWin,
   }));
   this.promotionFreeSpinsPublisher.publishEndPromotion(expiredPlayerData);
+
+  // Clear promotion data from realPlayers after ending promotion
+  expiredPlayers.forEach((player) => {
+    delete player.promotion;
+    delete player.promotionTOProgress;
+  });
 }
 ```
 
@@ -688,6 +694,7 @@ if (expiredPlayers.length > 0) {
 - ✅ **Batch notifications** for multiple expired players
 - ✅ **Better error resilience** (no network dependency)
 - ✅ **Complete promotion data** including `totalWin` for end notifications
+- ✅ **Clean state management** - expired promotion data automatically cleared
 
 **Data Structure:**
 

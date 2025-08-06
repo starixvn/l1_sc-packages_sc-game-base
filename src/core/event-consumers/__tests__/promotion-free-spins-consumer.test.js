@@ -97,6 +97,12 @@ describe("PromotionFreeSpinsConsumer", () => {
                 { playerId: "player2", totalWin: 200 },
             ]);
             expect(mockLogService.log).toHaveBeenCalledWith("Found 2 players with expired promotions");
+
+            // Verify promotion data is cleared from realPlayers
+            expect(consumer.gameData.realPlayers["socket-123"].promotion).toBeUndefined();
+            expect(consumer.gameData.realPlayers["socket-123"].promotionTOProgress).toBeUndefined();
+            expect(consumer.gameData.realPlayers["socket-456"].promotion).toBeUndefined();
+            expect(consumer.gameData.realPlayers["socket-456"].promotionTOProgress).toBeUndefined();
         });
 
         it("should handle case when no players have expired promotions", async () => {
@@ -154,6 +160,47 @@ describe("PromotionFreeSpinsConsumer", () => {
 
             // Assert
             expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith([{ playerId: "player2", totalWin: 100 }]);
+
+            // Verify promotion data is cleared for expired player only
+            expect(consumer.gameData.realPlayers["socket-123"].promotion).toBeUndefined(); // No promotion initially
+            expect(consumer.gameData.realPlayers["socket-456"].promotion).toBeUndefined(); // Cleared after expiry
+            expect(consumer.gameData.realPlayers["socket-456"].promotionTOProgress).toBeUndefined();
+        });
+
+        it("should clear promotion data including promotionTOProgress after expiry", async () => {
+            // Arrange - Player with both promotion and promotionTOProgress
+            const now = new Date();
+            const currentMinute = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+
+            consumer.gameData.realPlayers = {
+                "socket-123": {
+                    UID: "user123",
+                    profile: { name: "john_doe" },
+                    session: { playerId: "player1" },
+                    socketClient: {},
+                    promotion: {
+                        promotionId: "promo1",
+                        endDate: currentMinute.toISOString(),
+                        totalWin: 250,
+                    },
+                    promotionTOProgress: {
+                        currentTurnover: 1000,
+                        requiredTurnover: 5000,
+                    },
+                },
+            };
+
+            // Act
+            await consumer.handlePromotionFreeSpinsExpiry();
+
+            // Assert
+            expect(mockPromotionFreeSpinsPublisher.publishEndPromotion).toHaveBeenCalledWith([{ playerId: "player1", totalWin: 250 }]);
+            expect(consumer.gameData.realPlayers["socket-123"].promotion).toBeUndefined();
+            expect(consumer.gameData.realPlayers["socket-123"].promotionTOProgress).toBeUndefined();
+
+            // Verify other player data is preserved
+            expect(consumer.gameData.realPlayers["socket-123"].UID).toBe("user123");
+            expect(consumer.gameData.realPlayers["socket-123"].profile.name).toBe("john_doe");
         });
 
         it("should handle empty realPlayers", async () => {
