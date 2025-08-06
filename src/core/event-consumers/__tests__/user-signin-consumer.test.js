@@ -358,7 +358,6 @@ describe("UserSignInConsumer", () => {
                         endDate: new Date("2025-12-31T23:59:59Z"),
                         lastUsedDate: "2024-01-01T00:00:00Z",
                         isGiftCode: false,
-                        betLevel: 1,
                     },
                 };
 
@@ -366,7 +365,7 @@ describe("UserSignInConsumer", () => {
                 mockPromotionApiInstance.getRunningPromotions.mockResolvedValue([]);
                 mockPromotionApiInstance.getTotalWin.mockResolvedValue(100);
                 mockPromotionApiInstance.getPromotionById.mockResolvedValue({
-                    gameIds: ["test-game-123", "other-game-456"]
+                    gameIds: ["test-game-123", "other-game-456"],
                 });
 
                 const userSession = {
@@ -389,15 +388,14 @@ describe("UserSignInConsumer", () => {
 
                 expect(result).toEqual({
                     promotion: {
-                    promotionId: "promo123",
-                    remainingBonusItems: 10,
-                    initialBonusItem: 15,
-                    isActive: true,
-                    promotionType: "FREE_SPIN",
-                    endDate: new Date("2025-12-31T23:59:59Z"),
-                    lastUsedDate: "2024-01-01T00:00:00Z",
-                    isGiftCode: false,
-                    betLevel: 1,
+                        promotionId: "promo123",
+                        remainingBonusItems: 10,
+                        initialBonusItem: 15,
+                        isActive: true,
+                        promotionType: "FREE_SPIN",
+                        endDate: new Date("2025-12-31T23:59:59Z"),
+                        lastUsedDate: "2024-01-01T00:00:00Z",
+                        isGiftCode: false,
                         totalWin: 100,
                         isClaimed: true,
                     },
@@ -418,7 +416,9 @@ describe("UserSignInConsumer", () => {
                 const result = await consumerWithPromotion.claimPlayerPromotions(userSession);
 
                 expect(result).toBeNull();
-                expect(mockLogService.log).not.toHaveBeenCalled();
+                expect(mockLogService.log).toHaveBeenCalledWith(
+                    'Claiming promotion for player {"operatorId":"OP001","siteName":"test-site","playerId":"player456","currencyGroup":"USD_GROUP_1","gameId":"test-game-123"}'
+                );
             });
 
             it("should return null when promotion API client is not available", async () => {
@@ -506,7 +506,6 @@ describe("UserSignInConsumer", () => {
                         endDate: new Date("2020-01-01T00:00:00Z"), // Expired date
                         lastUsedDate: "2019-12-01T00:00:00Z",
                         isGiftCode: false,
-                        betLevel: 1,
                     },
                 };
 
@@ -514,7 +513,7 @@ describe("UserSignInConsumer", () => {
                 mockPromotionApiInstance.getRunningPromotions.mockResolvedValue([]);
                 mockPromotionApiInstance.getTotalWin.mockResolvedValue(0);
                 mockPromotionApiInstance.getPromotionById.mockResolvedValue({
-                    gameIds: ["test-game-123", "other-game-456"]
+                    gameIds: ["test-game-123", "other-game-456"],
                 });
 
                 const userSession = {
@@ -564,7 +563,7 @@ describe("UserSignInConsumer", () => {
                         endDate: new Date("2025-12-31T23:59:59Z"),
                         lastUsedDate: "2024-01-01T00:00:00Z",
                         isGiftCode: false,
-                        betLevel: 1,
+
                         totalWin: 50,
                         isUsePromotion: true,
                     },
@@ -574,7 +573,7 @@ describe("UserSignInConsumer", () => {
                 mockPromotionApiInstance.getRunningPromotions.mockResolvedValue([]);
                 mockPromotionApiInstance.getTotalWin.mockResolvedValue(50);
                 mockPromotionApiInstance.getPromotionById.mockResolvedValue({
-                    gameIds: ["test-game-123", "other-game-456"]
+                    gameIds: ["test-game-123", "other-game-456"],
                 });
 
                 const payload = {
@@ -610,7 +609,7 @@ describe("UserSignInConsumer", () => {
                         endDate: new Date("2025-12-31T23:59:59Z"),
                         lastUsedDate: "2024-01-01T00:00:00Z",
                         isGiftCode: false,
-                        betLevel: 1,
+
                         totalWin: 50,
                         isClaimed: true,
                     },

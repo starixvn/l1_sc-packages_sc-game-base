@@ -77,7 +77,6 @@ export default class UserSignInConsumer {
                 }
             });
 
-            // Claim promotions during sign-in if promotion is available
             const promotionData = await this.claimPlayerPromotions(userSession);
 
             this.handleSignInSuccess(socketClient, userInfo, userSession, promotionData);
@@ -124,7 +123,7 @@ export default class UserSignInConsumer {
         try {
             const playerDto = this.createPlayerDto(playerData);
 
-            // Try to claim existing promotion
+            this.logService.log(`Claiming promotion for player ${JSON.stringify(playerDto)}`);
             const claimedPromotion = await this.tryClaimExistingPromotion(playerDto);
             if (claimedPromotion) {
                 return claimedPromotion;
@@ -178,7 +177,7 @@ export default class UserSignInConsumer {
             siteName,
             playerId,
             currencyGroup: currencyGroupId,
-            gameId: this.gameData.gameConfigs.gameId
+            gameId: this.gameData.gameConfigs.gameId,
         };
     }
 
@@ -203,16 +202,16 @@ export default class UserSignInConsumer {
 
         const totalWin = await this.getPromotionTotalWin(promotion, playerDto);
         let promotionTOProgress = null;
-        
+
         if (promotion.isCompleted) {
             promotionTOProgress = await this.promotionApiClient.getTOProgress({
                 promotionId: promotion.promotionId,
                 playerId: playerDto.playerId,
                 operatorId: playerDto.operatorId,
-                siteName: playerDto.siteName
+                siteName: playerDto.siteName,
             });
         }
-        
+
         return this.createClaimedPromotionData(promotion, totalWin, promotionTOProgress);
     }
 
@@ -249,22 +248,17 @@ export default class UserSignInConsumer {
      */
     createClaimedPromotionData(promotion, totalWin, promotionTOProgress = null) {
         const now = new Date();
+        const basePromotionData = this.createBasePromoData(promotion, now);
         const promotionData = {
-            promotionId: promotion.promotionId,
-            remainingBonusItems: promotion.remainingBonusItems,
-            initialBonusItem: promotion.initialBonusItem,
-            isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
-            promotionType: promotion.promotionType,
-            endDate: promotion.endDate,
-            lastUsedDate: promotion.lastUsedDate,
-            isGiftCode: promotion.isGiftCode,
-            betLevel: promotion.betLevel,
+            ...basePromotionData,
             totalWin: totalWin,
             isClaimed: true,
         };
 
+        const extendedPromotionData = this.extendPromo(promotionData, promotion);
+
         return {
-            promotion: promotionData,
+            promotion: extendedPromotionData,
             ...(promotionTOProgress && { promotionTOProgress }),
         };
     }
@@ -290,23 +284,38 @@ export default class UserSignInConsumer {
         return this.createAvailablePromotionData(validPromotion);
     }
 
-    /**
-     * Create available promotion data object
-     * @param {Object} promotion - Promotion object
-     * @returns {Object} Available promotion data
-     */
+    createBasePromoData(promotion, currentTime) {
+        return {
+            promotionId: promotion.promotionId,
+            remainingBonusItems: promotion.remainingBonusItems,
+            initialBonusItem: promotion.initialBonusItem,
+            isActive: promotion.endDate ? currentTime < new Date(promotion.endDate) : true,
+            promotionType: promotion.promotionType,
+            endDate: promotion.endDate,
+            lastUsedDate: promotion.lastUsedDate,
+            isGiftCode: promotion.isGiftCode,
+        };
+    }
+
+    extendPromo(baseData, originalPromotion) {
+        return baseData;
+    }
+
     createAvailablePromotionData(promotion) {
         const now = new Date();
+        const basePromotionData = {
+            promotionId: promotion._id,
+            remainingBonusItems: promotion.bonusItemCount,
+            isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
+            endDate: promotion.endDate,
+            isGiftCode: promotion.isGiftCode,
+            isClaimed: false,
+        };
+
+        const extendedPromotionData = this.extendPromo(basePromotionData, promotion);
+
         return {
-            promotion: {
-                promotionId: promotion._id,
-                remainingBonusItems: promotion.bonusItemCount,
-                isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
-                endDate: promotion.endDate,
-                isGiftCode: promotion.isGiftCode,
-                betLevel: promotion.betLevel,
-                isClaimed: false,
-            },
+            promotion: extendedPromotionData,
         };
     }
 
@@ -318,7 +327,7 @@ export default class UserSignInConsumer {
             socketClient,
         };
 
-        if (promotionData && promotionData.promotion ) {
+        if (promotionData && promotionData.promotion) {
             userData.promotion = promotionData.promotion;
         }
 

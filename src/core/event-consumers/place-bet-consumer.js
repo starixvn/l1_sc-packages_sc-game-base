@@ -79,17 +79,32 @@ export default class PlaceBetConsumer {
     }
 
     handlePromotionLogic(player, payload) {
-        const usePromotion = player.promotion !== null && player.promotion && player.promotion.isClaimed;
+        const usePromotion = this.shouldUsePromotion(player);
         player.usePromotion = usePromotion;
 
         if (usePromotion) {
             const promotionBetAmount = this.getPromotionBetAmount(player, payload);
-            Object.assign(payload, {
-                amount: promotionBetAmount,
-                promotionId: player.promotion.promotionId,
-                usePromotion: true,
-            });
+            const promotionPayload = this.createPromotionPayload(player, payload, promotionBetAmount);
+            Object.assign(payload, promotionPayload);
         }
+    }
+
+    shouldUsePromotion(player) {
+        return player.promotion !== null && player.promotion && player.promotion.isClaimed;
+    }
+
+    createPromotionPayload(player, originalPayload, promotionBetAmount) {
+        const basePayload = {
+            amount: promotionBetAmount,
+            promotionId: player.promotion.promotionId,
+            usePromotion: true,
+        };
+
+        return this.extendPromoPayload(basePayload, player, originalPayload);
+    }
+
+    extendPromoPayload(basePayload, player, originalPayload) {
+        return basePayload;
     }
 
     /**

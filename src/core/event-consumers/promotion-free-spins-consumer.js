@@ -115,18 +115,13 @@ export default class PromotionFreeSpinsConsumer {
             await this.updatePromotion(player, result);
             const promotion = result.promotion;
             const now = new Date();
+            const basePromotionData = this.createBasePromoData(promotion, now);
+            const extendedPromotionData = this.extendPromo(basePromotionData, promotion);
+
             this.promotionFreeSpinsPublisher.publishToUser(player.UID, {
                 redeemResult: 1,
                 promotion: {
-                    promotionId: promotion.promotionId,
-                    remainingBonusItems: promotion.remainingBonusItems,
-                    initialBonusItem: promotion.initialBonusItem,
-                    isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
-                    promotionType: promotion.promotionType,
-                    endDate: promotion.endDate,
-                    lastUsedDate: promotion.lastUsedDate,
-                    isGiftCode: promotion.isGiftCode,
-                    betLevel: promotion.betLevel,
+                    ...extendedPromotionData,
                     totalWin: 0,
                     isClaimed: true,
                 },
@@ -141,20 +136,33 @@ export default class PromotionFreeSpinsConsumer {
         const now = new Date();
         if (promotionFreeSpin.gameIds.includes(this.gameData.gameConfigs.gameId)) {
             const promotion = result.promotion;
+            const basePromotionData = this.createBasePromoData(promotion, now);
+            const extendedPromotionData = this.extendPromo(basePromotionData, promotion);
+
             player.promotion = {
-                promotionId: promotion.promotionId,
+                ...extendedPromotionData,
                 code: promotion.promotionCode,
-                remainingBonusItems: promotion.remainingBonusItems,
-                initialBonusItem: promotion.initialBonusItem,
-                isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
-                endDate: promotion.endDate,
-                lastUsedDate: promotion.lastUsedDate,
-                isGiftCode: promotion.isGiftCode,
-                betLevel: promotion.betLevel,
                 totalWin: 0,
                 isClaimed: true,
             };
         }
+    }
+
+    createBasePromoData(promotion, currentTime) {
+        return {
+            promotionId: promotion.promotionId,
+            remainingBonusItems: promotion.remainingBonusItems,
+            initialBonusItem: promotion.initialBonusItem,
+            isActive: promotion.endDate ? currentTime < new Date(promotion.endDate) : true,
+            promotionType: promotion.promotionType,
+            endDate: promotion.endDate,
+            lastUsedDate: promotion.lastUsedDate,
+            isGiftCode: promotion.isGiftCode,
+        };
+    }
+
+    extendPromo(baseData, originalPromotion) {
+        return baseData;
     }
 
     getNoticeObj(errorCode, extraData) {

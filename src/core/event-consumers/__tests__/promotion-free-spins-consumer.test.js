@@ -622,7 +622,6 @@ describe("PromotionFreeSpinsConsumer", () => {
                     endDate: "2024-12-31T23:59:59Z",
                     lastUsedDate: null,
                     isGiftCode: true,
-                    betLevel: 1,
                 },
             };
 

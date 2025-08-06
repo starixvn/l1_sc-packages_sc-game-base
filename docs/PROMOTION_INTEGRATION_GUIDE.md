@@ -872,8 +872,58 @@ try {
 - **sc-game-base 5.x**: Legacy separate consumers (deprecated)
 - **Migration**: Update to 6.0.0+ for optimal promotion performance
 
+## Game-Specific Extensions (v6.1.0+)
+
+### Architecture Changes
+
+**Removal of Game-Specific Fields:**
+
+- `betLevel` removed from base promotion data structures
+- Game-specific fields moved to respective game packages
+- Improved separation of concerns and reduced coupling
+
+### Extension Points
+
+The promotion system provides clean extension points for game-specific implementations:
+
+**UserSignInConsumer Extensions:**
+
+```javascript
+extendPromo(baseData, originalPromotion) {
+  return {
+    ...baseData,
+    betLevel: originalPromotion.betLevel,
+    reelConfig: originalPromotion.reelConfig,
+  };
+}
+```
+
+**PlaceBetConsumer Extensions:**
+
+```javascript
+getPromoBetAmount(player, payload) {
+  const amounts = { 1: 5, 2: 10, 3: 25, 4: 50 };
+  return amounts[player.promotion?.betLevel] || 0;
+}
+
+extendPromoPayload(basePayload, player, originalPayload) {
+  return {
+    ...basePayload,
+    coinValue: player.promotion.coinValue,
+    paylines: this.calcPaylines(player.promotion),
+  };
+}
+```
+
+**Pure Function Benefits:**
+
+- Better testability with predictable inputs/outputs
+- No side effects for easier debugging
+- Immutable data transformations
+
 ## Related Documentation
 
+- [Game-Specific Extensions Guide](./GAME_SPECIFIC_EXTENSIONS.md)
 - [Promotion Bet Validation Guide](./PROMOTION_BET_VALIDATION.md)
 - [Event Consumer Patterns](../README.md#event-consumer-pattern)
 - [Dependency Injection Guide](../README.md#dependency-registration)
