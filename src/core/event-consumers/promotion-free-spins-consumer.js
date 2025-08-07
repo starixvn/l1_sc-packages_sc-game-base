@@ -53,7 +53,6 @@ export default class PromotionFreeSpinsConsumer {
             player.promotion &&
             !player.promotionTOProgress &&
             player.promotion.isClaimed &&
-            player.promotion.remainingBonusItems < player.promotion.initialBonusItem &&            
             player.promotion.endDate
         );
     }
