@@ -73,6 +73,9 @@ describe("PromotionFreeSpinsConsumer", () => {
                         promotionId: "promo1",
                         endDate: currentMinute.toISOString(), // Expires at current minute
                         totalWin: 150,
+                        isClaimed: true,
+                        remainingBonusItems: 5,
+                        initialBonusItem: 10, // remainingBonusItems < initialBonusItem
                     },
                 },
                 "socket-456": {
@@ -84,6 +87,9 @@ describe("PromotionFreeSpinsConsumer", () => {
                         promotionId: "promo2",
                         endDate: currentMinute.toISOString(), // Expires at current minute
                         totalWin: 200,
+                        isClaimed: true,
+                        remainingBonusItems: 3,
+                        initialBonusItem: 10, // remainingBonusItems < initialBonusItem
                     },
                 },
             };
@@ -151,6 +157,9 @@ describe("PromotionFreeSpinsConsumer", () => {
                         promotionId: "promo2",
                         endDate: currentMinute.toISOString(), // Expires at current minute
                         totalWin: 100,
+                        isClaimed: true,
+                        remainingBonusItems: 2,
+                        initialBonusItem: 5, // remainingBonusItems < initialBonusItem
                     },
                 },
             };
@@ -182,11 +191,11 @@ describe("PromotionFreeSpinsConsumer", () => {
                         promotionId: "promo1",
                         endDate: currentMinute.toISOString(),
                         totalWin: 250,
+                        isClaimed: true,
+                        remainingBonusItems: 1,
+                        initialBonusItem: 3, // remainingBonusItems < initialBonusItem
                     },
-                    promotionTOProgress: {
-                        currentTurnover: 1000,
-                        requiredTurnover: 5000,
-                    },
+                    // Remove promotionTOProgress because hasPlayerWithPromotion checks !player.promotionTOProgress
                 },
             };
 
@@ -307,7 +316,7 @@ describe("PromotionFreeSpinsConsumer", () => {
         });
     });
 
-    describe("hasPlayersWithPromotions", () => {
+    describe("isCheckPromotionExpiry", () => {
         describe("when players have promotion data", () => {
             it("should return true for single player with active promotion", () => {
                 // Arrange
@@ -319,16 +328,18 @@ describe("PromotionFreeSpinsConsumer", () => {
                         socketClient: {},
                         promotion: {
                             promotionId: "promo_winter2024",
-                            remainingBonusItems: 15,
+                            remainingBonusItems: 5,
+                            initialBonusItem: 15, // remainingBonusItems < initialBonusItem
                             isActive: true,
                             isClaimed: true,
+                            endDate: "2024-12-31T23:59:59Z",
                         },
                     },
                 };
                 consumer.gameData.realPlayers = realPlayersWithPromotion;
 
                 // Act
-                const result = consumer.hasPlayersWithPromotions();
+                const result = consumer.isCheckPromotionExpiry();
 
                 // Assert
                 expect(result).toBe(true);
@@ -342,14 +353,26 @@ describe("PromotionFreeSpinsConsumer", () => {
                         profile: { name: "john_doe" },
                         session: { userId: "user123" },
                         socketClient: {},
-                        promotion: { promotionId: "promo_active", remainingBonusItems: 5 },
+                        promotion: { 
+                            promotionId: "promo_active", 
+                            remainingBonusItems: 5, 
+                            initialBonusItem: 10,
+                            isClaimed: true,
+                            endDate: "2024-12-31T23:59:59Z"
+                        },
                     },
                     "socket-456": {
                         UID: "user456",
                         profile: { name: "jane_doe" },
                         session: { userId: "user456" },
                         socketClient: {},
-                        promotion: { promotionId: "promo_completed", remainingBonusItems: 0 },
+                        promotion: { 
+                            promotionId: "promo_completed", 
+                            remainingBonusItems: 10, // Equal to initial, so won't match hasPlayerWithPromotion
+                            initialBonusItem: 10,
+                            isClaimed: true,
+                            endDate: "2024-12-31T23:59:59Z"
+                        },
                     },
                     "socket-789": {
                         UID: "user789",
@@ -361,7 +384,7 @@ describe("PromotionFreeSpinsConsumer", () => {
                 consumer.gameData.realPlayers = mixedPlayersWithPromotions;
 
                 // Act
-                const result = consumer.hasPlayersWithPromotions();
+                const result = consumer.isCheckPromotionExpiry();
 
                 // Assert
                 expect(result).toBe(true);
@@ -388,7 +411,7 @@ describe("PromotionFreeSpinsConsumer", () => {
                 consumer.gameData.realPlayers = playersWithoutPromotions;
 
                 // Act
-                const result = consumer.hasPlayersWithPromotions();
+                const result = consumer.isCheckPromotionExpiry();
 
                 // Assert
                 expect(result).toBe(false);
@@ -399,7 +422,7 @@ describe("PromotionFreeSpinsConsumer", () => {
                 consumer.gameData.realPlayers = {};
 
                 // Act
-                const result = consumer.hasPlayersWithPromotions();
+                const result = consumer.isCheckPromotionExpiry();
 
                 // Assert
                 expect(result).toBe(false);
@@ -410,7 +433,7 @@ describe("PromotionFreeSpinsConsumer", () => {
                 consumer.gameData.realPlayers = null;
 
                 // Act
-                const result = consumer.hasPlayersWithPromotions();
+                const result = consumer.isCheckPromotionExpiry();
 
                 // Assert
                 expect(result).toBe(false);
@@ -421,7 +444,7 @@ describe("PromotionFreeSpinsConsumer", () => {
                 consumer.gameData.realPlayers = undefined;
 
                 // Act
-                const result = consumer.hasPlayersWithPromotions();
+                const result = consumer.isCheckPromotionExpiry();
 
                 // Assert
                 expect(result).toBe(false);
@@ -450,7 +473,7 @@ describe("PromotionFreeSpinsConsumer", () => {
                 consumer.gameData.realPlayers = playersWithNullPromotions;
 
                 // Act
-                const result = consumer.hasPlayersWithPromotions();
+                const result = consumer.isCheckPromotionExpiry();
 
                 // Assert
                 expect(result).toBe(false);
@@ -461,7 +484,7 @@ describe("PromotionFreeSpinsConsumer", () => {
     describe("checkExpiry", () => {
         beforeEach(() => {
             jest.spyOn(consumer, "isPromotionReady").mockReturnValue(true);
-            jest.spyOn(consumer, "hasPlayersWithPromotions").mockReturnValue(true);
+            jest.spyOn(consumer, "isCheckPromotionExpiry").mockReturnValue(true);
             jest.spyOn(consumer, "handlePromotionFreeSpinsExpiry").mockResolvedValue();
         });
 
@@ -475,13 +498,13 @@ describe("PromotionFreeSpinsConsumer", () => {
 
             // Assert
             expect(consumer.isPromotionReady).toHaveBeenCalled();
-            expect(consumer.hasPlayersWithPromotions).not.toHaveBeenCalled();
+            expect(consumer.isCheckPromotionExpiry).not.toHaveBeenCalled();
             expect(consumer.handlePromotionFreeSpinsExpiry).not.toHaveBeenCalled();
         });
 
         it("should exit early when no players have promotions", async () => {
             // Arrange
-            consumer.hasPlayersWithPromotions.mockReturnValue(false);
+            consumer.isCheckPromotionExpiry.mockReturnValue(false);
             const gameId = "test-game-123";
 
             // Act
@@ -489,7 +512,7 @@ describe("PromotionFreeSpinsConsumer", () => {
 
             // Assert
             expect(consumer.isPromotionReady).toHaveBeenCalled();
-            expect(consumer.hasPlayersWithPromotions).toHaveBeenCalled();
+            expect(consumer.isCheckPromotionExpiry).toHaveBeenCalled();
             expect(consumer.handlePromotionFreeSpinsExpiry).not.toHaveBeenCalled();
         });
 
@@ -504,7 +527,7 @@ describe("PromotionFreeSpinsConsumer", () => {
 
             // Assert
             expect(consumer.isPromotionReady).toHaveBeenCalled();
-            expect(consumer.hasPlayersWithPromotions).toHaveBeenCalled();
+            expect(consumer.isCheckPromotionExpiry).toHaveBeenCalled();
             expect(consumer.handlePromotionFreeSpinsExpiry).toHaveBeenCalledWith();
             expect(consumer.lastMinuteCheck).toBe(30);
         });
@@ -520,7 +543,7 @@ describe("PromotionFreeSpinsConsumer", () => {
 
             // Assert
             expect(consumer.isPromotionReady).toHaveBeenCalled();
-            expect(consumer.hasPlayersWithPromotions).toHaveBeenCalled();
+            expect(consumer.isCheckPromotionExpiry).toHaveBeenCalled();
             expect(consumer.handlePromotionFreeSpinsExpiry).not.toHaveBeenCalled();
         });
 
