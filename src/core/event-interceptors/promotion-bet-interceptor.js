@@ -68,7 +68,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
 
             return { success: true };
         } catch (error) {
-            this.logService.logError(`Error processing promotion deduction for player ${player.profile.name}:`, error);
+            this.logService.logError(error);
             this.placeBetPublisher.publishGameFailedBet(player.UID, {
                 endBet: -1,
                 betChoice: payload.betChoice,
@@ -105,25 +105,13 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
 
             if (!ticketResult || !ticketResult.success) {
-                this.logService.logError(`Failed to create promotion ticket for player ${player.profile.name}:`, {
-                    error: ticketResult?.error || "Unknown error",
-                    promotionId: bet.promotionId,
-                    gameRoundId: bet.roundId,
-                });
+                this.logService.logError(`Failed to create promotion ticket for ${player.profile.name}: ${JSON.stringify(ticketDto)}`);
                 return;
-            }
-
-            if (bet.betWin > 0) {
-                player.promotion.totalWin = (player.promotion.totalWin || 0) + bet.betWin;
             }
 
             this.endPromotionEvent(context);
         } catch (error) {
-            this.logService.logError(`Error creating promotion ticket for player ${player.profile.name}:`, {
-                error: error.message,
-                promotionId: bet.promotionId,
-                stack: error.stack,
-            });
+            this.logService.logError(error);
         }
     }
 
@@ -134,7 +122,11 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      * @returns {Promise<void>}
      */
     async endPromotionEvent(context) {
-        const { player } = context;
+        const { player, bet } = context;
+
+        if (bet.betWin > 0) {
+            player.promotion.totalWin = (player.promotion.totalWin || 0) + bet.betWin;
+        }
 
         try {
             if (!this.shouldCompletePromotion(player)) {
@@ -144,11 +136,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             await this.notifyPromotionCompletion(player);
             await this.completePromotion(player);
         } catch (error) {
-            this.logService.logError(`Error ending promotion for player ${player.profile.name}:`, {
-                error: error.message,
-                promotionId: player.promotion.promotionId,
-                stack: error.stack,
-            });
+            this.logService.logError(error);
         }
     }
 

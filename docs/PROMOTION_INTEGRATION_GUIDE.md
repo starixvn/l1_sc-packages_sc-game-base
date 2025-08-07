@@ -443,19 +443,28 @@ if (deductResult.success) {
 #### **Promotion Win Tracking (New)**
 
 ```javascript
-// PromotionBetInterceptor.afterSuccessEvent() - After successful ticket creation
+// PromotionBetInterceptor.afterSuccessEvent() - Creates promotion ticket
 const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
 
 if (!ticketResult || !ticketResult.success) {
-  // Handle ticket creation failure - don't update totalWin
+  // Handle ticket creation failure - don't call endPromotionEvent
   return;
 }
 
-// Only update totalWin AFTER successful ticket creation (data consistency)
+// Call endPromotionEvent after successful ticket creation
+this.endPromotionEvent(context);
+
+// PromotionBetInterceptor.endPromotionEvent() - Updates totalWin after everything is complete
 if (bet.betWin > 0) {
   player.promotion.totalWin = (player.promotion.totalWin || 0) + bet.betWin;
 }
 ```
+
+**Why endPromotionEvent for totalWin Updates:**
+
+- **Slot Games with Bonus Rounds**: `afterSuccessEvent` runs immediately, but bonus rounds continue playing
+- **Complete Processing**: `endPromotionEvent` is called only after all game mechanics finish
+- **Accurate Timing**: Perfect for final promotion state updates and completion checks
 
 #### **Promotion Completion**
 
@@ -490,8 +499,11 @@ PlaceBetConsumer → Copies realPlayers.promotion to ingame[playerName].promotio
 Promotion Usage:
 PromotionBetInterceptor.beforeEvent() → Updates realPlayers.promotion.remainingBonusItems--
 
+Promotion Ticket:
+PromotionBetInterceptor.afterSuccessEvent() → Creates promotion ticket, calls endPromotionEvent
+
 Promotion Win:
-PromotionBetInterceptor.afterSuccessEvent() → Updates realPlayers.promotion.totalWin += bet.betWin
+PromotionBetInterceptor.endPromotionEvent() → Updates realPlayers.promotion.totalWin += bet.betWin
 
 Promotion Completion:
 PromotionBetInterceptor.completePromotion() → Adds realPlayers.promotionTOProgress
@@ -591,14 +603,14 @@ this.promotionFreeSpinsPublisher.publishToUser(player.UID, {
 #### **1. Maintain Data Consistency with APIs**
 
 ```javascript
-// ✅ Correct: Update realPlayer data AFTER successful API calls
+// ✅ Correct: Update realPlayer data in endPromotionEvent AFTER successful API calls
 const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
 if (ticketResult.success) {
-  player.promotion.totalWin += bet.betWin; // Only update if API succeeded
+  this.endPromotionEvent(context); // totalWin updated here after ticket success
 }
 
 // ❌ Incorrect: Update before API call (creates inconsistency if API fails)
-player.promotion.totalWin += bet.betWin; // Updated locally
+player.promotion.totalWin += bet.betWin; // Updated locally before API
 const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
 // If API fails, local data is wrong!
 ```

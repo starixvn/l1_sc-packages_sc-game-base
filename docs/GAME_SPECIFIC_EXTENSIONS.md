@@ -187,6 +187,24 @@ export default class SlotGameContainerRegistry extends BaseGameContainerRegistry
 }
 ```
 
+## Event Flow and Timing
+
+### PromotionBetInterceptor Event Sequence
+
+```
+1. beforeEvent() → Deduct bonus item
+2. Place bet → (Game-specific bet processing)
+3. afterSuccessEvent() → Create promotion ticket
+4. [Bonus rounds] → (Slot games may have additional processing)
+5. endPromotionEvent() → Update totalWin + check completion
+```
+
+**Key Points:**
+
+- **totalWin Updates**: Happen in `endPromotionEvent` to ensure all game processing is complete
+- **Slot Bonus Rounds**: May run between `afterSuccessEvent` and `endPromotionEvent`
+- **Data Consistency**: `totalWin` only updates after successful promotion ticket creation
+
 ## Benefits
 
 1. **🎯 Separation of Concerns** - Base package handles core logic, game packages handle specifics
@@ -195,3 +213,4 @@ export default class SlotGameContainerRegistry extends BaseGameContainerRegistry
 4. **📦 Maintainability** - Changes to game-specific logic don't affect base
 5. **⚡ Performance** - No unused fields in base package
 6. **🔄 Reusability** - Extension patterns can be reused across game types
+7. **⏰ Accurate Timing** - `endPromotionEvent` ensures proper sequence for bonus rounds

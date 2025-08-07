@@ -365,7 +365,7 @@ describe("Event Interceptor Integration", () => {
             jest.clearAllMocks();
         });
 
-        it("should update player.promotion.totalWin after successful ticket creation", async () => {
+        it("should update player.promotion.totalWin in endPromotionEvent after successful ticket creation", async () => {
             // Arrange
             const winningBet = {
                 betWin: 150,
@@ -376,12 +376,13 @@ describe("Event Interceptor Integration", () => {
             const context = { player, bet: winningBet };
 
             player.promotion.totalWin = 50; // Initial value
+            player.promotion.remainingBonusItems = 1; // This will trigger completion
             mockApiInstance.createPromotionTicket.mockResolvedValue({ success: true });
 
-            // Act
+            // Act - afterSuccessEvent calls endPromotionEvent
             await promotionInterceptor.afterSuccessEvent(context);
 
-            // Assert
+            // Assert - totalWin updated in endPromotionEvent
             expect(player.promotion.totalWin).toBe(200); // 50 + 150
             expect(mockApiInstance.createPromotionTicket).toHaveBeenCalledWith({
                 playerId: player.session.playerId,
@@ -412,7 +413,7 @@ describe("Event Interceptor Integration", () => {
             // Act
             await promotionInterceptor.afterSuccessEvent(context);
 
-            // Assert
+            // Assert - endPromotionEvent not called when ticket fails, so totalWin unchanged
             expect(player.promotion.totalWin).toBe(50); // Unchanged due to API failure
         });
 
@@ -427,12 +428,13 @@ describe("Event Interceptor Integration", () => {
             const context = { player, bet: losingBet };
 
             player.promotion.totalWin = 50; // Initial value
+            player.promotion.remainingBonusItems = 1; // This will trigger completion
             mockApiInstance.createPromotionTicket.mockResolvedValue({ success: true });
 
             // Act
             await promotionInterceptor.afterSuccessEvent(context);
 
-            // Assert
+            // Assert - endPromotionEvent called but totalWin unchanged due to zero betWin
             expect(player.promotion.totalWin).toBe(50); // Unchanged due to no win
         });
 
@@ -447,13 +449,34 @@ describe("Event Interceptor Integration", () => {
             const context = { player, bet: winningBet };
 
             player.promotion.totalWin = undefined; // No initial value
+            player.promotion.remainingBonusItems = 1; // This will trigger completion
             mockApiInstance.createPromotionTicket.mockResolvedValue({ success: true });
 
             // Act
             await promotionInterceptor.afterSuccessEvent(context);
 
-            // Assert
+            // Assert - endPromotionEvent handles undefined totalWin gracefully
             expect(player.promotion.totalWin).toBe(100); // 0 + 100
+        });
+
+        it("should update totalWin directly in endPromotionEvent", async () => {
+            // Arrange
+            const winningBet = {
+                betWin: 200,
+                roundId: "round123",
+                amount: 100,
+                promotionId: "promo1",
+            };
+            const context = { player, bet: winningBet };
+
+            player.promotion.totalWin = 100; // Initial value
+            player.promotion.remainingBonusItems = 0; // Promotion should complete
+
+            // Act - Call endPromotionEvent directly
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert - totalWin updated in endPromotionEvent
+            expect(player.promotion.totalWin).toBe(300); // 100 + 200
         });
 
         it("should use cached totalWin in notifyPromotionCompletion", async () => {
