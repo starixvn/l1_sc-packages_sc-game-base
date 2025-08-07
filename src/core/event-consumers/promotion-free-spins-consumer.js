@@ -24,7 +24,7 @@ export default class PromotionFreeSpinsConsumer {
             return;
         }
 
-        if (!this.hasPlayersWithPromotions()) {
+        if (!this.isCheckPromotionExpiry()) {
             return;
         }
 
@@ -48,9 +48,21 @@ export default class PromotionFreeSpinsConsumer {
         return this.promotionApiClient !== null && this.promotionApiClient !== undefined;
     }
 
-    hasPlayersWithPromotions() {
+    hasPlayerWithPromotion(player) {
+        return (
+            player.promotion &&
+            !player.promotionTOProgress &&
+            player.promotion.isClaimed &&
+            player.promotion.remainingBonusItems < player.promotion.initialBonusItem &&            
+            player.promotion.endDate
+        );
+    }
+
+    isCheckPromotionExpiry() {
         const players = this.gameData.realPlayers || {};
-        return Object.values(players).some((player) => player.promotion);
+        return Object.values(players).some(
+            (player) => this.hasPlayerWithPromotion(player)
+        );
     }
 
     async handlePromotionFreeSpinsExpiry() {
@@ -58,7 +70,7 @@ export default class PromotionFreeSpinsConsumer {
         const currentTimeKey = this.toYMDHM(now);
 
         const expiredPlayers = Object.values(this.gameData.realPlayers || {}).filter((player) => {
-            if (!player.promotion?.endDate) return false;
+            if (!this.hasPlayerWithPromotion(player)) return false;
             return currentTimeKey === this.toYMDHM(new Date(player.promotion.endDate));
         });
 
