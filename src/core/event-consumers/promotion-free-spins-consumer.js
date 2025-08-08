@@ -51,10 +51,14 @@ export default class PromotionFreeSpinsConsumer {
     hasPlayerWithPromotion(player) {
         return (
             player.promotion &&
-            !player.promotionTOProgress &&
+            !this.isPromotionCompleted(player) &&
             player.promotion.isClaimed &&
             player.promotion.endDate
         );
+    }
+
+    isPromotionCompleted(player) {
+        return player.promotion.remainingBonusItems === 0;
     }
 
     isCheckPromotionExpiry() {
