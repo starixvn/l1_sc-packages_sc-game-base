@@ -8,6 +8,7 @@ import UserSignInConsumer from "../user-signin-consumer";
 import { Payloads } from "jest-auto-fixture";
 import * as baseApis from "sc-base-apis";
 import GameManagementApiClientFactory from "../../game-management-api";
+import UserTrackingClient from "../../api-clients/user-tracking-client";
 
 jest.mock("sc-base-apis");
 jest.mock("sc-game-management-client");
@@ -39,6 +40,9 @@ describe("UserSignInConsumer", () => {
     /** @type {PlayGamePermissionValidator}*/
     const playGamePermissionValidator = stub(PlayGamePermissionValidator);
 
+    /** @type {UserTrackingClient} */
+    const userTrackingClient = stub(UserTrackingClient);
+
     /** @type {Socket} */
     const socketClient = stub(Socket);
     socketClient.request.headers = { "user-agent": "" };
@@ -53,7 +57,8 @@ describe("UserSignInConsumer", () => {
             userSignInPublisher,
             playGamePermissionValidator,
             appConfigs,
-            gameManagementApiClientFactory
+            gameManagementApiClientFactory,
+            userTrackingClient
         );
     });
 
@@ -210,6 +215,59 @@ describe("UserSignInConsumer", () => {
                         const allCachedRealPlayers = Object.values(gameData.realPlayers);
 
                         expect(allCachedRealPlayers.filter((realPlayer) => realPlayer.UID === userSession.userId).length).toBe(1);
+                    });
+
+                    it("should track user game session", async () => {
+                        // Arrange
+                        const socketClientId = "socket id";
+                        socketClient.id = socketClientId;
+                        userTrackingClient.createSession.mockResolvedValue();
+
+                        // Act
+                        await consumer.consume(socketClient, payload);
+
+                        // Assert
+                        expect(userTrackingClient.createSession).toHaveBeenCalledWith(
+                            expect.objectContaining({
+                                userId: userSession.userId,
+                                gameId: 0,
+                                gameConfigType: 0,
+                            })
+                        );
+                    });
+
+                    it("should handle user tracking error gracefully", async () => {
+                        // Arrange
+                        const socketClientId = "socket id";
+                        socketClient.id = socketClientId;
+                        userTrackingClient.createSession.mockRejectedValue(new Error("Tracking error"));
+
+                        // Act
+                        await consumer.consume(socketClient, payload);
+
+                        // Assert
+                        expect(userTrackingClient.createSession).toHaveBeenCalled();
+                        expect(socketClient.emit).toHaveBeenCalledWith("signedIn");
+                    });
+
+                    it("should include gameConfigType when gameConfig exists", async () => {
+                        // Arrange
+                        const socketClientId = "socket id";
+                        socketClient.id = socketClientId;
+                        userTrackingClient.createSession.mockResolvedValue();
+                        gameData.gameConfigs = { type: 2, gameId: 76 };
+
+                        // Act
+                        await consumer.consume(socketClient, payload);
+
+                        // Assert
+                        expect(userTrackingClient.createSession).toHaveBeenCalledWith(
+                            expect.objectContaining({
+                                userId: userSession.userId,
+                                gameId: 76,
+                                gameConfigType: 2,
+                            })
+                        );
                     });
                 });
             });

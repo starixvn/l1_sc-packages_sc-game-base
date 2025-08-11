@@ -2,6 +2,7 @@ import { asClass, asValue, createContainer, InjectionMode } from "awilix";
 import { endGame, getBalance, placeBet } from "sc-base-apis";
 import { logger } from "sc-common";
 
+import * as Communicators from "./api-clients";
 import * as Crons from "./crons";
 import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";
@@ -38,6 +39,7 @@ export default class ContainerRegistry {
 
         this.registerModels();
         this.registerApis();
+        this.registerCommunicators();
         this.registerPublishers();
         this.registerValidators();
         this.registerConsumers();
@@ -73,6 +75,12 @@ export default class ContainerRegistry {
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
             metricQuery: asClass(MetricQuery).singleton(),
+        });
+    }
+
+    registerCommunicators() {
+        this.container.register({
+            userTrackingClient: asClass(Communicators.UserTrackingClient).singleton(),
         });
     }
 
