@@ -1,20 +1,15 @@
-import { createClient, userGameSessionControllerSignIn, userGameSessionControllerSignOut } from "@sc/user-tracking-client";
+import { TrackingClient } from "@sc/user-tracking-client";
 
 export default class UserTrackingClient {
     constructor(appConfigs) {
-        this.client = createClient({
-            baseURL: appConfigs.tracking.baseURL,
+        this.client = new TrackingClient(appConfigs.tracking.baseURL, {
             headers: appConfigs.tracking.headers || {},
         });
     }
 
     async signIn(sessionData) {
         try {
-            const response = await userGameSessionControllerSignIn({
-                body: sessionData,
-            });
-
-            return response.data;
+            await client.signIn({ ...sessionData });
         } catch (error) {
             console.error("Failed to track user game session:", error);
         }
@@ -22,8 +17,9 @@ export default class UserTrackingClient {
 
     async signOut({ sessionId, gameId }) {
         try {
-            const response = await userGameSessionControllerSignOut({
-                body: { sessionId, gameId },
+            const response = await this.client.signOut({
+                sessionId,
+                gameId,
             });
 
             return response.data;
