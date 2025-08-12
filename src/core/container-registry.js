@@ -2,7 +2,7 @@ import { asClass, asValue, createContainer, InjectionMode } from "awilix";
 import { endGame, getBalance, placeBet } from "sc-base-apis";
 import { logger } from "sc-common";
 
-import * as Communicators from "./api-clients";
+import * as Communicators from "./communicators";
 import * as Crons from "./crons";
 import * as EventConsumers from "./event-consumers";
 import * as EventPublishers from "./event-publishers";

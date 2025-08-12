@@ -1,12 +1,12 @@
 import { getBetLimit } from "sc-base-apis";
 import { Socket } from "socket.io";
 
-import GameManagementApiClientFactory, { getOrDefault, callAndForget, post } from "../game-management-api";
+import GameManagementApiClientFactory, { getOrDefault, callAndForget } from "../game-management-api";
 import { signInGame as userServiceSignInGame } from "../helpers/user-service-helpers";
 import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
-import UserTrackingClient from "../api-clients/user-tracking-client";
+import UserTrackingClient from "../communicators/user-tracking-client";
 
 export default class UserSignInConsumer {
     /**
@@ -112,16 +112,17 @@ export default class UserSignInConsumer {
         userSession.characterName = userInfo.name;
         this.gameData.realPlayers[socketClient.id] = userData;
 
-        try {
-            const sessionData = {
-                ...userSession,
-                gameId: this.gameData.gameConfigs?.gameId ?? 0,
-                gameConfigType: this.gameData.gameConfigs?.type ?? 0,
-            };
+        const sessionData = {
+            ...userSession,
+            gameId: this.gameData.gameConfigs?.gameId ?? 0,
+            gameConfigType: this.gameData.gameConfigs?.type ?? 0,
+        };
 
+        try {
             await this.userTrackingClient.createSession(sessionData);
         } catch (error) {
             console.error("Failed to track user game session:", error);
+            console.log(sessionData);
         }
 
         socketClient.emit("signedIn");

@@ -8,7 +8,7 @@ import UserSignInConsumer from "../user-signin-consumer";
 import { Payloads } from "jest-auto-fixture";
 import * as baseApis from "sc-base-apis";
 import GameManagementApiClientFactory from "../../game-management-api";
-import UserTrackingClient from "../../api-clients/user-tracking-client";
+import { UserTrackingClient } from "../../communicators";
 
 jest.mock("sc-base-apis");
 jest.mock("sc-game-management-client");
