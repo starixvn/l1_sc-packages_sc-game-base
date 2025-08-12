@@ -11,9 +11,18 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
      * @param {TableGameData} gameData
      * @param {TableUserSignInPublisher} userSignInPublisher
      * @param {Object} appConfigs
+     * @param {UserTrackingClient} userTrackingClient
      */
-    constructor(definition, gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, gameManagementApiClientFactory) {
-        super(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, gameManagementApiClientFactory);
+    constructor(
+        definition,
+        gameData,
+        userSignInPublisher,
+        playGamePermissionValidator,
+        appConfigs,
+        gameManagementApiClientFactory,
+        userTrackingClient
+    ) {
+        super(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, gameManagementApiClientFactory, userTrackingClient);
 
         this.definition = definition;
     }
