@@ -119,7 +119,7 @@ export default class UserSignInConsumer {
         };
 
         try {
-            await this.userTrackingClient.createSession(sessionData);
+            await this.userTrackingClient.signIn(sessionData);
         } catch (error) {
             console.error("Failed to track user game session:", error);
             console.log(sessionData);
