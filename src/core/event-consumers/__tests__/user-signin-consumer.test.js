@@ -221,13 +221,13 @@ describe("UserSignInConsumer", () => {
                         // Arrange
                         const socketClientId = "socket id";
                         socketClient.id = socketClientId;
-                        userTrackingClient.createSession.mockResolvedValue();
+                        userTrackingClient.signIn.mockResolvedValue();
 
                         // Act
                         await consumer.consume(socketClient, payload);
 
                         // Assert
-                        expect(userTrackingClient.createSession).toHaveBeenCalledWith(
+                        expect(userTrackingClient.signIn).toHaveBeenCalledWith(
                             expect.objectContaining({
                                 userId: userSession.userId,
                                 gameId: 0,
@@ -240,13 +240,13 @@ describe("UserSignInConsumer", () => {
                         // Arrange
                         const socketClientId = "socket id";
                         socketClient.id = socketClientId;
-                        userTrackingClient.createSession.mockRejectedValue(new Error("Tracking error"));
+                        userTrackingClient.signIn.mockRejectedValue(new Error("Tracking error"));
 
                         // Act
                         await consumer.consume(socketClient, payload);
 
                         // Assert
-                        expect(userTrackingClient.createSession).toHaveBeenCalled();
+                        expect(userTrackingClient.signIn).toHaveBeenCalled();
                         expect(socketClient.emit).toHaveBeenCalledWith("signedIn");
                     });
 
@@ -254,14 +254,14 @@ describe("UserSignInConsumer", () => {
                         // Arrange
                         const socketClientId = "socket id";
                         socketClient.id = socketClientId;
-                        userTrackingClient.createSession.mockResolvedValue();
+                        userTrackingClient.signIn.mockResolvedValue();
                         gameData.gameConfigs = { type: 2, gameId: 76 };
 
                         // Act
                         await consumer.consume(socketClient, payload);
 
                         // Assert
-                        expect(userTrackingClient.createSession).toHaveBeenCalledWith(
+                        expect(userTrackingClient.signIn).toHaveBeenCalledWith(
                             expect.objectContaining({
                                 userId: userSession.userId,
                                 gameId: 76,
