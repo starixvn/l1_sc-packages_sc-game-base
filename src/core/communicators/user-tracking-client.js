@@ -2,8 +2,8 @@ import { TrackingClient } from "@sc/user-tracking-client";
 
 export default class UserTrackingClient {
     constructor(appConfigs) {
-        this.client = new TrackingClient(appConfigs.tracking.baseURL, {
-            headers: appConfigs.tracking.headers || {},
+        this.client = new TrackingClient(appConfigs.trackingApiSettings.baseUrl, {
+            headers: appConfigs.trackingApiSettings.headers || {},
         });
     }
 
