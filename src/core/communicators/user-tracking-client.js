@@ -9,7 +9,7 @@ export default class UserTrackingClient {
 
     async signIn(sessionData) {
         try {
-            await client.signIn({ ...sessionData });
+            await this.client.signIn({ ...sessionData });
         } catch (error) {
             console.error("Failed to track user game session:", error);
         }
