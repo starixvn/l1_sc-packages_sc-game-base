@@ -4,6 +4,7 @@ import { stub } from "jest-micro-auto-stub";
 
 import UserDisconnectConsumer from "../../../core/event-consumers/user-disconnect-consumer";
 import BaseEventPublisher from "../../../core/event-publishers/base-event-publisher";
+import { UserTrackingClient } from "../../../core/communicators";
 import TableGameData from "../../table-game-data";
 import TableOutGameConsumer from "../table-out-game-consumer";
 
@@ -12,6 +13,7 @@ describe("table out game consumer test", () => {
         emit: jest.fn(),
     };
     const publisher = stub(BaseEventPublisher);
+    const userTrackingClient = stub(UserTrackingClient);
     /** @type {TableGameData}*/
     let gameData;
     /** @type {TableOutGameConsumer}*/
@@ -19,7 +21,7 @@ describe("table out game consumer test", () => {
 
     beforeEach(() => {
         gameData = new TableGameData(0);
-        consumer = new TableOutGameConsumer(gameData, publisher);
+        consumer = new TableOutGameConsumer(gameData, publisher, userTrackingClient);
         spyOn(UserDisconnectConsumer.prototype, "consume");
     });
 

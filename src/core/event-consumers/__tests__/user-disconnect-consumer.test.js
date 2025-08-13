@@ -1,9 +1,14 @@
 import UserDisconnectConsumer from "../user-disconnect-consumer";
 import GameData from "../../game-data";
 
-jest.useFakeTimers();
+describe("UserDisconnectConsumer", () => {
+    beforeAll(() => {
+        jest.useFakeTimers();
+    });
 
-describe("consume test", () => {
+    afterAll(() => {
+        jest.useRealTimers();
+    });
     describe("when delete real players in Game Data", () => {
         it("should call setTimeout", () => {
             // Arrange
@@ -23,7 +28,7 @@ describe("consume test", () => {
             expect(setTimeout).toHaveBeenCalled();
         });
 
-        it(" gameData.realPlayers should be empty", () => {
+        it("gameData.realPlayers should be empty", () => {
             const socketId = 123;
             const gameData = new GameData();
             gameData.realPlayers = {
