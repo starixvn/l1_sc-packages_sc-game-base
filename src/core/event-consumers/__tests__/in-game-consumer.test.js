@@ -4,11 +4,13 @@ import GameDefinition from "../../game-definition";
 import RoundQuery from "../../query-apis/round-query";
 import InGameConsumer from "../in-game-consumer";
 import GameManagementApiClientFactory from "../../game-management-api";
+import UserTrackingClient from "../../communicators/user-tracking-client";
 
 jest.mock("sc-game-management-client");
 jest.mock("../../query-apis/round-query");
 jest.mock("../../event-publishers/base-event-publisher");
 jest.mock("sc-common");
+jest.mock("../../communicators/user-tracking-client");
 
 describe("in-game-consumer tests", () => {
     const definition = new GameDefinition({ id: 1, name: "game name" });
@@ -37,6 +39,7 @@ describe("in-game-consumer tests", () => {
     const roundQuery = new RoundQuery();
     const publisher = new BaseEventPublisher();
     const getBalance = jest.fn();
+    const userTrackingClient = new UserTrackingClient();
     const realPlayer = {
         socketClient: {
             emit: jest.fn(),
@@ -53,7 +56,15 @@ describe("in-game-consumer tests", () => {
     const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
     let consumer;
     beforeEach(() => {
-        consumer = new InGameConsumer(definition, gameData, roundQuery, publisher, getBalance, gameManagementApiClientFactory);
+        consumer = new InGameConsumer(
+            definition,
+            gameData,
+            roundQuery,
+            publisher,
+            getBalance,
+            gameManagementApiClientFactory,
+            userTrackingClient
+        );
     });
     describe("consume test", () => {
         afterEach(() => {
@@ -61,10 +72,13 @@ describe("in-game-consumer tests", () => {
         });
 
         it("should publish to user game configs", async () => {
-            consumer.buildPayload = jest.fn(() => ({}));
+            const mockPayload = { user: { red: 2000 } };
+            consumer.buildPayload = jest.fn(() => mockPayload);
+            consumer.trackUserSignIn = jest.fn();
             await consumer.consume(realPlayer);
 
             expect(publisher.publishToUser).toHaveBeenCalled();
+            expect(consumer.trackUserSignIn).toHaveBeenCalledWith(realPlayer, mockPayload.user);
         });
     });
 
@@ -142,6 +156,44 @@ describe("in-game-consumer tests", () => {
                 // assert
                 expect(actual).toEqual(user);
             });
+        });
+    });
+
+    describe("trackUserSignIn tests", () => {
+        afterEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it("should call userTrackingClient.signIn with correct session data", async () => {
+            // arrange
+            const user = { UID: 1, name: "player01", red: 2000 };
+            userTrackingClient.signIn = jest.fn().mockResolvedValueOnce();
+
+            // act
+            await consumer.trackUserSignIn(realPlayer, user);
+
+            // assert
+            expect(userTrackingClient.signIn).toHaveBeenCalledWith({
+                ...realPlayer.session,
+                gameId: 0,
+                gameConfigType: 0,
+                balance: user.red,
+            });
+        });
+
+        it("should handle tracking error gracefully", async () => {
+            // arrange
+            const user = { UID: 1, name: "player01", red: 2000 };
+            const error = new Error("Tracking failed");
+            userTrackingClient.signIn = jest.fn().mockRejectedValueOnce(error);
+            const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+
+            // act
+            await consumer.trackUserSignIn(realPlayer, user);
+
+            // assert
+            expect(consoleSpy).toHaveBeenCalledWith("Failed to track user game session:", error);
+            consoleSpy.mockRestore();
         });
     });
 });

@@ -2126,10 +2126,10 @@
   resolved "http://npm.lumigame.com/@protobufjs/utf8/-/utf8-1.1.0.tgz"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@sc/user-tracking-client@0.0.2-beta.4":
-  version "0.0.2-beta.4"
-  resolved "https://npm.lumigame.com/@sc/user-tracking-client/-/user-tracking-client-0.0.2-beta.4.tgz"
-  integrity sha512-g6FJ6WPI9yWYEzhQBuJFmbNn7v4nSt0GAyUxJPK2WoQcVR5d6DgKi10YgG7fJpVQdgpZZCZBH4Q7IyihHzt5Rw==
+"@sc/user-tracking-client@0.0.2-beta.5":
+  version "0.0.2-beta.5"
+  resolved "https://npm.lumigame.com/@sc/user-tracking-client/-/user-tracking-client-0.0.2-beta.5.tgz"
+  integrity sha512-fcAt4iVLeZw1Q7ncPJbhoyvrQvmuJpkTeHYQsXeqLXLEf3YFbWGZHiznSmcFmuHHd6ieg45kQFBwKYcwvHZLHA==
   dependencies:
     axios "^1.11.0"
     axios-retry "^4.0.0"

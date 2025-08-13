@@ -6,7 +6,6 @@ import { signInGame as userServiceSignInGame } from "../helpers/user-service-hel
 import { PlayGamePermissionValidator } from "../validators";
 import UserSignInPublisher from "./../event-publishers/user-signin-publisher";
 import GameData from "./../game-data";
-import UserTrackingClient from "../communicators/user-tracking-client";
 
 export default class UserSignInConsumer {
     /**
@@ -15,22 +14,13 @@ export default class UserSignInConsumer {
      * @param {PlayGamePermissionValidator} playGamePermissionValidator
      * @param {Object} appConfigs
      * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
-     * @param {UserTrackingClient} userTrackingClient
      */
-    constructor(
-        gameData,
-        userSignInPublisher,
-        playGamePermissionValidator,
-        appConfigs,
-        gameManagementApiClientFactory,
-        userTrackingClient
-    ) {
+    constructor(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, gameManagementApiClientFactory) {
         this.gameData = gameData;
         this.userSignInPublisher = userSignInPublisher;
         this.playGamePermissionValidator = playGamePermissionValidator;
         this.appConfigs = appConfigs;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
-        this.userTrackingClient = userTrackingClient;
     }
 
     /**
@@ -112,19 +102,6 @@ export default class UserSignInConsumer {
 
         userSession.characterName = userInfo.name;
         this.gameData.realPlayers[socketClient.id] = userData;
-
-        const sessionData = {
-            ...userSession,
-            gameId: this.gameData.gameConfigs?.gameId ?? 0,
-            gameConfigType: this.gameData.gameConfigs?.type ?? 0,
-        };
-
-        try {
-            await this.userTrackingClient.signIn(sessionData);
-        } catch (error) {
-            console.error("Failed to track user game session:", error);
-            console.log(sessionData);
-        }
 
         socketClient.emit("signedIn");
     }

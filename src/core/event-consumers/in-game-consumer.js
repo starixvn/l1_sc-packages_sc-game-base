@@ -3,6 +3,7 @@ import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import { RoundQuery } from "./../query-apis";
+import UserTrackingClient from "../communicators/user-tracking-client";
 
 export default class InGameConsumer {
     /**
@@ -12,14 +13,16 @@ export default class InGameConsumer {
      * @param {BaseEventPublisher} publisher
      * @param {*} getBalance
      * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
+     * @param {UserTrackingClient} userTrackingClient
      */
-    constructor(definition, gameData, roundQuery, publisher, getBalance, gameManagementApiClientFactory) {
+    constructor(definition, gameData, roundQuery, publisher, getBalance, gameManagementApiClientFactory, userTrackingClient) {
         this.definition = definition;
         this.gameData = gameData;
         this.roundQuery = roundQuery;
         this.publisher = publisher;
         this.getBalance = getBalance;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
+        this.userTrackingClient = userTrackingClient;
     }
 
     async consume(realPlayer) {
@@ -31,6 +34,8 @@ export default class InGameConsumer {
         const payload = await this.buildPayload(realPlayer);
 
         this.publisher.publishToUser(realPlayer.UID, payload);
+
+        await this.trackUserSignIn(realPlayer, payload.user);
     }
 
     async buildPayload(realPlayer) {
@@ -89,5 +94,23 @@ export default class InGameConsumer {
             };
         }
         return {};
+    }
+
+    async trackUserSignIn(realPlayer, user) {
+        const { session } = realPlayer;
+
+        const sessionData = {
+            ...session,
+            gameId: this.gameData.gameConfigs?.gameId ?? 0,
+            gameConfigType: this.gameData.gameConfigs?.type ?? 0,
+            balance: user.red,
+        };
+
+        try {
+            await this.userTrackingClient.signIn(sessionData);
+        } catch (error) {
+            console.error("Failed to track user game session:", error);
+            console.log(sessionData);
+        }
     }
 }
