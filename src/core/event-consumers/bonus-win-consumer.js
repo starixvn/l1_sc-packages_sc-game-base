@@ -34,6 +34,9 @@ export default class BonusWinConsumer {
                 });
 
                 if (isOk) {
+                    delete player.promotion;
+                    delete player.promotionTOProgress;
+
                     return this.gamePromotionApiClient.claimBonusWins({
                         playerId: session.playerId,
                         promotionId: promotion.promotionId,

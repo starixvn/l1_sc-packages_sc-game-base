@@ -183,18 +183,25 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             siteName: player.session.siteName,
         });
 
+        const promotionTOProgress = {
+            totalTO: completePromotionResult.totalTurnover,
+            minTO: completePromotionResult.minRequiredTurnover,
+            remainTO: completePromotionResult.remainingTO,
+            progress: completePromotionResult.progressPercentage,
+            canClaim: completePromotionResult.canClaim,
+            win: completePromotionResult.totalWinAmount,
+            expire: completePromotionResult.claimExpirationDate,
+        };
+
+        player.promotionTOProgress = {
+            ...promotionTOProgress,
+            promotionId: player.promotion.promotionId,
+        };
+
         this.placeBetPublisher.publishToUser(
             player.UID,
             {
-                promotionTOProgress: {
-                    totalTO: completePromotionResult.totalTurnover,
-                    minTO: completePromotionResult.minRequiredTurnover,
-                    remainTO: completePromotionResult.remainingTO,
-                    progress: completePromotionResult.progressPercentage,
-                    canClaim: completePromotionResult.canClaim,
-                    win: completePromotionResult.totalWinAmount,
-                    expire: completePromotionResult.claimExpirationDate,
-                },
+                promotionTOProgress,
             },
             this.definition.name
         );
