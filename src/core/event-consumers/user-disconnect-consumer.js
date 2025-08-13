@@ -21,7 +21,7 @@ export default class UserDisconnectConsumer {
 
         if (userData?.session) {
             const sessionData = {
-                sessionId: userData.session.session,
+                sessionId: userData.session.sessionId,
                 gameId: this.gameData.gameConfigs?.gameId ?? 0,
             };
 
