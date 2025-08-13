@@ -55,6 +55,7 @@ export default class UserSignInConsumer {
             ...signInGameResult,
             userId: signInGameResult.id,
             playerName: signInGameResult.memberName,
+            browserUserAgent: socketClient.request.headers["user-agent"],
         };
 
         const userInfo = await getOrDefault(this.gameManagementApiClient.users.getUserInfo(userSession.userId));
