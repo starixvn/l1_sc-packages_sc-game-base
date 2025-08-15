@@ -6,6 +6,11 @@ export default class BonusWinConsumer {
         this.logService = logService;
     }
 
+    clearPlayerPromotionData(player) {
+        delete player.promotion;
+        delete player.promotionTOProgress;
+    }
+
     async claim(player) {
         try {
             const { promotion, session } = player;
@@ -17,6 +22,13 @@ export default class BonusWinConsumer {
             });
 
             if (toProgress.errorCode) {
+                if (
+                    toProgress.errorCode === claimingErrorCodes.CLAIMING_EXPIRED ||
+                    toProgress.errorCode === claimingErrorCodes.BONUS_ALREADY_CLAIMED
+                ) {
+                    this.clearPlayerPromotionData(player);
+                }
+
                 return {
                     errorCode: toProgress.errorCode,
                 };
@@ -34,8 +46,7 @@ export default class BonusWinConsumer {
                 });
 
                 if (isOk) {
-                    delete player.promotion;
-                    delete player.promotionTOProgress;
+                    this.clearPlayerPromotionData(player);
 
                     return this.gamePromotionApiClient.claimBonusWins({
                         playerId: session.playerId,
@@ -51,13 +62,19 @@ export default class BonusWinConsumer {
             }
 
             return {
-                errorCode: "SB3017",
+                errorCode: claimingErrorCodes.CLAIMING_FAILED,
             };
         } catch (exception) {
             this.logService.logError(exception);
             return {
-                errorCode: "SB0001",
+                errorCode: claimingErrorCodes.CLAIMING_FAILED,
             };
         }
     }
 }
+
+const claimingErrorCodes = {
+    CLAIMING_EXPIRED: "SB3023",
+    CLAIMING_FAILED: "SB3017",
+    BONUS_ALREADY_CLAIMED: "SB3018",
+};
