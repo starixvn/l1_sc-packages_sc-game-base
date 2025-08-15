@@ -1,6 +1,5 @@
 import express from "express";
 import { logger } from "sc-common";
-import { Server } from "socket.io";
 
 import BaseGameApp from "../base-game-app";
 

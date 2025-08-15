@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { helpers } from "sc-common";
-import { tracer } from "sc-instrument";
 
 import BaseMetrics from "../base-metrics";
 import GameManagementApiClientFactory, { getOrDefault, callAndForget } from "../game-management-api";
@@ -60,17 +59,13 @@ export default class ProcessBetQueue {
         if (this.gameData.ingame) {
             Object.values(this.gameData.ingame).forEach((playerInGame) => {
                 if (!playerInGame.betProcessing && playerInGame.betQueue && playerInGame.betQueue.length > 0) {
-                    const self = this;
                     const { player, payload } = playerInGame.betQueue.shift();
 
                     playerInGame.betProcessing = true;
 
-                    tracer.startActiveSpan("dequeueBet", async (span) => {
-                        self.proceedBet(player, payload)
-                            .then(() => (playerInGame.betProcessing = false))
-                            .catch(self.logService.logError)
-                            .finally(() => span.end());
-                    });
+                    this.proceedBet(player, payload)
+                        .then(() => (playerInGame.betProcessing = false))
+                        .catch(this.logService.logError);
                 }
             });
         }

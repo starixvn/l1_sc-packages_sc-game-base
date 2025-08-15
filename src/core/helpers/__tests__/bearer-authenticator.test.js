@@ -1,12 +1,16 @@
 import { stub } from "jest-micro-auto-stub";
-import OpenIdClient, { Issuer } from "openid-client";
+import { Issuer } from "openid-client";
 import { logger } from "sc-common";
 
 import BearerAuthenticator from "../bearer-authenticator";
 
 jest.mock("sc-common");
 jest.useFakeTimers();
-jest.mock("openid-client");
+jest.mock("openid-client", () => ({
+    Issuer: {
+        discover: jest.fn(),
+    },
+}));
 
 describe("bearer authenticator test", () => {
     logger.log.mockReturnValue(jest.fn());
@@ -20,7 +24,7 @@ describe("bearer authenticator test", () => {
     /** @type {Issuer} */
     const issuer = stub(Issuer);
     issuer.Client.mockClear();
-    OpenIdClient.Issuer.discover.mockReturnValue(issuer);
+    Issuer.discover.mockReturnValue(issuer);
 
     const bearerAuthenticator = new BearerAuthenticator(authConfigs);
 

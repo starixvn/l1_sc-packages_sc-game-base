@@ -1,11 +1,7 @@
-import OpenIdClient from "openid-client";
+import { Issuer } from "openid-client";
 import { logger } from "sc-common";
-
-const { Issuer, custom } = OpenIdClient;
 const beforeTokenExpired = 60 * 5;
 const timeout = 60000;
-
-custom.setHttpOptionsDefaults({ timeout });
 
 export default class BearerAuthenticator {
     constructor(authConfigs) {
@@ -33,12 +29,15 @@ export default class BearerAuthenticator {
         try {
             const result = await this.getBearerToken();
 
-            this.token = result.token;
-            this.expired = result.expired;
-
-            logger.log("Get bearer token successfully.");
+            if (result) {
+                this.token = result.token;
+                this.expired = result.expired;
+                logger.log("Get bearer token successfully.");
+            } else {
+                logger.logError("No access token received");
+            }
         } catch (error) {
-            logger.logError(`Get bearer token failed: ${error}`);
+            logger.logError(`Get bearer token failed: ${error.message}`);
         }
     }
 
@@ -48,19 +47,40 @@ export default class BearerAuthenticator {
             client_id: this.authConfigs.id,
             client_secret: this.authConfigs.secret,
         };
-        const issuer = await Issuer.discover(this.authConfigs.url);
-        const client = new issuer.Client(clientMetadata);
-        const token = await client.grant(clientMetadata);
 
-        return token.access_token
-            ? {
-                  token,
-                  expired: token.expires_at,
-              }
-            : null;
+        try {
+            const issuer = await Promise.race([
+                Issuer.discover(this.authConfigs.url),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Issuer discovery timeout")), timeout)),
+            ]);
+
+            const client = new issuer.Client(clientMetadata);
+            const token = await Promise.race([
+                client.grant(clientMetadata),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Token grant timeout")), timeout)),
+            ]);
+
+            return token.access_token
+                ? {
+                      token,
+                      expired: token.expires_at,
+                  }
+                : null;
+        } catch (error) {
+            logger.logError(`Bearer token request failed: ${error.message}`);
+            throw error;
+        }
+    }
+
+    hasValidToken() {
+        return this.token && !this.isTokenExpired();
     }
 
     formatToken() {
-        return this.token ? `${this.token.token_type} ${this.token.access_token}` : "";
+        if (!this.hasValidToken()) {
+            logger.logWarning("No valid bearer token available");
+            return "";
+        }
+        return `${this.token.token_type} ${this.token.access_token}`;
     }
 }
