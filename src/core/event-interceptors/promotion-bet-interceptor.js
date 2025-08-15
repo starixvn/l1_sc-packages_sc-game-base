@@ -194,7 +194,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
         };
 
         player.promotionTOProgress = {
-            ...promotionTOProgress,
+            ...completePromotionResult,
             promotionId: player.promotion.promotionId,
         };
 
