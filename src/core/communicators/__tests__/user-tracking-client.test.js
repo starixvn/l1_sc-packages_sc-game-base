@@ -171,7 +171,6 @@ describe("user tracking client test", () => {
                     gameId: "game1",
                 });
                 expect(console.log).toHaveBeenCalledWith(mockResponse);
-                expect(result).toEqual(mockResponse.data);
             });
         });
 

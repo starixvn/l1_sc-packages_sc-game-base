@@ -25,8 +25,6 @@ export default class UserTrackingClient {
             });
 
             console.log(response);
-
-            return response.data;
         } catch (error) {
             console.error("Failed to track user game session:", error);
         }
