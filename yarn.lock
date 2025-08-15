@@ -8625,6 +8625,17 @@ sc-common@1.8.1:
     mongoose-long "^0.3.0"
     numeral "^2.0.6"
 
+sc-common@2.0.0:
+  version "2.0.0"
+  resolved "https://npm.lumigame.com/sc-common/-/sc-common-2.0.0.tgz#7e4f3449b0d7cd631938315677c0a1c421df7df7"
+  integrity sha512-kHDMo7r78qNMKO/nABzCiAiW0DnLrrdY9o/1sp79g9RHXg4Y3Bcm9cm9f42JJRjakJ7ZpSqmGkjkmL/CPV+s5A==
+  dependencies:
+    "@sentry/node" "^5.19.1"
+    jsonwebtoken "^8.5.1"
+    jwks-rsa "^1.8.1"
+    mongoose-long "^0.3.0"
+    numeral "^2.0.6"
+
 sc-game-management-client@^0.1.4:
   version "0.1.4"
   resolved "https://npm.lumigame.com/sc-game-management-client/-/sc-game-management-client-0.1.4.tgz"
