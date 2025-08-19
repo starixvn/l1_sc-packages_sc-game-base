@@ -1,4 +1,4 @@
-import { Issuer } from "openid-client";
+import { discovery, clientCredentialsGrant } from "openid-client";
 import { logger } from "sc-common";
 const beforeTokenExpired = 60 * 5;
 const timeout = 60000;
@@ -42,28 +42,21 @@ export default class BearerAuthenticator {
     }
 
     async getBearerToken() {
-        const clientMetadata = {
-            grant_type: "client_credentials",
-            client_id: this.authConfigs.id,
-            client_secret: this.authConfigs.secret,
-        };
-
         try {
-            const issuer = await Promise.race([
-                Issuer.discover(this.authConfigs.url),
+            const config = await Promise.race([
+                discovery(new URL(this.authConfigs.url), this.authConfigs.id, this.authConfigs.secret),
                 new Promise((_, reject) => setTimeout(() => reject(new Error("Issuer discovery timeout")), timeout)),
             ]);
 
-            const client = new issuer.Client(clientMetadata);
             const token = await Promise.race([
-                client.grant(clientMetadata),
+                clientCredentialsGrant(config),
                 new Promise((_, reject) => setTimeout(() => reject(new Error("Token grant timeout")), timeout)),
             ]);
 
             return token.access_token
                 ? {
                       token,
-                      expired: token.expires_at,
+                      expired: token.expiresIn ? Math.floor(Date.now() / 1000) + token.expiresIn() : null,
                   }
                 : null;
         } catch (error) {
