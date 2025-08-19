@@ -43,15 +43,12 @@ export default class BearerAuthenticator {
 
     async getBearerToken() {
         try {
-            const config = await Promise.race([
-                discovery(new URL(this.authConfigs.url), this.authConfigs.id, this.authConfigs.secret),
-                new Promise((_, reject) => setTimeout(() => reject(new Error("Issuer discovery timeout")), timeout)),
-            ]);
+            const config = await discovery(new URL(this.authConfigs.url), this.authConfigs.id, this.authConfigs.secret, {
+                insecure: true,
+                timeout: timeout / 1000,
+            });
 
-            const token = await Promise.race([
-                clientCredentialsGrant(config),
-                new Promise((_, reject) => setTimeout(() => reject(new Error("Token grant timeout")), timeout)),
-            ]);
+            const token = await clientCredentialsGrant(config);
 
             return token.access_token
                 ? {

@@ -220,7 +220,10 @@ describe("BearerAuthenticator", () => {
 
                 const result = await bearerAuthenticator.getBearerToken();
 
-                expect(mockDiscovery).toHaveBeenCalledWith(new URL(authConfigs.url), authConfigs.id, authConfigs.secret);
+                expect(mockDiscovery).toHaveBeenCalledWith(new URL(authConfigs.url), authConfigs.id, authConfigs.secret, {
+                    insecure: true,
+                    timeout: 60,
+                });
                 expect(mockClientCredentialsGrant).toHaveBeenCalledWith(mockConfig);
                 expect(result).toEqual({
                     token: mockToken,
@@ -263,28 +266,6 @@ describe("BearerAuthenticator", () => {
             });
         });
 
-        describe("when discovery times out", () => {
-            it("should throw timeout error", async () => {
-                mockDiscovery.mockImplementation(
-                    () => new Promise((_, reject) => setTimeout(() => reject(new Error("Issuer discovery timeout")), 100))
-                );
-
-                await expect(bearerAuthenticator.getBearerToken()).rejects.toThrow("Issuer discovery timeout");
-            });
-        });
-
-        describe("when token grant times out", () => {
-            it("should throw timeout error", async () => {
-                const mockConfig = { issuer: "test-issuer" };
-                mockDiscovery.mockResolvedValue(mockConfig);
-                mockClientCredentialsGrant.mockImplementation(
-                    () => new Promise((_, reject) => setTimeout(() => reject(new Error("Token grant timeout")), 100))
-                );
-
-                await expect(bearerAuthenticator.getBearerToken()).rejects.toThrow("Token grant timeout");
-            });
-        });
-
         describe("when discovery throws error", () => {
             it("should throw the error", async () => {
                 const error = new Error("Discovery failed");
@@ -306,6 +287,7 @@ describe("BearerAuthenticator", () => {
                 expect(logger.logError).toHaveBeenCalledWith("Bearer token request failed: Token grant failed");
             });
         });
+
     });
 
     describe("hasValidToken", () => {
