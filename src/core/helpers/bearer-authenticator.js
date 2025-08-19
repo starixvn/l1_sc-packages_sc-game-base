@@ -1,4 +1,4 @@
-import { discovery, clientCredentialsGrant } from "openid-client";
+import { discovery, clientCredentialsGrant, allowInsecureRequests } from "openid-client";
 import { logger } from "sc-common";
 const beforeTokenExpired = 60 * 5;
 const timeout = 60000;
@@ -44,7 +44,7 @@ export default class BearerAuthenticator {
     async getBearerToken() {
         try {
             const config = await discovery(new URL(this.authConfigs.url), this.authConfigs.id, this.authConfigs.secret, {
-                insecure: true,
+                execute: [allowInsecureRequests],
                 timeout: timeout / 1000,
             });
 

@@ -1,4 +1,4 @@
-import { discovery, clientCredentialsGrant } from "openid-client";
+import { discovery, clientCredentialsGrant, allowInsecureRequests } from "openid-client";
 import { logger } from "sc-common";
 
 import BearerAuthenticator from "../bearer-authenticator";
@@ -221,7 +221,7 @@ describe("BearerAuthenticator", () => {
                 const result = await bearerAuthenticator.getBearerToken();
 
                 expect(mockDiscovery).toHaveBeenCalledWith(new URL(authConfigs.url), authConfigs.id, authConfigs.secret, {
-                    insecure: true,
+                    execute: [allowInsecureRequests],
                     timeout: 60,
                 });
                 expect(mockClientCredentialsGrant).toHaveBeenCalledWith(mockConfig);
@@ -287,7 +287,6 @@ describe("BearerAuthenticator", () => {
                 expect(logger.logError).toHaveBeenCalledWith("Bearer token request failed: Token grant failed");
             });
         });
-
     });
 
     describe("hasValidToken", () => {
