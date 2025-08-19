@@ -43,7 +43,7 @@ export default class BearerAuthenticator {
 
     async getBearerToken() {
         try {
-            const config = await discovery(new URL(this.authConfigs.url), this.authConfigs.id, this.authConfigs.secret, {
+            const config = await discovery(new URL(this.authConfigs.url), this.authConfigs.id, this.authConfigs.secret, null, {
                 execute: [allowInsecureRequests],
                 timeout: timeout / 1000,
             });
