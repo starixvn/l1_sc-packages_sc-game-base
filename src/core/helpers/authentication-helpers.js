@@ -34,7 +34,10 @@ const post = async (endpoint, params, options) => {
 
     if (useAuthenticate) {
         requestConfigs.headers.Authorization = bearerAuthenticator.formatToken();
+        console.log("requestConfigs.headers.Authorization", requestConfigs.headers.Authorization);
     }
+
+    console.log("request endpoint ", endpoint);
 
     return (await Axios.post(endpoint, params, requestConfigs)).data;
 };

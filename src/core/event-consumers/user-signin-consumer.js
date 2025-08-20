@@ -40,6 +40,7 @@ export default class UserSignInConsumer {
         };
 
         const signInGameResult = await userServiceSignInGame(this.appConfigs.userServiceSettings.url, params);
+        console.log(`signInGameResult: ${JSON.stringify(signInGameResult)}`);
 
         const userSession = {
             ...signInGameResult,
@@ -49,6 +50,7 @@ export default class UserSignInConsumer {
         };
 
         const userInfo = await getOrDefault(this.gameManagementApiClient.users.getUserInfo(userSession.userId));
+        console.log(`userInfo: ${JSON.stringify(userInfo)}`);
 
         if (!userInfo) {
             this.handleUnauthorizedSignIn(socketClient);

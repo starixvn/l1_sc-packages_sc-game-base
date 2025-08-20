@@ -13,7 +13,7 @@
         "pub": "npm publish --registry https://npm.lumigame.com",
         "pubbeta": "npm publish --registry https://npm.lumigame.com --tag beta",
         "semantic-release": "semantic-release",
-        "prepare": "husky install"
+        "prepare-husky": "husky install"
     },
     "jestSonar": {
         "reportPath": "reports",
