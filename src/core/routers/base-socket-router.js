@@ -190,7 +190,8 @@ export default class BaseSocketRouter {
             this.logService.logWarning(message);
         } else {
             this.logService.logError(message);
-            this.logService.logError(e);
         }
+
+        this.logService.logError(e);
     }
 }
