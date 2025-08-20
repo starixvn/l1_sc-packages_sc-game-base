@@ -74,7 +74,15 @@ export default class BaseSocketRouter {
             const { playerId, operatorId, siteId } = this.gameData.realPlayers[this.socketClient.id].session;
             const { mode, timeZoneOffset, roundId, language } = payload;
 
-            const result = await this.gameResultServiceConsumer.getUrl({ playerId, operatorId, siteId, roundId, mode, timeZoneOffset, language });
+            const result = await this.gameResultServiceConsumer.getUrl({
+                playerId,
+                operatorId,
+                siteId,
+                roundId,
+                mode,
+                timeZoneOffset,
+                language,
+            });
 
             if (result.isAuthenticated) {
                 this.socketClient.emit(this.definition.name, { betDetailsUrl: result.redirectUrl });
@@ -182,6 +190,7 @@ export default class BaseSocketRouter {
             this.logService.logWarning(message);
         } else {
             this.logService.logError(message);
+            this.logService.logError(e);
         }
     }
 }
