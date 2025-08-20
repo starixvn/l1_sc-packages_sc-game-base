@@ -325,9 +325,21 @@ describe("BearerAuthenticator", () => {
 
     describe("formatToken", () => {
         describe("when token is valid", () => {
-            it("should return formatted token string", () => {
+            it("should return formatted token string with capitalized Bearer", () => {
                 bearerAuthenticator.token = {
                     token_type: "Bearer",
+                    access_token: "test-access-token",
+                };
+                jest.spyOn(bearerAuthenticator, "hasValidToken").mockReturnValue(true);
+
+                const result = bearerAuthenticator.formatToken();
+
+                expect(result).toBe("Bearer test-access-token");
+            });
+
+            it("should capitalize lowercase token_type from OAuth server", () => {
+                bearerAuthenticator.token = {
+                    token_type: "bearer",
                     access_token: "test-access-token",
                 };
                 jest.spyOn(bearerAuthenticator, "hasValidToken").mockReturnValue(true);

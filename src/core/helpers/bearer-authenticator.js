@@ -71,6 +71,7 @@ export default class BearerAuthenticator {
             logger.logWarning("No valid bearer token available");
             return "";
         }
-        return `${this.token.token_type} ${this.token.access_token}`;
+        const tokenType = this.token.token_type.charAt(0).toUpperCase() + this.token.token_type.slice(1);
+        return `${tokenType} ${this.token.access_token}`;
     }
 }
