@@ -43,62 +43,6 @@ describe("BearerAuthenticator", () => {
         });
     });
 
-    describe("autoUpdateToken", () => {
-        beforeEach(() => {
-            jest.useFakeTimers();
-        });
-
-        afterEach(() => {
-            jest.useRealTimers();
-        });
-
-        it("should call updateToken and schedule refresh", async () => {
-            const updateTokenSpy = jest.spyOn(bearerAuthenticator, "updateToken").mockResolvedValue();
-            const setTimeoutSpy = jest.spyOn(global, "setTimeout");
-
-            await bearerAuthenticator.autoUpdateToken();
-
-            expect(updateTokenSpy).toHaveBeenCalledTimes(1);
-            expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 60000);
-        });
-    });
-
-    describe("refresh", () => {
-        beforeEach(() => {
-            jest.useFakeTimers();
-        });
-
-        afterEach(() => {
-            jest.useRealTimers();
-        });
-
-        describe("when token is not expired", () => {
-            it("should only schedule next refresh", async () => {
-                jest.spyOn(bearerAuthenticator, "isTokenExpired").mockReturnValue(false);
-                const updateTokenSpy = jest.spyOn(bearerAuthenticator, "updateToken").mockResolvedValue();
-                const setTimeoutSpy = jest.spyOn(global, "setTimeout");
-
-                await bearerAuthenticator.refresh();
-
-                expect(updateTokenSpy).not.toHaveBeenCalled();
-                expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 60000);
-            });
-        });
-
-        describe("when token is expired", () => {
-            it("should update token and schedule next refresh", async () => {
-                jest.spyOn(bearerAuthenticator, "isTokenExpired").mockReturnValue(true);
-                const updateTokenSpy = jest.spyOn(bearerAuthenticator, "updateToken").mockResolvedValue();
-                const setTimeoutSpy = jest.spyOn(global, "setTimeout");
-
-                await bearerAuthenticator.refresh();
-
-                expect(updateTokenSpy).toHaveBeenCalledTimes(1);
-                expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 60000);
-            });
-        });
-    });
-
     describe("isTokenExpired", () => {
         describe("when expired is null", () => {
             it("should return true", () => {
@@ -220,7 +164,7 @@ describe("BearerAuthenticator", () => {
 
                 const result = await bearerAuthenticator.getBearerToken();
 
-                expect(mockDiscovery).toHaveBeenCalledWith(new URL(authConfigs.url), authConfigs.id, authConfigs.secret, {
+                expect(mockDiscovery).toHaveBeenCalledWith(new URL(authConfigs.url), authConfigs.id, authConfigs.secret, null, {
                     execute: [allowInsecureRequests],
                     timeout: 60,
                 });
@@ -358,6 +302,62 @@ describe("BearerAuthenticator", () => {
 
                 expect(result).toBe("");
                 expect(logger.logWarning).toHaveBeenCalledWith("No valid bearer token available");
+            });
+        });
+    });
+
+    describe("autoUpdateToken", () => {
+        beforeEach(() => {
+            jest.useFakeTimers();
+        });
+
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
+        it("should call updateToken and schedule refresh", async () => {
+            const updateTokenSpy = jest.spyOn(bearerAuthenticator, "updateToken").mockResolvedValue();
+            const setTimeoutSpy = jest.spyOn(global, "setTimeout");
+
+            await bearerAuthenticator.autoUpdateToken();
+
+            expect(updateTokenSpy).toHaveBeenCalledTimes(1);
+            expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 60000);
+        });
+    });
+
+    describe("refresh", () => {
+        beforeEach(() => {
+            jest.useFakeTimers();
+        });
+
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
+        describe("when token is not expired", () => {
+            it("should only schedule next refresh", async () => {
+                jest.spyOn(bearerAuthenticator, "isTokenExpired").mockReturnValue(false);
+                const updateTokenSpy = jest.spyOn(bearerAuthenticator, "updateToken").mockResolvedValue();
+                const setTimeoutSpy = jest.spyOn(global, "setTimeout");
+
+                await bearerAuthenticator.refresh();
+
+                expect(updateTokenSpy).not.toHaveBeenCalled();
+                expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 60000);
+            });
+        });
+
+        describe("when token is expired", () => {
+            it("should update token and schedule next refresh", async () => {
+                jest.spyOn(bearerAuthenticator, "isTokenExpired").mockReturnValue(true);
+                const updateTokenSpy = jest.spyOn(bearerAuthenticator, "updateToken").mockResolvedValue();
+                const setTimeoutSpy = jest.spyOn(global, "setTimeout");
+
+                await bearerAuthenticator.refresh();
+
+                expect(updateTokenSpy).toHaveBeenCalledTimes(1);
+                expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 60000);
             });
         });
     });
