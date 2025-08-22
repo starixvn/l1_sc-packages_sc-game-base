@@ -49,12 +49,7 @@ export default class PromotionFreeSpinsConsumer {
     }
 
     hasPlayerWithPromotion(player) {
-        return (
-            player.promotion &&
-            !this.isPromotionCompleted(player) &&
-            player.promotion.isClaimed &&
-            player.promotion.endDate
-        );
+        return player.promotion && !this.isPromotionCompleted(player) && player.promotion.isClaimed && player.promotion.endDate;
     }
 
     isPromotionCompleted(player) {
@@ -63,9 +58,7 @@ export default class PromotionFreeSpinsConsumer {
 
     isCheckPromotionExpiry() {
         const players = this.gameData.realPlayers || {};
-        return Object.values(players).some(
-            (player) => this.hasPlayerWithPromotion(player)
-        );
+        return Object.values(players).some((player) => this.hasPlayerWithPromotion(player));
     }
 
     async handlePromotionFreeSpinsExpiry() {
@@ -73,7 +66,10 @@ export default class PromotionFreeSpinsConsumer {
         const currentTimeKey = this.toYMDHM(now);
 
         const expiredPlayers = Object.values(this.gameData.realPlayers || {}).filter((player) => {
-            if (!this.hasPlayerWithPromotion(player)) return false;
+            if (!this.hasPlayerWithPromotion(player)) {
+                return false;
+            }
+
             return currentTimeKey === this.toYMDHM(new Date(player.promotion.endDate));
         });
 

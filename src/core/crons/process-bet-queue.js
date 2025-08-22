@@ -218,14 +218,6 @@ export default class ProcessBetQueue extends BetProcessorWithInterceptors {
             });
         }
 
-        const balanceValue = balance?.red || balance?.balance || 0;
-        callAndForget(
-            this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({
-                id: player.UID,
-                balance: balanceValue,
-                deductionscoins: 0,
-            })
-        );
         this.notifyPlacingBetResult(player, balance, bet, rate);
 
         if (player.profile.minBet !== balance?.minBet || player.profile.maxBet !== balance?.maxBet) {

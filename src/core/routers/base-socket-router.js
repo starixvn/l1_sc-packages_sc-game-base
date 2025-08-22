@@ -195,10 +195,7 @@ export default class BaseSocketRouter {
                 return;
             }
 
-            //TODO game support promotion?
-
             const result = await this.bonusWinConsumer.claim(this.gameData.realPlayers[this.socketClient.id]);
-
             this.socketClient.emit(this.definition.name, result);
         } catch (error) {
             this.logService.logError(error);
