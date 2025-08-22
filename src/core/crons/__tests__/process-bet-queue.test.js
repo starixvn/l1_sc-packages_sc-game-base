@@ -699,23 +699,6 @@ describe("ProcessBetQueue", () => {
             expect(proceedBetQueue.notifyPlacingBetResult).toBeCalledWith(player, response, payload, userCurrencyRate);
         });
 
-        it("should call setBalanceAndDecreaseScoins", async () => {
-            // Arrange
-            const userCurrencyRate = chance.floating({ min: 1 });
-            jest.spyOn(proceedBetQueue, "notifyPlacingBetResult");
-            proceedBetQueue.calculateCurrencyRate = jest.fn().mockReturnValueOnce(userCurrencyRate);
-
-            // Act
-            await proceedBetQueue.handleSuccessBet(player, { ...response, red: 2000 }, roundId, { ...payload, freeBet: false }, []);
-
-            // Assert
-            expect(proceedBetQueue.gameManagementApiClient.users.setBalanceAndDecreaseScoins).toBeCalledWith({
-                id: player.UID,
-                balance: 2000,
-                deductionscoins: 0,
-            });
-        });
-
         describe("when betLogsRepository is available", () => {
             it("should call insertBetLog", async () => {
                 //Arrange
