@@ -289,7 +289,7 @@ describe("BonusWinConsumer", () => {
                 expect(mockLogService.logError).toHaveBeenCalledWith(testError);
             });
 
-            it("should return SB0001 error code when exception occurs", async () => {
+            it("should return SB3017 error code when exception occurs", async () => {
                 // Arrange
                 gamePromotionApiClientInstance.getTOProgress.mockRejectedValue(new Error("Test error"));
 
@@ -298,7 +298,7 @@ describe("BonusWinConsumer", () => {
 
                 // Assert
                 expect(result).toEqual({
-                    errorCode: "SB0001",
+                    errorCode: "SB3017",
                 });
             });
         });
