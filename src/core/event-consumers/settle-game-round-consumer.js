@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
+import GameManagementApiClientFactory, { callAndForget } from "../game-management-api";
 import { RoundResultPublisher, UserBetResultPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-import GameManagementApiClientFactory, { callAndForget } from "../game-management-api";
 
 export default class SettleGameRoundConsumer {
     /**
@@ -95,7 +95,7 @@ export default class SettleGameRoundConsumer {
                     bet.paid = true;
 
                     await bet.save();
-                    const metaData = this.createMetadata({bet, settlementResult, result});
+                    const metaData = this.createMetadata({ bet, settlementResult, result });
                     await this.callEndGame(bet, roundId, time, betResult, metaData);
 
                     this.captureBetResult(bet.uid, betResult, bet.rate);
@@ -160,8 +160,9 @@ export default class SettleGameRoundConsumer {
         const apiResult = await this.endGame(bet.uid, gameInfo, settlementInfo, metaData);
 
         if (apiResult.isOk) {
-            settlementInfo.red > 0 &&
+            if (settlementInfo.red > 0 && !settlementInfo.promotionId) {
                 callAndForget(this.gameManagementApiClient.users.updateBalance({ id: bet.uid, deductionAmount: -settlementInfo.red }));
+            }
         } else {
             this.userBetResultPublisher.publishApiError(bet.uid, apiResult.response);
         }
@@ -175,13 +176,15 @@ export default class SettleGameRoundConsumer {
             time: time,
             operatorId: bet.operatorId,
             playerId: bet.playerId,
+            siteName: bet.siteName,
         };
         const settlementInfo = {
             redPlay: betResult.totalBetAmount,
             freeBet: bet.freeBet,
+            promotionId: bet.promotionId,
         };
 
-        if (betResult.totalWin > 0) {
+        if (betResult.totalWin > 0 && !bet.promotionId) {
             settlementInfo.red = betResult.totalWin;
         }
 

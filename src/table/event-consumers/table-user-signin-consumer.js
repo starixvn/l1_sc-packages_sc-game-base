@@ -5,15 +5,38 @@ import TableUserSignInPublisher from "./../event-publishers/table-user-signin-pu
 import TableGameData from "./../table-game-data";
 import TableGameDefinition from "./../table-game-definition";
 
+
 export default class TableUserSignInConsumer extends UserSignInConsumer {
     /**
-     * @param {TableGameDefinition} definition
-     * @param {TableGameData} gameData
-     * @param {TableUserSignInPublisher} userSignInPublisher
-     * @param {Object} appConfigs
+     * @param {Object} dependencies
+     * @param {TableGameDefinition} dependencies.definition
+     * @param {TableGameData} dependencies.gameData
+     * @param {TableUserSignInPublisher} dependencies.userSignInPublisher
+     * @param {PlayGamePermissionValidator} dependencies.playGamePermissionValidator
+     * @param {Object} dependencies.appConfigs
+     * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
+     * @param {Object} dependencies.logService
+     * @param {PromotionClient} [dependencies.gamePromotionApiClient]
      */
-    constructor(definition, gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, gameManagementApiClientFactory) {
-        super(gameData, userSignInPublisher, playGamePermissionValidator, appConfigs, gameManagementApiClientFactory);
+    constructor({
+        definition,
+        gameData,
+        userSignInPublisher,
+        playGamePermissionValidator,
+        appConfigs,
+        gameManagementApiClientFactory,
+        logService,
+        gamePromotionApiClient,
+    }) {
+        super({
+            gameData,
+            userSignInPublisher,
+            playGamePermissionValidator,
+            appConfigs,
+            gameManagementApiClientFactory,
+            logService,
+            gamePromotionApiClient,
+        });
 
         this.definition = definition;
     }
@@ -38,8 +61,8 @@ export default class TableUserSignInConsumer extends UserSignInConsumer {
         }
     }
 
-    handleSignInSuccess(socketClient, userInfo, userSession) {
-        super.handleSignInSuccess(socketClient, userInfo, userSession);
+    handleSignInSuccess(socketClient, userInfo, userSession, promotionData = null) {
+        super.handleSignInSuccess(socketClient, userInfo, userSession, promotionData);
 
         this.userSignInPublisher.publishToGameMessage(socketClient, this.definition.name);
     }

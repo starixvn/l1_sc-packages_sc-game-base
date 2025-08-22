@@ -1,14 +1,16 @@
-import { asClass, asValue, createContainer, InjectionMode } from "awilix";
-import { endGame, getBalance, placeBet } from "sc-base-apis";
+import { asClass, asFunction, asValue, createContainer, InjectionMode } from "awilix";
+import { award, endGame, getBalance, placeBet } from "sc-base-apis";
 import { logger } from "sc-common";
 
 import * as Communicators from "./communicators";
 import * as Crons from "./crons";
 import * as EventConsumers from "./event-consumers";
+import * as EventInterceptors from "./event-interceptors";
 import * as EventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
 import GameManagementApiClientFactory from "./game-management-api";
+import { PromotionClient } from "./promotion-client";
 
 import { HistoryQuery, MetricQuery, RoundQuery } from "./query-apis";
 import * as Routers from "./routers";
@@ -47,6 +49,11 @@ export default class ContainerRegistry {
         this.registerRouters();
         this.registerGameManagementService();
         this.registerPFSettings();
+        this.registerPromotionApiClient();
+        this.registerInterceptors();
+
+        // Register interceptor arrays after all interceptors are registered
+        this.registerInterceptorArrays();
 
         return this.container;
     }
@@ -71,6 +78,7 @@ export default class ContainerRegistry {
             endGame: asValue(endGame),
             getBalance: asValue(getBalance),
             placeBet: asValue(placeBet),
+            award: asValue(award),
             logService: asValue(logger),
             roundQuery: asClass(RoundQuery).singleton(),
             historyQuery: asClass(HistoryQuery).singleton(),
@@ -90,6 +98,7 @@ export default class ContainerRegistry {
             publisher: asClass(EventPublishers.BaseEventPublisher).singleton(),
             gameStatusPublisher: asClass(EventPublishers.GameStatusPublisher).singleton(),
             placeBetPublisher: asClass(EventPublishers.PlaceBetPublisher).singleton(),
+            promotionFreeSpinsPublisher: asClass(EventPublishers.PromotionFreeSpinsPublisher).singleton(),
             roundResultPublisher: asClass(EventPublishers.RoundResultPublisher).singleton(),
             runningRoundInfoPublisher: asClass(EventPublishers.RunningRoundInfoPublisher).singleton(),
             userBetResultPublisher: asClass(EventPublishers.UserBetResultPublisher).singleton(),
@@ -107,21 +116,23 @@ export default class ContainerRegistry {
         this.container.register({
             inGameConsumer: asClass(EventConsumers.InGameConsumer).singleton(),
             placeBetConsumer: asClass(EventConsumers.PlaceBetConsumer).singleton(),
+            promotionFreeSpinsConsumer: asClass(EventConsumers.PromotionFreeSpinsConsumer).singleton().proxy(),
             settleGameRoundConsumer: asClass(EventConsumers.SettleGameRoundConsumer).singleton().proxy(),
             userDisconnectConsumer: asClass(EventConsumers.UserDisconnectConsumer).singleton(),
-            userSignInConsumer: asClass(EventConsumers.UserSignInConsumer).singleton(),
+            userSignInConsumer: asClass(EventConsumers.UserSignInConsumer).singleton().proxy(),
             roundResultConsumer: asClass(EventConsumers.RoundResultConsumer).singleton(),
             roundIdConsumer: asClass(EventConsumers.RoundIdConsumer).singleton(),
             provablyFairConsumer: asClass(EventConsumers.ProvablyFairConsumer).singleton(),
             unsettledRoundConsumer: asClass(EventConsumers.UnsettledRoundConsumer).singleton().proxy(),
             gameResultServiceConsumer: asClass(EventConsumers.GameResultServiceConsumer).proxy(),
+            bonusWinConsumer: asClass(EventConsumers.BonusWinConsumer).singleton().proxy(),
         });
     }
 
     registerCrons() {
         this.container.register({
-            bot: asClass(Crons.BaseBot).singleton(),
-            gameCron: asClass(Crons.BaseGameCron).singleton().proxy(),
+            baseBot: asClass(Crons.BaseBot).singleton(),
+            baseGameCron: asClass(Crons.BaseGameCron).singleton().proxy(),
             processBetQueue: asClass(Crons.ProcessBetQueue).singleton().proxy(),
         });
     }
@@ -143,6 +154,33 @@ export default class ContainerRegistry {
     registerGameManagementService() {
         this.container.register({
             gameManagementApiClientFactory: asClass(GameManagementApiClientFactory).singleton(),
+        });
+    }
+
+    registerPromotionApiClient() {
+        this.container.register({
+            gamePromotionApiClient: asClass(PromotionClient).singleton().proxy(),
+        });
+    }
+
+    registerInterceptors() {
+        this.container.register({
+            promotionBetInterceptor: asClass(EventInterceptors.PromotionBetInterceptor).singleton().proxy(),
+        });
+    }
+
+    registerInterceptorArrays() {
+        this.container.register({
+            betEventInterceptors: asFunction(() => {
+                const interceptors = [];
+
+                const promotionBetInterceptor = this.container.resolve("promotionBetInterceptor");
+                if (promotionBetInterceptor) {
+                    interceptors.push(promotionBetInterceptor);
+                }
+
+                return interceptors;
+            }).singleton(),
         });
     }
 }

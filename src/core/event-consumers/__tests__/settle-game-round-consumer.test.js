@@ -1,13 +1,13 @@
-import { stubMongoose, stub } from "jest-micro-auto-stub";
+import Chance from "chance";
+import { Models } from "jest-auto-fixture";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import RoundResultPublisher from "../../event-publishers/round-result-publisher";
 import UserBetResultPublisher from "../../event-publishers/user-bet-result-publisher";
 import GameData from "../../game-data";
 import GameDefinition from "../../game-definition";
-import SettleGameRoundConsumer from "../settle-game-round-consumer";
-import Chance from "chance";
-import { Models } from "jest-auto-fixture";
 import GameManagementApiClientFactory from "../../game-management-api";
+import SettleGameRoundConsumer from "../settle-game-round-consumer";
 
 jest.mock("sc-game-management-client");
 
@@ -463,7 +463,13 @@ describe("SettleGameRoundConsumer", () => {
 
         it("should return result with correct gameInfo", () => {
             // Arrange
-            const bet = { freeBet: false, playerId: chance.guid(), operatorId: chance.string(), siteId: chance.guid() };
+            const bet = {
+                freeBet: false,
+                playerId: chance.guid(),
+                operatorId: chance.string(),
+                siteId: chance.guid(),
+                siteName: chance.string(),
+            };
             const betResult = {
                 totalBetAmount: 2000,
                 totalWin: 3000,
@@ -482,6 +488,7 @@ describe("SettleGameRoundConsumer", () => {
                 time: time,
                 operatorId: bet.operatorId,
                 playerId: bet.playerId,
+                siteName: bet.siteName,
             });
         });
 

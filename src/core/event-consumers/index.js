@@ -1,9 +1,11 @@
 import AdminAuthenticationConsumer from "./admin-authentication-consumer";
 import AdminDisconnectConsumer from "./admin-disconnect-consumer";
 import AdminMonitorConsumer from "./admin-monitor-consumer";
+import BonusWinConsumer from "./bonus-win-consumer";
 import GameResultServiceConsumer from "./game-result-service-consumer";
 import InGameConsumer from "./in-game-consumer";
 import PlaceBetConsumer from "./place-bet-consumer";
+import PromotionFreeSpinsConsumer from "./promotion-free-spins-consumer";
 import ProvablyFairConsumer from "./provably-fair-consumer";
 import RoundIdConsumer from "./round-id-consumer";
 import RoundResultConsumer from "./round-result-consumer";
@@ -15,9 +17,17 @@ import UserSignInConsumer from "./user-signin-consumer";
 export {
     AdminAuthenticationConsumer,
     AdminDisconnectConsumer,
-    AdminMonitorConsumer, GameResultServiceConsumer, InGameConsumer,
-    PlaceBetConsumer, ProvablyFairConsumer, RoundIdConsumer, RoundResultConsumer, SettleGameRoundConsumer, UnsettledRoundConsumer,
+    AdminMonitorConsumer,
+    BonusWinConsumer,
+    GameResultServiceConsumer,
+    InGameConsumer,
+    PlaceBetConsumer,
+    PromotionFreeSpinsConsumer,
+    ProvablyFairConsumer,
+    RoundIdConsumer,
+    RoundResultConsumer,
+    SettleGameRoundConsumer,
+    UnsettledRoundConsumer,
     UserDisconnectConsumer,
-    UserSignInConsumer
+    UserSignInConsumer,
 };
-

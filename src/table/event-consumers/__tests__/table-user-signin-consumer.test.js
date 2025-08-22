@@ -23,21 +23,36 @@ describe("table user signin consumer in testing", () => {
 
     /** @type {Socket} */
     const socketClient = stub(Socket);
-    const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
+    
+    const gameManagementApiClientFactory = {
+        instance: jest.fn().mockReturnValue({})
+    };
 
     let gameData;
     let consumer;
+    let config;
+    
     beforeEach(() => {
         gameData = new TableGameData(0);
 
-        consumer = new TableUserSignInConsumer(
+        config = {
+            playGamePermissionValidator,
+            appConfigs: null,
+            gameManagementApiClientFactory,
+            logService: null,
+            gamePromotionApiClient: null
+        };
+
+        consumer = new TableUserSignInConsumer({
             definition,
             gameData,
             userSignInPublisher,
             playGamePermissionValidator,
-            null,
-            gameManagementApiClientFactory
-        );
+            appConfigs: null,
+            gameManagementApiClientFactory,
+            logService: null,
+            gamePromotionApiClient: null
+        });
     });
 
     it("Inherit UserSignInConsumer", () => {

@@ -2,12 +2,23 @@ import mongoose from "mongoose";
 import { helpers } from "sc-common";
 
 import BaseMetrics from "../base-metrics";
-import GameManagementApiClientFactory, { getOrDefault, callAndForget } from "../game-management-api";
+import GameManagementApiClientFactory, { callAndForget } from "../game-management-api";
+import EventInterceptorMixin from "../mixins/event-interceptor-mixin.js";
 import { PlaceBetPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 
-export default class ProcessBetQueue {
+// Create the base class with interceptor functionality
+class BaseBetProcessor {
+    constructor() {
+        // Base class for ProcessBetQueue
+    }
+}
+
+// Apply the mixin to create the enhanced class
+const BetProcessorWithInterceptors = EventInterceptorMixin(BaseBetProcessor);
+
+export default class ProcessBetQueue extends BetProcessorWithInterceptors {
     processTimeOut = 50;
 
     /**
@@ -21,6 +32,7 @@ export default class ProcessBetQueue {
      * @param {mongoose.Model} dependencies.betLogsRepository
      * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
      * @param {BaseMetrics} dependencies.baseMetrics
+     * @param {Array} dependencies.betEventInterceptors - Array of bet event interceptors
      */
     constructor({
         definition,
@@ -32,8 +44,10 @@ export default class ProcessBetQueue {
         betLogsRepository,
         gameManagementApiClientFactory,
         baseMetrics,
-        provablyFairConsumer,
+        betEventInterceptors = [],
     }) {
+        super();
+
         this.definition = definition;
         this.gameData = gameData;
         this.placeBetPublisher = placeBetPublisher;
@@ -43,7 +57,9 @@ export default class ProcessBetQueue {
         this.betLogsRepository = betLogsRepository;
         this.baseMetrics = baseMetrics;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
-        this.provablyFairConsumer = provablyFairConsumer;
+
+        // Initialize interceptor system from mixin
+        this.initializeInterceptors(betEventInterceptors, "bet");
     }
 
     start() {
@@ -72,19 +88,37 @@ export default class ProcessBetQueue {
     }
 
     async proceedBet(player, payload) {
-        const betInfo = this.formatApiBetInfo(payload);
+        // Get applicable interceptors for this bet - follows established pattern
+        const applicableInterceptors = this.getApplicableInterceptors({ payload });
 
         if (!(await this.validateBetRequest(player, payload))) {
             return;
         }
 
+        // Execute beforeEvent interceptors - similar to how consumers work
+        const beforeEventResult = await this.executeInterceptorEvent("beforeEvent", applicableInterceptors, {
+            player,
+            payload,
+        });
+
+        if (!beforeEventResult.success) {
+            return; // Error already handled by interceptor
+        }
+
+        // Transform bet info with interceptors - similar to data transformation in other components
+        let betInfo = this.formatApiBetInfo(payload);
+        betInfo = this.executeInterceptorTransform("enhanceBetInfo", applicableInterceptors, {
+            betInfo,
+            payload,
+        });
+
         const apiResult = await this.placeBet({ id: player.UID, session: player.session }, betInfo);
         const { response } = apiResult;
 
         if (apiResult.isOk) {
-            await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload);
+            await this.handleSuccessBet(player, response, betInfo.gameRoundId, payload, applicableInterceptors);
         } else {
-            this.handleFailedBet(player, response, payload);
+            await this.handleFailedBet(player, response, payload, applicableInterceptors);
 
             if (
                 (player.profile.minBet !== response.apiError?.minBet || player.profile.maxBet !== response.apiError?.maxBet) &&
@@ -104,8 +138,7 @@ export default class ProcessBetQueue {
         const failedCriterion = criteria.find((criterion) => criterion.failure);
 
         if (failedCriterion) {
-            this.handleFailedBet(player, failedCriterion.notice, payload);
-
+            await this.handleFailedBet(player, failedCriterion.notice, payload, []);
             return false;
         }
 
@@ -113,10 +146,7 @@ export default class ProcessBetQueue {
     }
 
     async composeValidationCriteria(player, payload) {
-        const betAmountValidationCriteria = (await this.composeBalanceValidationCriteria(player, payload)) || [];
-        const bettingTimeValidationCriteria = this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
-
-        return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
+        return this.composeBettingTimeValidationCriteria(payload.roundId) ?? [];
     }
 
     composeBettingTimeValidationCriteria(roundId) {
@@ -132,25 +162,6 @@ export default class ProcessBetQueue {
                 notice: { errorCode: helpers.noticeHelper.placeBetNextRound },
             },
         ];
-    }
-
-    async composeBalanceValidationCriteria(player, payload) {
-        if (payload.freeBet) {
-            const coins = await this.getCoinBalance(player);
-
-            return [
-                {
-                    failure: coins < payload.amount,
-                    notice: { errorCode: helpers.noticeHelper.notEnoughScoin },
-                },
-            ];
-        }
-
-        return [];
-    }
-
-    async getCoinBalance(player) {
-        return getOrDefault(this.gameManagementApiClient.users.getUserScoins(player.UID), 0);
     }
 
     updateUserStakeLevel(player, minBet, maxBet) {
@@ -175,7 +186,6 @@ export default class ProcessBetQueue {
             gameId: this.definition.id,
             gameRoundId: payload.roundId,
             choiceId: this.definition.choicesMapper[payload.betChoice],
-            freeBet: payload.freeBet,
             clientSentTime: payload.time ?? new Date(),
             metadata: {
                 mode: `${payload.mode}`,
@@ -183,14 +193,14 @@ export default class ProcessBetQueue {
         };
     }
 
-    async handleSuccessBet(player, balance, roundId, bet) {
+    async handleSuccessBet(player, balance, roundId, bet, applicableInterceptors) {
         const rate = this.calculateCurrencyRate(player.session);
 
         if (this.betLogsRepository) {
-            await this.insertBetLog(player, roundId, bet, rate);
+            await this.insertBetLog(player, roundId, bet, rate, applicableInterceptors);
         }
 
-        await this.upsertBet(player, roundId, bet, rate);
+        const betTime = await this.upsertBet(player, roundId, bet, rate, applicableInterceptors);
 
         if (this.isCountOnTotalBets(player)) {
             this.adjustTotalBets(player, bet, rate);
@@ -198,35 +208,43 @@ export default class ProcessBetQueue {
 
         this.adjustOwnBets(player.profile.name, bet);
 
-        if (bet.freeBet) {
-            const user = await getOrDefault(
-                this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({
-                    id: player.UID,
-                    balance: balance.red,
-                    deductionscoins: bet.amount,
-                }),
-                { red: balance.red, scoins: 0 }
-            );
-            this.notifyPlacingBetResult(player, { ...balance, scoins: user.scoins }, bet, rate);
-        } else {
-            callAndForget(
-                this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({
-                    id: player.UID,
-                    balance: balance.red,
-                    deductionscoins: 0,
-                })
-            );
-            this.notifyPlacingBetResult(player, balance, bet, rate);
+        // Execute afterSuccessEvent interceptors
+        if (applicableInterceptors) {
+            await this.executeInterceptorEvent("afterSuccessEvent", applicableInterceptors, {
+                player,
+                bet,
+                balance,
+                betTime,
+            });
         }
 
-        if (!bet.freeBet && (player.profile.minBet !== balance.minBet || player.profile.maxBet !== balance.maxBet)) {
-            this.updateUserStakeLevel(player, balance.minBet, balance.maxBet);
+        const balanceValue = balance?.red || balance?.balance || 0;
+        callAndForget(
+            this.gameManagementApiClient.users.setBalanceAndDecreaseScoins({
+                id: player.UID,
+                balance: balanceValue,
+                deductionscoins: 0,
+            })
+        );
+        this.notifyPlacingBetResult(player, balance, bet, rate);
+
+        if (player.profile.minBet !== balance?.minBet || player.profile.maxBet !== balance?.maxBet) {
+            this.updateUserStakeLevel(player, balance?.minBet, balance?.maxBet);
         }
     }
 
-    handleFailedBet(player, notice, bet) {
+    async handleFailedBet(player, notice, bet, applicableInterceptors) {
         const { betChoice } = bet;
         this.decreaseBetTracks(player.profile.name, bet);
+
+        // Execute afterFailureEvent interceptors
+        if (applicableInterceptors) {
+            await this.executeInterceptorEvent("afterFailureEvent", applicableInterceptors, {
+                player,
+                bet,
+                notice,
+            });
+        }
 
         if (notice.apiError) {
             this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, betChoice, apiError: notice.apiError });
@@ -237,18 +255,26 @@ export default class ProcessBetQueue {
         }
     }
 
-    async upsertBet(player, roundId, bet, rate) {
+    async upsertBet(player, roundId, bet, rate, applicableInterceptors) {
         const configs = this.gameData.gameConfigs;
-        const newBet = {
+        let newBet = {
             uid: player.UID,
             name: player.profile.name,
             time: new Date(),
             odds: configs.odds,
-            freeBet: bet.freeBet,
             roundId,
             clientSeed: bet.clientSeed,
         };
-        const existingBetFilter = { uid: player.UID, roundId, freeBet: bet.freeBet };
+
+        // Transform bet record with interceptors
+        if (applicableInterceptors) {
+            newBet = this.executeInterceptorTransform("enhanceBetRecord", applicableInterceptors, {
+                betRecord: newBet,
+                bet,
+            });
+        }
+
+        const existingBetFilter = { uid: player.UID, roundId };
         const existingBetIncrement = {
             [bet.betChoice]: bet.amount,
             totalAmount: bet.amount,
@@ -258,10 +284,10 @@ export default class ProcessBetQueue {
             newBet.siteId = player.session.siteId;
             newBet.currency = player.session.currencyName;
             newBet.rate = rate;
-
             newBet.operatorId = player.session.operatorId;
             newBet.playerId = player.session.playerId;
             newBet.appType = player.session.system;
+            newBet.siteName = player.session.siteName;
         }
 
         await this.betsRepository.updateOne(
@@ -273,27 +299,34 @@ export default class ProcessBetQueue {
         return newBet.time;
     }
 
-    async insertBetLog(player, roundId, bet, rate) {
-        const newBetLog = {
+    async insertBetLog(player, roundId, bet, rate, applicableInterceptors) {
+        let newBetLog = {
             uid: player.UID,
             name: player.profile.name,
             time: new Date(),
             choice: bet.betChoice,
             amount: bet.amount,
-            freeBet: bet.freeBet,
             clientSentTime: bet.clientSentTime,
             receivedTime: bet.receivedTime,
             roundId,
         };
 
+        // Transform bet log with interceptors
+        if (applicableInterceptors) {
+            newBetLog = this.executeInterceptorTransform("enhanceBetLog", applicableInterceptors, {
+                betLog: newBetLog,
+                bet,
+            });
+        }
+
         if (player.session) {
             newBetLog.siteId = player.session.siteId;
             newBetLog.currency = player.session.currencyName;
             newBetLog.rate = rate;
-
             newBetLog.operatorId = player.session.operatorId;
             newBetLog.playerId = player.session.playerId;
             newBetLog.appType = player.session.system;
+            newBetLog.siteName = player.session.siteName;
         }
 
         await this.betLogsRepository.create(newBetLog);
@@ -304,7 +337,6 @@ export default class ProcessBetQueue {
 
         if (this.gameData.ingame?.[playerName]) {
             const playerInGame = this.gameData.ingame[playerName];
-
             playerInGame.betTracks[betChoice] -= amount;
         }
     }
@@ -325,24 +357,21 @@ export default class ProcessBetQueue {
 
     adjustTotalBets(player, bet, rate) {
         const { betChoice, amount } = bet;
-
         this.gameData.totalBets[betChoice] = (this.gameData.totalBets[betChoice] ?? 0) + amount * rate;
     }
 
     notifyPlacingBetResult(player, balance, bet, rate) {
         const result = this.generatePlacingBetResult(player, balance, bet, rate);
-
         this.placeBetPublisher.publishSuccessBet(player.UID, result, rate);
     }
 
     generatePlacingBetResult(player, balance, bet, rate) {
-        const { amount, freeBet, betChoice } = bet;
+        const { amount, betChoice } = bet;
         const { ownBets } = this.gameData.ingame[player.profile.name] || { ownBets: {} };
         return {
             ownBets: ownBets,
             endBet: amount,
             betChoice,
-            freeBet,
             user: { ...balance },
         };
     }

@@ -581,7 +581,7 @@ describe("PlaceBetConsumer", () => {
                     const actualResult = consumer.composeRequestParamsValidationCriteria({ ...payload, betChoice: undefined });
 
                     // Assert
-                    expect(actualResult[1].failure).toBeTruthy();
+                    expect(actualResult[2].failure).toBeTruthy();
                 });
             });
         });

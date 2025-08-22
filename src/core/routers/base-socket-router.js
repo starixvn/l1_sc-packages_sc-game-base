@@ -1,7 +1,13 @@
 import { Socket } from "socket.io";
 
 import { PlayGamePermissionValidator } from "../validators";
-import { InGameConsumer, PlaceBetConsumer, UserDisconnectConsumer, UserSignInConsumer } from "./../event-consumers";
+import {
+    InGameConsumer,
+    PlaceBetConsumer,
+    PromotionFreeSpinsConsumer,
+    UserDisconnectConsumer,
+    UserSignInConsumer,
+} from "./../event-consumers";
 import { UserSignInPublisher } from "./../event-publishers";
 import { HistoryQuery } from "./../query-apis";
 
@@ -16,6 +22,7 @@ export default class BaseSocketRouter {
      * @param {UserSignInConsumer} dependencies.userSignInConsumer
      * @param {InGameConsumer} dependencies.inGameConsumer
      * @param {PlaceBetConsumer} dependencies.placeBetConsumer
+     * @param {PromotionFreeSpinsConsumer} dependencies.promotionFreeSpinsConsumer
      * @param {UserDisconnectConsumer} dependencies.userDisconnectConsumer
      * @param {UserSignInPublisher} dependencies.userSignInPublisher
      * @param {HistoryQuery} dependencies.historyQuery
@@ -29,6 +36,7 @@ export default class BaseSocketRouter {
         userSignInConsumer,
         inGameConsumer,
         placeBetConsumer,
+        promotionFreeSpinsConsumer,
         userDisconnectConsumer,
         userSignInPublisher,
         historyQuery,
@@ -36,12 +44,14 @@ export default class BaseSocketRouter {
         playGamePermissionValidator,
         roundQuery,
         gameResultServiceConsumer,
+        bonusWinConsumer,
     }) {
         this.definition = definition;
         this.gameData = gameData;
         this.userSignInConsumer = userSignInConsumer;
         this.inGameConsumer = inGameConsumer;
         this.placeBetConsumer = placeBetConsumer;
+        this.promotionFreeSpinsConsumer = promotionFreeSpinsConsumer;
         this.userDisconnectConsumer = userDisconnectConsumer;
         this.userSignInPublisher = userSignInPublisher;
         this.historyQuery = historyQuery;
@@ -49,6 +59,7 @@ export default class BaseSocketRouter {
         this.playGamePermissionValidator = playGamePermissionValidator;
         this.roundQuery = roundQuery;
         this.gameResultServiceConsumer = gameResultServiceConsumer;
+        this.bonusWinConsumer = bonusWinConsumer;
     }
 
     /**
@@ -63,6 +74,8 @@ export default class BaseSocketRouter {
         this.socketClient.on("disconnect", this.handleDisconnect.bind(this));
         this.socketClient.on("getRoundPF", this.handleGetRoundPF.bind(this));
         this.socketClient.on("betDetails", this.handleBetDetails.bind(this));
+        this.socketClient.on("redeem", this.handleRedeem.bind(this));
+        this.socketClient.on("claim-bonus-win", this.handleClaimBonusWin.bind(this));
     }
 
     async handleBetDetails(payload) {
@@ -118,6 +131,18 @@ export default class BaseSocketRouter {
         }
     }
 
+    handleRedeem(payload) {
+        try {
+            if (!this.verify()) {
+                return;
+            }
+
+            this.promotionFreeSpinsConsumer.consume(this.gameData.realPlayers[this.socketClient.id], payload);
+        } catch (error) {
+            this.logService.logError(error);
+        }
+    }
+
     async handleSignIn(payload) {
         try {
             await this.userSignInConsumer.consume(this.socketClient, payload);
@@ -164,6 +189,22 @@ export default class BaseSocketRouter {
         }
     }
 
+    async handleClaimBonusWin() {
+        try {
+            if (!this.verify()) {
+                return;
+            }
+
+            //TODO game support promotion?
+
+            const result = await this.bonusWinConsumer.claim(this.gameData.realPlayers[this.socketClient.id]);
+
+            this.socketClient.emit(this.definition.name, result);
+        } catch (error) {
+            this.logService.logError(error);
+        }
+    }
+
     verify(payload) {
         const realPlayer = this.gameData.realPlayers[this.socketClient.id];
 
@@ -176,7 +217,7 @@ export default class BaseSocketRouter {
 
         this.logService.setTag({ id: "socket-io-id", value: this.socketClient.id });
         this.logService.setTag({ id: "username", value: payload?.username });
-        this.logService.logError("User not found in server storage");
+        this.logService.logWarning("User not found in server storage");
         this.logService.setTag({ id: "socket-io-id", value: "" });
         this.logService.setTag({ id: "username", value: "" });
 

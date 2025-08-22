@@ -202,7 +202,6 @@ describe("ProcessBetQueue", () => {
             gameId: definition.id,
             gameRoundId: chance.natural(),
             choiceId: chance.natural(),
-            freeBet: chance.bool(),
             clientSentTime: new Date(),
         };
 
@@ -214,7 +213,6 @@ describe("ProcessBetQueue", () => {
             proceedBetQueue.validateBetRequest = jest.fn().mockReturnValue(true);
             proceedBetQueue.handleSuccessBet = jest.fn();
             proceedBetQueue.handleFailedBet = jest.fn();
-            proceedBetQueue.getCoinBalance = jest.fn().mockReturnValueOnce(0);
             baseMetrics.collectBetProcessedTime = jest.fn();
         });
 
@@ -292,7 +290,7 @@ describe("ProcessBetQueue", () => {
                     await proceedBetQueue.proceedBet(player, payload);
 
                     // Assert
-                    expect(proceedBetQueue.handleSuccessBet).toBeCalledWith(player, {}, apiBetInfo.gameRoundId, payload);
+                    expect(proceedBetQueue.handleSuccessBet).toBeCalledWith(player, {}, apiBetInfo.gameRoundId, payload, []);
                 });
             });
 
@@ -427,7 +425,7 @@ describe("ProcessBetQueue", () => {
                 await proceedBetQueue.validateBetRequest(player, payload);
 
                 // Assert
-                expect(proceedBetQueue.handleFailedBet).toBeCalledWith(player, failedCriterion.notice, payload);
+                expect(proceedBetQueue.handleFailedBet).toBeCalledWith(player, failedCriterion.notice, payload, []);
             });
 
             it("should return false", async () => {
@@ -457,34 +455,21 @@ describe("ProcessBetQueue", () => {
     });
 
     describe("composeValidationCriteria", () => {
-        beforeEach(() => {
-            proceedBetQueue.composeBalanceValidationCriteria = jest.fn();
-            proceedBetQueue.composeBettingTimeValidationCriteria = jest.fn();
-        });
-
-        it("should return combine array from results of balance and betting time validation", async () => {
+        it("should return betting time validation criteria", async () => {
             // Arrange
-            const balanceValidationCriteria = [
-                {
-                    failure: false,
-                    notice: "balance validation",
-                },
-            ];
             const bettingTimeValidationCriteria = [
                 {
                     failure: true,
                     notice: "betting time validation",
                 },
             ];
-            const expectResult = bettingTimeValidationCriteria.concat(balanceValidationCriteria);
-            proceedBetQueue.composeBalanceValidationCriteria.mockResolvedValueOnce(balanceValidationCriteria);
-            proceedBetQueue.composeBettingTimeValidationCriteria.mockReturnValueOnce(bettingTimeValidationCriteria);
+            proceedBetQueue.composeBettingTimeValidationCriteria = jest.fn().mockReturnValueOnce(bettingTimeValidationCriteria);
 
             // Act
             const actualResult = await proceedBetQueue.composeValidationCriteria(player, payload);
 
             // Assert
-            expect(actualResult).toStrictEqual(expectResult);
+            expect(actualResult).toStrictEqual(bettingTimeValidationCriteria);
         });
     });
 
@@ -540,101 +525,8 @@ describe("ProcessBetQueue", () => {
     });
 
     describe("composeBalanceValidationCriteria", () => {
-        describe("when bet is free bet", () => {
-            beforeEach(() => {
-                payload.freeBet = true;
-                proceedBetQueue.getCoinBalance = jest.fn();
-            });
-
-            it("should call getCoinBalance", async () => {
-                // Act
-                await proceedBetQueue.composeBalanceValidationCriteria(player, payload);
-
-                // Assert
-                expect(proceedBetQueue.getCoinBalance).toBeCalledWith(player);
-            });
-
-            describe("when player coins is less than bet amount", () => {
-                it("should return result with fail criteria not enough Scoin", async () => {
-                    // Arrange
-                    proceedBetQueue.getCoinBalance.mockResolvedValueOnce(payload.amount - 1);
-
-                    // Act
-                    const actualResult = await proceedBetQueue.composeBalanceValidationCriteria(player, payload);
-
-                    // Assert
-                    expect(actualResult[0].failure).toBe(true);
-                });
-            });
-
-            describe("when player coins is NOT less then bet amount", () => {
-                it("should return result with NO fail criteria", async () => {
-                    // Arrange
-                    proceedBetQueue.getCoinBalance.mockResolvedValueOnce(payload.amount + 1);
-
-                    // Act
-                    const actualResult = await proceedBetQueue.composeBalanceValidationCriteria(player, payload);
-
-                    // Assert
-                    expect(actualResult[0].failure).toBe(false);
-                });
-            });
-        });
-
-        describe("when bet is NOT free bet", () => {
-            it("should return empty array", async () => {
-                // Arrange
-                payload.freeBet = false;
-
-                // Act
-                const actualResult = await proceedBetQueue.composeBalanceValidationCriteria(player, payload);
-
-                // Assert
-                expect(actualResult.length).toBe(0);
-            });
-        });
-    });
-
-    describe("getCoinBalance", () => {
-        it("should call gameManagementApiClient.users.getUserScoins", async () => {
-            // Arrange
-            proceedBetQueue.gameManagementApiClient.users.getUserScoins.mockReturnValueOnce({ isSuccessful: true, data: { scoins: 100 } });
-            // Act
-            await proceedBetQueue.getCoinBalance(player);
-
-            // Assert
-            expect(proceedBetQueue.gameManagementApiClient.users.getUserScoins).toBeCalled();
-        });
-
-        describe("when user scoins is undefined", () => {
-            it("should return 0", async () => {
-                // Arrange
-                proceedBetQueue.gameManagementApiClient.users.getUserScoins.mockReturnValueOnce({ isSuccessful: false, data: null });
-
-                // Act
-                const actualResult = await proceedBetQueue.getCoinBalance(player);
-
-                // Assert
-                expect(actualResult).toBe(0);
-            });
-        });
-
-        describe("when user scoins is number greater than 0", () => {
-            it("should return user scoins", async () => {
-                // Arrange
-                const userScoins = 100;
-                proceedBetQueue.gameManagementApiClient.users.getUserScoins.mockReturnValueOnce({
-                    isSuccessful: true,
-                    data: userScoins,
-                });
-
-                // Act
-                const actualResult = await proceedBetQueue.getCoinBalance(player);
-
-                // Assert
-                expect(actualResult).toBe(userScoins);
-            });
-        });
+        // Removed composeBalanceValidationCriteria and getCoinBalance test sections
+        // since freeBet and getUserScoins functionality was removed
     });
 
     describe("updateUserStakeLevel", () => {
@@ -764,7 +656,7 @@ describe("ProcessBetQueue", () => {
             jest.spyOn(proceedBetQueue, "calculateCurrencyRate");
 
             // Act
-            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
             // Assert
             expect(proceedBetQueue.calculateCurrencyRate).toBeCalledWith(player.session);
@@ -777,10 +669,10 @@ describe("ProcessBetQueue", () => {
             proceedBetQueue.calculateCurrencyRate = jest.fn().mockReturnValueOnce(userCurrencyRate);
 
             // Act
-            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
             // Assert
-            expect(proceedBetQueue.upsertBet).toBeCalledWith(player, roundId, payload, userCurrencyRate);
+            expect(proceedBetQueue.upsertBet).toBeCalledWith(player, roundId, payload, userCurrencyRate, []);
         });
 
         it("should call isCountOnTotalBets", async () => {
@@ -788,7 +680,7 @@ describe("ProcessBetQueue", () => {
             jest.spyOn(proceedBetQueue, "isCountOnTotalBets");
 
             // Act
-            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
             // Assert
             expect(proceedBetQueue.isCountOnTotalBets).toBeCalledWith(player);
@@ -801,7 +693,7 @@ describe("ProcessBetQueue", () => {
             proceedBetQueue.calculateCurrencyRate = jest.fn().mockReturnValueOnce(userCurrencyRate);
 
             // Act
-            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+            await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
             // Assert
             expect(proceedBetQueue.notifyPlacingBetResult).toBeCalledWith(player, response, payload, userCurrencyRate);
@@ -814,7 +706,7 @@ describe("ProcessBetQueue", () => {
             proceedBetQueue.calculateCurrencyRate = jest.fn().mockReturnValueOnce(userCurrencyRate);
 
             // Act
-            await proceedBetQueue.handleSuccessBet(player, { ...response, red: 2000 }, roundId, { ...payload, freeBet: false });
+            await proceedBetQueue.handleSuccessBet(player, { ...response, red: 2000 }, roundId, { ...payload, freeBet: false }, []);
 
             // Assert
             expect(proceedBetQueue.gameManagementApiClient.users.setBalanceAndDecreaseScoins).toBeCalledWith({
@@ -832,10 +724,10 @@ describe("ProcessBetQueue", () => {
                 proceedBetQueue.calculateCurrencyRate = jest.fn().mockReturnValueOnce(userCurrencyRate);
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
-                expect(proceedBetQueue.insertBetLog).toBeCalledWith(player, roundId, payload, userCurrencyRate);
+                expect(proceedBetQueue.insertBetLog).toBeCalledWith(player, roundId, payload, userCurrencyRate, []);
             });
         });
 
@@ -846,7 +738,7 @@ describe("ProcessBetQueue", () => {
                 jest.spyOn(proceedBetQueue, "insertBetLog");
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
                 expect(proceedBetQueue.insertBetLog).not.toBeCalled();
@@ -862,7 +754,7 @@ describe("ProcessBetQueue", () => {
                 jest.spyOn(proceedBetQueue, "adjustTotalBets");
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
                 expect(proceedBetQueue.adjustTotalBets).toBeCalledWith(player, payload, userCurrencyRate);
@@ -876,53 +768,37 @@ describe("ProcessBetQueue", () => {
                 jest.spyOn(proceedBetQueue, "adjustTotalBets");
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
                 expect(proceedBetQueue.adjustTotalBets).not.toBeCalled();
             });
         });
 
-        describe("when bet is free bet", () => {
-            it("should not call updateUserStakeLevel", async () => {
-                // Arrange
-                payload.freeBet = true;
-                jest.spyOn(proceedBetQueue, "updateUserStakeLevel");
-
-                // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
-
-                // Assert
-                expect(proceedBetQueue.updateUserStakeLevel).not.toBeCalled();
-            });
-        });
-
         describe("when bet is not free bet and user stake level is not updated", () => {
             it("should not call updateUserStakeLevel", async () => {
                 // Arrange
-                payload.freeBet = false;
                 response.minBet = player.profile.minBet;
                 response.maxBet = player.profile.maxBet;
                 jest.spyOn(proceedBetQueue, "updateUserStakeLevel");
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
                 expect(proceedBetQueue.updateUserStakeLevel).not.toBeCalled();
             });
         });
 
-        describe("when bet is not free bet and user stake level is updated", () => {
+        describe("when user stake level is updated", () => {
             it("should call updateUserStakeLevel", async () => {
                 // Arrange
-                payload.freeBet = false;
                 response.minBet = player.profile.minBet + 1;
                 response.maxBet = player.profile.maxBet;
                 proceedBetQueue.updateUserStakeLevel = jest.fn();
 
                 // Act
-                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload);
+                await proceedBetQueue.handleSuccessBet(player, response, roundId, payload, []);
 
                 // Assert
                 expect(proceedBetQueue.updateUserStakeLevel).toBeCalledWith(player, response.minBet, response.maxBet);
@@ -989,7 +865,7 @@ describe("ProcessBetQueue", () => {
     });
 
     describe("formatApiBetInfo", () => {
-        it("should return approriate request for Api", () => {
+        it("should return appropriate request for Api", () => {
             // Arrange
             const payload = mockPayload();
 
@@ -1002,7 +878,6 @@ describe("ProcessBetQueue", () => {
                 gameId: definition.id,
                 gameRoundId: payload.roundId,
                 choiceId: definition.choicesMapper[payload.betChoice],
-                freeBet: payload.freeBet,
                 clientSentTime: payload.time,
                 metadata: {
                     mode: `${payload.mode}`,
@@ -1044,9 +919,8 @@ describe("ProcessBetQueue", () => {
         };
     };
 
-    const mockPayload = (roundId = 1, freeBet = false) => {
+    const mockPayload = (roundId = 1) => {
         return {
-            freeBet,
             amount: chance.natural(),
             betChoice: "red2",
             roundId,

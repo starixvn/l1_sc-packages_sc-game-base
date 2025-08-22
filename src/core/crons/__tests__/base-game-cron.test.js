@@ -5,7 +5,7 @@ import { logger } from "sc-common";
 
 import cron from "cron";
 import { GameConfig } from "jest-auto-fixture/src/models";
-import { RoundIdConsumer, SettleGameRoundConsumer } from "../../event-consumers";
+import { RoundIdConsumer, SettleGameRoundConsumer, PromotionFreeSpinsConsumer } from "../../event-consumers";
 import ProvablyFairConsumer from "../../event-consumers/provably-fair-consumer";
 import UnsettledRoundConsumer from "../../event-consumers/unsettled-round-consumer";
 import GameStatusPublisher from "../../event-publishers/game-status-publisher";
@@ -20,6 +20,7 @@ jest.mock("../base-bot");
 jest.mock("../../event-consumers/provably-fair-consumer");
 jest.mock("../../event-consumers/settle-game-round-consumer");
 jest.mock("../../event-consumers/round-id-consumer");
+jest.mock("../../event-consumers/promotion-free-spins-consumer");
 jest.mock("../../event-publishers/running-round-info-publisher");
 jest.mock("../../event-publishers/game-status-publisher");
 jest.mock("cron");
@@ -34,6 +35,7 @@ jest.mock("../../helpers/promotion-helper", () => {
 });
 
 const gameData = new GameData(3);
+gameData.gameConfigs = { gameId: 1 };
 const definition = new GameDefinition(
     { id: 1, name: "game name", durations: { lockingBet: 2, wholeRound: 30, placingBets: 25 } },
     jest.fn,
@@ -46,6 +48,9 @@ const runningRoundInfoPublisher = new RunningRoundInfoPublisher();
 const gameStatusPublisher = new GameStatusPublisher();
 const provablyFairConsumer = new ProvablyFairConsumer();
 const unsettledRoundConsumer = stub(UnsettledRoundConsumer);
+const promotionFreeSpinsConsumer = new PromotionFreeSpinsConsumer();
+promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry = jest.fn();
+promotionFreeSpinsConsumer.hasPromotionApiClient = jest.fn();
 
 /** @type {logger}*/
 const logService = stub(logger);
@@ -76,6 +81,7 @@ const createBaseGameCron = function (newGameData) {
         roundIdConsumer,
         provablyFairConsumer,
         unsettledRoundConsumer,
+        promotionFreeSpinsConsumer,
     });
 };
 
@@ -158,6 +164,85 @@ describe("start", () => {
 
         // Assert
         expect(gameCron.startCron).toHaveBeenCalledWith();
+    });
+
+    it("should call checkPromotionReadiness", async () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.initRoundId = jest.fn();
+        gameCron.queryLastResult = jest.fn();
+        gameCron.getSettingForNewRound = jest.fn();
+        gameCron.updateExchangeRates = jest.fn();
+        gameCron.checkPromotionReadiness = jest.fn();
+        gameCron.startCron = jest.fn();
+
+        // Act
+        await gameCron.start();
+
+        // Assert
+        expect(gameCron.checkPromotionReadiness).toHaveBeenCalledWith();
+    });
+});
+
+describe("checkPromotionReadiness", () => {
+    it("should set gameData.promotionReady to true when promotionApiClient is available", () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.promotionFreeSpinsConsumer.hasPromotionApiClient.mockReturnValue(true);
+
+        // Act
+        gameCron.checkPromotionReadiness();
+
+        // Assert
+        expect(gameCron.gameData.promotionReady).toBe(true);
+    });
+
+    it("should set gameData.promotionReady to false when promotionApiClient is null", () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.promotionFreeSpinsConsumer.hasPromotionApiClient.mockReturnValue(false);
+
+        // Act
+        gameCron.checkPromotionReadiness();
+
+        // Assert
+        expect(gameCron.gameData.promotionReady).toBe(false);
+    });
+
+    it("should set gameData.promotionReady to false when promotionApiClient is undefined", () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.promotionFreeSpinsConsumer.hasPromotionApiClient.mockReturnValue(false);
+
+        // Act
+        gameCron.checkPromotionReadiness();
+
+        // Assert
+        expect(gameCron.gameData.promotionReady).toBe(false);
+    });
+
+    it("should set gameData.promotionReady to false when promotionFreeSpinsConsumer is not injected", () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.promotionFreeSpinsConsumer = null;
+
+        // Act
+        gameCron.checkPromotionReadiness();
+
+        // Assert
+        expect(gameCron.gameData.promotionReady).toBe(false);
+    });
+
+    it("should set gameData.promotionReady to false when promotionFreeSpinsConsumer is undefined", () => {
+        // Arrange
+        var gameCron = createBaseGameCron();
+        gameCron.promotionFreeSpinsConsumer = undefined;
+
+        // Act
+        gameCron.checkPromotionReadiness();
+
+        // Assert
+        expect(gameCron.gameData.promotionReady).toBe(false);
     });
 });
 
@@ -409,6 +494,7 @@ describe("proceed", () => {
             const gameCron = createBaseGameCron();
             gameCron.gameData = {
                 remainingTime: -1,
+                gameConfigs: { gameId: 1 },
             };
             gameCron.definition.durations = { wholeRound: 10 };
             gameCron.roundResultConsumer = {
@@ -428,6 +514,7 @@ describe("proceed", () => {
             const gameCron = createBaseGameCron();
             gameCron.gameData = {
                 remainingTime: -1,
+                gameConfigs: { gameId: 1 },
             };
             gameCron.definition.durations = { wholeRound: 10 };
             gameCron.settleGameRoundConsumer = {
@@ -449,6 +536,7 @@ describe("proceed", () => {
             // Arrange
             const gameCron = createBaseGameCron();
             gameCron.gameData.remainingTime = -1;
+            gameCron.gameData.gameConfigs = { gameId: 1 };
             gameCron.definition.durations = { wholeRound: 22, placingBets: 20 };
             gameCron.settleGameRoundConsumer = {
                 settleRound: jest.fn(),
@@ -471,6 +559,7 @@ describe("proceed", () => {
                 // Arrange
                 const gameCron = createBaseGameCron();
                 gameCron.gameData.remainingTime = -1;
+                gameCron.gameData.gameConfigs = { gameId: 1 };
                 gameCron.definition.durations = { wholeRound: 22, placingBets: 20, mergeClientSeeds: 1 };
                 gameCron.isStartingTime = jest.fn();
                 when(gameCron.isStartingTime).calledWith(11, gameCron.definition.durations).mockReturnValue(true);
@@ -920,76 +1009,6 @@ describe("enableGame", () => {
     });
 });
 
-describe("updatePromotionOdds", () => {
-    describe("when gameConfigs not existed", () => {
-        it("should do nothing", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData.gameConfigs = {
-                x: 123,
-            };
-
-            // Act
-            await gameCron.updatePromotionOdds();
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs).toEqual({ x: 123 });
-        });
-    });
-
-    describe("when gameConfigs.odds not existed", () => {
-        it("should do nothing", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData.gameConfigs = {
-                x: 123,
-            };
-
-            // Act
-            await gameCron.updatePromotionOdds();
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs).toEqual({ x: 123 });
-        });
-    });
-
-    describe("when having effective promotion", () => {
-        it("should update game config odds", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData.gameConfigs = {
-                x: 123,
-                odds: { big: 10, small: 10 },
-                originalOdds: { big: 10, small: 10 },
-            };
-            const promotions = [];
-
-            // Act
-            await gameCron.updatePromotionOdds();
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs.odds).toEqual({ big: 10, small: 11 });
-        });
-
-        it("should update boostedChoices", async () => {
-            // Arrange
-            const gameCron = createBaseGameCron();
-            gameCron.gameData.gameConfigs = {
-                x: 123,
-                odds: { big: 10, small: 10 },
-                originalOdds: { big: 10, small: 10 },
-            };
-            const promotions = [];
-
-            // Act
-            await gameCron.updatePromotionOdds();
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs.boostedChoices).toEqual(["small"]);
-        });
-    });
-});
-
 describe("assignNewGameConfigs", () => {
     let gameCron;
 
@@ -997,7 +1016,7 @@ describe("assignNewGameConfigs", () => {
         gameCron = createBaseGameCron();
     });
 
-    it("always update original odds", () => {
+    it("should assign NEW config", () => {
         // Arrange
         const newConfig = GameConfig({ odds: { small: 2 } });
         gameCron.gameData.gameConfigs = GameConfig();
@@ -1006,60 +1025,19 @@ describe("assignNewGameConfigs", () => {
         gameCron.assignNewGameConfigs(newConfig);
 
         // Assert
-        expect(gameCron.gameData.gameConfigs.originalOdds).toEqual(newConfig.odds);
+        expect(gameCron.gameData.gameConfigs).toEqual(newConfig);
     });
 
-    describe("when current game configs NOT contains boosted odds", () => {
-        it("should assign NEW config", () => {
-            // Arrange
-            const newConfig = GameConfig({ odds: { small: 2 } });
-            gameCron.gameData.gameConfigs = GameConfig();
+    it("should update NEW config", () => {
+        // Arrange
+        const newConfig = GameConfig({ odds: { small: 3 } });
+        gameCron.gameData.gameConfigs = GameConfig({ odds: { small: 2 } });
 
-            // Act
-            gameCron.assignNewGameConfigs(newConfig);
+        // Act
+        gameCron.assignNewGameConfigs(newConfig);
 
-            // Assert
-            expect(gameCron.gameData.gameConfigs).toEqual(newConfig);
-        });
-
-        it("should update NEW odds", () => {
-            // Arrange
-            const newConfig = GameConfig({ odds: { small: 3 } });
-            gameCron.gameData.gameConfigs = GameConfig({ odds: { small: 2 } });
-
-            // Act
-            gameCron.assignNewGameConfigs(newConfig);
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs).toEqual(newConfig);
-        });
-    });
-
-    describe("when current game configs contains boosted odds", () => {
-        let currentGameConfig, newConfig;
-
-        beforeEach(() => {
-            currentGameConfig = GameConfig({ odds: { small: 2 } });
-            currentGameConfig.boostedChoices = ["small"];
-            gameCron.gameData.gameConfigs = currentGameConfig;
-
-            newConfig = GameConfig({ odds: { small: 3 } });
-        });
-        it("should keep boosted choices", () => {
-            // Act
-            gameCron.assignNewGameConfigs(newConfig);
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs.boostedChoices).toEqual(currentGameConfig.boostedChoices);
-        });
-
-        it("should keep odds", () => {
-            // Act
-            gameCron.assignNewGameConfigs(newConfig);
-
-            // Assert
-            expect(gameCron.gameData.gameConfigs.odds).toEqual(currentGameConfig.odds);
-        });
+        // Assert
+        expect(gameCron.gameData.gameConfigs).toEqual(newConfig);
     });
 });
 
