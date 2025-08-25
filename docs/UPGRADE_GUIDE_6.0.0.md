@@ -34,7 +34,7 @@ This document outlines the breaking changes introduced in `sc-game-base v6.0.0` 
 ### What Still Works Without Changes:
 
 - ✅ Regular bet processing
-- ✅ User sign-in flows
+- ✅ User sign-in flows (with enhanced session tracking)
 - ✅ All existing game mechanics
 - ✅ Payment processing
 - ✅ Event publishing/consuming
@@ -46,6 +46,7 @@ This document outlines the breaking changes introduced in `sc-game-base v6.0.0` 
 - 🔧 MongoDB connection string updates
 - 🔧 Sentry configuration updates
 - 🔧 Services that want to **add** promotion features (optional)
+- 🔧 Services that want to **enable** enhanced session tracking (optional)
 
 ---
 
@@ -515,24 +516,26 @@ const processBetQueue = new ProcessBetQueue({
    }
    ```
 
-````
+```
+
+```
 
 3. **Basic Test Template**:
 
 ```javascript
-   describe("Service Tests", () => {
-     let service;
+describe("Service Tests", () => {
+  let service;
 
-     beforeEach(() => {
-       service = new YourService(/* dependencies */);
-     });
+  beforeEach(() => {
+    service = new YourService(/* dependencies */);
+  });
 
-     it("should work with new architecture", async () => {
-       const result = await service.someMethod();
-       expect(result).toBeDefined();
-     });
-   });
-````
+  it("should work with new architecture", async () => {
+    const result = await service.someMethod();
+    expect(result).toBeDefined();
+  });
+});
+```
 
 ---
 
@@ -706,7 +709,9 @@ try {
 
 ---
 
-## Promotion System Integration
+## Optional Feature Integration
+
+### Promotion System Integration
 
 For services that want to add promotion features, see the dedicated [Promotion Integration Guide](./PROMOTION_INTEGRATION_GUIDE.md).
 
@@ -717,6 +722,19 @@ The promotion system is completely optional and includes:
 - API client integration
 - Custom promotion logic
 
+### Future: Advanced Player Fingerprinting
+
+**Note**: Advanced fingerprinting and fraud detection features are planned for future releases but not yet implemented in 6.0.0.
+
+Planned features include:
+
+- Browser fingerprinting (canvas, WebGL, fonts)
+- Behavioral analysis (mouse patterns, betting behavior)
+- Fraud detection (multi-account, bot detection)
+- Risk assessment and scoring
+
+For implementation status and roadmap, see [iGaming Fingerprinting Implementation Plan](./IGAMING_FINGERPRINTING_IMPLEMENTATION_PLAN.md).
+
 ---
 
 ## 📚 Additional Resources
@@ -725,6 +743,7 @@ The promotion system is completely optional and includes:
 - [Event Interceptor Documentation](../diagrams/event-interceptor-system.md)
 - [SC-Game-Base Architecture Guide](../README.md)
 - [Testing Patterns for Game Services](../README.md#testing)
+- [iGaming Fingerprinting Implementation Plan](./IGAMING_FINGERPRINTING_IMPLEMENTATION_PLAN.md)
 
 ---
 
