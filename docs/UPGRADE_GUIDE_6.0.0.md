@@ -17,11 +17,13 @@ This document outlines the breaking changes introduced in `sc-game-base v6.0.0` 
 
 ### 4. OpenID Client Authentication Changes
 
-### 5. New Event Interceptor System
+### 5. Enhanced User Session Tracking
 
-### 6. Container Registry Architecture Changes
+### 6. New Event Interceptor System
 
-### 7. API Changes
+### 7. Container Registry Architecture Changes
+
+### 8. API Changes
 
 ---
 
@@ -62,9 +64,11 @@ Node.js 20 introduced stricter ES module resolution. The `extensionless/register
 
 - **Backward Compatibility**: Allows importing modules without file extensions (`.js`, `.mjs`)
 - **Legacy Code Support**: Maintains compatibility with existing import statements like:
-  ```javascript
-  import helpers from "./helpers"; // instead of './helpers.js'
-  ```
+
+```javascript
+import helpers from "./helpers"; // instead of './helpers.js'
+```
+
 - **Build Tool Integration**: Required for proper module resolution with our current build setup
 
 ### Migration Steps
@@ -83,15 +87,15 @@ Node.js 20 introduced stricter ES module resolution. The `extensionless/register
 
 2. **Update package.json Scripts**:
 
-   ```json
-   {
-     "scripts": {
-       "start": "node --import=extensionless/register index.js",
-       "dev": "node --import=extensionless/register --watch index.js",
-       "test": "node --import=extensionless/register node_modules/.bin/jest"
-     }
-   }
-   ```
+```json
+{
+  "scripts": {
+    "start": "node --import=extensionless/register index.js",
+    "dev": "node --import=extensionless/register --watch index.js",
+    "test": "node --import=extensionless/register node_modules/.bin/jest"
+  }
+}
+```
 
 3. **Update Dockerfile** (if applicable):
    ```dockerfile
@@ -243,7 +247,113 @@ If you encounter 401 authentication errors after upgrading:
 
 ---
 
-## 5. Event Interceptor System
+## 5. Enhanced User Session Tracking
+
+### What Changed
+
+- **New**: Enhanced UserTrackingClient for comprehensive session tracking
+- **Automatic**: Session tracking integration with InGameConsumer
+- **Enhanced**: Game session data collection and API integration
+- **Required**: New trackingApiSettings configuration
+
+### Why This Change is Needed
+
+The enhanced user session tracking provides:
+
+- **Session Management**: Automatic tracking of user sign-in/sign-out events
+- **Game Analytics**: Integration with external tracking APIs for behavioral analysis
+- **Performance Insights**: Session duration and game engagement metrics
+- **Compliance**: Enhanced audit trails for regulatory requirements
+
+### Migration Steps
+
+#### Basic Setup (Required for User Tracking)
+
+To enable user session tracking (recommended for analytics):
+
+```javascript
+// src/configs/app-config.js
+export const appConfigs = {
+  // ... existing configs
+
+  // Add tracking API settings (required for session tracking)
+  trackingApiSettings: {
+    baseUrl: process.env.USER_TRACKING_API_URL || "https://tracking-api.example.com",
+    headers: {
+      Authorization: process.env.USER_TRACKING_API_KEY || "",
+      "Content-Type": "application/json",
+    },
+  },
+};
+```
+
+#### Environment Variables
+
+```bash
+# .env
+USER_TRACKING_API_URL=https://your-tracking-api.com
+USER_TRACKING_API_KEY=your-api-key
+```
+
+### What's Automatic vs Manual
+
+#### ✅ **Automatic (No Action Required)**
+
+- UserTrackingClient registration in container
+- Session tracking on game entry via InGameConsumer
+- Basic session data collection (gameId, balance, session info)
+- Error handling and fallback for tracking failures
+
+#### 🔧 **Manual (Required)**
+
+- Tracking API configuration (`trackingApiSettings`)
+- API credentials and endpoint setup
+- External tracking service integration
+
+### Session Data Collected
+
+The system automatically tracks the following session information:
+
+```javascript
+// Automatically collected on game entry
+{
+  gameId: 123,                    // Current game identifier
+  gameConfigType: 1,              // Game configuration type
+  balance: 1500,                  // User's current balance
+  userId: "user123",              // User identifier
+  sessionId: "session456",        // Session identifier
+  operatorId: "op_001",           // Operator identifier
+  currencyCode: "USD",            // User's currency
+  // ... other session data
+}
+```
+
+### No-Op Behavior
+
+When tracking API is not configured:
+
+- Session tracking methods execute safely without errors
+- No API calls are made to tracking services
+- Game functionality continues normally
+- Console logs indicate tracking is disabled
+
+```javascript
+// Example: This will work fine without tracking API setup
+const consumer = new InGameConsumer(/* standard dependencies */);
+// All existing functionality works normally
+// Tracking methods simply skip API calls
+```
+
+### Performance Impact
+
+- **Minimal**: Session tracking adds < 10ms per game entry
+- **Non-blocking**: Tracking failures don't affect game functionality
+- **Efficient**: Single API call per user session
+- **Cached**: Tracking client uses singleton pattern
+
+---
+
+## 6. Event Interceptor System
 
 ### What Changed
 
@@ -257,9 +367,9 @@ If you encounter 401 authentication errors after upgrading:
 
 1. **Update Dependencies**:
 
-   ```bash
-   npm install sc-game-base@^6.0.0
-   ```
+```bash
+npm install sc-game-base@^6.0.0
+```
 
 2. **Event Interceptors** (optional - for advanced customization):
 
@@ -286,7 +396,7 @@ If you encounter 401 authentication errors after upgrading:
 
 ---
 
-## 6. Container Registry Changes
+## 7. Container Registry Changes
 
 ### What Changed
 
@@ -354,7 +464,7 @@ export default class YourGameContainerRegistry extends ContainerRegistry {
 
 ---
 
-## 7. API Changes
+## 8. API Changes
 
 ### What Changed
 
@@ -384,15 +494,15 @@ const processBetQueue = new ProcessBetQueue({
 
 1. **Update Dependencies in Tests**:
 
-   ```javascript
+```javascript
    // package.json
    {
      "devDependencies": {
        "jest": "^29.0.0",
        "@types/jest": "^29.0.0"
-     }
-   }
-   ```
+  }
+}
+```
 
 2. **Update Test Scripts**:
 
@@ -405,9 +515,11 @@ const processBetQueue = new ProcessBetQueue({
    }
    ```
 
+````
+
 3. **Basic Test Template**:
 
-   ```javascript
+```javascript
    describe("Service Tests", () => {
      let service;
 
@@ -420,7 +532,7 @@ const processBetQueue = new ProcessBetQueue({
        expect(result).toBeDefined();
      });
    });
-   ```
+````
 
 ---
 
@@ -494,6 +606,42 @@ Sentry.init({
 const token = bearerAuthenticator.formatToken(); // "Bearer <token>"
 ```
 
+### Issue 6: User Session Tracking Not Working
+
+**Problem**: Session tracking features not functioning or API calls failing
+
+**Solution**: Verify tracking configuration and connectivity:
+
+```javascript
+// Check if trackingApiSettings is configured
+console.log("Tracking config:", appConfigs.trackingApiSettings);
+
+// Verify UserTrackingClient is properly injected
+console.log("Tracking client available:", !!this.userTrackingClient);
+
+// Test tracking API connectivity
+try {
+  const testSessionData = {
+    userId: "test",
+    sessionId: "test-session",
+    gameId: 1,
+    gameConfigType: 1,
+    balance: 100,
+  };
+  await this.userTrackingClient.signIn(testSessionData);
+  console.log("Tracking API connection: OK");
+} catch (error) {
+  console.error("Tracking API connection failed:", error);
+}
+```
+
+**Common Issues:**
+
+- Missing `trackingApiSettings` in app configuration
+- Incorrect API endpoint or credentials
+- Network connectivity issues
+- External tracking service unavailable
+
 ---
 
 ## 📊 Performance Considerations
@@ -516,6 +664,13 @@ const token = bearerAuthenticator.formatToken(); // "Bearer <token>"
 - Better reconnection logic
 - Optimized query performance
 
+### 4. **User Session Tracking Performance**
+
+- Minimal overhead for session tracking (< 10ms per game entry)
+- Non-blocking API calls that don't affect game functionality
+- Efficient singleton pattern for tracking client
+- Graceful fallback when tracking service is unavailable
+
 ---
 
 ## 📋 Pre-Migration Checklist
@@ -527,6 +682,8 @@ const token = bearerAuthenticator.formatToken(); // "Bearer <token>"
 - [ ] **Plan testing strategy**
 - [ ] **Update CI/CD pipelines**
 - [ ] **Review authentication flows**
+- [ ] **Decide on user session tracking** (recommended for analytics)
+- [ ] **Prepare tracking API credentials** (if implementing session tracking)
 
 ---
 
@@ -537,6 +694,8 @@ const token = bearerAuthenticator.formatToken(); // "Bearer <token>"
 - [ ] **MongoDB connection strings removed `auto_reconnect`**
 - [ ] **Sentry tracing configured and working**
 - [ ] **Authentication working with OAuth providers**
+- [ ] **User session tracking configured (trackingApiSettings)**
+- [ ] **Session tracking API connectivity verified**
 - [ ] **All tests passing**
 - [ ] **Application starts without errors**
 - [ ] **Performance metrics within acceptable ranges**
@@ -589,6 +748,7 @@ If you encounter issues during migration:
 | Mongoose      | < 6.13.8         | 6.13.8+     | Yes - auto_reconnect removed         |
 | Sentry SDK    | Previous         | Latest      | Partial - new features available     |
 | openid-client | Previous         | 6.6.4       | No - backward compatible fix applied |
+| User Tracking | None/Basic       | Enhanced    | No - completely optional feature     |
 
 ---
 
