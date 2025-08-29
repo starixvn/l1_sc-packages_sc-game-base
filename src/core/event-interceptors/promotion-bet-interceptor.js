@@ -99,7 +99,9 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                 gameRoundId: bet.roundId,
                 appType: player.session.system,
                 betAmount: bet.amount,
+                baseBetAmount: bet.baseAmount,
                 winAmount: bet.betWin,
+                baseWinAmount: bet.baseBetWin,
             };
 
             const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
