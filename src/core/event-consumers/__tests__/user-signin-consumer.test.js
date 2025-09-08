@@ -302,6 +302,21 @@ describe("UserSignInConsumer", () => {
 
             // Set up gameData with gameConfigs for promotion tests
             gameData.gameConfigs = { gameId: "test-game-123" };
+            
+            // Set up promotions array for promotion availability checks
+            gameData.promotions = [
+                {
+                    promotionId: "promo123",
+                    startDate: new Date("2020-01-01T00:00:00Z"),
+                    endDate: new Date("2025-12-31T23:59:59Z"),
+                    claimPlayerPromotions: new Date("2025-12-31T23:59:59Z"), // Match current logic
+                    gameIds: ["test-game-123", "other-game-456"],
+                    operatorId: "OP001",
+                    offeredSiteNames: ["test-site"],
+                    offeredPlayerIds: ["player456"],
+                    currencyGroups: ["USD_GROUP_1"]
+                }
+            ];
 
             // Create consumer with promotion client
             consumerWithPromotion = new UserSignInConsumer({
@@ -330,6 +345,9 @@ describe("UserSignInConsumer", () => {
                 siteName: "test-site",
                 currencyGroupId: "USD_GROUP_1", // ✅ Fixed: Use currencyGroupId instead of currencyGroup
             });
+
+            // Mock isPromotionAvailable method to always return true for tests
+            jest.spyOn(consumerWithPromotion, 'isPromotionAvailable').mockReturnValue(true);
 
             getOrDefault.mockResolvedValue({
                 name: "TestPlayer",

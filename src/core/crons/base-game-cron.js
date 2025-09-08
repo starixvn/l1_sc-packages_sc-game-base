@@ -75,6 +75,7 @@ export default class BaseGameCron {
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
         this.checkPromotionReadiness();
+        await this.promotionFreeSpinsConsumer.getAllPromotionsRunning();
         await this.unsettledRoundConsumer.proceed();
         this.startCron();
     }
@@ -135,6 +136,7 @@ export default class BaseGameCron {
                 await this.roundResultConsumer.generateResult();
             }
             await this.settleGameRoundConsumer.settleRound(this.gameData);
+            await this.promotionFreeSpinsConsumer.getAllPromotionsRunning();
             this.gameData.settlementResultFromAdmin = {};
         } else if (remainingTime < durations.placingBets) {
             this.bot && (await this.bot.run());

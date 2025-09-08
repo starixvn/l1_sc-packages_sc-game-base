@@ -104,6 +104,18 @@ export default class PromotionFreeSpinsConsumer {
             this.logService?.logError(`Error in promotion consumer for player ${player.profile.name}:`, error);
         }
     }
+    
+    async getAllPromotionsRunning() {
+        try {
+            const promotions = await this.promotionApiClient.getAllPromotionsRunning(this.gameData.gameConfigs.gameId);
+            if (promotions) {
+                this.gameData.promotions = promotions;
+            }
+        } catch (error) {
+            this.logService?.logError(`Failed to get all promotions running for ${this.gameData.gameConfigs.gameId}: ${JSON.stringify(error)}`);
+        }
+       
+    }
 
     publishRedemptionError(player, errorCode, message) {
         this.promotionFreeSpinsPublisher.publishToUser(player.UID, {

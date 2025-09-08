@@ -114,7 +114,7 @@ export default class UserSignInConsumer {
      * @returns {Promise<Object|null>} Promotion data or null
      */
     async claimPlayerPromotions(userSession) {
-        if (!this.isPromotionAvailable()) {
+        if (!this.isPromotionAvailable(userSession)) {
             return null;
         }
 
@@ -144,8 +144,42 @@ export default class UserSignInConsumer {
      * Check if promotion API is available
      * @returns {boolean}
      */
-    isPromotionAvailable() {
-        return this.promotionApiClient && this.appConfigs.promotionApiSettings;
+    isPromotionAvailable(userSession) {
+        return this.promotionApiClient && this.appConfigs.promotionApiSettings && this.isPromotionAvailableForPlayer(userSession);
+    }
+
+    isPromotionAvailableForPlayer(userSession) {
+        if (this.gameData.promotions.length === 0) {
+            return false;
+        }
+
+        const now = new Date();
+        const { operatorId, siteName, currencyGroupId, playerId } = userSession;
+        const isTimeValid = this.gameData.promotions.filter((promotion) => 
+            promotion.startDate <= now && promotion.claimPlayerPromotions >= now
+        );
+        const isTargetingValid = this.isPromotionTargetingValid(siteName, playerId, currencyGroupId);
+        const isGameAndOperatorValid = this.isPromotionAvailableForGame(gameId, operatorId);
+        
+        return isTimeValid && isTargetingValid && isGameAndOperatorValid;
+    }
+
+    isPromotionAvailableForGame(gameId, operatorId) {
+        return this.gameData.promotions.filter((promotion) => promotion.gameIds.includes(gameId) 
+            && promotion.operatorId === operatorId);
+    }
+
+    isPromotionTargetingValid(siteName, playerId, currencyGroupId) {
+        const isTargetingSite = this.gameData.promotions.filter((promotion) => 
+            promotion.offeredSiteNames.includes(siteName) || promotion.offeredSiteNames.length === 0
+        );
+        const isTargetingPlayer = this.gameData.promotions.filter((promotion) => 
+            promotion.offeredPlayerIds.includes(playerId) || promotion.offeredPlayerIds.length === 0
+        );
+        const isTargetingCurrencyGroup = this.gameData.promotions.filter((promotion) => 
+            promotion.currencyGroups.includes(currencyGroupId) || promotion.currencyGroups.length === 0
+        );
+        return isTargetingSite && isTargetingPlayer && isTargetingCurrencyGroup;
     }
 
     /**

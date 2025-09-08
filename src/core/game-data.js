@@ -20,5 +20,6 @@ export default class GameData {
         this.winningPlayers = {};
         this.pf = { clientSeeds: [], serverSeed: "", serverSeedHash: "" };
         this.promotionReady = false;
+        this.promotions = [];
     }
 }
