@@ -181,7 +181,7 @@ export default class SettleGameRoundConsumer {
             redPlay: betResult.totalBetAmount,
             freeBet: bet.freeBet,
             promotionId: bet.promotionId,
-            baseTotalBetAmount: math.round(betResult.totalBetAmount * bet.rate, 2),
+            baseTotalAmount: math.round(betResult.totalBetAmount * bet.rate, 2),
         };
 
         if (betResult.totalWin > 0 && !bet.promotionId) {
