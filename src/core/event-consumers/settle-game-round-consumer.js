@@ -1,10 +1,9 @@
+import { round } from "lodash/math";
 import mongoose from "mongoose";
-
 import GameManagementApiClientFactory, { callAndForget } from "../game-management-api";
 import { RoundResultPublisher, UserBetResultPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
-
 export default class SettleGameRoundConsumer {
     /**
      * @param {Object} dependencies
@@ -182,6 +181,7 @@ export default class SettleGameRoundConsumer {
             redPlay: betResult.totalBetAmount,
             freeBet: bet.freeBet,
             promotionId: bet.promotionId,
+            baseTotalAmount: round(betResult.totalBetAmount * bet.rate, 2),
         };
 
         if (betResult.totalWin > 0 && !bet.promotionId) {
