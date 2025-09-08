@@ -158,7 +158,7 @@ export default class UserSignInConsumer {
         const gameId = this.gameData.gameConfigs?.gameId;
         
         const isTimeValid = this.gameData.promotions.some((promotion) => 
-            promotion.startDate <= now && promotion.claimPlayerPromotions >= now
+            new Date(promotion.startDate) <= now && new Date(promotion.claimExpirationDate) >= now
         );
         const isTargetingValid = this.isPromotionTargetingValid(siteName, playerId, currencyGroupId);
         const isGameAndOperatorValid = this.isPromotionAvailableForGame(gameId, operatorId);
