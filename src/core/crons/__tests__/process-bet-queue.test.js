@@ -1,6 +1,5 @@
 import Chance from "chance";
 import { stub, stubMongoose } from "jest-micro-auto-stub";
-import { cloneDeep } from "lodash";
 import mongoose from "mongoose";
 import logger from "sc-common/logger";
 
@@ -93,7 +92,7 @@ describe("ProcessBetQueue", () => {
         proceedBetQueue = initBetQueue(placeBet);
 
         gameData.ingame = {
-            player01: cloneDeep(playerInGameData),
+            player01: structuredClone(playerInGameData),
         };
     });
 
