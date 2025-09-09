@@ -910,6 +910,11 @@ describe("UserSignInConsumer", () => {
                 expect(result).toBe(true);
             });
 
+            it("should return true when targeting conditions are met with different cases", () => {
+                const result = consumer.isPromotionTargetingValid("TEST-SITE", "PLAYER456", "usd_group_1");
+                expect(result).toBe(true);
+            });
+
             it("should return true when empty arrays mean all are targeted", () => {
                 const result = consumer.isPromotionTargetingValid("any-site", "any-player", "any-currency");
                 expect(result).toBe(true);

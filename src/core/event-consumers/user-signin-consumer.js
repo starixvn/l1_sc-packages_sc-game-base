@@ -173,13 +173,16 @@ export default class UserSignInConsumer {
 
     isPromotionTargetingValid(siteName, playerId, currencyGroupId) {
         const isTargetingSite = this.gameData.promotions.some((promotion) => 
-            promotion.offeredSiteNames.includes(siteName) || promotion.offeredSiteNames.length === 0
+            promotion.offeredSiteNames.map(site => site.toLowerCase()).includes(siteName.toLowerCase()) 
+            || promotion.offeredSiteNames.length === 0
         );
         const isTargetingPlayer = this.gameData.promotions.some((promotion) => 
-            promotion.offeredPlayerIds.includes(playerId) || promotion.offeredPlayerIds.length === 0
+            promotion.offeredPlayerIds.map(player => player.toLowerCase()).includes(playerId.toLowerCase()) 
+            || promotion.offeredPlayerIds.length === 0
         );
         const isTargetingCurrencyGroup = this.gameData.promotions.some((promotion) => 
-            promotion.currencyGroups.includes(currencyGroupId) || promotion.currencyGroups.length === 0
+            promotion.currencyGroups.map(currency => currency.toLowerCase()).includes(currencyGroupId.toLowerCase())
+             || promotion.currencyGroups.length === 0
         );
         return isTargetingSite && isTargetingPlayer && isTargetingCurrencyGroup;
     }
