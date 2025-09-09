@@ -55,7 +55,8 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             const deductResult = await this.gamePromotionApiClient.deductBonusItem(deductDto);
 
             if (!deductResult || !deductResult.success) {
-                this.logService.logError(`Failed to deduct bonus item for player ${player.profile.name}:`, deductResult);
+                this.logService.logError(`Failed to deduct bonus item for player id ${player.session.playerId}: ${JSON.stringify(deductResult)}`);
+
                 this.placeBetPublisher.publishGameFailedBet(player.UID, {
                     endBet: -1,
                     betChoice: payload.betChoice,
@@ -107,7 +108,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             const ticketResult = await this.gamePromotionApiClient.createPromotionTicket(ticketDto);
 
             if (!ticketResult || !ticketResult.success) {
-                this.logService.logError(`Failed to create promotion ticket for ${player.profile.name}: ${JSON.stringify(ticketDto)}`);
+                this.logService.logError(`Failed to create promotion ticket for player id ${player.session.playerId}: ${JSON.stringify(ticketDto)}`);
                 return;
             }
 
@@ -233,17 +234,11 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
                     player.promotion.remainingBonusItems += 1;
                 }
             } else {
-                this.logService.logError(`Failed to rollback promotion after failure for player ${player.profile.name}:`, {
-                    error: rollbackResult?.error || "Unknown error",
-                    promotionId: bet.promotionId,
-                });
+                this.logService.logError(`Failed to rollback promotion after failure for player id ${player.session.playerId}: ${JSON.stringify(rollbackResult)}`);
+
             }
         } catch (error) {
-            this.logService.logError(`Error rolling back promotion after failure for player ${player.profile.name}:`, {
-                error: error.message,
-                promotionId: bet.promotionId,
-                stack: error.stack,
-            });
+            this.logService.logError(`Error rolling back promotion after failure for player id ${player.session.playerId}: ${error.message}`);
         }
     }
 
