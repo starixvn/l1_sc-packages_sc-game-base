@@ -105,7 +105,7 @@ export default class PromotionFreeSpinsConsumer {
         }
     }
     
-    async getAllPromotionsRunning() {
+    async loadPromotionsRunning() {
         try {
             this.gameData.promotions = await this.promotionApiClient.getAllPromotionsRunning(this.gameData.gameConfigs.gameId);
         } catch (error) {
