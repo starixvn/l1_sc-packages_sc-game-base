@@ -126,6 +126,9 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      */
     async endPromotionEvent(context) {
         const { player, bet } = context;
+        if(!player.promotion) {
+            return;
+        }
 
         if (bet.betWin > 0) {
             player.promotion.totalWin = (player.promotion.totalWin || 0) + bet.betWin;
