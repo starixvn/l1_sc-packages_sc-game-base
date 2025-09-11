@@ -1,3 +1,24 @@
+# [6.1.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.0.0...v6.1.0) (2025-09-11)
+
+
+### Bug Fixes
+
+* bug check site name ([4b94948](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/4b9494892674e1991c409a3b5c5e9d539a1a0e6e))
+* bug get all promotion when expiry ([c612e81](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/c612e812ada9549c1423fdd96fdb93746d55bb3e))
+* code smell ([1fa0b81](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/1fa0b81ccfc53e34a0b77402a628a835a5e7c201))
+* lodash import ([05f7298](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/05f7298ad7255641ce8ccc40ddc845f1e6024923))
+
+
+### Features
+
+* check promotion before endPromotionEvent - GL - 4625 ([dc26427](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/dc2642791096fefc0954c9678f3d23b80b3f9ac2))
+* check promotion running ([10baaec](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/10baaecdefeadecca9b46b01500860bad65da777))
+* check promotion running offer for player ([0723f2c](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/0723f2cbfbe7c3513609c899989e1040a3a88c34))
+* end round - add baseTotalAmount, sc-base-apis@3.0.1-beta.0 ([6535ec6](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/6535ec602f6c047edb428944ba3bad6f8d782b52))
+* get all promotion running ([6031174](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/6031174b93e1e15223b601e8e2c31145397df860))
+* log catch error exception ([55a8049](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/55a8049b710e94dc43c9d870d9a21d2c95a4104c))
+* promotion ticket - add base currency amount ([343af38](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/343af3873ffbd62aef4bdf8d33227cf076cc31b0))
+
 # [6.0.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v5.5.0...v6.0.0) (2025-08-25)
 
 
