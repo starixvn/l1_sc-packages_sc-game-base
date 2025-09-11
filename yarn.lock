@@ -2491,10 +2491,10 @@
   dependencies:
     "@opentelemetry/instrumentation" "^0.52.0 || ^0.53.0 || ^0.54.0 || ^0.55.0 || ^0.56.0 || ^0.57.0"
 
-"@sc/game-promotion-api-client@1.0.1-beta.30":
-  version "1.0.1-beta.30"
-  resolved "https://npm.lumigame.com/@sc/game-promotion-api-client/-/game-promotion-api-client-1.0.1-beta.30.tgz#a1c5c81085b38d6b76076912b94556c0a258b78f"
-  integrity sha512-7qyeR/Y0O2jVkCFbg5LlHdiSyj3knMXFY7XVfvwBhaHObmkSupS7pRLzXFZzTkitWQB56x1ze/iCZhWmsKfbyQ==
+"@sc/game-promotion-api-client@1.0.2":
+  version "1.0.2"
+  resolved "https://npm.lumigame.com/@sc/game-promotion-api-client/-/game-promotion-api-client-1.0.2.tgz#0a9baf34df77edb30d769da80956929490afd753"
+  integrity sha512-0FJrYF1h604kW/GreK9t9uZ8KEreWURCpP4ANEvg/TomHYLgLb3nDVWWkPcOcYNhXKt4gBKUTVAm4jh7s64DAg==
   dependencies:
     axios "^1.6.0"
 
