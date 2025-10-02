@@ -5,36 +5,105 @@ describe("BonusWinConsumer", () => {
     let bonusWinConsumer;
     let mockLogService;
     let player;
+    let gamePromotionApiClientInstance;
+    let gamePromotionApiClient;
+    let mockAward;
+    let definition;
 
-    const definition = new GameDefinition({ id: 1 });
-    const gamePromotionApiClientInstance = {
-        getTOProgress: jest.fn(),
-        claimBonusWins: jest.fn(),
+    // Test Data Factories
+    const createPlayer = () => ({
+        promotion: {
+            promotionId: "test-promotion-id",
+        },
+        session: {
+            playerId: "test-player-id",
+            operatorId: "test-operator-id",
+            siteName: "test-site-name",
+            siteId: "test-site-id",
+            currencyName: "USD",
+        },
+    });
+
+    const createSuccessfulTOProgress = (overrides = {}) => ({
+        canClaim: true,
+        totalWinAmount: 100,
+        ...overrides,
+    });
+
+    const createFailedTOProgress = (errorCode) => ({
+        errorCode,
+    });
+
+    const createSuccessfulAwardResponse = () => ({
+        isOk: true,
+    });
+
+    const createFailedAwardResponse = (errorCode = "AWARD_FAILED") => ({
+        isOk: false,
+        response: {
+            apiError: {
+                errorCode,
+            },
+        },
+    });
+
+    const createClaimBonusWinsResult = (overrides = {}) => ({
+        success: true,
+        claimId: "claim-123",
+        ...overrides,
+    });
+
+    // Setup Helpers
+    const setupSuccessfulTOProgress = (toProgressData = {}) => {
+        gamePromotionApiClientInstance.getTOProgress.mockResolvedValue(
+            createSuccessfulTOProgress(toProgressData)
+        );
     };
 
-    const gamePromotionApiClient = {
-        instance: () => gamePromotionApiClientInstance,
+    const setupFailedTOProgress = (errorCode) => {
+        gamePromotionApiClientInstance.getTOProgress.mockResolvedValue(
+            createFailedTOProgress(errorCode)
+        );
     };
 
-    const mockAward = jest.fn();
+    const setupSuccessfulAward = () => {
+        mockAward.mockResolvedValue(createSuccessfulAwardResponse());
+    };
+
+    const setupFailedAward = (errorCode) => {
+        mockAward.mockResolvedValue(createFailedAwardResponse(errorCode));
+    };
+
+    const setupSuccessfulClaimBonusWins = (resultData = {}) => {
+        gamePromotionApiClientInstance.claimBonusWins.mockReturnValue(
+            createClaimBonusWinsResult(resultData)
+        );
+    };
+
+    const setupClaimBonusWinsWithError = (errorCode) => {
+        gamePromotionApiClientInstance.claimBonusWins.mockReturnValue({
+            errorCode,
+        });
+    };
 
     beforeEach(() => {
+        // Arrange - Create fresh mocks for each test
         mockLogService = {
             logError: jest.fn(),
         };
 
-        player = {
-            promotion: {
-                promotionId: "test-promotion-id",
-            },
-            session: {
-                playerId: "test-player-id",
-                operatorId: "test-operator-id",
-                siteName: "test-site-name",
-                siteId: "test-site-id",
-                currencyName: "USD",
-            },
+        gamePromotionApiClientInstance = {
+            getTOProgress: jest.fn(),
+            claimBonusWins: jest.fn(),
         };
+
+        gamePromotionApiClient = {
+            instance: () => gamePromotionApiClientInstance,
+        };
+
+        mockAward = jest.fn();
+        definition = new GameDefinition({ id: 1 });
+        player = createPlayer();
 
         bonusWinConsumer = new BonusWinConsumer({
             definition,
@@ -53,14 +122,9 @@ describe("BonusWinConsumer", () => {
             describe("when award succeeds", () => {
                 it("should call getTOProgress with correct parameters", async () => {
                     // Arrange
-                    gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                        canClaim: true,
-                        totalWinAmount: 100,
-                    });
-                    mockAward.mockResolvedValue({ isOk: true });
-                    gamePromotionApiClientInstance.claimBonusWins.mockResolvedValue({
-                        success: true,
-                    });
+                    setupSuccessfulTOProgress();
+                    setupSuccessfulAward();
+                    setupSuccessfulClaimBonusWins();
 
                     // Act
                     await bonusWinConsumer.claim(player);
@@ -76,14 +140,9 @@ describe("BonusWinConsumer", () => {
 
                 it("should call award with correct parameters", async () => {
                     // Arrange
-                    gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                        canClaim: true,
-                        totalWinAmount: 100,
-                    });
-                    mockAward.mockResolvedValue({ isOk: true });
-                    gamePromotionApiClientInstance.claimBonusWins.mockResolvedValue({
-                        success: true,
-                    });
+                    setupSuccessfulTOProgress();
+                    setupSuccessfulAward();
+                    setupSuccessfulClaimBonusWins();
 
                     // Act
                     await bonusWinConsumer.claim(player);
@@ -102,14 +161,9 @@ describe("BonusWinConsumer", () => {
 
                 it("should call claimBonusWins with correct parameters", async () => {
                     // Arrange
-                    gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                        canClaim: true,
-                        totalWinAmount: 100,
-                    });
-                    mockAward.mockResolvedValue({ isOk: true });
-                    gamePromotionApiClientInstance.claimBonusWins.mockResolvedValue({
-                        success: true,
-                    });
+                    setupSuccessfulTOProgress();
+                    setupSuccessfulAward();
+                    setupSuccessfulClaimBonusWins();
 
                     // Act
                     await bonusWinConsumer.claim(player);
@@ -125,13 +179,10 @@ describe("BonusWinConsumer", () => {
 
                 it("should return claimBonusWins result", async () => {
                     // Arrange
-                    const expectedResult = { success: true, claimId: "claim-123" };
-                    gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                        canClaim: true,
-                        totalWinAmount: 100,
-                    });
-                    mockAward.mockResolvedValue({ isOk: true });
-                    gamePromotionApiClientInstance.claimBonusWins.mockResolvedValue(expectedResult);
+                    const expectedResult = createClaimBonusWinsResult();
+                    setupSuccessfulTOProgress();
+                    setupSuccessfulAward();
+                    setupSuccessfulClaimBonusWins(expectedResult);
 
                     // Act
                     const result = await bonusWinConsumer.claim(player);
@@ -139,53 +190,101 @@ describe("BonusWinConsumer", () => {
                     // Assert
                     expect(result).toEqual(expectedResult);
                 });
-            });
 
-            describe("when award fails", () => {
-                it("should return error code from award response", async () => {
+                it("should clear player promotion data after successful claim", async () => {
                     // Arrange
-                    gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                        canClaim: true,
-                        totalWinAmount: 100,
-                    });
-                    mockAward.mockResolvedValue({
-                        isOk: false,
-                        response: {
-                            apiError: {
-                                errorCode: "AWARD_FAILED",
-                            },
-                        },
-                    });
-
-                    // Act
-                    const result = await bonusWinConsumer.claim(player);
-
-                    // Assert
-                    expect(result).toEqual({
-                        errorCode: "AWARD_FAILED",
-                    });
-                });
-
-                it("should not call claimBonusWins when award fails", async () => {
-                    // Arrange
-                    gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                        canClaim: true,
-                        totalWinAmount: 100,
-                    });
-                    mockAward.mockResolvedValue({
-                        isOk: false,
-                        response: {
-                            apiError: {
-                                errorCode: "AWARD_FAILED",
-                            },
-                        },
-                    });
+                    setupSuccessfulTOProgress();
+                    setupSuccessfulAward();
+                    setupSuccessfulClaimBonusWins();
 
                     // Act
                     await bonusWinConsumer.claim(player);
 
                     // Assert
-                    expect(gamePromotionApiClientInstance.claimBonusWins).not.toHaveBeenCalled();
+                    expect(player.promotion).toBeUndefined();
+                });
+
+                it("should clear player promotionTOProgress data after successful claim", async () => {
+                    // Arrange
+                    player.promotionTOProgress = { someData: "test" };
+                    setupSuccessfulTOProgress();
+                    setupSuccessfulAward();
+                    setupSuccessfulClaimBonusWins();
+
+                    // Act
+                    await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(player.promotionTOProgress).toBeUndefined();
+                });
+            });
+
+            describe("when award fails", () => {
+                it("should return error code from award response", async () => {
+                    // Arrange
+                    const errorCode = "AWARD_FAILED";
+                    setupSuccessfulTOProgress();
+                    setupSuccessfulClaimBonusWins();
+                    setupFailedAward(errorCode);
+
+                    // Act
+                    const result = await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(result).toEqual({ errorCode });
+                });
+
+                it("should call claimBonusWins before award", async () => {
+                    // Arrange
+                    setupSuccessfulTOProgress();
+                    setupSuccessfulClaimBonusWins();
+                    setupFailedAward("AWARD_FAILED");
+
+                    // Act
+                    await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(gamePromotionApiClientInstance.claimBonusWins).toHaveBeenCalled();
+                });
+
+                it("should not clear player promotion data when award fails", async () => {
+                    // Arrange
+                    const originalPromotion = { ...player.promotion };
+                    setupSuccessfulTOProgress();
+                    setupSuccessfulClaimBonusWins();
+                    setupFailedAward("AWARD_FAILED");
+
+                    // Act
+                    await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(player.promotion).toEqual(originalPromotion);
+                });
+            });
+
+            describe("when claimBonusWins fails", () => {
+                it("should return SB3017 error code when claimBonusWins returns error", async () => {
+                    // Arrange
+                    setupSuccessfulTOProgress();
+                    setupClaimBonusWinsWithError("CLAIM_ERROR");
+
+                    // Act
+                    const result = await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(result).toEqual({ errorCode: "SB3017" });
+                });
+
+                it("should not call award when claimBonusWins returns error", async () => {
+                    // Arrange
+                    setupSuccessfulTOProgress();
+                    setupClaimBonusWinsWithError("CLAIM_ERROR");
+
+                    // Act
+                    await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(mockAward).not.toHaveBeenCalled();
                 });
             });
         });
@@ -193,24 +292,18 @@ describe("BonusWinConsumer", () => {
         describe("when getTOProgress succeeds but canClaim is false", () => {
             it("should return SB3017 error code", async () => {
                 // Arrange
-                gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                    canClaim: false,
-                });
+                setupSuccessfulTOProgress({ canClaim: false });
 
                 // Act
                 const result = await bonusWinConsumer.claim(player);
 
                 // Assert
-                expect(result).toEqual({
-                    errorCode: "SB3017",
-                });
+                expect(result).toEqual({ errorCode: "SB3017" });
             });
 
             it("should not call award when canClaim is false", async () => {
                 // Arrange
-                gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                    canClaim: false,
-                });
+                setupSuccessfulTOProgress({ canClaim: false });
 
                 // Act
                 await bonusWinConsumer.claim(player);
@@ -221,9 +314,7 @@ describe("BonusWinConsumer", () => {
 
             it("should not call claimBonusWins when canClaim is false", async () => {
                 // Arrange
-                gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                    canClaim: false,
-                });
+                setupSuccessfulTOProgress({ canClaim: false });
 
                 // Act
                 await bonusWinConsumer.claim(player);
@@ -236,24 +327,19 @@ describe("BonusWinConsumer", () => {
         describe("when getTOProgress returns an error code", () => {
             it("should return the error code from getTOProgress", async () => {
                 // Arrange
-                gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                    errorCode: "PROGRESS_ERROR",
-                });
+                const errorCode = "PROGRESS_ERROR";
+                setupFailedTOProgress(errorCode);
 
                 // Act
                 const result = await bonusWinConsumer.claim(player);
 
                 // Assert
-                expect(result).toEqual({
-                    errorCode: "PROGRESS_ERROR",
-                });
+                expect(result).toEqual({ errorCode });
             });
 
             it("should not call award when getTOProgress returns error code", async () => {
                 // Arrange
-                gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                    errorCode: "PROGRESS_ERROR",
-                });
+                setupFailedTOProgress("PROGRESS_ERROR");
 
                 // Act
                 await bonusWinConsumer.claim(player);
@@ -264,15 +350,63 @@ describe("BonusWinConsumer", () => {
 
             it("should not call claimBonusWins when getTOProgress returns error code", async () => {
                 // Arrange
-                gamePromotionApiClientInstance.getTOProgress.mockResolvedValue({
-                    errorCode: "PROGRESS_ERROR",
-                });
+                setupFailedTOProgress("PROGRESS_ERROR");
 
                 // Act
                 await bonusWinConsumer.claim(player);
 
                 // Assert
                 expect(gamePromotionApiClientInstance.claimBonusWins).not.toHaveBeenCalled();
+            });
+
+            describe("when error is claiming expired", () => {
+                it("should clear player promotion data", async () => {
+                    // Arrange
+                    setupFailedTOProgress("SB3023");
+
+                    // Act
+                    await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(player.promotion).toBeUndefined();
+                });
+
+                it("should clear player promotionTOProgress data", async () => {
+                    // Arrange
+                    player.promotionTOProgress = { someData: "test" };
+                    setupFailedTOProgress("SB3023");
+
+                    // Act
+                    await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(player.promotionTOProgress).toBeUndefined();
+                });
+            });
+
+            describe("when error is bonus already claimed", () => {
+                it("should clear player promotion data", async () => {
+                    // Arrange
+                    setupFailedTOProgress("SB3018");
+
+                    // Act
+                    await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(player.promotion).toBeUndefined();
+                });
+
+                it("should clear player promotionTOProgress data", async () => {
+                    // Arrange
+                    player.promotionTOProgress = { someData: "test" };
+                    setupFailedTOProgress("SB3018");
+
+                    // Act
+                    await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(player.promotionTOProgress).toBeUndefined();
+                });
             });
         });
 
@@ -297,10 +431,32 @@ describe("BonusWinConsumer", () => {
                 const result = await bonusWinConsumer.claim(player);
 
                 // Assert
-                expect(result).toEqual({
-                    errorCode: "SB3017",
-                });
+                expect(result).toEqual({ errorCode: "SB3017" });
             });
+        });
+    });
+
+    describe("clearPlayerPromotionData", () => {
+        it("should delete promotion property from player", () => {
+            // Arrange
+            player.promotion = { promotionId: "test" };
+
+            // Act
+            bonusWinConsumer.clearPlayerPromotionData(player);
+
+            // Assert
+            expect(player.promotion).toBeUndefined();
+        });
+
+        it("should delete promotionTOProgress property from player", () => {
+            // Arrange
+            player.promotionTOProgress = { someData: "test" };
+
+            // Act
+            bonusWinConsumer.clearPlayerPromotionData(player);
+
+            // Assert
+            expect(player.promotionTOProgress).toBeUndefined();
         });
     });
 });

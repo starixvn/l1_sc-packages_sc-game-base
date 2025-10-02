@@ -35,6 +35,19 @@ export default class BonusWinConsumer {
             }
 
             if (toProgress.canClaim) {
+                const claimBonusWinsResult = this.gamePromotionApiClient.claimBonusWins({
+                    playerId: session.playerId,
+                    promotionId: promotion.promotionId,
+                    operatorId: session.operatorId,
+                    siteName: session.siteName,
+                });
+
+                if (claimBonusWinsResult.errorCode) {
+                    return {
+                        errorCode: claimingErrorCodes.CLAIMING_FAILED,
+                    };
+                }
+
                 const { isOk, response } = await this.award(player, {
                     playerId: session.playerId,
                     siteId: session.siteId,
@@ -47,13 +60,7 @@ export default class BonusWinConsumer {
 
                 if (isOk) {
                     this.clearPlayerPromotionData(player);
-
-                    return this.gamePromotionApiClient.claimBonusWins({
-                        playerId: session.playerId,
-                        promotionId: promotion.promotionId,
-                        operatorId: session.operatorId,
-                        siteName: session.siteName,
-                    });
+                    return claimBonusWinsResult;
                 }
 
                 return {
