@@ -1,3 +1,11 @@
+# [6.2.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.1.0...v6.2.0) (2025-10-02)
+
+
+### Features
+
+* enhance flow claim bonus win - Epic GL - 5369 ([b4cddf7](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/b4cddf7de7fc5d720f689193bee706c9f8d6926e))
+* remove log unuse - Epic GL - 5369 ([2ceb4a0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/2ceb4a00703c38822e516cd5ce38868cd300803b))
+
 # [6.1.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.0.0...v6.1.0) (2025-09-11)
 
 
