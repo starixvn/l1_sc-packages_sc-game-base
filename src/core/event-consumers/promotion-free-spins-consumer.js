@@ -31,10 +31,6 @@ export default class PromotionFreeSpinsConsumer {
         const currentMinuteTimestamp = new Date().getMinutes();
 
         if (this.lastMinuteCheck !== currentMinuteTimestamp) {
-            this.logService?.log(
-                `Checking promotion expiry for game ${gameId}, lastMinuteCheck: ${this.lastMinuteCheck}, currentMinuteTimestamp: ${currentMinuteTimestamp}`
-            );
-
             this.lastMinuteCheck = currentMinuteTimestamp;
             await this.handlePromotionFreeSpinsExpiry();
         }

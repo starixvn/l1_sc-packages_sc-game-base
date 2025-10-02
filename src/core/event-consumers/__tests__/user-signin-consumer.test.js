@@ -434,9 +434,6 @@ describe("UserSignInConsumer", () => {
                 const result = await consumerWithPromotion.claimPlayerPromotions(userSession);
 
                 expect(result).toBeNull();
-                expect(mockLogService.log).toHaveBeenCalledWith(
-                    'Claiming promotion for player {"operatorId":"OP001","siteName":"test-site","playerId":"player456","currencyGroup":"USD_GROUP_1","gameId":"test-game-123"}'
-                );
             });
 
             it("should return null when promotion API client is not available", async () => {

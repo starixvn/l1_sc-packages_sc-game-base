@@ -126,7 +126,6 @@ export default class UserSignInConsumer {
         try {
             const playerDto = this.createPlayerDto(playerData);
 
-            this.logService.log(`Claiming promotion for player ${JSON.stringify(playerDto)}`);
             const claimedPromotion = await this.tryClaimExistingPromotion(playerDto);
             if (claimedPromotion) {
                 return claimedPromotion;
