@@ -1,3 +1,11 @@
+# [6.3.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.2.0...v6.3.0) (2025-10-03)
+
+
+### Features
+
+* update version game promotion api - Epic GL - 5383 ([9586243](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/9586243f961e16d995f0e36c0e4170218f1fff4d))
+* update version game promotion api - Epic GL - 5383 ([4090d50](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/4090d504c96e71259e81fe89894266119a2bc533))
+
 # [6.2.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.1.0...v6.2.0) (2025-10-02)
 
 
