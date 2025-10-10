@@ -1,3 +1,10 @@
+## [6.3.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.3.0...v6.3.1) (2025-10-03)
+
+### Features
+
+* upgrade @sc/game-promotion-api-client@1.0.4 ([a64b214](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/a64b214193932edf6214f570251aa22560285393))
+
+
 # [6.3.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.2.0...v6.3.0) (2025-10-03)
 
 
