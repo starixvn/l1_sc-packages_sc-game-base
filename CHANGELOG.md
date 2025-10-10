@@ -1,3 +1,10 @@
+## [6.3.2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.3.1...v6.3.2) (2025-10-10)
+
+
+### Bug Fixes
+
+* claiming bonus ([e10d0ec](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e10d0ecfd29b6f862106c857a23a8e90ac9f0b0b))
+
 ## [6.3.1](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.3.0...v6.3.1) (2025-10-03)
 
 ### Features
