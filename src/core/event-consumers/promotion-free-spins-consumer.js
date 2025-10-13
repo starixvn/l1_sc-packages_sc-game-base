@@ -100,12 +100,14 @@ export default class PromotionFreeSpinsConsumer {
             this.logService?.logError(`Error in promotion consumer for player ${player.profile.name}:`, error);
         }
     }
-    
+
     async loadPromotionsRunning() {
         try {
             this.gameData.promotions = await this.promotionApiClient.getAllPromotionsRunning(this.gameData.gameConfigs.gameId);
         } catch (error) {
-            this.logService?.logError(`Failed to get all promotions running for ${this.gameData.gameConfigs.gameId}: ${JSON.stringify(error)}`);
+            this.logService?.logError(
+                `Failed to get all promotions running for ${this.gameData.gameConfigs.gameId}: ${JSON.stringify(error)}`
+            );
         }
     }
 
@@ -185,5 +187,17 @@ export default class PromotionFreeSpinsConsumer {
             errorCode,
             ...extraData,
         };
+    }
+
+    cancelPromotion(promotionId) {
+        const players = Object.values(players).filter((player) => player.promotion && player.promotion.promotionId === promotionId);
+        for (const player of Object.values(players)) {
+            player.promotion = undefined;
+            player.promotionTOProgress = undefined;
+
+            player.socketClient.emit(this.definition.name, { errorCode: "" });
+        }
+
+        this.gameData.promotions = this.gameData.promotions.filter((promotion) => promotion.promotionId !== promotionId);
     }
 }

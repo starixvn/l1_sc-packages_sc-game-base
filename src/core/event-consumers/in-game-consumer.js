@@ -1,9 +1,9 @@
+import UserTrackingClient from "../communicators/user-tracking-client";
 import GameManagementApiClientFactory, { getOrDefault } from "../game-management-api";
 import { BaseEventPublisher } from "./../event-publishers";
 import GameData from "./../game-data";
 import GameDefinition from "./../game-definition";
 import { RoundQuery } from "./../query-apis";
-import UserTrackingClient from "../communicators/user-tracking-client";
 
 export default class InGameConsumer {
     /**
@@ -61,11 +61,17 @@ export default class InGameConsumer {
             clientSeed,
         };
 
+        this.buildPromotionPayload(realPlayer, payload);
+
+        return payload;
+    }
+
+    buildPromotionPayload(realPlayer, payload) {
         if (realPlayer.promotion && !realPlayer.promotionTOProgress) {
             payload.promotion = realPlayer.promotion;
         }
 
-        if(realPlayer.promotionTOProgress) {
+        if (realPlayer.promotionTOProgress) {
             payload.promotionTOProgress = {
                 totalTO: realPlayer.promotionTOProgress.totalTurnover,
                 minTO: realPlayer.promotionTOProgress.minRequiredTurnover,
@@ -75,10 +81,8 @@ export default class InGameConsumer {
                 win: realPlayer.promotionTOProgress.totalWinAmount,
                 expire: realPlayer.promotionTOProgress.claimExpirationDate,
                 promotionId: realPlayer.promotion.promotionId,
-            }
+            };
         }
-
-        return payload;
     }
 
     getResultHash() {

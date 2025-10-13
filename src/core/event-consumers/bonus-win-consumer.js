@@ -1,9 +1,10 @@
 export default class BonusWinConsumer {
-    constructor({ definition, gamePromotionApiClient, award, logService }) {
+    constructor({ definition, gamePromotionApiClient, award, logService, promotionFreeSpinsConsumer }) {
         this.definition = definition;
         this.gamePromotionApiClient = gamePromotionApiClient.instance();
         this.award = award;
         this.logService = logService;
+        this.promotionFreeSpinsConsumer = promotionFreeSpinsConsumer;
     }
 
     clearPlayerPromotionData(player) {
@@ -28,6 +29,10 @@ export default class BonusWinConsumer {
                         toProgress.errorCode === claimingErrorCodes.BONUS_ALREADY_CLAIMED
                     ) {
                         this.clearPlayerPromotionData(player);
+                    }
+
+                    if (toProgress.errorCode === claimingErrorCodes.PROMOTION_CANCELLED) {
+                        this.promotionFreeSpinsConsumer.cancelPromotion(promotion.promotionId);
                     }
 
                     return {
@@ -86,4 +91,5 @@ const claimingErrorCodes = {
     CLAIMING_EXPIRED: "SB3023",
     CLAIMING_FAILED: "SB3017",
     BONUS_ALREADY_CLAIMED: "SB3018",
+    PROMOTION_CANCELLED: "", //TODO
 };
