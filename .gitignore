@@ -6,3 +6,6 @@
 **/reports
 
 .codegpt
+
+# TypeScript build output
+dist/

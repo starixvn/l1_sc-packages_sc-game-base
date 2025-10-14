@@ -8,6 +8,7 @@ import * as EventInterceptors from "./event-interceptors/index.js";
 import * as BaseEventPublishers from "./event-publishers";
 import GameData from "./game-data";
 import GameDefinition from "./game-definition";
+import GameManagementApiClientFactory from "./game-management-api";
 import * as Helpers from "./helpers/index.js";
 import * as Mixins from "./mixins/index.js";
 import * as Models from "./models/index.js";
@@ -26,6 +27,7 @@ export {
     EventInterceptors,
     GameData,
     GameDefinition,
+    GameManagementApiClientFactory,
     Helpers,
     Mixins,
     Models,
