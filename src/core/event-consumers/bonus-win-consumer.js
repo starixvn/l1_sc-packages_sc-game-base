@@ -80,6 +80,35 @@ export default class BonusWinConsumer {
             };
         }
     }
+
+    async publishPromotionAvailable(player) {
+        const { session } = player;
+        const promotionData = await this.gamePromotionApiClient.checkEligibility({
+            playerId: session.playerId,
+            currencyGroup: session.currencyGroupId,
+            operatorId: session.operatorId,
+            siteName: session.siteName,
+        });
+        if (!promotionData?.promotions?.length) {
+            return;
+        }
+        const validPromotion = promotionData.promotions.find((promotion) => promotion.gameIds?.includes(this.definition.id));
+        if (!validPromotion) {
+            return;
+        }
+        const now = new Date();
+        const basePromotionData = {
+            promotionId: validPromotion._id,
+            remainingBonusItems: validPromotion.bonusItemCount,
+            isActive: validPromotion.endDate ? now < new Date(validPromotion.endDate) : true,
+            endDate: validPromotion.endDate,
+            isGiftCode: validPromotion.isGiftCode,
+            isClaimed: false,
+        };
+        this.promotionFreeSpinsPublisher.publishToUser(player.UID, {
+            promotion: basePromotionData
+        });
+    }
 }
 
 const claimingErrorCodes = {
