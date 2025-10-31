@@ -502,27 +502,23 @@ describe("BonusWinConsumer", () => {
                 });
             });
 
-            it("should publish promotion when valid promotion exists for game", async () => {
+            it("should return promotion data when valid promotion exists for game", async () => {
                 // Arrange
                 const eligibilityResponse = createEligibilityResponse();
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
 
                 // Assert
-                expect(mockPromotionFreeSpinsPublisher.publishToUser).toHaveBeenCalledWith(
-                    "test-uid",
-                    expect.objectContaining({
-                        promotion: expect.objectContaining({
-                            promotionId: "promo-123",
-                            remainingBonusItems: 10,
-                            isActive: true,
-                            isGiftCode: false,
-                            isClaimed: false,
-                        }),
-                    })
-                );
+                expect(result).toEqual({
+                    promotionId: "promo-123",
+                    remainingBonusItems: 10,
+                    isActive: true,
+                    endDate: expect.any(String),
+                    isGiftCode: false,
+                    isClaimed: false,
+                });
             });
 
             it("should set isActive correctly when promotion has endDate in future", async () => {
@@ -534,16 +530,13 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
 
                 // Assert
-                expect(mockPromotionFreeSpinsPublisher.publishToUser).toHaveBeenCalledWith(
-                    "test-uid",
+                expect(result).toEqual(
                     expect.objectContaining({
-                        promotion: expect.objectContaining({
-                            isActive: true,
-                            endDate: futureDate,
-                        }),
+                        isActive: true,
+                        endDate: futureDate,
                     })
                 );
             });
@@ -557,16 +550,13 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
 
                 // Assert
-                expect(mockPromotionFreeSpinsPublisher.publishToUser).toHaveBeenCalledWith(
-                    "test-uid",
+                expect(result).toEqual(
                     expect.objectContaining({
-                        promotion: expect.objectContaining({
-                            isActive: false,
-                            endDate: pastDate,
-                        }),
+                        isActive: false,
+                        endDate: pastDate,
                     })
                 );
             });
@@ -579,62 +569,79 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
 
                 // Assert
-                expect(mockPromotionFreeSpinsPublisher.publishToUser).toHaveBeenCalledWith(
-                    "test-uid",
+                expect(result).toEqual(
                     expect.objectContaining({
-                        promotion: expect.objectContaining({
-                            isActive: true,
-                            endDate: null,
-                        }),
+                        isActive: true,
+                        endDate: null,
+                    })
+                );
+            });
+
+            it("should return promotion data with correct isGiftCode value", async () => {
+                // Arrange
+                const eligibilityResponse = createEligibilityResponse({
+                    isGiftCode: true,
+                });
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(result).toEqual(
+                    expect.objectContaining({
+                        isGiftCode: true,
+                        isClaimed: false,
                     })
                 );
             });
         });
 
         describe("when checkEligibility returns no promotions", () => {
-            it("should not publish when promotions array is empty", async () => {
+            it("should return null when promotions array is empty", async () => {
                 // Arrange
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue({
                     promotions: [],
                 });
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
 
                 // Assert
-                expect(mockPromotionFreeSpinsPublisher.publishToUser).not.toHaveBeenCalled();
+                expect(result).toBeNull();
             });
 
-            it("should not publish when promotions is null", async () => {
+            it("should return null when promotions is null", async () => {
                 // Arrange
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue({
                     promotions: null,
                 });
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
 
                 // Assert
-                expect(mockPromotionFreeSpinsPublisher.publishToUser).not.toHaveBeenCalled();
+                expect(result).toBeNull();
             });
 
-            it("should not publish when promotionData is null", async () => {
+            it("should return null when promotionData is null", async () => {
                 // Arrange
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(null);
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
 
                 // Assert
-                expect(mockPromotionFreeSpinsPublisher.publishToUser).not.toHaveBeenCalled();
+                expect(result).toBeNull();
             });
+
         });
 
         describe("when no valid promotion for game", () => {
-            it("should not publish when promotion gameIds does not include game id", async () => {
+            it("should return null when promotion gameIds does not include game id", async () => {
                 // Arrange
                 const eligibilityResponse = createEligibilityResponse({
                     gameIds: [2, 3],
@@ -642,13 +649,13 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
 
                 // Assert
-                expect(mockPromotionFreeSpinsPublisher.publishToUser).not.toHaveBeenCalled();
+                expect(result).toBeNull();
             });
 
-            it("should not publish when promotion has no gameIds", async () => {
+            it("should return null when promotion has no gameIds", async () => {
                 // Arrange
                 const eligibilityResponse = createEligibilityResponse({
                     gameIds: null,
@@ -656,13 +663,27 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
 
                 // Assert
-                expect(mockPromotionFreeSpinsPublisher.publishToUser).not.toHaveBeenCalled();
+                expect(result).toBeNull();
             });
 
-            it("should publish first valid promotion when multiple promotions exist", async () => {
+            it("should return null when promotion has empty gameIds array", async () => {
+                // Arrange
+                const eligibilityResponse = createEligibilityResponse({
+                    gameIds: [],
+                });
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(result).toBeNull();
+            });
+
+            it("should return first valid promotion when multiple promotions exist", async () => {
                 // Arrange
                 const eligibilityResponse = {
                     promotions: [
@@ -685,17 +706,57 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
 
                 // Assert
-                expect(mockPromotionFreeSpinsPublisher.publishToUser).toHaveBeenCalledWith(
-                    "test-uid",
+                expect(result).toEqual({
+                    promotionId: "promo-2",
+                    remainingBonusItems: 10,
+                    isActive: true,
+                    endDate: null,
+                    isGiftCode: true,
+                    isClaimed: false,
+                });
+            });
+        });
+
+        describe("when checkEligibility throws an error", () => {
+            it("should propagate the error", async () => {
+                // Arrange
+                const testError = new Error("API Error");
+                gamePromotionApiClientInstance.checkEligibility.mockRejectedValue(testError);
+
+                // Act & Assert
+                await expect(bonusWinConsumer.publishPromotionAvailable(player)).rejects.toThrow("API Error");
+            });
+
+            it("should propagate network errors", async () => {
+                // Arrange
+                const networkError = new Error("Network timeout");
+                gamePromotionApiClientInstance.checkEligibility.mockRejectedValue(networkError);
+
+                // Act & Assert
+                await expect(bonusWinConsumer.publishPromotionAvailable(player)).rejects.toThrow("Network timeout");
+            });
+        });
+
+        describe("edge cases", () => {
+            it("should handle promotion with string endDate", async () => {
+                // Arrange
+                const futureDateString = new Date(Date.now() + 86400000).toISOString();
+                const eligibilityResponse = createEligibilityResponse({
+                    endDate: futureDateString,
+                });
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(result).toEqual(
                     expect.objectContaining({
-                        promotion: expect.objectContaining({
-                            promotionId: "promo-2",
-                            remainingBonusItems: 10,
-                            isGiftCode: true,
-                        }),
+                        isActive: true,
+                        endDate: futureDateString,
                     })
                 );
             });

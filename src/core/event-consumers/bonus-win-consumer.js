@@ -1,10 +1,9 @@
 export default class BonusWinConsumer {
-    constructor({ definition, gamePromotionApiClient, award, logService, promotionFreeSpinsPublisher }) {
+    constructor({ definition, gamePromotionApiClient, award, logService }) {
         this.definition = definition;
         this.gamePromotionApiClient = gamePromotionApiClient.instance();
         this.award = award;
         this.logService = logService;
-        this.promotionFreeSpinsPublisher = promotionFreeSpinsPublisher;
     }
 
     clearPlayerPromotionData(player) {
@@ -91,14 +90,14 @@ export default class BonusWinConsumer {
             siteName: session.siteName,
         });
         if (!promotionData?.promotions?.length) {
-            return;
+            return null;
         }
         const validPromotion = promotionData.promotions.find((promotion) => promotion.gameIds?.includes(this.definition.id));
         if (!validPromotion) {
-            return;
+            return null;
         }
         const now = new Date();
-        const basePromotionData = {
+        return {
             promotionId: validPromotion._id,
             remainingBonusItems: validPromotion.bonusItemCount,
             isActive: validPromotion.endDate ? now < new Date(validPromotion.endDate) : true,
@@ -106,9 +105,6 @@ export default class BonusWinConsumer {
             isGiftCode: validPromotion.isGiftCode,
             isClaimed: false,
         };
-        this.promotionFreeSpinsPublisher.publishToUser(player.UID, {
-            promotion: basePromotionData
-        });
     }
 }
 
