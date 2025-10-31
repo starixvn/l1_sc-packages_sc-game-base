@@ -1,9 +1,10 @@
 export default class BonusWinConsumer {
-    constructor({ definition, gamePromotionApiClient, award, logService }) {
+    constructor({ definition, gamePromotionApiClient, award, logService, promotionFreeSpinsPublisher }) {
         this.definition = definition;
         this.gamePromotionApiClient = gamePromotionApiClient.instance();
         this.award = award;
         this.logService = logService;
+        this.promotionFreeSpinsPublisher = promotionFreeSpinsPublisher;
     }
 
     clearPlayerPromotionData(player) {

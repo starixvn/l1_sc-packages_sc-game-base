@@ -9,9 +9,11 @@ describe("BonusWinConsumer", () => {
     let gamePromotionApiClient;
     let mockAward;
     let definition;
+    let mockPromotionFreeSpinsPublisher;
 
     // Test Data Factories
-    const createPlayer = () => ({
+    const createPlayer = (overrides = {}) => ({
+        UID: "test-uid",
         promotion: {
             promotionId: "test-promotion-id",
         },
@@ -21,7 +23,9 @@ describe("BonusWinConsumer", () => {
             siteName: "test-site-name",
             siteId: "test-site-id",
             currencyName: "USD",
+            currencyGroupId: "test-currency-group-id",
         },
+        ...overrides,
     });
 
     const createSuccessfulTOProgress = (overrides = {}) => ({
@@ -95,6 +99,7 @@ describe("BonusWinConsumer", () => {
         gamePromotionApiClientInstance = {
             getTOProgress: jest.fn(),
             claimBonusWins: jest.fn(),
+            checkEligibility: jest.fn(),
         };
 
         gamePromotionApiClient = {
@@ -104,12 +109,17 @@ describe("BonusWinConsumer", () => {
         mockAward = jest.fn();
         definition = new GameDefinition({ id: 1 });
         player = createPlayer();
+        mockPromotionFreeSpinsPublisher = {
+            publishToUser: jest.fn(),
+            publishEndPromotion: jest.fn(),
+        };
 
         bonusWinConsumer = new BonusWinConsumer({
             definition,
             gamePromotionApiClient,
             award: mockAward,
             logService: mockLogService,
+            promotionFreeSpinsPublisher: mockPromotionFreeSpinsPublisher,
         });
     });
 
@@ -457,6 +467,238 @@ describe("BonusWinConsumer", () => {
 
             // Assert
             expect(player.promotionTOProgress).toBeUndefined();
+        });
+    });
+
+    describe("publishPromotionAvailable", () => {
+        const createEligibilityResponse = (overrides = {}) => ({
+            promotions: [
+                {
+                    _id: "promo-123",
+                    gameIds: [1],
+                    bonusItemCount: 10,
+                    endDate: new Date(Date.now() + 86400000).toISOString(),
+                    isGiftCode: false,
+                    ...overrides,
+                },
+            ],
+        });
+
+        describe("when checkEligibility succeeds with valid promotion", () => {
+            it("should call checkEligibility with correct parameters", async () => {
+                // Arrange
+                const eligibilityResponse = createEligibilityResponse();
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(gamePromotionApiClientInstance.checkEligibility).toHaveBeenCalledWith({
+                    playerId: "test-player-id",
+                    currencyGroup: "test-currency-group-id",
+                    operatorId: "test-operator-id",
+                    siteName: "test-site-name",
+                });
+            });
+
+            it("should publish promotion when valid promotion exists for game", async () => {
+                // Arrange
+                const eligibilityResponse = createEligibilityResponse();
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(mockPromotionFreeSpinsPublisher.publishToUser).toHaveBeenCalledWith(
+                    "test-uid",
+                    expect.objectContaining({
+                        promotion: expect.objectContaining({
+                            promotionId: "promo-123",
+                            remainingBonusItems: 10,
+                            isActive: true,
+                            isGiftCode: false,
+                            isClaimed: false,
+                        }),
+                    })
+                );
+            });
+
+            it("should set isActive correctly when promotion has endDate in future", async () => {
+                // Arrange
+                const futureDate = new Date(Date.now() + 86400000).toISOString();
+                const eligibilityResponse = createEligibilityResponse({
+                    endDate: futureDate,
+                });
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(mockPromotionFreeSpinsPublisher.publishToUser).toHaveBeenCalledWith(
+                    "test-uid",
+                    expect.objectContaining({
+                        promotion: expect.objectContaining({
+                            isActive: true,
+                            endDate: futureDate,
+                        }),
+                    })
+                );
+            });
+
+            it("should set isActive correctly when promotion has endDate in past", async () => {
+                // Arrange
+                const pastDate = new Date(Date.now() - 86400000).toISOString();
+                const eligibilityResponse = createEligibilityResponse({
+                    endDate: pastDate,
+                });
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(mockPromotionFreeSpinsPublisher.publishToUser).toHaveBeenCalledWith(
+                    "test-uid",
+                    expect.objectContaining({
+                        promotion: expect.objectContaining({
+                            isActive: false,
+                            endDate: pastDate,
+                        }),
+                    })
+                );
+            });
+
+            it("should set isActive to true when promotion has no endDate", async () => {
+                // Arrange
+                const eligibilityResponse = createEligibilityResponse({
+                    endDate: null,
+                });
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(mockPromotionFreeSpinsPublisher.publishToUser).toHaveBeenCalledWith(
+                    "test-uid",
+                    expect.objectContaining({
+                        promotion: expect.objectContaining({
+                            isActive: true,
+                            endDate: null,
+                        }),
+                    })
+                );
+            });
+        });
+
+        describe("when checkEligibility returns no promotions", () => {
+            it("should not publish when promotions array is empty", async () => {
+                // Arrange
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue({
+                    promotions: [],
+                });
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(mockPromotionFreeSpinsPublisher.publishToUser).not.toHaveBeenCalled();
+            });
+
+            it("should not publish when promotions is null", async () => {
+                // Arrange
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue({
+                    promotions: null,
+                });
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(mockPromotionFreeSpinsPublisher.publishToUser).not.toHaveBeenCalled();
+            });
+
+            it("should not publish when promotionData is null", async () => {
+                // Arrange
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(null);
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(mockPromotionFreeSpinsPublisher.publishToUser).not.toHaveBeenCalled();
+            });
+        });
+
+        describe("when no valid promotion for game", () => {
+            it("should not publish when promotion gameIds does not include game id", async () => {
+                // Arrange
+                const eligibilityResponse = createEligibilityResponse({
+                    gameIds: [2, 3],
+                });
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(mockPromotionFreeSpinsPublisher.publishToUser).not.toHaveBeenCalled();
+            });
+
+            it("should not publish when promotion has no gameIds", async () => {
+                // Arrange
+                const eligibilityResponse = createEligibilityResponse({
+                    gameIds: null,
+                });
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(mockPromotionFreeSpinsPublisher.publishToUser).not.toHaveBeenCalled();
+            });
+
+            it("should publish first valid promotion when multiple promotions exist", async () => {
+                // Arrange
+                const eligibilityResponse = {
+                    promotions: [
+                        {
+                            _id: "promo-1",
+                            gameIds: [2],
+                            bonusItemCount: 5,
+                            endDate: null,
+                            isGiftCode: false,
+                        },
+                        {
+                            _id: "promo-2",
+                            gameIds: [1],
+                            bonusItemCount: 10,
+                            endDate: null,
+                            isGiftCode: true,
+                        },
+                    ],
+                };
+                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
+
+                // Act
+                await bonusWinConsumer.publishPromotionAvailable(player);
+
+                // Assert
+                expect(mockPromotionFreeSpinsPublisher.publishToUser).toHaveBeenCalledWith(
+                    "test-uid",
+                    expect.objectContaining({
+                        promotion: expect.objectContaining({
+                            promotionId: "promo-2",
+                            remainingBonusItems: 10,
+                            isGiftCode: true,
+                        }),
+                    })
+                );
+            });
         });
     });
 });
