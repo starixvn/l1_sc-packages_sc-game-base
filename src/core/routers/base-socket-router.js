@@ -198,6 +198,7 @@ export default class BaseSocketRouter {
             const result = await this.bonusWinConsumer.claim(this.gameData.realPlayers[this.socketClient.id]);
             const promotionAvailable = await this.bonusWinConsumer.publishPromotionAvailable(this.gameData.realPlayers[this.socketClient.id]);
             if (promotionAvailable) {
+                this.gameData.realPlayers[this.socketClient.id].promotion = promotionAvailable;
                 this.socketClient.emit(this.definition.name, { promotion: promotionAvailable });
             }
             this.socketClient.emit(this.definition.name, result);
