@@ -13,6 +13,7 @@ jest.mock("../../game-management-api", () => ({
 
 describe("Event Interceptor Integration", () => {
     const chance = new Chance();
+    const TEST_ROUND_ID = "round123";
     let processBetQueue;
     let mockDependencies;
     let promotionInterceptor;
@@ -369,7 +370,7 @@ describe("Event Interceptor Integration", () => {
             // Arrange
             const winningBet = {
                 betWin: 150,
-                roundId: "round123",
+                roundId: TEST_ROUND_ID,
                 amount: 100,
                 promotionId: "promo1",
             };
@@ -401,7 +402,7 @@ describe("Event Interceptor Integration", () => {
             // Arrange
             const winningBet = {
                 betWin: 150,
-                roundId: "round123",
+                roundId: TEST_ROUND_ID,
                 amount: 100,
                 promotionId: "promo1",
             };
@@ -421,7 +422,7 @@ describe("Event Interceptor Integration", () => {
             // Arrange
             const losingBet = {
                 betWin: 0,
-                roundId: "round123",
+                roundId: TEST_ROUND_ID,
                 amount: 100,
                 promotionId: "promo1",
             };
@@ -442,13 +443,13 @@ describe("Event Interceptor Integration", () => {
             // Arrange
             const winningBet = {
                 betWin: 100,
-                roundId: "round123",
+                roundId: TEST_ROUND_ID,
                 amount: 100,
                 promotionId: "promo1",
             };
             const context = { player, bet: winningBet };
 
-            player.promotion.totalWin = undefined; // No initial value
+            player.promotion.totalWin = null; // No initial value
             player.promotion.remainingBonusItems = 1; // This will trigger completion
             mockApiInstance.createPromotionTicket.mockResolvedValue({ success: true });
 
@@ -463,7 +464,7 @@ describe("Event Interceptor Integration", () => {
             // Arrange
             const winningBet = {
                 betWin: 200,
-                roundId: "round123",
+                roundId: TEST_ROUND_ID,
                 amount: 100,
                 promotionId: "promo1",
             };
@@ -500,6 +501,345 @@ describe("Event Interceptor Integration", () => {
 
             // Verify no API call was made for getTotalWin
             expect(mockApiInstance.getTotalWin).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("endPromotionEvent", () => {
+        const TEST_NEW_PROMO_ID = "new-promo-123";
+
+        beforeEach(() => {
+            jest.clearAllMocks();
+            mockApiInstance.completePromotion = jest.fn();
+            mockApiInstance.checkEligibility = jest.fn();
+        });
+
+        it("should return early when player.promotion does not exist", async () => {
+            // Arrange
+            const bet = { betWin: 100, roundId: TEST_ROUND_ID };
+            const playerWithoutPromotion = { ...player };
+            delete playerWithoutPromotion.promotion;
+            const context = { player: playerWithoutPromotion, bet };
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(mockApiInstance.completePromotion).not.toHaveBeenCalled();
+            expect(mockDependencies.placeBetPublisher.publishToUser).not.toHaveBeenCalled();
+        });
+
+        it("should return early when shouldCompletePromotion returns false", async () => {
+            // Arrange
+            const bet = { betWin: 100, roundId: "round123" };
+            player.promotion.remainingBonusItems = 1; // Not zero, should not complete
+            const context = { player, bet };
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(mockApiInstance.completePromotion).not.toHaveBeenCalled();
+            expect(mockDependencies.placeBetPublisher.publishToUser).not.toHaveBeenCalled();
+            expect(player.promotion.totalWin).toBe(100); // Should still update totalWin
+        });
+
+        it("should call notifyPromotionCompletion and completePromotion when shouldCompletePromotion returns true", async () => {
+            // Arrange
+            const bet = { betWin: 150, roundId: "round123" };
+            player.promotion.remainingBonusItems = 0; // Should complete
+            player.promotion.totalWin = 50; // Non-zero totalWin
+            const context = { player, bet };
+
+            const completeResult = {
+                totalTurnover: 1000,
+                minRequiredTurnover: 500,
+                remainingTO: 0,
+                progressPercentage: 100,
+                canClaim: true,
+                totalWinAmount: 200,
+                claimExpirationDate: new Date(),
+            };
+            mockApiInstance.completePromotion.mockResolvedValue(completeResult);
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(mockApiInstance.completePromotion).toHaveBeenCalledWith({
+                promotionId: player.promotion.promotionId,
+                playerId: player.session.playerId,
+                operatorId: player.session.operatorId,
+                currencyGroup: player.session.currencyGroupId,
+                siteName: player.session.siteName,
+            });
+
+            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledWith(
+                player.UID,
+                {
+                    finishPromotion: {
+                        endPromotion: true,
+                        totalWin: 200, // 50 + 150
+                    },
+                },
+                mockDependencies.definition.name
+            );
+
+            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledWith(
+                player.UID,
+                {
+                    promotionTOProgress: {
+                        totalTO: completeResult.totalTurnover,
+                        minTO: completeResult.minRequiredTurnover,
+                        remainTO: completeResult.remainingTO,
+                        progress: completeResult.progressPercentage,
+                        canClaim: completeResult.canClaim,
+                        win: completeResult.totalWinAmount,
+                        expire: completeResult.claimExpirationDate,
+                    },
+                },
+                mockDependencies.definition.name
+            );
+
+            expect(player.promotion.totalWin).toBe(200); // Updated
+        });
+
+        it("should not call publishNewPromotionOnZeroWinning when totalWin is not zero", async () => {
+            // Arrange
+            const bet = { betWin: 100, roundId: "round123" };
+            player.promotion.remainingBonusItems = 0;
+            player.promotion.totalWin = 50; // Non-zero
+            const context = { player, bet };
+
+            mockApiInstance.completePromotion.mockResolvedValue({
+                totalTurnover: 1000,
+                minRequiredTurnover: 500,
+                remainingTO: 0,
+                progressPercentage: 100,
+                canClaim: true,
+                totalWinAmount: 150,
+                claimExpirationDate: new Date(),
+            });
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(mockApiInstance.checkEligibility).not.toHaveBeenCalled();
+            expect(mockDependencies.placeBetPublisher.publishToUser).not.toHaveBeenCalledWith(
+                player.UID,
+                expect.objectContaining({
+                    promotion: expect.anything(),
+                }),
+                mockDependencies.definition.name
+            );
+        });
+
+        it("should call publishNewPromotionOnZeroWinning when totalWin is zero and promotion is available", async () => {
+            // Arrange
+            const bet = { betWin: 0, roundId: "round123" };
+            player.promotion.remainingBonusItems = 0;
+            player.promotion.totalWin = 0; // Zero totalWin
+            player.session.currencyGroupId = "currency-group-1";
+            const context = { player, bet };
+
+            const completeResult = {
+                totalTurnover: 1000,
+                minRequiredTurnover: 500,
+                remainingTO: 0,
+                progressPercentage: 100,
+                canClaim: false,
+                totalWinAmount: 0,
+                claimExpirationDate: new Date(),
+            };
+            mockApiInstance.completePromotion.mockResolvedValue(completeResult);
+
+            const newPromotionData = {
+                promotions: [
+                    {
+                        _id: TEST_NEW_PROMO_ID,
+                        gameIds: [1],
+                        bonusItemCount: 10,
+                        endDate: null,
+                        isGiftCode: false,
+                    },
+                ],
+            };
+            mockApiInstance.checkEligibility.mockResolvedValue(newPromotionData);
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(mockApiInstance.checkEligibility).toHaveBeenCalledWith({
+                playerId: player.session.playerId,
+                currencyGroup: player.session.currencyGroupId,
+                operatorId: player.session.operatorId,
+                siteName: player.session.siteName,
+            });
+
+            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledWith(
+                player.UID,
+                {
+                    promotion:                     {
+                        promotionId: TEST_NEW_PROMO_ID,
+                        remainingBonusItems: 10,
+                        isActive: true,
+                        endDate: null,
+                        isGiftCode: false,
+                        isClaimed: false,
+                    },
+                },
+                mockDependencies.definition.name
+            );
+
+            expect(player.promotion.promotionId).toBe(TEST_NEW_PROMO_ID);
+        });
+
+        it("should not call publishNewPromotionOnZeroWinning when no promotion is available", async () => {
+            // Arrange
+            const bet = { betWin: 0, roundId: "round123" };
+            player.promotion.remainingBonusItems = 0;
+            player.promotion.totalWin = 0;
+            player.session.currencyGroupId = "currency-group-1";
+            const context = { player, bet };
+
+            const completeResult = {
+                totalTurnover: 1000,
+                minRequiredTurnover: 500,
+                remainingTO: 0,
+                progressPercentage: 100,
+                canClaim: false,
+                totalWinAmount: 0,
+                claimExpirationDate: new Date(),
+            };
+            mockApiInstance.completePromotion.mockResolvedValue(completeResult);
+            mockApiInstance.checkEligibility.mockResolvedValue({ promotions: [] });
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(mockApiInstance.checkEligibility).toHaveBeenCalled();
+            expect(mockDependencies.placeBetPublisher.publishToUser).not.toHaveBeenCalledWith(
+                player.UID,
+                expect.objectContaining({
+                    promotion: expect.anything(),
+                }),
+                mockDependencies.definition.name
+            );
+        });
+
+        it("should log error when exception occurs", async () => {
+            // Arrange
+            const bet = { betWin: 100, roundId: "round123" };
+            player.promotion.remainingBonusItems = 0;
+            const context = { player, bet };
+
+            const error = new Error("API Error");
+            mockApiInstance.completePromotion.mockRejectedValue(error);
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(mockDependencies.logService.logError).toHaveBeenCalledWith(error);
+        });
+
+        it("should update totalWin when betWin is greater than zero", async () => {
+            // Arrange
+            const bet = { betWin: 200, roundId: "round123" };
+            player.promotion.remainingBonusItems = 1; // Not completing, just updating totalWin
+            player.promotion.totalWin = 100;
+            const context = { player, bet };
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(player.promotion.totalWin).toBe(300); // 100 + 200
+        });
+
+        it("should not update totalWin when betWin is zero or negative", async () => {
+            // Arrange
+            const bet = { betWin: 0, roundId: "round123" };
+            player.promotion.remainingBonusItems = 1;
+            player.promotion.totalWin = 100;
+            const context = { player, bet };
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(player.promotion.totalWin).toBe(100); // Unchanged
+        });
+
+        it("should handle undefined totalWin when updating", async () => {
+            // Arrange
+            const bet = { betWin: 150, roundId: "round123" };
+            player.promotion.remainingBonusItems = 1;
+            player.promotion.totalWin = null;
+            const context = { player, bet };
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(player.promotion.totalWin).toBe(150); // 0 + 150
+        });
+
+        it("should set promotionTOProgress when player.totalWin is not zero", async () => {
+            // Arrange
+            const bet = { betWin: 100, roundId: "round123" };
+            player.promotion.remainingBonusItems = 0;
+            player.promotion.totalWin = 200;
+            player.totalWin = 200; // This is what the code checks
+            const context = { player, bet };
+
+            const completeResult = {
+                totalTurnover: 1000,
+                minRequiredTurnover: 500,
+                remainingTO: 0,
+                progressPercentage: 100,
+                canClaim: true,
+                totalWinAmount: 300,
+                claimExpirationDate: new Date(),
+            };
+            mockApiInstance.completePromotion.mockResolvedValue(completeResult);
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(player.promotionTOProgress).toEqual({
+                ...completeResult,
+                promotionId: player.promotion.promotionId,
+            });
+        });
+
+        it("should not set promotionTOProgress when player.totalWin is zero", async () => {
+            // Arrange
+            const bet = { betWin: 0, roundId: "round123" };
+            player.promotion.remainingBonusItems = 0;
+            player.promotion.totalWin = 0;
+            player.totalWin = 0;
+            const context = { player, bet };
+
+            const completeResult = {
+                totalTurnover: 1000,
+                minRequiredTurnover: 500,
+                remainingTO: 0,
+                progressPercentage: 100,
+                canClaim: false,
+                totalWinAmount: 0,
+                claimExpirationDate: new Date(),
+            };
+            mockApiInstance.completePromotion.mockResolvedValue(completeResult);
+
+            // Act
+            await promotionInterceptor.endPromotionEvent(context);
+
+            // Assert
+            expect(player.promotionTOProgress).toBeUndefined();
         });
     });
 });
