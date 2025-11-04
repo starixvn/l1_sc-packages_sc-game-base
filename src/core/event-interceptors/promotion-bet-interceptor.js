@@ -1,5 +1,6 @@
 import { helpers } from "sc-common";
 import BaseEventInterceptor from "./base-event-interceptor.js";
+import { validatePromotionAvailable } from "../helpers/promotion-helper.js";
 
 /**
  * Promotion Bet Event Interceptor
@@ -141,9 +142,37 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
 
             await this.notifyPromotionCompletion(player);
             await this.completePromotion(player);
+            if (player.promotion.totalWin !== 0) {
+                return;
+            }
+            await this.publishNewPromotionOnZeroWinning(player);
         } catch (error) {
             this.logService.logError(error);
         }
+    }
+
+    async publishNewPromotionOnZeroWinning(player) {
+        const { session } = player;
+        const promotionData = await this.gamePromotionApiClient.checkEligibility({
+            playerId: session.playerId,
+            currencyGroup: session.currencyGroupId,
+            operatorId: session.operatorId,
+            siteName: session.siteName,
+        });
+        const promotionAvailable = validatePromotionAvailable(promotionData, this.definition.id);
+        if (!promotionAvailable) {
+            return;
+        }
+        player.promotion = {
+            ...promotionAvailable,
+        };
+        this.placeBetPublisher.publishToUser(
+            player.UID,
+            {
+                promotion: promotionAvailable,
+            },
+            this.definition.name
+        );
     }
 
     /**
@@ -199,11 +228,13 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             expire: completePromotionResult.claimExpirationDate,
         };
 
-        player.promotionTOProgress = {
-            ...completePromotionResult,
-            promotionId: player.promotion.promotionId,
-        };
-
+        if(player.totalWin !== 0) {
+            player.promotionTOProgress = {
+                ...completePromotionResult,
+                promotionId: player.promotion.promotionId,
+            };
+        }
+        
         this.placeBetPublisher.publishToUser(
             player.UID,
             {

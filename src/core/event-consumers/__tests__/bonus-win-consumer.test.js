@@ -9,19 +9,25 @@ describe("BonusWinConsumer", () => {
     let gamePromotionApiClient;
     let mockAward;
     let definition;
-    let mockPromotionFreeSpinsPublisher;
+
+    // Test constants
+    const TEST_PLAYER_ID = "test-player-id";
+    const TEST_PROMOTION_ID = "test-promotion-id";
+    const TEST_OPERATOR_ID = "test-operator-id";
+    const TEST_SITE_NAME = "test-site-name";
+    const TEST_SITE_ID = "test-site-id";
 
     // Test Data Factories
     const createPlayer = (overrides = {}) => ({
         UID: "test-uid",
         promotion: {
-            promotionId: "test-promotion-id",
+            promotionId: TEST_PROMOTION_ID,
         },
         session: {
-            playerId: "test-player-id",
-            operatorId: "test-operator-id",
-            siteName: "test-site-name",
-            siteId: "test-site-id",
+            playerId: TEST_PLAYER_ID,
+            operatorId: TEST_OPERATOR_ID,
+            siteName: TEST_SITE_NAME,
+            siteId: TEST_SITE_ID,
             currencyName: "USD",
             currencyGroupId: "test-currency-group-id",
         },
@@ -109,17 +115,12 @@ describe("BonusWinConsumer", () => {
         mockAward = jest.fn();
         definition = new GameDefinition({ id: 1 });
         player = createPlayer();
-        mockPromotionFreeSpinsPublisher = {
-            publishToUser: jest.fn(),
-            publishEndPromotion: jest.fn(),
-        };
 
         bonusWinConsumer = new BonusWinConsumer({
             definition,
             gamePromotionApiClient,
             award: mockAward,
             logService: mockLogService,
-            promotionFreeSpinsPublisher: mockPromotionFreeSpinsPublisher,
         });
     });
 
@@ -141,10 +142,10 @@ describe("BonusWinConsumer", () => {
 
                     // Assert
                     expect(gamePromotionApiClientInstance.getTOProgress).toHaveBeenCalledWith({
-                        playerId: "test-player-id",
-                        promotionId: "test-promotion-id",
-                        operatorId: "test-operator-id",
-                        siteName: "test-site-name",
+                        playerId: TEST_PLAYER_ID,
+                        promotionId: TEST_PROMOTION_ID,
+                        operatorId: TEST_OPERATOR_ID,
+                        siteName: TEST_SITE_NAME,
                     });
                 });
 
@@ -159,11 +160,11 @@ describe("BonusWinConsumer", () => {
 
                     // Assert
                     expect(mockAward).toHaveBeenCalledWith(player, {
-                        playerId: "test-player-id",
-                        siteId: "test-site-id",
-                        operatorId: "test-operator-id",
+                        playerId: TEST_PLAYER_ID,
+                        siteId: TEST_SITE_ID,
+                        operatorId: TEST_OPERATOR_ID,
                         currency: "USD",
-                        promotionId: "test-promotion-id",
+                        promotionId: TEST_PROMOTION_ID,
                         gameId: definition.id,
                         amount: 100,
                     });
@@ -180,10 +181,10 @@ describe("BonusWinConsumer", () => {
 
                     // Assert
                     expect(gamePromotionApiClientInstance.claimBonusWins).toHaveBeenCalledWith({
-                        playerId: "test-player-id",
-                        promotionId: "test-promotion-id",
-                        operatorId: "test-operator-id",
-                        siteName: "test-site-name",
+                        playerId: TEST_PLAYER_ID,
+                        promotionId: TEST_PROMOTION_ID,
+                        operatorId: TEST_OPERATOR_ID,
+                        siteName: TEST_SITE_NAME,
                     });
                 });
 
@@ -470,7 +471,7 @@ describe("BonusWinConsumer", () => {
         });
     });
 
-    describe("publishPromotionAvailable", () => {
+    describe("getPromotionAvailable", () => {
         const createEligibilityResponse = (overrides = {}) => ({
             promotions: [
                 {
@@ -491,14 +492,14 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                await bonusWinConsumer.publishPromotionAvailable(player);
+                await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(gamePromotionApiClientInstance.checkEligibility).toHaveBeenCalledWith({
-                    playerId: "test-player-id",
+                    playerId: TEST_PLAYER_ID,
                     currencyGroup: "test-currency-group-id",
-                    operatorId: "test-operator-id",
-                    siteName: "test-site-name",
+                    operatorId: TEST_OPERATOR_ID,
+                    siteName: TEST_SITE_NAME,
                 });
             });
 
@@ -508,7 +509,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toEqual({
@@ -530,7 +531,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toEqual(
@@ -550,7 +551,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toEqual(
@@ -569,7 +570,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toEqual(
@@ -588,7 +589,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toEqual(
@@ -608,7 +609,7 @@ describe("BonusWinConsumer", () => {
                 });
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toBeNull();
@@ -621,7 +622,7 @@ describe("BonusWinConsumer", () => {
                 });
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toBeNull();
@@ -632,7 +633,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(null);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toBeNull();
@@ -649,7 +650,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toBeNull();
@@ -663,7 +664,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toBeNull();
@@ -677,7 +678,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toBeNull();
@@ -706,7 +707,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toEqual({
@@ -727,7 +728,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockRejectedValue(testError);
 
                 // Act & Assert
-                await expect(bonusWinConsumer.publishPromotionAvailable(player)).rejects.toThrow("API Error");
+                await expect(bonusWinConsumer.getPromotionAvailable(player)).rejects.toThrow("API Error");
             });
 
             it("should propagate network errors", async () => {
@@ -736,7 +737,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockRejectedValue(networkError);
 
                 // Act & Assert
-                await expect(bonusWinConsumer.publishPromotionAvailable(player)).rejects.toThrow("Network timeout");
+                await expect(bonusWinConsumer.getPromotionAvailable(player)).rejects.toThrow("Network timeout");
             });
         });
 
@@ -750,7 +751,7 @@ describe("BonusWinConsumer", () => {
                 gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
 
                 // Act
-                const result = await bonusWinConsumer.publishPromotionAvailable(player);
+                const result = await bonusWinConsumer.getPromotionAvailable(player);
 
                 // Assert
                 expect(result).toEqual(

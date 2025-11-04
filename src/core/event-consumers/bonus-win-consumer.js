@@ -1,3 +1,4 @@
+import { validatePromotionAvailable } from "../helpers/promotion-helper.js";
 export default class BonusWinConsumer {
     constructor({ definition, gamePromotionApiClient, award, logService }) {
         this.definition = definition;
@@ -81,7 +82,7 @@ export default class BonusWinConsumer {
         }
     }
 
-    async publishPromotionAvailable(player) {
+    async getPromotionAvailable(player) {
         const { session } = player;
         const promotionData = await this.gamePromotionApiClient.checkEligibility({
             playerId: session.playerId,
@@ -89,22 +90,7 @@ export default class BonusWinConsumer {
             operatorId: session.operatorId,
             siteName: session.siteName,
         });
-        if (!promotionData?.promotions?.length) {
-            return null;
-        }
-        const validPromotion = promotionData.promotions.find((promotion) => promotion.gameIds?.includes(this.definition.id));
-        if (!validPromotion) {
-            return null;
-        }
-        const now = new Date();
-        return {
-            promotionId: validPromotion._id,
-            remainingBonusItems: validPromotion.bonusItemCount,
-            isActive: validPromotion.endDate ? now < new Date(validPromotion.endDate) : true,
-            endDate: validPromotion.endDate,
-            isGiftCode: validPromotion.isGiftCode,
-            isClaimed: false,
-        };
+        return validatePromotionAvailable(promotionData, this.definition.id);
     }
 }
 
