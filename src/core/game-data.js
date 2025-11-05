@@ -21,5 +21,6 @@ export default class GameData {
         this.pf = { clientSeeds: [], serverSeed: "", serverSeedHash: "" };
         this.promotionReady = false;
         this.promotions = [];
+        this.expiringPromotions = [];
     }
 }

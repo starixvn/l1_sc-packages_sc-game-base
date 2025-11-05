@@ -45,7 +45,7 @@ export default class PromotionFreeSpinsConsumer {
     }
 
     hasPlayerWithPromotion(player) {
-        return player.promotion && !this.isPromotionCompleted(player) && player.promotion.isClaimed && player.promotion.endDate;
+        return player.promotion && ((!this.isPromotionCompleted(player) && player.promotion.isClaimed && player.promotion.endDate) || this.isExpiringPromotion(player));
     }
 
     isPromotionCompleted(player) {
@@ -57,6 +57,10 @@ export default class PromotionFreeSpinsConsumer {
         return Object.values(players).some((player) => this.hasPlayerWithPromotion(player));
     }
 
+    isExpiringPromotion(player) {
+        return this.gameData.expiringPromotions.some(expiringPromotion => expiringPromotion._id === player.promotion.promotionId);
+    }
+
     async handlePromotionFreeSpinsExpiry() {
         const now = moment.utc();
         const currentTimeKey = this.toYMDHM(now);
@@ -66,7 +70,8 @@ export default class PromotionFreeSpinsConsumer {
                 return false;
             }
 
-            return currentTimeKey === this.toYMDHM(new Date(player.promotion.endDate));
+            return currentTimeKey === this.toYMDHM(new Date(player.promotion.endDate)) ||
+                this.isExpiringPromotion(player);
         });
 
         if (expiredPlayers.length === 0) {
@@ -103,9 +108,16 @@ export default class PromotionFreeSpinsConsumer {
     
     async loadPromotionsRunning() {
         try {
-            this.gameData.promotions = await this.promotionApiClient.getAllPromotionsRunning(this.gameData.gameConfigs.gameId);
+            const runningPromotions = await this.promotionApiClient.getAllPromotionsRunning(this.gameData.gameConfigs.gameId);
+            this.gameData.expiringPromotions = (this.gameData.promotions || []).filter(
+                promo => !runningPromotions.some(runningPromotion => runningPromotion.promotionId === promo.promotionId)
+            );
+            this.gameData.promotions = runningPromotions;
+            await this.handlePromotionFreeSpinsExpiry();
         } catch (error) {
-            this.logService?.logError(`Failed to get all promotions running for ${this.gameData.gameConfigs.gameId}: ${JSON.stringify(error)}`);
+            this.logService?.logError(
+                `Failed to get all promotions running for ${this.gameData.gameConfigs.gameId}: ${JSON.stringify(error)}`
+            );
         }
     }
 

@@ -115,6 +115,7 @@ describe("PromotionFreeSpinsConsumer", () => {
             // Arrange - Players with future end dates
             const futureTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
 
+            consumer.gameData.expiringPromotions = [];
             consumer.gameData.realPlayers = {
                 "socket-123": {
                     UID: "user123",
