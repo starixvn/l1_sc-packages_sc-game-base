@@ -46,6 +46,9 @@ describe("BonusWinConsumer", () => {
 
     const createSuccessfulAwardResponse = () => ({
         isOk: true,
+        response: {
+            seq: "test-seq",
+        },
     });
 
     const createFailedAwardResponse = (errorCode = "AWARD_FAILED") => ({
@@ -60,6 +63,7 @@ describe("BonusWinConsumer", () => {
     const createClaimBonusWinsResult = (overrides = {}) => ({
         success: true,
         claimId: "claim-123",
+        playerFinishedPromotionId: "test-player-finished-promotion-id",
         ...overrides,
     });
 
@@ -106,6 +110,7 @@ describe("BonusWinConsumer", () => {
             getTOProgress: jest.fn(),
             claimBonusWins: jest.fn(),
             checkEligibility: jest.fn(),
+            updatePlayerFinishedPromotion: jest.fn().mockResolvedValue(undefined),
         };
 
         gamePromotionApiClient = {

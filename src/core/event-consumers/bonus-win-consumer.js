@@ -62,6 +62,10 @@ export default class BonusWinConsumer {
 
                     if (isOk) {
                         this.clearPlayerPromotionData(player);
+                        await this.gamePromotionApiClient.updatePlayerFinishedPromotion({
+                            playerFinishedPromotionId: claimBonusWinsResult.playerFinishedPromotionId,
+                            seq: response.seq,
+                        });
                         return claimBonusWinsResult;
                     }
 
