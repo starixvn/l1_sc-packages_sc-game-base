@@ -1,5 +1,6 @@
 import moment from "moment";
 import { helpers } from "sc-common";
+import { promotionErrorCodes } from "../../constants";
 
 export default class PromotionFreeSpinsConsumer {
     /**
@@ -103,7 +104,12 @@ export default class PromotionFreeSpinsConsumer {
 
     async loadPromotionsRunning() {
         try {
-            this.gameData.promotions = await this.promotionApiClient.getAllPromotionsRunning(this.gameData.gameConfigs.gameId);
+            const newPromotions = await this.promotionApiClient.getAllPromotionsRunning(this.gameData.gameConfigs.gameId);
+            const promotionIds = this.gameData.promotions.map((promotion) => promotion.promotionId);
+            const expiredPromotionIds = promotionIds.filter((promotionId) => !newPromotions.some((p) => p.promotionId === promotionId));
+
+            this.gameData.promotions = newPromotions;
+            this.removeExpiredPromotions(expiredPromotionIds);
         } catch (error) {
             this.logService?.logError(
                 `Failed to get all promotions running for ${this.gameData.gameConfigs.gameId}: ${JSON.stringify(error)}`
@@ -189,15 +195,15 @@ export default class PromotionFreeSpinsConsumer {
         };
     }
 
-    cancelPromotion(promotionId) {
-        const players = Object.values(players).filter((player) => player.promotion && player.promotion.promotionId === promotionId);
+    removeExpiredPromotions(promotionIds) {
+        const players = Object.values(this.gameData.realPlayers).filter(
+            (player) => player.promotion && promotionIds.includes(player.promotion.promotionId)
+        );
         for (const player of Object.values(players)) {
             player.promotion = undefined;
             player.promotionTOProgress = undefined;
 
-            player.socketClient.emit(this.definition.name, { errorCode: "" });
+            player.socketClient.emit(this.definition.name, { errorCode: promotionErrorCodes.CLAIMING_EXPIRED });
         }
-
-        this.gameData.promotions = this.gameData.promotions.filter((promotion) => promotion.promotionId !== promotionId);
     }
 }
