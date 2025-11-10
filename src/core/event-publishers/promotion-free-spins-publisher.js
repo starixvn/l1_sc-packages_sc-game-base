@@ -11,4 +11,12 @@ export default class PromotionFreeSpinsPublisher extends BaseEventPublisher {
             });
         }
     }
+
+    publishExpiredPromotion(players) {
+        for (const player of players) {
+            this.publishToUserByPlayerId(player.playerId, { 
+                errorCode: "SB3030"
+            });
+        }
+    }
 }

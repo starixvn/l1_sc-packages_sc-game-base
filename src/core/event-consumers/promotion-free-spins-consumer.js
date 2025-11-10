@@ -45,7 +45,11 @@ export default class PromotionFreeSpinsConsumer {
     }
 
     hasPlayerWithPromotion(player) {
-        return player.promotion && ((!this.isPromotionCompleted(player) && player.promotion.isClaimed && player.promotion.endDate) || this.isExpiringPromotion(player));
+        return (
+            player.promotion &&
+            ((!this.isPromotionCompleted(player) && player.promotion.isClaimed && player.promotion.endDate) ||
+                this.isExpiringPromotion(player))
+        );
     }
 
     isPromotionCompleted(player) {
@@ -58,21 +62,11 @@ export default class PromotionFreeSpinsConsumer {
     }
 
     isExpiringPromotion(player) {
-        return this.gameData.expiringPromotions.some(expiringPromotion => expiringPromotion._id === player.promotion.promotionId);
+        return this.gameData.expiringPromotions.some((expiringPromotion) => expiringPromotion._id === player.promotion.promotionId);
     }
 
     async handlePromotionFreeSpinsExpiry() {
-        const now = moment.utc();
-        const currentTimeKey = this.toYMDHM(now);
-
-        const expiredPlayers = Object.values(this.gameData.realPlayers || {}).filter((player) => {
-            if (!this.hasPlayerWithPromotion(player)) {
-                return false;
-            }
-
-            return currentTimeKey === this.toYMDHM(new Date(player.promotion.endDate)) ||
-                this.isExpiringPromotion(player);
-        });
+        const expiredPlayers = this.getExpiredPlayers();
 
         if (expiredPlayers.length === 0) {
             return;
@@ -80,17 +74,59 @@ export default class PromotionFreeSpinsConsumer {
 
         this.logService?.log(`Found ${expiredPlayers.length} players with expired promotions`);
 
-        const expiredPlayerData = expiredPlayers.map((player) => ({
-            playerId: player.session.playerId,
-            totalWin: player.promotion.totalWin,
-        }));
+        const { endedPlayers, expiredPlayersWithTO } = this.categorizeExpiredPlayers(expiredPlayers);
+        
+        this.publishExpiredPromotionEvents(endedPlayers, expiredPlayersWithTO);
+        this.cleanupPlayersPromotionData(expiredPlayers);
+    }
 
-        this.promotionFreeSpinsPublisher.publishEndPromotion(expiredPlayerData);
+    getExpiredPlayers() {
+        const now = moment.utc();
+        const currentTimeKey = this.toYMDHM(now);
+
+        return Object.values(this.gameData.realPlayers || {}).filter((player) => {
+            if (!this.hasPlayerWithPromotion(player)) {
+                return false;
+            }
+
+            return currentTimeKey === this.toYMDHM(new Date(player.promotion.endDate)) || this.isExpiringPromotion(player);
+        });
+    }
+
+    categorizeExpiredPlayers(expiredPlayers) {
+        const endedPlayers = [];
+        const expiredPlayersWithTO = [];
 
         expiredPlayers.forEach((player) => {
+            const playerData = {
+                playerId: player.session.playerId,
+                totalWin: player.promotion.totalWin,
+            };
+
+            if (player.promotionTOProgress) {
+                expiredPlayersWithTO.push({errorCode: "SB3030"});
+            } else {
+                endedPlayers.push(playerData);
+            }
+        });
+
+        return { endedPlayers, expiredPlayersWithTO };
+    }
+
+    cleanupPlayersPromotionData(players) {
+        players.forEach((player) => {
             delete player.promotion;
             delete player.promotionTOProgress;
         });
+    }
+
+    publishExpiredPromotionEvents(endedPlayers, expiredPlayersWithTO) {
+        if (endedPlayers.length > 0) {
+            this.promotionFreeSpinsPublisher.publishEndPromotion(endedPlayers);
+        }
+        if (expiredPlayersWithTO.length > 0) {
+            this.promotionFreeSpinsPublisher.publishExpiredPromotion(expiredPlayersWithTO);
+        }
     }
 
     async consume(player, payload) {
@@ -105,12 +141,12 @@ export default class PromotionFreeSpinsConsumer {
             this.logService?.logError(`Error in promotion consumer for player ${player.profile.name}:`, error);
         }
     }
-    
+
     async loadPromotionsRunning() {
         try {
             const runningPromotions = await this.promotionApiClient.getAllPromotionsRunning(this.gameData.gameConfigs.gameId);
             this.gameData.expiringPromotions = (this.gameData.promotions || []).filter(
-                promo => !runningPromotions.some(runningPromotion => runningPromotion.promotionId === promo.promotionId)
+                (promo) => !runningPromotions.some((runningPromotion) => runningPromotion.promotionId === promo.promotionId)
             );
             this.gameData.promotions = runningPromotions;
             await this.handlePromotionFreeSpinsExpiry();
