@@ -226,6 +226,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             canClaim: completePromotionResult.canClaim,
             win: completePromotionResult.totalWinAmount,
             expire: completePromotionResult.claimExpirationDate,
+            promotionId: player.promotion.promotionId,
         };
 
         if(player.totalWin !== 0) {
