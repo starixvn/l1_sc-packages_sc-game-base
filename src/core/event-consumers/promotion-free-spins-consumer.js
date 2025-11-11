@@ -104,7 +104,7 @@ export default class PromotionFreeSpinsConsumer {
             };
 
             if (player.promotionTOProgress) {
-                expiredPlayersWithTO.push({errorCode: "SB3030"});
+                expiredPlayersWithTO.push(playerData);
             } else {
                 endedPlayers.push(playerData);
             }
