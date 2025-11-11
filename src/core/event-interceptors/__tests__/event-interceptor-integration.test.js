@@ -573,7 +573,8 @@ describe("Event Interceptor Integration", () => {
                 siteName: player.session.siteName,
             });
 
-            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledWith(
+            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenNthCalledWith(
+                1,
                 player.UID,
                 {
                     finishPromotion: {
@@ -584,7 +585,8 @@ describe("Event Interceptor Integration", () => {
                 mockDependencies.definition.name
             );
 
-            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledWith(
+            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenNthCalledWith(
+                2,
                 player.UID,
                 {
                     promotionTOProgress: {
@@ -595,6 +597,7 @@ describe("Event Interceptor Integration", () => {
                         canClaim: completeResult.canClaim,
                         win: completeResult.totalWinAmount,
                         expire: completeResult.claimExpirationDate,
+                        promotionId: player.promotion.promotionId,
                     },
                 },
                 mockDependencies.definition.name
