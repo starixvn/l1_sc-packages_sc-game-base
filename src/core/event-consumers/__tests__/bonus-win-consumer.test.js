@@ -16,6 +16,7 @@ describe("BonusWinConsumer", () => {
     const TEST_OPERATOR_ID = "test-operator-id";
     const TEST_SITE_NAME = "test-site-name";
     const TEST_SITE_ID = "test-site-id";
+    const TEST_PLAYER_FINISHED_PROMOTION_ID = "test-player-finished-promotion-id";
 
     // Test Data Factories
     const createPlayer = (overrides = {}) => ({
@@ -44,11 +45,13 @@ describe("BonusWinConsumer", () => {
         errorCode,
     });
 
-    const createSuccessfulAwardResponse = () => ({
+    const createSuccessfulAwardResponse = (overrides = {}) => ({
         isOk: true,
         response: {
             seq: "test-seq",
+            ...overrides.response,
         },
+        ...overrides,
     });
 
     const createFailedAwardResponse = (errorCode = "AWARD_FAILED") => ({
@@ -63,7 +66,12 @@ describe("BonusWinConsumer", () => {
     const createClaimBonusWinsResult = (overrides = {}) => ({
         success: true,
         claimId: "claim-123",
-        playerFinishedPromotionId: "test-player-finished-promotion-id",
+        playerFinishedPromotionId: TEST_PLAYER_FINISHED_PROMOTION_ID,
+        playerPromotionId: "test-player-promotion-id",
+        claimedAmount: 100,
+        totalTurnover: 500,
+        minRequiredTurnover: 200,
+        totalWinAmount: 100,
         ...overrides,
     });
 
@@ -156,9 +164,10 @@ describe("BonusWinConsumer", () => {
 
                 it("should call award with correct parameters", async () => {
                     // Arrange
+                    const claimBonusWinsResult = createClaimBonusWinsResult();
                     setupSuccessfulTOProgress();
                     setupSuccessfulAward();
-                    setupSuccessfulClaimBonusWins();
+                    setupSuccessfulClaimBonusWins(claimBonusWinsResult);
 
                     // Act
                     await bonusWinConsumer.claim(player);
@@ -169,7 +178,7 @@ describe("BonusWinConsumer", () => {
                         siteId: TEST_SITE_ID,
                         operatorId: TEST_OPERATOR_ID,
                         currency: "USD",
-                        promotionId: TEST_PROMOTION_ID,
+                        promotionId: claimBonusWinsResult.playerPromotionId,
                         gameId: definition.id,
                         amount: 100,
                     });
@@ -193,18 +202,28 @@ describe("BonusWinConsumer", () => {
                     });
                 });
 
-                it("should return claimBonusWins result", async () => {
+                it("should return claim result with correct fields", async () => {
                     // Arrange
-                    const expectedResult = createClaimBonusWinsResult();
+                    const claimBonusWinsResult = createClaimBonusWinsResult({
+                        claimedAmount: 100,
+                        totalTurnover: 500,
+                        minRequiredTurnover: 200,
+                        totalWinAmount: 100,
+                    });
                     setupSuccessfulTOProgress();
                     setupSuccessfulAward();
-                    setupSuccessfulClaimBonusWins(expectedResult);
+                    setupSuccessfulClaimBonusWins(claimBonusWinsResult);
 
                     // Act
                     const result = await bonusWinConsumer.claim(player);
 
                     // Assert
-                    expect(result).toEqual(expectedResult);
+                    expect(result).toEqual({
+                        claimedAmount: 100,
+                        totalTurnover: 500,
+                        minRequiredTurnover: 200,
+                        totalWinAmount: 100,
+                    });
                 });
 
                 it("should clear player promotion data after successful claim", async () => {
@@ -232,6 +251,30 @@ describe("BonusWinConsumer", () => {
 
                     // Assert
                     expect(player.promotionTOProgress).toBeUndefined();
+                });
+
+                it("should call updatePlayerFinishedPromotion after successful award", async () => {
+                    // Arrange
+                    const claimBonusWinsResult = createClaimBonusWinsResult({
+                        playerFinishedPromotionId: TEST_PLAYER_FINISHED_PROMOTION_ID,
+                    });
+                    const awardResponse = createSuccessfulAwardResponse({
+                        response: {
+                            seq: "test-seq",
+                        },
+                    });
+                    setupSuccessfulTOProgress();
+                    mockAward.mockResolvedValue(awardResponse);
+                    setupSuccessfulClaimBonusWins(claimBonusWinsResult);
+
+                    // Act
+                    await bonusWinConsumer.claim(player);
+
+                    // Assert
+                    expect(gamePromotionApiClientInstance.updatePlayerFinishedPromotion).toHaveBeenCalledWith({
+                        playerFinishedPromotionId: TEST_PLAYER_FINISHED_PROMOTION_ID,
+                        seq: "test-seq",
+                    });
                 });
             });
 
@@ -423,6 +466,30 @@ describe("BonusWinConsumer", () => {
                     // Assert
                     expect(player.promotionTOProgress).toBeUndefined();
                 });
+            });
+        });
+
+        describe("when player has no promotion", () => {
+            it("should return SB3017 error code", async () => {
+                // Arrange
+                delete player.promotion;
+
+                // Act
+                const result = await bonusWinConsumer.claim(player);
+
+                // Assert
+                expect(result).toEqual({ errorCode: "SB3017" });
+            });
+
+            it("should not call getTOProgress when player has no promotion", async () => {
+                // Arrange
+                delete player.promotion;
+
+                // Act
+                await bonusWinConsumer.claim(player);
+
+                // Assert
+                expect(gamePromotionApiClientInstance.getTOProgress).not.toHaveBeenCalled();
             });
         });
 

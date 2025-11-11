@@ -55,7 +55,7 @@ export default class BonusWinConsumer {
                         siteId: session.siteId,
                         operatorId: session.operatorId,
                         currency: session.currencyName,
-                        promotionId: promotion.promotionId,
+                        promotionId: claimBonusWinsResult.playerPromotionId,
                         gameId: this.definition.id,
                         amount: toProgress.totalWinAmount,
                     });
@@ -66,7 +66,12 @@ export default class BonusWinConsumer {
                             playerFinishedPromotionId: claimBonusWinsResult.playerFinishedPromotionId,
                             seq: response.seq,
                         });
-                        return claimBonusWinsResult;
+                        return {
+                            claimedAmount: claimBonusWinsResult.claimedAmount,
+                            totalTurnover: claimBonusWinsResult.totalTurnover,
+                            minRequiredTurnover: claimBonusWinsResult.minRequiredTurnover,
+                            totalWinAmount: claimBonusWinsResult.totalWinAmount,
+                        };
                     }
 
                     return {
