@@ -314,6 +314,7 @@ export default class UserSignInConsumer {
             endDate: promotion.endDate,
             lastUsedDate: promotion.lastUsedDate,
             isGiftCode: promotion.isGiftCode,
+            isCompleted: promotion.isCompleted
         };
     }
 

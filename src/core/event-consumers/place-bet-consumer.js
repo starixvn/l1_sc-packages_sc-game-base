@@ -90,7 +90,7 @@ export default class PlaceBetConsumer {
     }
 
     shouldUsePromotion(player) {
-        return player.promotion !== null && player.promotion && player.promotion.isClaimed;
+        return player.promotion !== null && player.promotion && player.promotion.isClaimed && !player.promotion.isCompleted;
     }
 
     createPromotionPayload(player, originalPayload, promotionBetAmount) {
