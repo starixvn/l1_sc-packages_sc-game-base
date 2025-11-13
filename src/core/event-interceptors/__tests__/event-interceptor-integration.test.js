@@ -606,7 +606,7 @@ describe("Event Interceptor Integration", () => {
             expect(player.promotion.totalWin).toBe(200); // Updated
         });
 
-        it("should not call publishNewPromotionOnZeroWinning when totalWin is not zero", async () => {
+        it("should not call publishAvailablePromotion when totalWin is not zero", async () => {
             // Arrange
             const bet = { betWin: 100, roundId: "round123" };
             player.promotion.remainingBonusItems = 0;
@@ -637,7 +637,7 @@ describe("Event Interceptor Integration", () => {
             );
         });
 
-        it("should call publishNewPromotionOnZeroWinning when totalWin is zero and promotion is available", async () => {
+        it("should call publishAvailablePromotion when totalWin is zero and promotion is available", async () => {
             // Arrange
             const bet = { betWin: 0, roundId: "round123" };
             player.promotion.remainingBonusItems = 0;
@@ -698,7 +698,7 @@ describe("Event Interceptor Integration", () => {
             expect(player.promotion.promotionId).toBe(TEST_NEW_PROMO_ID);
         });
 
-        it("should not call publishNewPromotionOnZeroWinning when no promotion is available", async () => {
+        it("should not call publishAvailablePromotion when no promotion is available", async () => {
             // Arrange
             const bet = { betWin: 0, roundId: "round123" };
             player.promotion.remainingBonusItems = 0;

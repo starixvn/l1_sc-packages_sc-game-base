@@ -197,12 +197,6 @@ export default class BaseSocketRouter {
 
             const result = await this.bonusWinConsumer.claim(this.gameData.realPlayers[this.socketClient.id]);
             this.socketClient.emit(this.definition.name, result);
-            const promotionAvailable = await this.bonusWinConsumer.getPromotionAvailable(this.gameData.realPlayers[this.socketClient.id]);
-            if (!promotionAvailable) {
-                return;
-            }
-            this.gameData.realPlayers[this.socketClient.id].promotion = promotionAvailable;
-            this.socketClient.emit(this.definition.name, { promotion: promotionAvailable });
         } catch (error) {
             this.logService.logError(error);
         }

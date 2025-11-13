@@ -43,19 +43,18 @@ export const getFinishPromotionMessage = (gameName, promotion, originalOdds) => 
     {{NewLine}}{{BeginBold}}To{{EndBold}}      : ${getDateTimeStringAtGMT7(promotion?.endDateTime)} `;
 };
 
-export const validatePromotionAvailable = (promotionData, gameId) => {
-    if (!promotionData?.promotions?.length) {
+export const validatePromotionAvailable = (promotions, gameId) => {
+    if (!promotions?.length) {
         return null;
     }
-    const validPromotion = promotionData.promotions.find((promotion) => promotion.gameIds?.includes(gameId));
+    const validPromotion = promotions.find((promotion) => promotion.gameIds?.includes(gameId));
     if (!validPromotion) {
         return null;
     }
-    const now = new Date();
     return {
         promotionId: validPromotion._id,
         remainingBonusItems: validPromotion.bonusItemCount,
-        isActive: validPromotion.endDate ? now < new Date(validPromotion.endDate) : true,
+        isActive: true,
         endDate: validPromotion.endDate,
         isGiftCode: validPromotion.isGiftCode,
         isClaimed: false,

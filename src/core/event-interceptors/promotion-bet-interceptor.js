@@ -142,16 +142,16 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
 
             await this.notifyPromotionCompletion(player);
             await this.completePromotion(player);
-            if (player.promotion.totalWin !== 0) {
+            if (player.promotion.totalWin > 0) {
                 return;
             }
-            await this.publishNewPromotionOnZeroWinning(player);
+            await this.publishAvailablePromotion(player);
         } catch (error) {
             this.logService.logError(error);
         }
     }
 
-    async publishNewPromotionOnZeroWinning(player) {
+    async publishAvailablePromotion(player) {
         const { session } = player;
         const promotionData = await this.gamePromotionApiClient.checkEligibility({
             playerId: session.playerId,
@@ -159,7 +159,7 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             operatorId: session.operatorId,
             siteName: session.siteName,
         });
-        const promotionAvailable = validatePromotionAvailable(promotionData, this.definition.id);
+        const promotionAvailable = validatePromotionAvailable(promotionData?.promotions, this.definition.id);
         if (!promotionAvailable) {
             return;
         }

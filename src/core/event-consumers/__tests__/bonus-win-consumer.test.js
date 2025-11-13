@@ -614,26 +614,6 @@ describe("BonusWinConsumer", () => {
                 );
             });
 
-            it("should set isActive correctly when promotion has endDate in past", async () => {
-                // Arrange
-                const pastDate = new Date(Date.now() - 86400000).toISOString();
-                const eligibilityResponse = createEligibilityResponse({
-                    endDate: pastDate,
-                });
-                gamePromotionApiClientInstance.checkEligibility.mockResolvedValue(eligibilityResponse);
-
-                // Act
-                const result = await bonusWinConsumer.getPromotionAvailable(player);
-
-                // Assert
-                expect(result).toEqual(
-                    expect.objectContaining({
-                        isActive: false,
-                        endDate: pastDate,
-                    })
-                );
-            });
-
             it("should set isActive to true when promotion has no endDate", async () => {
                 // Arrange
                 const eligibilityResponse = createEligibilityResponse({

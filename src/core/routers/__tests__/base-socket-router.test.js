@@ -422,7 +422,6 @@ describe("base socket router test", () => {
             gameData.realPlayers[socketClient.id] = mockPlayer;
             socketClient.emit.mockClear();
             bonusWinConsumer.claim.mockClear();
-            bonusWinConsumer.getPromotionAvailable.mockClear();
         });
 
         describe("when invalidRequest", () => {
@@ -449,7 +448,6 @@ describe("base socket router test", () => {
                 // arrange
                 const claimResult = { success: true, claimId: "claim-123" };
                 bonusWinConsumer.claim.mockResolvedValue(claimResult);
-                bonusWinConsumer.getPromotionAvailable.mockResolvedValue(null);
 
                 // act
                 await router.handleClaimBonusWin();
@@ -462,7 +460,6 @@ describe("base socket router test", () => {
                 // arrange
                 const claimResult = { success: true, claimId: "claim-123" };
                 bonusWinConsumer.claim.mockResolvedValue(claimResult);
-                bonusWinConsumer.getPromotionAvailable.mockResolvedValue(null);
 
                 // act
                 await router.handleClaimBonusWin();
@@ -471,112 +468,11 @@ describe("base socket router test", () => {
                 expect(socketClient.emit).toHaveBeenCalledWith(definition.name, claimResult);
             });
 
-            it("should call bonusWinConsumer.getPromotionAvailable with correct player", async () => {
-                // arrange
-                const claimResult = { success: true, claimId: "claim-123" };
-                bonusWinConsumer.claim.mockResolvedValue(claimResult);
-                bonusWinConsumer.getPromotionAvailable.mockResolvedValue(null);
-
-                // act
-                await router.handleClaimBonusWin();
-
-                // assert
-                expect(bonusWinConsumer.getPromotionAvailable).toHaveBeenCalledWith(mockPlayer);
-            });
-
-            describe("when promotion is available", () => {
-                it("should set promotion on player", async () => {
-                    // arrange
-                    const claimResult = { success: true, claimId: "claim-123" };
-                    const promotionAvailable = {
-                        promotionId: "promo-123",
-                        remainingBonusItems: 10,
-                        isActive: true,
-                    };
-                    bonusWinConsumer.claim.mockResolvedValue(claimResult);
-                    bonusWinConsumer.getPromotionAvailable.mockResolvedValue(promotionAvailable);
-
-                    // act
-                    await router.handleClaimBonusWin();
-
-                    // assert
-                    expect(gameData.realPlayers[socketClient.id].promotion).toEqual(promotionAvailable);
-                });
-
-                it("should emit promotion to socket client", async () => {
-                    // arrange
-                    const claimResult = { success: true, claimId: "claim-123" };
-                    const promotionAvailable = {
-                        promotionId: "promo-123",
-                        remainingBonusItems: 10,
-                        isActive: true,
-                    };
-                    bonusWinConsumer.claim.mockResolvedValue(claimResult);
-                    bonusWinConsumer.getPromotionAvailable.mockResolvedValue(promotionAvailable);
-
-                    // act
-                    await router.handleClaimBonusWin();
-
-                    // assert
-                    expect(socketClient.emit).toHaveBeenCalledWith(definition.name, { promotion: promotionAvailable });
-                });
-
-                it("should emit both claim result and promotion", async () => {
-                    // arrange
-                    const claimResult = { success: true, claimId: "claim-123" };
-                    const promotionAvailable = {
-                        promotionId: "promo-123",
-                        remainingBonusItems: 10,
-                        isActive: true,
-                    };
-                    bonusWinConsumer.claim.mockResolvedValue(claimResult);
-                    bonusWinConsumer.getPromotionAvailable.mockResolvedValue(promotionAvailable);
-
-                    // act
-                    await router.handleClaimBonusWin();
-
-                    // assert
-                    expect(socketClient.emit).toHaveBeenCalledTimes(2);
-                    expect(socketClient.emit).toHaveBeenCalledWith(definition.name, claimResult);
-                    expect(socketClient.emit).toHaveBeenCalledWith(definition.name, { promotion: promotionAvailable });
-                });
-            });
-
-            describe("when promotion is not available", () => {
-                it("should not set promotion on player", async () => {
-                    // arrange
-                    const claimResult = { success: true, claimId: "claim-123" };
-                    bonusWinConsumer.claim.mockResolvedValue(claimResult);
-                    bonusWinConsumer.getPromotionAvailable.mockResolvedValue(null);
-
-                    // act
-                    await router.handleClaimBonusWin();
-
-                    // assert
-                    expect(gameData.realPlayers[socketClient.id].promotion).toBeUndefined();
-                });
-
-                it("should not emit promotion", async () => {
-                    // arrange
-                    const claimResult = { success: true, claimId: "claim-123" };
-                    bonusWinConsumer.claim.mockResolvedValue(claimResult);
-                    bonusWinConsumer.getPromotionAvailable.mockResolvedValue(null);
-
-                    // act
-                    await router.handleClaimBonusWin();
-
-                    // assert
-                    expect(socketClient.emit).toHaveBeenCalledTimes(1);
-                    expect(socketClient.emit).toHaveBeenCalledWith(definition.name, claimResult);
-                });
-            });
-
             describe("when claim returns error", () => {
                 it("should emit error result", async () => {
                     // arrange
                     const claimResult = { errorCode: "SB3017" };
                     bonusWinConsumer.claim.mockResolvedValue(claimResult);
-                    bonusWinConsumer.getPromotionAvailable.mockResolvedValue(null);
 
                     // act
                     await router.handleClaimBonusWin();
