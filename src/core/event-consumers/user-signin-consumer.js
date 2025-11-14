@@ -310,13 +310,13 @@ export default class UserSignInConsumer {
      * @returns {Promise<Object|null>} Available promotion data or null
      */
     async checkAvailablePromotions(playerDto) {
-        const promotionAvailable = await this.promotionApiClient.checkEligibility(playerDto);
+        const { promotion } = await this.promotionApiClient.checkEligibility(playerDto);
 
-        if (!promotionAvailable) {
+        if (!promotion) {
             return null;
         }
 
-        return this.createAvailablePromotionData(promotionAvailable);
+        return this.createAvailablePromotionData(promotion);
     }
 
     createBasePromoData(promotion, currentTime) {

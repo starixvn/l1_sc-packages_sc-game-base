@@ -108,22 +108,22 @@ export default class BonusWinConsumer {
 
     async getPromotionAvailable(player) {
         const { session } = player;
-        const promotionData = await this.gamePromotionApiClient.checkEligibility({
+        const { promotion } = await this.gamePromotionApiClient.checkEligibility({
             playerId: session.playerId,
             currencyGroup: session.currencyGroupId,
             operatorId: session.operatorId,
             siteName: session.siteName,
             gameId: this.definition.id,
         });
-        if (!promotionData) {
+        if (!promotion) {
             return null;
         }
         return {
-            promotionId: promotionData._id,
-            remainingBonusItems: promotionData.bonusItemCount,
+            promotionId: promotion._id,
+            remainingBonusItems: promotion.bonusItemCount,
             isActive: true,
-            endDate: promotionData.endDate,
-            isGiftCode: promotionData.isGiftCode,
+            endDate: promotion.endDate,
+            isGiftCode: promotion.isGiftCode,
             isClaimed: false,
         };
     }
