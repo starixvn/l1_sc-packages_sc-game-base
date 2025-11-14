@@ -1,4 +1,3 @@
-import { validatePromotionAvailable } from "../helpers/promotion-helper.js";
 export default class BonusWinConsumer {
     constructor({ definition, gamePromotionApiClient, award, logService, publisher }) {
         this.definition = definition;

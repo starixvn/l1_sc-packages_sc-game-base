@@ -1,6 +1,5 @@
 import { helpers } from "sc-common";
 import BaseEventInterceptor from "./base-event-interceptor.js";
-import { validatePromotionAvailable } from "../helpers/promotion-helper.js";
 
 /**
  * Promotion Bet Event Interceptor
