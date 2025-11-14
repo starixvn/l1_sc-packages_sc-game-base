@@ -42,21 +42,3 @@ export const getFinishPromotionMessage = (gameName, promotion, originalOdds) => 
     {{NewLine}}{{BeginBold}}From{{EndBold}}: ${getDateTimeStringAtGMT7(promotion?.startDateTime)}
     {{NewLine}}{{BeginBold}}To{{EndBold}}      : ${getDateTimeStringAtGMT7(promotion?.endDateTime)} `;
 };
-
-export const validatePromotionAvailable = (promotions, gameId) => {
-    if (!promotions?.length) {
-        return null;
-    }
-    const validPromotion = promotions.find((promotion) => promotion.gameIds?.includes(gameId));
-    if (!validPromotion) {
-        return null;
-    }
-    return {
-        promotionId: validPromotion._id,
-        remainingBonusItems: validPromotion.bonusItemCount,
-        isActive: true,
-        endDate: validPromotion.endDate,
-        isGiftCode: validPromotion.isGiftCode,
-        isClaimed: false,
-    };
-};

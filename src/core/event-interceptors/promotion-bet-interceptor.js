@@ -153,23 +153,29 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
 
     async publishAvailablePromotion(player) {
         const { session } = player;
-        const promotionData = await this.gamePromotionApiClient.checkEligibility({
+        const promotionAvailable = await this.gamePromotionApiClient.checkEligibility({
             playerId: session.playerId,
             currencyGroup: session.currencyGroupId,
             operatorId: session.operatorId,
             siteName: session.siteName,
+            gameId: this.definition.id,
         });
-        const promotionAvailable = validatePromotionAvailable(promotionData?.promotions, this.definition.id);
         if (!promotionAvailable) {
             return;
         }
-        player.promotion = {
-            ...promotionAvailable,
+        const promotionData = {
+            promotionId: promotionAvailable._id,
+            remainingBonusItems: promotionAvailable.bonusItemCount,
+            isActive: true,
+            endDate: promotionAvailable.endDate,
+            isGiftCode: promotionAvailable.isGiftCode,
+            isClaimed: false,
         };
+        player.promotion = promotionData;
         this.placeBetPublisher.publishToUser(
             player.UID,
             {
-                promotion: promotionAvailable,
+                promotion: promotionData,
             },
             this.definition.name
         );

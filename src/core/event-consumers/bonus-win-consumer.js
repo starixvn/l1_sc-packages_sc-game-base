@@ -114,8 +114,19 @@ export default class BonusWinConsumer {
             currencyGroup: session.currencyGroupId,
             operatorId: session.operatorId,
             siteName: session.siteName,
+            gameId: this.definition.id,
         });
-        return validatePromotionAvailable(promotionData?.promotions, this.definition.id);
+        if (!promotionData) {
+            return null;
+        }
+        return {
+            promotionId: promotionData._id,
+            remainingBonusItems: promotionData.bonusItemCount,
+            isActive: true,
+            endDate: promotionData.endDate,
+            isGiftCode: promotionData.isGiftCode,
+            isClaimed: false,
+        };
     }
 }
 

@@ -657,15 +657,10 @@ describe("Event Interceptor Integration", () => {
             mockApiInstance.completePromotion.mockResolvedValue(completeResult);
 
             const newPromotionData = {
-                promotions: [
-                    {
-                        _id: TEST_NEW_PROMO_ID,
-                        gameIds: [1],
-                        bonusItemCount: 10,
-                        endDate: null,
-                        isGiftCode: false,
-                    },
-                ],
+                _id: TEST_NEW_PROMO_ID,
+                bonusItemCount: 10,
+                endDate: null,
+                isGiftCode: false,
             };
             mockApiInstance.checkEligibility.mockResolvedValue(newPromotionData);
 
@@ -678,12 +673,13 @@ describe("Event Interceptor Integration", () => {
                 currencyGroup: player.session.currencyGroupId,
                 operatorId: player.session.operatorId,
                 siteName: player.session.siteName,
+                gameId: mockDependencies.definition.id,
             });
 
             expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledWith(
                 player.UID,
                 {
-                    promotion:                     {
+                    promotion: {
                         promotionId: TEST_NEW_PROMO_ID,
                         remainingBonusItems: 10,
                         isActive: true,
@@ -716,7 +712,7 @@ describe("Event Interceptor Integration", () => {
                 claimExpirationDate: new Date(),
             };
             mockApiInstance.completePromotion.mockResolvedValue(completeResult);
-            mockApiInstance.checkEligibility.mockResolvedValue({ promotions: [] });
+            mockApiInstance.checkEligibility.mockResolvedValue(null);
 
             // Act
             await promotionInterceptor.endPromotionEvent(context);

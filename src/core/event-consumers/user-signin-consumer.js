@@ -310,19 +310,13 @@ export default class UserSignInConsumer {
      * @returns {Promise<Object|null>} Available promotion data or null
      */
     async checkAvailablePromotions(playerDto) {
-        const hasPromotion = await this.promotionApiClient.checkEligibility(playerDto);
+        const promotionAvailable = await this.promotionApiClient.checkEligibility(playerDto);
 
-        if (!hasPromotion?.promotions?.length) {
+        if (!promotionAvailable) {
             return null;
         }
 
-        const validPromotion = hasPromotion.promotions.find((promotion) => promotion.gameIds?.includes(this.gameData.gameConfigs.gameId));
-
-        if (!validPromotion) {
-            return null;
-        }
-
-        return this.createAvailablePromotionData(validPromotion);
+        return this.createAvailablePromotionData(promotionAvailable);
     }
 
     createBasePromoData(promotion, currentTime) {
@@ -343,11 +337,10 @@ export default class UserSignInConsumer {
     }
 
     createAvailablePromotionData(promotion) {
-        const now = new Date();
         const basePromotionData = {
             promotionId: promotion._id,
             remainingBonusItems: promotion.bonusItemCount,
-            isActive: promotion.endDate ? now < new Date(promotion.endDate) : true,
+            isActive: true,
             endDate: promotion.endDate,
             isGiftCode: promotion.isGiftCode,
             isClaimed: false,
