@@ -662,7 +662,7 @@ describe("Event Interceptor Integration", () => {
                 endDate: null,
                 isGiftCode: false,
             };
-            mockApiInstance.checkEligibility.mockResolvedValue(newPromotionData);
+            mockApiInstance.checkEligibility.mockResolvedValue({ promotion: newPromotionData });
 
             // Act
             await promotionInterceptor.endPromotionEvent(context);
@@ -676,7 +676,12 @@ describe("Event Interceptor Integration", () => {
                 gameId: mockDependencies.definition.id,
             });
 
-            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledWith(
+            // Verify publishToUser was called 3 times: finishPromotion, promotionTOProgress, and promotion
+            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledTimes(3);
+            
+            // Check the promotion publish (3rd call)
+            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenNthCalledWith(
+                3,
                 player.UID,
                 {
                     promotion: {
@@ -712,13 +717,15 @@ describe("Event Interceptor Integration", () => {
                 claimExpirationDate: new Date(),
             };
             mockApiInstance.completePromotion.mockResolvedValue(completeResult);
-            mockApiInstance.checkEligibility.mockResolvedValue(null);
+            mockApiInstance.checkEligibility.mockResolvedValue({ promotion: null });
 
             // Act
             await promotionInterceptor.endPromotionEvent(context);
 
             // Assert
             expect(mockApiInstance.checkEligibility).toHaveBeenCalled();
+            // Should only be called 2 times (finishPromotion and promotionTOProgress), no promotion publish
+            expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledTimes(2);
             expect(mockDependencies.placeBetPublisher.publishToUser).not.toHaveBeenCalledWith(
                 player.UID,
                 expect.objectContaining({

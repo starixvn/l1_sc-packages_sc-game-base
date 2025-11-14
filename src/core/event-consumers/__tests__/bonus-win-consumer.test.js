@@ -58,7 +58,7 @@ describe("BonusWinConsumer", () => {
                     totalWinAmount: 100,
                 });
                 mockAward.mockResolvedValue({ isOk: true, response: { seq: "test-seq" } });
-                apiClient.checkEligibility.mockResolvedValue(null);
+                apiClient.checkEligibility.mockResolvedValue({ promotion: null });
             });
 
             it("should complete claim flow and return result", async () => {
@@ -84,7 +84,7 @@ describe("BonusWinConsumer", () => {
 
             it("should set next promotion when available", async () => {
                 const nextPromo = { _id: "next-promo", bonusItemCount: 5, endDate: null, isGiftCode: false };
-                apiClient.checkEligibility.mockResolvedValue(nextPromo);
+                apiClient.checkEligibility.mockResolvedValue({ promotion: nextPromo });
 
                 await bonusWinConsumer.claim(player);
 
@@ -187,7 +187,7 @@ describe("BonusWinConsumer", () => {
                 endDate: "2025-12-31",
                 isGiftCode: true,
             };
-            apiClient.checkEligibility.mockResolvedValue(promotionData);
+            apiClient.checkEligibility.mockResolvedValue({ promotion: promotionData });
 
             const result = await bonusWinConsumer.getPromotionAvailable(player);
 
@@ -209,7 +209,7 @@ describe("BonusWinConsumer", () => {
         });
 
         it("should return null when no promotion available", async () => {
-            apiClient.checkEligibility.mockResolvedValue(null);
+            apiClient.checkEligibility.mockResolvedValue({ promotion: null });
 
             const result = await bonusWinConsumer.getPromotionAvailable(player);
 
