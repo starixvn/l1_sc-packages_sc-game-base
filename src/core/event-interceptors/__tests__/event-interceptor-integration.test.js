@@ -662,7 +662,7 @@ describe("Event Interceptor Integration", () => {
                 endDate: null,
                 isGiftCode: false,
             };
-            mockApiInstance.checkEligibility.mockResolvedValue({ promotion: newPromotionData });
+            mockApiInstance.checkEligibility.mockResolvedValue({ promotions: [newPromotionData] });
 
             // Act
             await promotionInterceptor.endPromotionEvent(context);
@@ -717,7 +717,7 @@ describe("Event Interceptor Integration", () => {
                 claimExpirationDate: new Date(),
             };
             mockApiInstance.completePromotion.mockResolvedValue(completeResult);
-            mockApiInstance.checkEligibility.mockResolvedValue({ promotion: null });
+            mockApiInstance.checkEligibility.mockResolvedValue({ promotions: [] });
 
             // Act
             await promotionInterceptor.endPromotionEvent(context);
