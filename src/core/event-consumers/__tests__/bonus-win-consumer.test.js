@@ -91,7 +91,7 @@ describe("BonusWinConsumer", () => {
                 expect(player.promotion).toEqual({
                     promotionId: "next-promo",
                     remainingBonusItems: 5,
-                    isActive: true,
+                    isActive: false,
                     endDate: null,
                     isGiftCode: false,
                     isClaimed: false,

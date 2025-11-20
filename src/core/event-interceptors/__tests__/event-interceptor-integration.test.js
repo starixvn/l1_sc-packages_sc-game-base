@@ -687,7 +687,7 @@ describe("Event Interceptor Integration", () => {
                     promotion: {
                         promotionId: TEST_NEW_PROMO_ID,
                         remainingBonusItems: 10,
-                        isActive: true,
+                        isActive: false,
                         endDate: null,
                         isGiftCode: false,
                         isClaimed: false,
