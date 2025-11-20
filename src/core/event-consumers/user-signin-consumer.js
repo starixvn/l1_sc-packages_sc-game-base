@@ -151,39 +151,23 @@ export default class UserSignInConsumer {
         if (this.gameData.promotions.length === 0) {
             return false;
         }
-
-        const now = new Date();
         const { operatorId, siteName, currencyGroupId, playerId } = userSession;
         const gameId = this.gameData.gameConfigs?.gameId;
-        
-        const isTimeValid = this.gameData.promotions.some((promotion) => 
-            new Date(promotion.startDate) <= now && new Date(promotion.claimExpirationDate) >= now
-        );
-        const isTargetingValid = this.isPromotionTargetingValid(siteName, playerId, currencyGroupId);
-        const isGameAndOperatorValid = this.isPromotionAvailableForGame(gameId, operatorId);
-        
-        return isTimeValid && isTargetingValid && isGameAndOperatorValid;
+
+        return this.isPromotionTargetingValid(siteName, playerId, currencyGroupId, operatorId, gameId);
     }
 
-    isPromotionAvailableForGame(gameId, operatorId) {
-        return this.gameData.promotions.some((promotion) => promotion.gameIds.includes(gameId) 
-            && promotion.operatorId === operatorId);
-    }
-
-    isPromotionTargetingValid(siteName, playerId, currencyGroupId) {
-        const isTargetingSite = this.gameData.promotions.some((promotion) => 
-            promotion.offeredSiteNames.map(site => site.toLowerCase()).includes(siteName.toLowerCase()) 
-            || promotion.offeredSiteNames.length === 0
+    isPromotionTargetingValid(siteName, playerId, currencyGroupId, operatorId, gameId) {
+        const matchesInArray = (arr, value) => 
+            arr.length === 0 || arr.some(item => item.toLowerCase() === value.toLowerCase());
+        
+        return this.gameData.promotions.some((promotion) => 
+            promotion.gameIds.includes(gameId) &&
+            promotion.operatorId === operatorId &&
+            matchesInArray(promotion.offeredSiteNames, siteName) &&
+            matchesInArray(promotion.offeredPlayerIds, playerId) &&
+            matchesInArray(promotion.currencyGroups, currencyGroupId)
         );
-        const isTargetingPlayer = this.gameData.promotions.some((promotion) => 
-            promotion.offeredPlayerIds.map(player => player.toLowerCase()).includes(playerId.toLowerCase()) 
-            || promotion.offeredPlayerIds.length === 0
-        );
-        const isTargetingCurrencyGroup = this.gameData.promotions.some((promotion) => 
-            promotion.currencyGroups.map(currency => currency.toLowerCase()).includes(currencyGroupId.toLowerCase())
-             || promotion.currencyGroups.length === 0
-        );
-        return isTargetingSite && isTargetingPlayer && isTargetingCurrencyGroup;
     }
 
     /**

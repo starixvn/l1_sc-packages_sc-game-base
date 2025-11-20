@@ -791,110 +791,46 @@ describe("UserSignInConsumer", () => {
             });
 
             it("should return true when all conditions are valid", () => {
-                // Mock other methods to return true
-                jest.spyOn(consumer, 'isPromotionTargetingValid').mockReturnValue(true);
-                jest.spyOn(consumer, 'isPromotionAvailableForGame').mockReturnValue(true);
-
                 const result = consumer.isPromotionAvailableForPlayer(validUserSession);
                 expect(result).toBe(true);
             });
 
-            it("should return false when time validation fails", () => {
-                // Set promotion with expired date
+            it("should return false when targeting validation fails", () => {
+                // Change promotion to not match the user session
                 mockGameData.promotions = [{
                     promotionId: "promo123",
                     startDate: "2020-01-01T00:00:00Z",
-                    claimExpirationDate: "2020-01-01T00:00:00Z", // Expired
+                    claimExpirationDate: "2025-12-31T23:59:59Z",
                     gameIds: ["test-game-123"],
-                    operatorId: "OP001",
+                    operatorId: "OP002", // Different operator
                     offeredSiteNames: ["test-site"],
                     offeredPlayerIds: ["player456"],
                     currencyGroups: ["USD_GROUP_1"]
                 }];
 
-                jest.spyOn(consumer, 'isPromotionTargetingValid').mockReturnValue(true);
-                jest.spyOn(consumer, 'isPromotionAvailableForGame').mockReturnValue(true);
-
                 const result = consumer.isPromotionAvailableForPlayer(validUserSession);
                 expect(result).toBe(false);
-            });
-
-            it("should return false when targeting validation fails", () => {
-                jest.spyOn(consumer, 'isPromotionTargetingValid').mockReturnValue(false);
-                jest.spyOn(consumer, 'isPromotionAvailableForGame').mockReturnValue(true);
-
-                const result = consumer.isPromotionAvailableForPlayer(validUserSession);
-                expect(result).toBe(false);
-            });
-
-            it("should return false when game and operator validation fails", () => {
-                jest.spyOn(consumer, 'isPromotionTargetingValid').mockReturnValue(true);
-                jest.spyOn(consumer, 'isPromotionAvailableForGame').mockReturnValue(false);
-
-                const result = consumer.isPromotionAvailableForPlayer(validUserSession);
-                expect(result).toBe(false);
-            });
-        });
-
-        describe("isPromotionAvailableForGame", () => {
-            beforeEach(() => {
-                mockGameData.promotions = [
-                    {
-                        promotionId: "promo123",
-                        gameIds: ["test-game-123", "other-game-456"],
-                        operatorId: "OP001"
-                    },
-                    {
-                        promotionId: "promo456",
-                        gameIds: ["different-game-789"],
-                        operatorId: "OP002"
-                    }
-                ];
-            });
-
-            it("should return true when game and operator match", () => {
-                const result = consumer.isPromotionAvailableForGame("test-game-123", "OP001");
-                expect(result).toBe(true);
-            });
-
-            it("should return false when game does not match", () => {
-                const result = consumer.isPromotionAvailableForGame("non-existent-game", "OP001");
-                expect(result).toBe(false);
-            });
-
-            it("should return false when operator does not match", () => {
-                const result = consumer.isPromotionAvailableForGame("test-game-123", "OP002");
-                expect(result).toBe(false);
-            });
-
-            it("should return false when both game and operator do not match", () => {
-                const result = consumer.isPromotionAvailableForGame("non-existent-game", "OP999");
-                expect(result).toBe(false);
-            });
-
-            it("should return true when multiple promotions match", () => {
-                mockGameData.promotions.push({
-                    promotionId: "promo789",
-                    gameIds: ["test-game-123"],
-                    operatorId: "OP001"
-                });
-
-                const result = consumer.isPromotionAvailableForGame("test-game-123", "OP001");
-                expect(result).toBe(true);
             });
         });
 
         describe("isPromotionTargetingValid", () => {
+            const testGameId = "test-game-123";
+            const testOperatorId = "OP001";
+
             beforeEach(() => {
                 mockGameData.promotions = [
                     {
                         promotionId: "promo123",
+                        gameIds: [testGameId, "other-game-456"],
+                        operatorId: testOperatorId,
                         offeredSiteNames: ["test-site", "other-site"],
                         offeredPlayerIds: ["player456", "player789"],
                         currencyGroups: ["USD_GROUP_1", "EUR_GROUP_1"]
                     },
                     {
                         promotionId: "promo456",
+                        gameIds: [testGameId],
+                        operatorId: testOperatorId,
                         offeredSiteNames: [], // Empty means all sites
                         offeredPlayerIds: [], // Empty means all players
                         currencyGroups: [] // Empty means all currency groups
@@ -903,17 +839,17 @@ describe("UserSignInConsumer", () => {
             });
 
             it("should return true when all targeting conditions are met", () => {
-                const result = consumer.isPromotionTargetingValid("test-site", "player456", "USD_GROUP_1");
+                const result = consumer.isPromotionTargetingValid("test-site", "player456", "USD_GROUP_1", testOperatorId, testGameId);
                 expect(result).toBe(true);
             });
 
             it("should return true when targeting conditions are met with different cases", () => {
-                const result = consumer.isPromotionTargetingValid("TEST-SITE", "PLAYER456", "usd_group_1");
+                const result = consumer.isPromotionTargetingValid("TEST-SITE", "PLAYER456", "usd_group_1", testOperatorId, testGameId);
                 expect(result).toBe(true);
             });
 
             it("should return true when empty arrays mean all are targeted", () => {
-                const result = consumer.isPromotionTargetingValid("any-site", "any-player", "any-currency");
+                const result = consumer.isPromotionTargetingValid("any-site", "any-player", "any-currency", testOperatorId, testGameId);
                 expect(result).toBe(true);
             });
 
@@ -922,13 +858,15 @@ describe("UserSignInConsumer", () => {
                 mockGameData.promotions = [
                     {
                         promotionId: "promo123",
+                        gameIds: [testGameId],
+                        operatorId: testOperatorId,
                         offeredSiteNames: ["test-site", "other-site"],
                         offeredPlayerIds: ["player456", "player789"],
                         currencyGroups: ["USD_GROUP_1", "EUR_GROUP_1"]
                     }
                 ];
 
-                const result = consumer.isPromotionTargetingValid("non-targeted-site", "player456", "USD_GROUP_1");
+                const result = consumer.isPromotionTargetingValid("non-targeted-site", "player456", "USD_GROUP_1", testOperatorId, testGameId);
                 expect(result).toBe(false);
             });
 
@@ -937,13 +875,15 @@ describe("UserSignInConsumer", () => {
                 mockGameData.promotions = [
                     {
                         promotionId: "promo123",
+                        gameIds: [testGameId],
+                        operatorId: testOperatorId,
                         offeredSiteNames: ["test-site", "other-site"],
                         offeredPlayerIds: ["player456", "player789"],
                         currencyGroups: ["USD_GROUP_1", "EUR_GROUP_1"]
                     }
                 ];
 
-                const result = consumer.isPromotionTargetingValid("test-site", "non-targeted-player", "USD_GROUP_1");
+                const result = consumer.isPromotionTargetingValid("test-site", "non-targeted-player", "USD_GROUP_1", testOperatorId, testGameId);
                 expect(result).toBe(false);
             });
 
@@ -952,47 +892,95 @@ describe("UserSignInConsumer", () => {
                 mockGameData.promotions = [
                     {
                         promotionId: "promo123",
+                        gameIds: [testGameId],
+                        operatorId: testOperatorId,
                         offeredSiteNames: ["test-site", "other-site"],
                         offeredPlayerIds: ["player456", "player789"],
                         currencyGroups: ["USD_GROUP_1", "EUR_GROUP_1"]
                     }
                 ];
 
-                const result = consumer.isPromotionTargetingValid("test-site", "player456", "non-targeted-currency");
+                const result = consumer.isPromotionTargetingValid("test-site", "player456", "non-targeted-currency", testOperatorId, testGameId);
                 expect(result).toBe(false);
             });
 
-            it("should return true when at least one promotion targets the criteria", () => {
+            it("should return false when gameId does not match", () => {
                 mockGameData.promotions = [
                     {
                         promotionId: "promo123",
-                        offeredSiteNames: ["other-site"], // Different site
+                        gameIds: ["different-game"],
+                        operatorId: testOperatorId,
+                        offeredSiteNames: ["test-site"],
+                        offeredPlayerIds: ["player456"],
+                        currencyGroups: ["USD_GROUP_1"]
+                    }
+                ];
+
+                const result = consumer.isPromotionTargetingValid("test-site", "player456", "USD_GROUP_1", testOperatorId, testGameId);
+                expect(result).toBe(false);
+            });
+
+            it("should return false when operatorId does not match", () => {
+                mockGameData.promotions = [
+                    {
+                        promotionId: "promo123",
+                        gameIds: [testGameId],
+                        operatorId: "OP999",
+                        offeredSiteNames: ["test-site"],
+                        offeredPlayerIds: ["player456"],
+                        currencyGroups: ["USD_GROUP_1"]
+                    }
+                ];
+
+                const result = consumer.isPromotionTargetingValid("test-site", "player456", "USD_GROUP_1", testOperatorId, testGameId);
+                expect(result).toBe(false);
+            });
+
+            it("should return true when at least one promotion matches all criteria", () => {
+                mockGameData.promotions = [
+                    {
+                        promotionId: "promo123",
+                        gameIds: ["different-game"],
+                        operatorId: testOperatorId,
+                        offeredSiteNames: ["other-site"],
                         offeredPlayerIds: ["player456"],
                         currencyGroups: ["USD_GROUP_1"]
                     },
                     {
                         promotionId: "promo456",
-                        offeredSiteNames: ["test-site"], // Matches site
-                        offeredPlayerIds: ["other-player"], // Different player
-                        currencyGroups: ["other-currency"] // Different currency
+                        gameIds: [testGameId],
+                        operatorId: testOperatorId,
+                        offeredSiteNames: ["test-site"],
+                        offeredPlayerIds: ["player456"],
+                        currencyGroups: ["USD_GROUP_1"]
                     }
                 ];
 
-                const result = consumer.isPromotionTargetingValid("test-site", "player456", "USD_GROUP_1");
+                const result = consumer.isPromotionTargetingValid("test-site", "player456", "USD_GROUP_1", testOperatorId, testGameId);
                 expect(result).toBe(true);
             });
 
-            it("should return false when no promotion targets the criteria", () => {
+            it("should return false when no promotion matches all criteria", () => {
                 mockGameData.promotions = [
                     {
                         promotionId: "promo123",
-                        offeredSiteNames: ["other-site"],
-                        offeredPlayerIds: ["other-player"],
-                        currencyGroups: ["other-currency"]
+                        gameIds: [testGameId],
+                        operatorId: testOperatorId,
+                        offeredSiteNames: ["other-site"], // Wrong site
+                        offeredPlayerIds: ["player456"],
+                        currencyGroups: ["USD_GROUP_1"]
+                    },
+                    {
+                        promotionId: "promo456",
+                        gameIds: [testGameId],
+                        operatorId: testOperatorId,
+                        offeredSiteNames: ["test-site"], // Correct site
+                        offeredPlayerIds: ["other-player"], // Wrong player
+                        currencyGroups: ["USD_GROUP_1"]
                     }
                 ];
 
-                const result = consumer.isPromotionTargetingValid("test-site", "player456", "USD_GROUP_1");
+                const result = consumer.isPromotionTargetingValid("test-site", "player456", "USD_GROUP_1", testOperatorId, testGameId);
                 expect(result).toBe(false);
             });
         });
