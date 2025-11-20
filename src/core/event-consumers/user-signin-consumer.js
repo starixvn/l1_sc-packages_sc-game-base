@@ -308,7 +308,7 @@ export default class UserSignInConsumer {
             promotionId: promotion.promotionId,
             remainingBonusItems: promotion.remainingBonusItems,
             initialBonusItem: promotion.initialBonusItem,
-            isActive: promotion.endDate ? currentTime < new Date(promotion.endDate) : true,
+            isActive: promotion.endDate ? currentTime < new Date(promotion.endDate) : false,
             promotionType: promotion.promotionType,
             endDate: promotion.endDate,
             lastUsedDate: promotion.lastUsedDate,
@@ -321,10 +321,11 @@ export default class UserSignInConsumer {
     }
 
     createAvailablePromotionData(promotion) {
+        const currentTime = new Date();
         const basePromotionData = {
             promotionId: promotion._id,
             remainingBonusItems: promotion.bonusItemCount,
-            isActive: true,
+            isActive: promotion.endDate ? currentTime < new Date(promotion.endDate) : false,
             endDate: promotion.endDate,
             isGiftCode: promotion.isGiftCode,
             isClaimed: false,

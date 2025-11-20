@@ -162,10 +162,11 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
         if (promotions.length === 0) {
             return;
         }
+        const currentTime = new Date();
         const promotionData = {
             promotionId: promotions[0]._id,
             remainingBonusItems: promotions[0].bonusItemCount,
-            isActive: true,
+            isActive: promotions[0].endDate ? currentTime < new Date(promotions[0].endDate) : false,
             endDate: promotions[0].endDate,
             isGiftCode: promotions[0].isGiftCode,
             isClaimed: false,
