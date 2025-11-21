@@ -151,34 +151,42 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
     }
 
     async publishAvailablePromotion(player) {
-        const { session } = player;
-        const { promotions } = await this.gamePromotionApiClient.checkEligibility({
-            playerId: session.playerId,
-            currencyGroup: session.currencyGroupId,
-            operatorId: session.operatorId,
-            siteName: session.siteName,
-            gameId: this.definition.id,
-        });
-        if (promotions.length === 0) {
-            return;
+        try {
+            const { session } = player;
+            const eligibilityResult = await this.gamePromotionApiClient.checkEligibility({
+                playerId: session.playerId,
+                currencyGroup: session.currencyGroupId,
+                operatorId: session.operatorId,
+                siteName: session.siteName,
+                gameId: this.definition.id,
+            });
+
+            if (!eligibilityResult || !eligibilityResult.promotions || eligibilityResult.promotions.length === 0) {
+                player.promotion = null;
+                return;
+            }
+
+            const firstPromotion = eligibilityResult.promotions.shift();
+            const currentTime = new Date();
+            const promotionData = {
+                promotionId: firstPromotion._id,
+                remainingBonusItems: firstPromotion.bonusItemCount,
+                isActive: firstPromotion.endDate ? currentTime < new Date(firstPromotion.endDate) : false,
+                endDate: firstPromotion.endDate,
+                isGiftCode: firstPromotion.isGiftCode,
+                isClaimed: false,
+            };
+            player.promotion = promotionData;
+            this.placeBetPublisher.publishToUser(
+                player.UID,
+                {
+                    promotion: promotionData,
+                },
+                this.definition.name
+            );
+        } catch (error) {
+            this.logService.logError(`Error publishing available promotion for player id ${player.session.playerId}: ${error.message}`);
         }
-        const currentTime = new Date();
-        const promotionData = {
-            promotionId: promotions[0]._id,
-            remainingBonusItems: promotions[0].bonusItemCount,
-            isActive: promotions[0].endDate ? currentTime < new Date(promotions[0].endDate) : false,
-            endDate: promotions[0].endDate,
-            isGiftCode: promotions[0].isGiftCode,
-            isClaimed: false,
-        };
-        player.promotion = promotionData;
-        this.placeBetPublisher.publishToUser(
-            player.UID,
-            {
-                promotion: promotionData,
-            },
-            this.definition.name
-        );
     }
 
     /**
@@ -223,6 +231,11 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
             currencyGroup: player.session.currencyGroupId,
             siteName: player.session.siteName,
         });
+
+        if(!completePromotionResult) {
+            this.logService.logError(`Failed to complete promotion for player id ${player.session.playerId}`);
+            return;
+        }
 
         const promotionTOProgress = {
             totalTO: completePromotionResult.totalTurnover,

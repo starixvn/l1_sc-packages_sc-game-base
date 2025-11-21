@@ -299,8 +299,9 @@ export default class UserSignInConsumer {
         if (promotions.length === 0) {
             return null;
         }
+        const firstPromotion = promotions.shift();
 
-        return this.createAvailablePromotionData(promotions[0]);
+        return this.createAvailablePromotionData(firstPromotion);
     }
 
     createBasePromoData(promotion, currentTime) {

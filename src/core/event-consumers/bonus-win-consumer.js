@@ -119,12 +119,13 @@ export default class BonusWinConsumer {
             return null;
         }
         const currentTime = new Date();
+        const firstPromotion = promotions.shift();
         return {
-            promotionId: promotions[0]._id,
-            remainingBonusItems: promotions[0].bonusItemCount,
-            isActive: promotions[0].endDate ? currentTime < new Date(promotions[0].endDate) : false,
-            endDate: promotions[0].endDate,
-            isGiftCode: promotions[0].isGiftCode,
+            promotionId: firstPromotion._id,
+            remainingBonusItems: firstPromotion.bonusItemCount,
+            isActive: firstPromotion.endDate ? currentTime < new Date(firstPromotion.endDate) : false,
+            endDate: firstPromotion.endDate,
+            isGiftCode: firstPromotion.isGiftCode,
             isClaimed: false,
         };
     }
