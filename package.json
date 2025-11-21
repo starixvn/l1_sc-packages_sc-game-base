@@ -52,7 +52,7 @@
         "randomstring": "1.3.0",
         "sc-base-apis": "3.0.2",
         "sc-common": "3.0.0",
-        "sc-game-management-client": "0.1.5",
+        "sc-game-management-client": "0.1.6",
         "sc-pf-client-seed": "1.0.5",
         "socket.io": "4.5.4",
         "socket.io-msgpack-parser": "3.0.1",
