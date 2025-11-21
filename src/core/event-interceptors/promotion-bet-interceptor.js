@@ -13,11 +13,13 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
      * @param {Object} dependencies.definition - Game definition
      * @param {Object} dependencies.placeBetPublisher - Publisher for bet events
      * @param {Object} dependencies.gamePromotionApiClient - Promotion API client
+     * @param {Object} dependencies.promotionAssignmentConsumer - Promotion assignment consumer
      */
-    constructor({ logService, definition, placeBetPublisher, gamePromotionApiClient }) {
+    constructor({ logService, definition, placeBetPublisher, gamePromotionApiClient, promotionAssignmentConsumer }) {
         super({ logService, definition });
         this.placeBetPublisher = placeBetPublisher;
         this.gamePromotionApiClient = gamePromotionApiClient.instance();
+        this.promotionAssignmentConsumer = promotionAssignmentConsumer;
     }
 
     /**
@@ -151,42 +153,12 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
     }
 
     async publishAvailablePromotion(player) {
-        try {
-            const { session } = player;
-            const eligibilityResult = await this.gamePromotionApiClient.checkEligibility({
-                playerId: session.playerId,
-                currencyGroup: session.currencyGroupId,
-                operatorId: session.operatorId,
-                siteName: session.siteName,
-                gameId: this.definition.id,
-            });
-
-            if (!eligibilityResult || !eligibilityResult.promotions || eligibilityResult.promotions.length === 0) {
-                player.promotion = null;
-                return;
-            }
-
-            const firstPromotion = eligibilityResult.promotions.shift();
-            const currentTime = new Date();
-            const promotionData = {
-                promotionId: firstPromotion._id,
-                remainingBonusItems: firstPromotion.bonusItemCount,
-                isActive: firstPromotion.endDate ? currentTime < new Date(firstPromotion.endDate) : false,
-                endDate: firstPromotion.endDate,
-                isGiftCode: firstPromotion.isGiftCode,
-                isClaimed: false,
-            };
-            player.promotion = promotionData;
-            this.placeBetPublisher.publishToUser(
-                player.UID,
-                {
-                    promotion: promotionData,
-                },
-                this.definition.name
-            );
-        } catch (error) {
-            this.logService.logError(`Error publishing available promotion for player id ${player.session.playerId}: ${error.message}`);
-        }
+        // Use the promotion assignment consumer with custom publisher
+        await this.promotionAssignmentConsumer.assignNextPromotionWithPublisher(
+            player,
+            (uid, data) => this.placeBetPublisher.publishToUser(uid, data, this.definition.name),
+            { clearExisting: false }
+        );
     }
 
     /**

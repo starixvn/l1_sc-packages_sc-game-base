@@ -5,6 +5,7 @@ import BonusWinConsumer from "./bonus-win-consumer";
 import GameResultServiceConsumer from "./game-result-service-consumer";
 import InGameConsumer from "./in-game-consumer";
 import PlaceBetConsumer from "./place-bet-consumer";
+import PromotionAssignmentConsumer from "./promotion-assignment-consumer";
 import PromotionFreeSpinsConsumer from "./promotion-free-spins-consumer";
 import ProvablyFairConsumer from "./provably-fair-consumer";
 import RoundIdConsumer from "./round-id-consumer";
@@ -22,6 +23,7 @@ export {
     GameResultServiceConsumer,
     InGameConsumer,
     PlaceBetConsumer,
+    PromotionAssignmentConsumer,
     PromotionFreeSpinsConsumer,
     ProvablyFairConsumer,
     RoundIdConsumer,

@@ -20,6 +20,7 @@ describe("Event Interceptor Integration", () => {
     let player;
     let promotionPayload;
     let mockApiInstance;
+    let mockPromotionAssignmentConsumer;
 
     beforeEach(() => {
         // Mock the API instance methods
@@ -28,6 +29,8 @@ describe("Event Interceptor Integration", () => {
             createPromotionTicket: jest.fn(),
             rollbackBonusItem: jest.fn(),
             getTotalWin: jest.fn(),
+            checkEligibility: jest.fn(),
+            completePromotion: jest.fn(),
         };
 
         // Mock dependencies
@@ -125,12 +128,20 @@ describe("Event Interceptor Integration", () => {
             },
         };
 
+        // Mock PromotionAssignmentConsumer
+        mockPromotionAssignmentConsumer = {
+            clearPromotionData: jest.fn(),
+            assignNextPromotionWithPublisher: jest.fn(),
+            fetchNextAvailablePromotion: jest.fn(),
+        };
+
         // Create promotion interceptor
         promotionInterceptor = new PromotionBetInterceptor({
             logService: mockDependencies.logService,
             definition: mockDependencies.definition,
             placeBetPublisher: mockDependencies.placeBetPublisher,
             gamePromotionApiClient: mockDependencies.gamePromotionApiClient,
+            promotionAssignmentConsumer: mockPromotionAssignmentConsumer,
         });
 
         // Create ProcessBetQueue with interceptors
@@ -657,41 +668,44 @@ describe("Event Interceptor Integration", () => {
             mockApiInstance.completePromotion.mockResolvedValue(completeResult);
 
             const newPromotionData = {
-                _id: TEST_NEW_PROMO_ID,
-                bonusItemCount: 10,
+                promotionId: TEST_NEW_PROMO_ID,
+                remainingBonusItems: 10,
+                isActive: false,
                 endDate: null,
                 isGiftCode: false,
+                isClaimed: false,
             };
-            mockApiInstance.checkEligibility.mockResolvedValue({ promotions: [newPromotionData] });
+
+            // Mock assignNextPromotionWithPublisher to simulate assignment
+            mockPromotionAssignmentConsumer.assignNextPromotionWithPublisher.mockImplementation(
+                (player, publisher) => {
+                    player.promotion = newPromotionData;
+                    if (publisher) {
+                        publisher(player.UID, { promotion: newPromotionData });
+                    }
+                    return Promise.resolve(newPromotionData);
+                }
+            );
 
             // Act
             await promotionInterceptor.endPromotionEvent(context);
 
-            // Assert
-            expect(mockApiInstance.checkEligibility).toHaveBeenCalledWith({
-                playerId: player.session.playerId,
-                currencyGroup: player.session.currencyGroupId,
-                operatorId: player.session.operatorId,
-                siteName: player.session.siteName,
-                gameId: mockDependencies.definition.id,
-            });
+            // Assert - Check that assignNextPromotionWithPublisher was called
+            expect(mockPromotionAssignmentConsumer.assignNextPromotionWithPublisher).toHaveBeenCalledWith(
+                player,
+                expect.any(Function),
+                { clearExisting: false }
+            );
 
             // Verify publishToUser was called 3 times: finishPromotion, promotionTOProgress, and promotion
             expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledTimes(3);
-            
+
             // Check the promotion publish (3rd call)
             expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenNthCalledWith(
                 3,
                 player.UID,
                 {
-                    promotion: {
-                        promotionId: TEST_NEW_PROMO_ID,
-                        remainingBonusItems: 10,
-                        isActive: false,
-                        endDate: null,
-                        isGiftCode: false,
-                        isClaimed: false,
-                    },
+                    promotion: newPromotionData,
                 },
                 mockDependencies.definition.name
             );
@@ -717,13 +731,20 @@ describe("Event Interceptor Integration", () => {
                 claimExpirationDate: new Date(),
             };
             mockApiInstance.completePromotion.mockResolvedValue(completeResult);
-            mockApiInstance.checkEligibility.mockResolvedValue({ promotions: [] });
+
+            // Mock assignNextPromotionWithPublisher to return null (no promotion available)
+            mockPromotionAssignmentConsumer.assignNextPromotionWithPublisher.mockResolvedValue(null);
 
             // Act
             await promotionInterceptor.endPromotionEvent(context);
 
-            // Assert
-            expect(mockApiInstance.checkEligibility).toHaveBeenCalled();
+            // Assert - Check that assignNextPromotionWithPublisher was called
+            expect(mockPromotionAssignmentConsumer.assignNextPromotionWithPublisher).toHaveBeenCalledWith(
+                player,
+                expect.any(Function),
+                { clearExisting: false }
+            );
+
             // Should only be called 2 times (finishPromotion and promotionTOProgress), no promotion publish
             expect(mockDependencies.placeBetPublisher.publishToUser).toHaveBeenCalledTimes(2);
             expect(mockDependencies.placeBetPublisher.publishToUser).not.toHaveBeenCalledWith(

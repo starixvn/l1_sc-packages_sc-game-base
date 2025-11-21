@@ -1,15 +1,15 @@
 export default class BonusWinConsumer {
-    constructor({ definition, gamePromotionApiClient, award, logService, publisher }) {
+    constructor({ definition, gamePromotionApiClient, award, logService, publisher, promotionAssignmentConsumer }) {
         this.definition = definition;
         this.gamePromotionApiClient = gamePromotionApiClient.instance();
         this.award = award;
         this.logService = logService;
         this.publisher = publisher;
+        this.promotionAssignmentConsumer = promotionAssignmentConsumer;
     }
 
     clearPlayerPromotionData(player) {
-        delete player.promotion;
-        delete player.promotionTOProgress;
+        this.promotionAssignmentConsumer.clearPromotionData(player);
     }
 
     async claim(player) {
@@ -46,10 +46,7 @@ export default class BonusWinConsumer {
     }
 
     handleProgressError(player, errorCode) {
-        if (
-            errorCode === claimingErrorCodes.CLAIMING_EXPIRED ||
-            errorCode === claimingErrorCodes.BONUS_ALREADY_CLAIMED
-        ) {
+        if (errorCode === claimingErrorCodes.CLAIMING_EXPIRED || errorCode === claimingErrorCodes.BONUS_ALREADY_CLAIMED) {
             this.clearPlayerPromotionData(player);
         }
         return { errorCode };
@@ -92,41 +89,17 @@ export default class BonusWinConsumer {
             seq: awardResponse.seq,
         });
 
-        const promotionAvailable = await this.getPromotionAvailable(player);
-        if (promotionAvailable) {
-            player.promotion = promotionAvailable;
-            this.publisher.publishToUser(player.UID, { promotion: promotionAvailable });
-        }
+        // Assign next available promotion using the dedicated consumer
+        await this.promotionAssignmentConsumer.assignNextPromotion(player, {
+            clearExisting: false, // Already cleared above
+            publishToClient: true,
+        });
 
         return {
             claimedAmount: claimBonusWinsResult.claimedAmount,
             totalTurnover: claimBonusWinsResult.totalTurnover,
             minRequiredTurnover: claimBonusWinsResult.minRequiredTurnover,
             totalWinAmount: claimBonusWinsResult.totalWinAmount,
-        };
-    }
-
-    async getPromotionAvailable(player) {
-        const { session } = player;
-        const { promotions } = await this.gamePromotionApiClient.checkEligibility({
-            playerId: session.playerId,
-            currencyGroup: session.currencyGroupId,
-            operatorId: session.operatorId,
-            siteName: session.siteName,
-            gameId: this.definition.id,
-        });
-        if (promotions.length === 0) {
-            return null;
-        }
-        const currentTime = new Date();
-        const firstPromotion = promotions.shift();
-        return {
-            promotionId: firstPromotion._id,
-            remainingBonusItems: firstPromotion.bonusItemCount,
-            isActive: firstPromotion.endDate ? currentTime < new Date(firstPromotion.endDate) : false,
-            endDate: firstPromotion.endDate,
-            isGiftCode: firstPromotion.isGiftCode,
-            isClaimed: false,
         };
     }
 }
