@@ -1,15 +1,3 @@
-/**
- * Promotion Assignment Consumer
- *
- * Responsible for:
- * - Fetching next available promotion for a player
- * - Assigning promotion to player session
- * - Publishing promotion data to client
- * - Clearing promotion data when none available
- *
- * This consumer provides a centralized way to manage promotion assignment
- * and is reused across multiple flows (sign-in, claim completion, etc.)
- */
 export default class PromotionAssignmentConsumer {
     constructor({ definition, gamePromotionApiClient, logService, publisher }) {
         this.definition = definition;
@@ -47,7 +35,7 @@ export default class PromotionAssignmentConsumer {
                 return null;
             }
 
-            const firstPromotion = result.promotions[0];
+            const firstPromotion = result.promotions.shift();
             const currentTime = new Date();
 
             return {
@@ -74,73 +62,23 @@ export default class PromotionAssignmentConsumer {
      */
     async assignNextPromotion(player, { clearExisting = false, publishToClient = true } = {}) {
         try {
-            // Optionally clear existing promotion data
             if (clearExisting) {
                 this.clearPromotionData(player);
             }
-
-            // Fetch next available promotion
             const promotionData = await this.fetchNextAvailablePromotion(player);
 
             if (promotionData) {
-                // Assign to player session
                 player.promotion = promotionData;
-
-                // Publish to client if requested
                 if (publishToClient) {
                     this.publisher.publishToUser(player.UID, { promotion: promotionData });
                 }
 
-                this.logService.logInfo(`Assigned promotion ${promotionData.promotionId} to player ${player.session.playerId}`);
+                this.logService.log(`Assigned promotion ${promotionData.promotionId} to player ${player.session.playerId}`);
                 return promotionData;
             } else {
-                // No promotion available - clear player promotion
                 player.promotion = null;
 
-                this.logService.logInfo(`No promotion available for player ${player.session.playerId}`);
-                return null;
-            }
-        } catch (error) {
-            this.logService.logError(`Error assigning promotion to player ${player.session.playerId}: ${error.message}`);
-            player.promotion = null;
-            return null;
-        }
-    }
-
-    /**
-     * Assign promotion and publish with custom publisher
-     * Used by interceptors with different publisher interfaces
-     * @param {Object} player - Player object
-     * @param {Function} customPublisher - Custom publisher function (uid, data) => void
-     * @param {Object} options - Options
-     * @returns {Promise<Object|null>} Assigned promotion data or null
-     */
-    async assignNextPromotionWithPublisher(player, customPublisher, options = {}) {
-        try {
-            // Optionally clear existing promotion data
-            if (options.clearExisting) {
-                this.clearPromotionData(player);
-            }
-
-            // Fetch next available promotion
-            const promotionData = await this.fetchNextAvailablePromotion(player);
-
-            if (promotionData) {
-                // Assign to player session
-                player.promotion = promotionData;
-
-                // Use custom publisher
-                if (customPublisher) {
-                    customPublisher(player.UID, { promotion: promotionData });
-                }
-
-                this.logService.logInfo(`Assigned promotion ${promotionData.promotionId} to player ${player.session.playerId}`);
-                return promotionData;
-            } else {
-                // No promotion available - clear player promotion
-                player.promotion = null;
-
-                this.logService.logInfo(`No promotion available for player ${player.session.playerId}`);
+                this.logService.log(`No promotion available for player ${player.session.playerId}`);
                 return null;
             }
         } catch (error) {

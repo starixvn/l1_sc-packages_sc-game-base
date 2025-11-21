@@ -153,12 +153,10 @@ export default class PromotionBetInterceptor extends BaseEventInterceptor {
     }
 
     async publishAvailablePromotion(player) {
-        // Use the promotion assignment consumer with custom publisher
-        await this.promotionAssignmentConsumer.assignNextPromotionWithPublisher(
-            player,
-            (uid, data) => this.placeBetPublisher.publishToUser(uid, data, this.definition.name),
-            { clearExisting: false }
-        );
+        await this.promotionAssignmentConsumer.assignNextPromotion(player, {
+            clearExisting: false,
+            publishToClient: true,
+        });
     }
 
     /**

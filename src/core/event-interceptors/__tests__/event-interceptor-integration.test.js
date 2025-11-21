@@ -131,7 +131,7 @@ describe("Event Interceptor Integration", () => {
         // Mock PromotionAssignmentConsumer
         mockPromotionAssignmentConsumer = {
             clearPromotionData: jest.fn(),
-            assignNextPromotionWithPublisher: jest.fn(),
+            assignNextPromotion: jest.fn(),
             fetchNextAvailablePromotion: jest.fn(),
         };
 
@@ -676,25 +676,28 @@ describe("Event Interceptor Integration", () => {
                 isClaimed: false,
             };
 
-            // Mock assignNextPromotionWithPublisher to simulate assignment
-            mockPromotionAssignmentConsumer.assignNextPromotionWithPublisher.mockImplementation(
-                (player, publisher) => {
+            // Mock assignNextPromotion to simulate assignment and publishing
+            mockPromotionAssignmentConsumer.assignNextPromotion.mockImplementation(
+                async (player, options) => {
                     player.promotion = newPromotionData;
-                    if (publisher) {
-                        publisher(player.UID, { promotion: newPromotionData });
+                    // Simulate the publishing behavior when publishToClient is true
+                    if (options.publishToClient) {
+                        mockDependencies.placeBetPublisher.publishToUser(
+                            player.UID,
+                            { promotion: newPromotionData }
+                        );
                     }
-                    return Promise.resolve(newPromotionData);
+                    return newPromotionData;
                 }
             );
 
             // Act
             await promotionInterceptor.endPromotionEvent(context);
 
-            // Assert - Check that assignNextPromotionWithPublisher was called
-            expect(mockPromotionAssignmentConsumer.assignNextPromotionWithPublisher).toHaveBeenCalledWith(
+            // Assert - Check that assignNextPromotion was called
+            expect(mockPromotionAssignmentConsumer.assignNextPromotion).toHaveBeenCalledWith(
                 player,
-                expect.any(Function),
-                { clearExisting: false }
+                { clearExisting: false, publishToClient: true }
             );
 
             // Verify publishToUser was called 3 times: finishPromotion, promotionTOProgress, and promotion
@@ -706,8 +709,7 @@ describe("Event Interceptor Integration", () => {
                 player.UID,
                 {
                     promotion: newPromotionData,
-                },
-                mockDependencies.definition.name
+                }
             );
 
             expect(player.promotion.promotionId).toBe(TEST_NEW_PROMO_ID);
@@ -732,17 +734,16 @@ describe("Event Interceptor Integration", () => {
             };
             mockApiInstance.completePromotion.mockResolvedValue(completeResult);
 
-            // Mock assignNextPromotionWithPublisher to return null (no promotion available)
-            mockPromotionAssignmentConsumer.assignNextPromotionWithPublisher.mockResolvedValue(null);
+            // Mock assignNextPromotion to return null (no promotion available)
+            mockPromotionAssignmentConsumer.assignNextPromotion.mockResolvedValue(null);
 
             // Act
             await promotionInterceptor.endPromotionEvent(context);
 
-            // Assert - Check that assignNextPromotionWithPublisher was called
-            expect(mockPromotionAssignmentConsumer.assignNextPromotionWithPublisher).toHaveBeenCalledWith(
+            // Assert - Check that assignNextPromotion was called
+            expect(mockPromotionAssignmentConsumer.assignNextPromotion).toHaveBeenCalledWith(
                 player,
-                expect.any(Function),
-                { clearExisting: false }
+                { clearExisting: false, publishToClient: true }
             );
 
             // Should only be called 2 times (finishPromotion and promotionTOProgress), no promotion publish

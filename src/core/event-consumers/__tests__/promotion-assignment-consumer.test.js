@@ -20,7 +20,7 @@ describe("PromotionAssignmentConsumer", () => {
         };
 
         mockLogService = {
-            logInfo: jest.fn(),
+            log: jest.fn(),
             logError: jest.fn(),
         };
 
@@ -205,7 +205,7 @@ describe("PromotionAssignmentConsumer", () => {
                 promotion: mockPromotionData,
             });
             expect(result).toEqual(mockPromotionData);
-            expect(mockLogService.logInfo).toHaveBeenCalledWith(
+            expect(mockLogService.log).toHaveBeenCalledWith(
                 expect.stringContaining("Assigned promotion PROMO-111")
             );
         });
@@ -218,7 +218,7 @@ describe("PromotionAssignmentConsumer", () => {
             expect(mockPlayer.promotion).toBeNull();
             expect(mockPublisher.publishToUser).not.toHaveBeenCalled();
             expect(result).toBeNull();
-            expect(mockLogService.logInfo).toHaveBeenCalledWith(
+            expect(mockLogService.log).toHaveBeenCalledWith(
                 expect.stringContaining("No promotion available")
             );
         });
@@ -275,95 +275,6 @@ describe("PromotionAssignmentConsumer", () => {
             );
         });
     });
-
-    describe("assignNextPromotionWithPublisher", () => {
-        it("should use custom publisher when provided", async () => {
-            const customPublisher = jest.fn();
-            const mockPromotionData = {
-                promotionId: "PROMO-444",
-                remainingBonusItems: 8,
-                isActive: true,
-                endDate: "2025-12-31T23:59:59Z",
-                isGiftCode: false,
-                isClaimed: false,
-            };
-
-            jest.spyOn(consumer, "fetchNextAvailablePromotion").mockResolvedValue(mockPromotionData);
-
-            await consumer.assignNextPromotionWithPublisher(mockPlayer, customPublisher);
-
-            expect(customPublisher).toHaveBeenCalledWith(mockPlayer.UID, { promotion: mockPromotionData });
-            expect(mockPublisher.publishToUser).not.toHaveBeenCalled();
-        });
-
-        it("should not call publisher when promotion is null", async () => {
-            const customPublisher = jest.fn();
-
-            jest.spyOn(consumer, "fetchNextAvailablePromotion").mockResolvedValue(null);
-
-            await consumer.assignNextPromotionWithPublisher(mockPlayer, customPublisher);
-
-            expect(customPublisher).not.toHaveBeenCalled();
-            expect(mockPlayer.promotion).toBeNull();
-        });
-
-        it("should work without custom publisher", async () => {
-            const mockPromotionData = {
-                promotionId: "PROMO-555",
-                remainingBonusItems: 12,
-                isActive: true,
-                endDate: "2025-12-31T23:59:59Z",
-                isGiftCode: false,
-                isClaimed: false,
-            };
-
-            jest.spyOn(consumer, "fetchNextAvailablePromotion").mockResolvedValue(mockPromotionData);
-
-            await consumer.assignNextPromotionWithPublisher(mockPlayer, null);
-
-            expect(mockPlayer.promotion).toEqual(mockPromotionData);
-        });
-
-        it("should clear existing data when clearExisting option is true", async () => {
-            mockPlayer.promotion = { promotionId: "OLD-PROMO" };
-            mockPlayer.promotionTOProgress = { totalTO: 750 };
-
-            const customPublisher = jest.fn();
-            const mockPromotionData = {
-                promotionId: "PROMO-666",
-                remainingBonusItems: 15,
-                isActive: true,
-                endDate: "2025-12-31T23:59:59Z",
-                isGiftCode: false,
-                isClaimed: false,
-            };
-
-            jest.spyOn(consumer, "fetchNextAvailablePromotion").mockResolvedValue(mockPromotionData);
-            const clearSpy = jest.spyOn(consumer, "clearPromotionData");
-
-            await consumer.assignNextPromotionWithPublisher(mockPlayer, customPublisher, {
-                clearExisting: true,
-            });
-
-            expect(clearSpy).toHaveBeenCalledWith(mockPlayer);
-            expect(mockPlayer.promotion).toEqual(mockPromotionData);
-        });
-
-        it("should handle errors and log appropriately", async () => {
-            const customPublisher = jest.fn();
-
-            jest.spyOn(consumer, "fetchNextAvailablePromotion").mockRejectedValue(new Error("Fetch Error"));
-
-            await consumer.assignNextPromotionWithPublisher(mockPlayer, customPublisher);
-
-            expect(mockPlayer.promotion).toBeNull();
-            expect(mockLogService.logError).toHaveBeenCalledWith(
-                expect.stringContaining("Error assigning promotion")
-            );
-            expect(customPublisher).not.toHaveBeenCalled();
-        });
-    });
-
     describe("Integration Scenarios", () => {
         it("should handle complete flow: clear old promotion, fetch new, assign, and publish", async () => {
             // Setup: Player has old promotion

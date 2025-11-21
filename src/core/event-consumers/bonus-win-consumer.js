@@ -89,9 +89,8 @@ export default class BonusWinConsumer {
             seq: awardResponse.seq,
         });
 
-        // Assign next available promotion using the dedicated consumer
         await this.promotionAssignmentConsumer.assignNextPromotion(player, {
-            clearExisting: false, // Already cleared above
+            clearExisting: false,
             publishToClient: true,
         });
 
