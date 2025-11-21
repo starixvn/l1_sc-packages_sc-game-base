@@ -1,3 +1,38 @@
+# [6.4.0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.3.2...v6.4.0) (2025-11-21)
+
+
+### Bug Fixes
+
+* add error handling ([0cefcb5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/0cefcb5f02e713f21a597b8a984ae75232e9ea60))
+* add promotionId to the response of promotionTOProgress ([2be1c75](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/2be1c75e420efcd3f3d564dbad04d796cd126edb))
+* add proxy to avoid circular dependency ([8c09abb](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/8c09abbfa501932fb651836d17974221b0430622))
+* check promotion isActive ([e4720e0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/e4720e06cead0cc2b881a5bafe1f25c79d5a9781))
+* correct check isPromotionTargetingValid ([d5ee48f](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/d5ee48f80a7314fc848505321d4a62610bf42456))
+* correct check totalWin > 0 ([4893693](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/48936930e8025dc1fbceda690e272b5ee0752083))
+* correct response ([f2ab2bc](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f2ab2bc377db542c40a542340da9231e1d6ca71f))
+* move publish promotionAvailable into claim function to centralize logic ([5f83f7e](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/5f83f7ec7a0fc453ac1994b15abe6bad1f97f6e2))
+* remove unused code ([ea93efe](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/ea93efe3a1859501410cad9b7f8b8b18d23b8b85))
+* update uts ([46b5058](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/46b50580983b4b0525309d635b228ba3b3145ae3))
+* update uts ([42824c0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/42824c01e9168be623f75e44303c0df633c3b7fe))
+* update uts ([d9bfd71](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/d9bfd71c8af6b7cbcef7b9fff7359fb5a49cde71))
+
+
+### Features
+
+* add PromotionAssignmentConsumer to improve separation of concerns ([b1aa5a5](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/b1aa5a5401682599724789c95c07b51bdc458273))
+* add uts ([3ac37aa](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/3ac37aacf4c9809aea96c63499c2730a451e6719))
+* assign promotion for player ([3d2a30b](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/3d2a30b2f1e913b025193fe1aa18f1964176c420))
+* change the order of socket events ([96be1c0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/96be1c063fb30b7f9293c0eac1fd7490f415091b))
+* enhance flow check eligible promotion ([6ff3531](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/6ff35319791cb4fcda93e7d01d8fc0f28a4fb02a))
+* enhance flow for assigning next available promotion ([b1ca30c](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/b1ca30c3a9b06720c0bebfa3821ff812e1a3b2d7))
+* handle end promotion when bonus win is 0 ([f9145e6](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/f9145e6cdef4434afd9f1cafd0d9f51ea0724d94))
+* send playerPromotionId instead promotionId when call award api ([1cf6ed0](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/1cf6ed0ddc73296b1903a8a6787f4d30b5e6d187))
+* show gift code icon after claim bonus win ([a10e744](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/a10e744382890860e534b00c5ab8fd3e2340baa9))
+* update logic send promotion socket event ([6256543](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/6256543ccd1ca29e2d2a296b83d60b81a31a5c38))
+* update seq when finished claim bonus win ([da5ff77](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/da5ff775ebba33f0a1896c18e937ceb918e0da6d))
+* update uts ([1ea5cb4](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/1ea5cb45d3db9cc2275d8c68f6e29156593cc6de))
+* use array data type for EligiblePromotion instead of object ([2a5966d](https://git3.nexdev.net/l1/sc-packages/sc-game-base/commit/2a5966d26d0344615decf69f3da7351ea221091a))
+
 ## [6.3.2](https://git3.nexdev.net/l1/sc-packages/sc-game-base/compare/v6.3.1...v6.3.2) (2025-10-10)
 
 
