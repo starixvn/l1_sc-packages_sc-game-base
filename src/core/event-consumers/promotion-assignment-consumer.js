@@ -72,13 +72,9 @@ export default class PromotionAssignmentConsumer {
                 if (publishToClient) {
                     this.publisher.publishToUser(player.UID, { promotion: promotionData });
                 }
-
-                this.logService.log(`Assigned promotion ${promotionData.promotionId} to player ${player.session.playerId}`);
                 return promotionData;
             } else {
                 player.promotion = null;
-
-                this.logService.log(`No promotion available for player ${player.session.playerId}`);
                 return null;
             }
         } catch (error) {

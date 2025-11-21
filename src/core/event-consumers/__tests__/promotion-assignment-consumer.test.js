@@ -20,7 +20,6 @@ describe("PromotionAssignmentConsumer", () => {
         };
 
         mockLogService = {
-            log: jest.fn(),
             logError: jest.fn(),
         };
 
@@ -205,9 +204,6 @@ describe("PromotionAssignmentConsumer", () => {
                 promotion: mockPromotionData,
             });
             expect(result).toEqual(mockPromotionData);
-            expect(mockLogService.log).toHaveBeenCalledWith(
-                expect.stringContaining("Assigned promotion PROMO-111")
-            );
         });
 
         it("should set player.promotion to null when no promotion available", async () => {
@@ -218,9 +214,6 @@ describe("PromotionAssignmentConsumer", () => {
             expect(mockPlayer.promotion).toBeNull();
             expect(mockPublisher.publishToUser).not.toHaveBeenCalled();
             expect(result).toBeNull();
-            expect(mockLogService.log).toHaveBeenCalledWith(
-                expect.stringContaining("No promotion available")
-            );
         });
 
         it("should not publish when publishToClient is false", async () => {
