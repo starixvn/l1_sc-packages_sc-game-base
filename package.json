@@ -37,7 +37,7 @@
         "axios": "1.0.0",
         "chance": "1.1.7",
         "cors": "2.8.5",
-        "cron": "2.0.0",
+        "cron": "4.3.5",
         "crypto": "1.0.1",
         "crypto-random-string": "5.0.0",
         "express": "4.17.1",
