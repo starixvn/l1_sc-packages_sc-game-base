@@ -124,8 +124,8 @@ export default class SettleGameRoundConsumer {
             }
         );
 
-        betResult.totalWin = parseFloat(betResult.totalWin.toFixed(2));
-        betResult.netWin = parseFloat(betResult.netWin.toFixed(2));
+        betResult.totalWin = parseFloat(betResult.totalWin.toFixed(4));
+        betResult.netWin = parseFloat(betResult.netWin.toFixed(4));
 
         return betResult;
     }
