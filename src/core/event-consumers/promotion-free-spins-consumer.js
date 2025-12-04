@@ -146,7 +146,7 @@ export default class PromotionFreeSpinsConsumer {
         try {
             const runningPromotions = await this.promotionApiClient.getAllPromotionsRunning(this.gameData.gameConfigs.gameId);
             this.gameData.expiringPromotions = (this.gameData.promotions || []).filter(
-                (promo) => !runningPromotions.some((runningPromotion) => runningPromotion.promotionId === promo.promotionId)
+                (promo) => !runningPromotions.some((runningPromotion) => runningPromotion._id === promo._id)
             );
             this.gameData.promotions = runningPromotions;
             await this.handlePromotionFreeSpinsExpiry();
